@@ -3923,7 +3923,8 @@ var themedButtonValues                      = nil,
     // We use CSS borders for radio buttons, which are natively supported by the browser and scalable.
     // The "dot" is handled via inner-shadow or pseudo-element.
 
-    // --- Regular Size (16x16, Border 2px, Dot 6px, Offset 3px) ---
+    // --- Regular Size (16x16) ---
+    // Normal: Border 1px
     regularImageNormal = [CPImage imageWithCSSDictionary:@{
                                                            @"border-color": A3ColorActiveBorder,
                                                            @"border-style": @"solid",
@@ -3936,6 +3937,7 @@ var themedButtonValues                      = nil,
                                                            }
                                                     size:CGSizeMake(16,16)],
 
+    // Selected: Border 2px, Dot 6px, Offset 3px -> (16 - 4 - 6) / 2 = 3
     regularImageSelected = [CPImage imageWithCSSDictionary:@{
                                                              @"border-color": @"A3ColorBorderBlue",
                                                              @"border-style": @"solid",
@@ -3968,6 +3970,7 @@ var themedButtonValues                      = nil,
                                                              }
                                                    size:CGSizeMake(16,16)],
 
+    // Highlighted: Border 1px, Dot 6px, Offset 4px -> (16 - 2 - 6) / 2 = 4
     regularImageHighlighted = [CPImage imageWithCSSDictionary:@{
                                                              @"border-color": A3ColorBorderBlueHighlighted,
                                                              @"border-style": @"solid",
@@ -3983,8 +3986,8 @@ var themedButtonValues                      = nil,
                                                              @"height": @"6px",
                                                              @"border-radius": @"50%",
                                                              @"content": @"''",
-                                                             @"left": @"3px",
-                                                             @"top": @"3px",
+                                                             @"left": @"4px",
+                                                             @"top": @"4px",
                                                              @"position": @"absolute",
                                                              @"z-index": @"300"
                                                              }
@@ -4012,7 +4015,7 @@ var themedButtonValues                      = nil,
                                                              }
                                                       size:CGSizeMake(16,16)],
 
-    // --- Small Size (14x14, Border 2px, Dot 5px, Offset 2.5px) ---
+    // --- Small Size (14x14) ---
     smallImageNormal = [CPImage imageWithCSSDictionary:@{
                                                            @"border-color": A3ColorActiveBorder,
                                                            @"border-style": @"solid",
@@ -4025,6 +4028,7 @@ var themedButtonValues                      = nil,
                                                            }
                                                     size:CGSizeMake(14,14)],
 
+    // Selected: Border 2px, Dot 5px, Offset 2.5px -> (14 - 4 - 5) / 2 = 2.5
     smallImageSelected = [CPImage imageWithCSSDictionary:@{
                                                              @"border-color": @"A3ColorBorderBlue",
                                                              @"border-style": @"solid",
@@ -4036,11 +4040,11 @@ var themedButtonValues                      = nil,
                                           beforeDictionary:nil
                                            afterDictionary:@{
                                                              @"background-color": @"A3ColorBorderBlue",
-                                                             @"width": @"5px", 
+                                                             @"width": @"5px",
                                                              @"height": @"5px",
                                                              @"border-radius": @"50%",
                                                              @"content": @"''",
-                                                             @"left": @"2.5px", // Centered (14 - 4 - 5) / 2
+                                                             @"left": @"2.5px",
                                                              @"top": @"2.5px",
                                                              @"position": @"absolute",
                                                              @"z-index": @"300"
@@ -4057,6 +4061,7 @@ var themedButtonValues                      = nil,
                                                              }
                                                     size:CGSizeMake(14,14)],
 
+    // Highlighted: Border 1px, Dot 5px, Offset 3.5px -> (14 - 2 - 5) / 2 = 3.5
     smallImageHighlighted = [CPImage imageWithCSSDictionary:@{
                                                              @"border-color": A3ColorBorderBlueHighlighted,
                                                              @"border-style": @"solid",
@@ -4072,8 +4077,8 @@ var themedButtonValues                      = nil,
                                                              @"height": @"5px",
                                                              @"border-radius": @"50%",
                                                              @"content": @"''",
-                                                             @"left": @"2.5px", // Centered
-                                                             @"top": @"2.5px",
+                                                             @"left": @"3.5px",
+                                                             @"top": @"3.5px",
                                                              @"position": @"absolute",
                                                              @"z-index": @"300"
                                                              }
@@ -4094,14 +4099,14 @@ var themedButtonValues                      = nil,
                                                              @"height": @"5px",
                                                              @"border-radius": @"50%",
                                                              @"content": @"''",
-                                                             @"left": @"2.5px", // Centered
+                                                             @"left": @"2.5px",
                                                              @"top": @"2.5px",
                                                              @"position": @"absolute",
                                                              @"z-index": @"300"
                                                              }
                                                       size:CGSizeMake(14,14)],
 
-    // --- Mini Size (12x12, Border 2px, Dot 4px, Offset 2px) ---
+    // --- Mini Size (12x12) ---
     miniImageNormal = [CPImage imageWithCSSDictionary:@{
                                                            @"border-color": A3ColorActiveBorder,
                                                            @"border-style": @"solid",
@@ -4114,6 +4119,7 @@ var themedButtonValues                      = nil,
                                                            }
                                                     size:CGSizeMake(12,12)],
 
+    // Selected: Border 2px, Dot 4px, Offset 2px -> (12 - 4 - 4) / 2 = 2
     miniImageSelected = [CPImage imageWithCSSDictionary:@{
                                                              @"border-color": @"A3ColorBorderBlue",
                                                              @"border-style": @"solid",
@@ -4125,11 +4131,11 @@ var themedButtonValues                      = nil,
                                           beforeDictionary:nil
                                            afterDictionary:@{
                                                              @"background-color": @"A3ColorBorderBlue",
-                                                             @"width": @"4px", // Smallest dot
+                                                             @"width": @"4px",
                                                              @"height": @"4px",
                                                              @"border-radius": @"50%",
                                                              @"content": @"''",
-                                                             @"left": @"2px", // Centered (12 - 4 - 4) / 2
+                                                             @"left": @"2px",
                                                              @"top": @"2px",
                                                              @"position": @"absolute",
                                                              @"z-index": @"300"
@@ -4146,6 +4152,7 @@ var themedButtonValues                      = nil,
                                                              }
                                                     size:CGSizeMake(12,12)],
 
+    // Highlighted: Border 1px, Dot 4px, Offset 3px -> (12 - 2 - 4) / 2 = 3
     miniImageHighlighted = [CPImage imageWithCSSDictionary:@{
                                                              @"border-color": A3ColorBorderBlueHighlighted,
                                                              @"border-style": @"solid",
@@ -4161,8 +4168,8 @@ var themedButtonValues                      = nil,
                                                              @"height": @"4px",
                                                              @"border-radius": @"50%",
                                                              @"content": @"''",
-                                                             @"left": @"2px", // Centered
-                                                             @"top": @"2px",
+                                                             @"left": @"3px",
+                                                             @"top": @"3px",
                                                              @"position": @"absolute",
                                                              @"z-index": @"300"
                                                              }
@@ -4183,14 +4190,14 @@ var themedButtonValues                      = nil,
                                                              @"height": @"4px",
                                                              @"border-radius": @"50%",
                                                              @"content": @"''",
-                                                             @"left": @"2px", // Centered
+                                                             @"left": @"2px",
                                                              @"top": @"2px",
                                                              @"position": @"absolute",
                                                              @"z-index": @"300"
                                                              }
                                                       size:CGSizeMake(12,12)],
 
-    // --- HUD IMAGES (16x16, Border 1px, Dot 6px, Offset 4px) ---
+    // --- HUD IMAGES ---
     hudImageNormal = [CPImage imageWithCSSDictionary:@{
                                                             @"border-color": @"rgba(255,255,255,0.5)",
                                                             @"border-style": @"solid",
@@ -4217,7 +4224,7 @@ var themedButtonValues                      = nil,
                                                             @"height": @"6px",
                                                             @"border-radius": @"50%",
                                                             @"content": @"''",
-                                                            @"left": @"4px", // Centered (16 - 2 - 6) / 2
+                                                            @"left": @"4px", // Adjusted center for 1px border
                                                             @"top": @"4px",
                                                             @"position": @"absolute",
                                                             @"z-index": @"300"
@@ -7470,7 +7477,6 @@ var themedButtonValues                      = nil,
 {
     var menuItemStandardView = [[_CPMenuItemStandardView alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)],
 
-    // Replaced complex matrix hacks with SVG masks
     menuItemDefaultOnStateImage = [CPImage imageWithCSSDictionary:@{
                                                     "-webkit-mask-image": svgCheckmark,
                                                     "mask-image": svgCheckmark,
@@ -7620,14 +7626,13 @@ var themedButtonValues                      = nil,
 {
     var menuView = [[_CPMenuView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
 
-    // FIX: Adjusted size to 10x16 to match the scroll-indicator-height (16.0).
-    // Added width/height: 100% to CSS to ensure the background color fills the view for the mask.
+    // Standard Arrows (Dark)
     menuWindowMoreAboveImage = [CPImage imageWithCSSDictionary:@{
                                                                  "-webkit-mask-image": svgArrowUp,
                                                                  "mask-image": svgArrowUp,
                                                                  "background-color": A3ColorMenuCheckmark,
-                                                                 "-webkit-mask-size": "contain",
-                                                                 "mask-size": "contain",
+                                                                 "-webkit-mask-size": "16px 16px",
+                                                                 "mask-size": "16px 16px",
                                                                  "-webkit-mask-repeat": "no-repeat",
                                                                  "mask-repeat": "no-repeat",
                                                                  "-webkit-mask-position": "center",
@@ -7635,14 +7640,14 @@ var themedButtonValues                      = nil,
                                                                  "width": "100%",
                                                                  "height": "100%"
                                                                  }
-                                                          size:CGSizeMake(20, 32)],
+                                                          size:CGSizeMake(40, 24)],
 
     menuWindowMoreBelowImage = [CPImage imageWithCSSDictionary:@{
                                                                  "-webkit-mask-image": svgArrowDown,
                                                                  "mask-image": svgArrowDown,
                                                                  "background-color": A3ColorMenuCheckmark,
-                                                                 "-webkit-mask-size": "contain",
-                                                                 "mask-size": "contain",
+                                                                 "-webkit-mask-size": "16px 16px",
+                                                                 "mask-size": "16px 16px",
                                                                  "-webkit-mask-repeat": "no-repeat",
                                                                  "mask-repeat": "no-repeat",
                                                                  "-webkit-mask-position": "center",
@@ -7650,7 +7655,38 @@ var themedButtonValues                      = nil,
                                                                  "width": "100%",
                                                                  "height": "100%"
                                                                  }
-                                                          size:CGSizeMake(20, 32)],
+                                                          size:CGSizeMake(40, 24)],
+
+    // HUD Arrows (White)
+    menuWindowMoreAboveImageHUD = [CPImage imageWithCSSDictionary:@{
+                                                                 "-webkit-mask-image": svgArrowUp,
+                                                                 "mask-image": svgArrowUp,
+                                                                 "background-color": @"#ffffff",
+                                                                 "-webkit-mask-size": "16px 16px",
+                                                                 "mask-size": "16px 16px",
+                                                                 "-webkit-mask-repeat": "no-repeat",
+                                                                 "mask-repeat": "no-repeat",
+                                                                 "-webkit-mask-position": "center",
+                                                                 "mask-position": "center",
+                                                                 "width": "100%",
+                                                                 "height": "100%"
+                                                                 }
+                                                          size:CGSizeMake(40, 24)],
+
+    menuWindowMoreBelowImageHUD = [CPImage imageWithCSSDictionary:@{
+                                                                 "-webkit-mask-image": svgArrowDown,
+                                                                 "mask-image": svgArrowDown,
+                                                                 "background-color": @"#ffffff",
+                                                                 "-webkit-mask-size": "16px 16px",
+                                                                 "mask-size": "16px 16px",
+                                                                 "-webkit-mask-repeat": "no-repeat",
+                                                                 "mask-repeat": "no-repeat",
+                                                                 "-webkit-mask-position": "center",
+                                                                 "mask-position": "center",
+                                                                 "width": "100%",
+                                                                 "height": "100%"
+                                                                 }
+                                                          size:CGSizeMake(40, 24)],
 
     menuWindowPopUpBackgroundStyleColorHUD = [CPColor colorWithCSSDictionary:@{
                                                                                     @"background-color": @"rgba(30, 30, 30, 0.95)", // Dark background
@@ -7719,7 +7755,7 @@ var themedButtonValues                      = nil,
      [@"menu-window-pop-up-background-style-color",          menuWindowPopUpBackgroundStyleColor],
      [@"menu-window-menu-bar-background-style-color",        menuWindowMenuBarBackgroundStyleColor],
      [@"menu-window-margin-inset",                           CGInsetMake(4.0, 0.0, 6.0, 0.0)], 
-     [@"menu-window-scroll-indicator-height",                16.0],
+     [@"menu-window-scroll-indicator-height",                24.0],
      [@"menu-window-submenu-delta-x",                        -2.0],
      [@"menu-window-submenu-delta-y",                        -4.0], 
      [@"menu-window-submenu-first-level-delta-y",            -1.0],
@@ -7748,9 +7784,10 @@ var themedButtonValues                      = nil,
 
      // HUD
      [@"menu-window-pop-up-background-style-color", menuWindowPopUpBackgroundStyleColorHUD, CPThemeStateHUD],
-     [@"menu-bar-text-color", [CPColor whiteColor], CPThemeStateHUD]
+     [@"menu-bar-text-color",                       [CPColor whiteColor],                   CPThemeStateHUD],
+     [@"menu-window-more-above-image",              menuWindowMoreAboveImageHUD,            CPThemeStateHUD],
+     [@"menu-window-more-below-image",              menuWindowMoreBelowImageHUD,            CPThemeStateHUD]
     ];
-
 
     [self registerThemeValues:themeValues forView:menuView];
 

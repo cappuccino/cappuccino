@@ -108,21 +108,31 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
         [contentView addSubview:_menuClipView];
 
         _moreAboveView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-
-        [_moreAboveView setImage:[_menuView valueForThemeAttribute:@"menu-window-more-above-image"]];
-        [_moreAboveView setFrameSize:[[_menuView valueForThemeAttribute:@"menu-window-more-above-image"] size]];
-
         [contentView addSubview:_moreAboveView];
 
         _moreBelowView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-
-        [_moreBelowView setImage:[_menuView valueForThemeAttribute:@"menu-window-more-below-image"]];
-        [_moreBelowView setFrameSize:[[_menuView valueForThemeAttribute:@"menu-window-more-below-image"] size]];
-
         [contentView addSubview:_moreBelowView];
+
+        // Initial setup using default attributes
+        [self updateScrollArrows];
     }
 
     return self;
+}
+
+- (void)updateScrollArrows
+{
+    if (!_menuView)
+        return;
+
+    var aboveImage = [_menuView currentValueForThemeAttribute:@"menu-window-more-above-image"],
+        belowImage = [_menuView currentValueForThemeAttribute:@"menu-window-more-below-image"];
+
+    [_moreAboveView setImage:aboveImage];
+    [_moreAboveView setFrameSize:[aboveImage size]];
+
+    [_moreBelowView setImage:belowImage];
+    [_moreBelowView setFrameSize:[belowImage size]];
 }
 
 + (float)_standardLeftMargin
@@ -520,6 +530,9 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 {
     [super setThemeState:aState];
     [_menuItemViews makeObjectsPerformSelector:@selector(setThemeState:) withObject:aState];
+
+    if ([[self window] respondsToSelector:@selector(updateScrollArrows)])
+        [[self window] updateScrollArrows];
 }
 
 - (void)unsetThemeState:(CPThemeState)aState

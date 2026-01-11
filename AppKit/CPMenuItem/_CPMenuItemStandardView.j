@@ -144,12 +144,11 @@
 
     return self;
 }
-/*
+
 - (void)setThemeState:(CPThemeState)aState
 {
     var oldState = [self themeState];
     [super setThemeState:aState];
-
     // If the state changed (e.g. adding HUD), we must re-run update
     // to fetch the new text color defined for that state.
     if (oldState !== [self themeState])
@@ -164,7 +163,7 @@
     if (oldState !== [self themeState])
         [self update];
 }
-*/
+
 
 - (CPColor)textColor
 {
@@ -354,7 +353,10 @@
 
     _highlighted = shouldHighlight;
 
-    var correspondingControlSize = [[self font] controlSizeCorrespondingToFontSize];
+    var correspondingControlSize = [[self font] controlSizeCorrespondingToFontSize],
+        // Construct the query state including the view's current theme state (e.g. HUD)
+        controlSizeState = CPControlSizeThemeStates[correspondingControlSize],
+        queryState = [self themeState] ? [self themeState].and(controlSizeState) : controlSizeState;
 
     [_imageAndTextView setTextColor:[self textColor]];
     [_keyEquivalentView setTextColor:[self textColor]];
@@ -367,7 +369,7 @@
         [_imageAndTextView setImage:[_menuItem alternateImage] || [_menuItem image]];
 
         if (_hasSubmenuIndicatorImage)
-            [_submenuIndicatorView setImage:[self valueForThemeAttribute:@"submenu-indicator-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+            [_submenuIndicatorView setImage:[self valueForThemeAttribute:@"submenu-indicator-highlighted-image" inState:queryState]];
         else
             [_submenuIndicatorView setColor:[self textColor]];
     }
@@ -377,7 +379,7 @@
         [_imageAndTextView setImage:[_menuItem image]];
 
         if (_hasSubmenuIndicatorImage)
-            [_submenuIndicatorView setImage:[self valueForThemeAttribute:@"submenu-indicator-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+            [_submenuIndicatorView setImage:[self valueForThemeAttribute:@"submenu-indicator-image" inState:queryState]];
         else
             [_submenuIndicatorView setColor:[self valueForThemeAttribute:@"submenu-indicator-color"]];
     }
@@ -389,15 +391,15 @@
             switch ([_menuItem state])
             {
                 case CPOnState:
-                    [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-highlighted-image" inState:queryState]];
                     break;
 
                 case CPOffState:
-                    [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-highlighted-image" inState:queryState]];
                     break;
 
                 case CPMixedState:
-                    [_stateView setImage:[_menuItem mixedImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem mixedImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-highlighted-image" inState:queryState]];
                     break;
 
                 default:
@@ -409,15 +411,15 @@
             switch ([_menuItem state])
             {
                 case CPOnState:
-                    [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:queryState]];
                     break;
 
                 case CPOffState:
-                    [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:queryState]];
                     break;
 
                 case CPMixedState:
-                    [_stateView setImage:[_menuItem mixedImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem mixedImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:queryState]];
                     break;
 
                 default:

@@ -15,7 +15,7 @@
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask | CPHUDBackgroundWindowMask],
         contentView = [theWindow contentView],
         popupButton = [[CPPopUpButton alloc] initWithFrame:CGRectMakeZero()];
 
