@@ -2375,7 +2375,6 @@ var themedButtonValues                      = nil,
      [@"text-color",            [CPColor whiteColor],                 CPThemeStateHUD],
      [@"text-color",            [CPColor colorWithWhite:1 alpha:0.5], [CPThemeStateHUD, CPThemeStateDisabled]],
      [@"text-color",            [CPColor whiteColor],               [CPThemeStateHUD, CPThemeStateEditing]],
-     [@"text-color",            [CPColor whiteColor],               [CPThemeStateHUD, CPThemeStateBezeled, CPThemeStateEditing]],
      // Change the background color of selected text in HUD mode to improve contrast
      // [@"field-selection-color", hudSelectionColor,                  CPThemeStateHUD],
 
@@ -3924,6 +3923,7 @@ var themedButtonValues                      = nil,
     // We use CSS borders for radio buttons, which are natively supported by the browser and scalable.
     // The "dot" is handled via inner-shadow or pseudo-element.
 
+    // --- Regular Size (16x16, Border 2px, Dot 6px, Offset 3px) ---
     regularImageNormal = [CPImage imageWithCSSDictionary:@{
                                                            @"border-color": A3ColorActiveBorder,
                                                            @"border-style": @"solid",
@@ -3958,6 +3958,38 @@ var themedButtonValues                      = nil,
                                                              }
                                                       size:CGSizeMake(16,16)],
 
+    regularImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                                   size:CGSizeMake(16,16)],
+
+    regularImageHighlighted = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorBorderBlueHighlighted,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             @"background-color": A3ColorBorderBlueHighlighted,
+                                                             @"width": @"6px",
+                                                             @"height": @"6px",
+                                                             @"border-radius": @"50%",
+                                                             @"content": @"''",
+                                                             @"left": @"3px",
+                                                             @"top": @"3px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(16,16)],
+
     regularImageSelectedNotKey = [CPImage imageWithCSSDictionary:@{
                                                              @"border-color": A3ColorInactiveDarkBorder, // Gray Border
                                                              @"border-style": @"solid",
@@ -3980,27 +4012,291 @@ var themedButtonValues                      = nil,
                                                              }
                                                       size:CGSizeMake(16,16)],
 
+    // --- Small Size (14x14, Border 2px, Dot 5px, Offset 2.5px) ---
+    smallImageNormal = [CPImage imageWithCSSDictionary:@{
+                                                           @"border-color": A3ColorActiveBorder,
+                                                           @"border-style": @"solid",
+                                                           @"border-width": @"1px",
+                                                           @"border-radius": @"50%",
+                                                           @"box-sizing": @"border-box",
+                                                           @"background-color": A3ColorBackgroundWhite,
+                                                           @"transition-duration": @"0.35s",
+                                                           @"transition-property": @"all"
+                                                           }
+                                                    size:CGSizeMake(14,14)],
+
+    smallImageSelected = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": @"A3ColorBorderBlue",
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"2px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             @"background-color": @"A3ColorBorderBlue",
+                                                             @"width": @"5px", 
+                                                             @"height": @"5px",
+                                                             @"border-radius": @"50%",
+                                                             @"content": @"''",
+                                                             @"left": @"2.5px", // Centered (14 - 4 - 5) / 2
+                                                             @"top": @"2.5px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(14,14)],
+
+    smallImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                                    size:CGSizeMake(14,14)],
+
+    smallImageHighlighted = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorBorderBlueHighlighted,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             @"background-color": A3ColorBorderBlueHighlighted,
+                                                             @"width": @"5px",
+                                                             @"height": @"5px",
+                                                             @"border-radius": @"50%",
+                                                             @"content": @"''",
+                                                             @"left": @"2.5px", // Centered
+                                                             @"top": @"2.5px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(14,14)],
+
+    smallImageSelectedNotKey = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveDarkBorder, // Gray Border
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"2px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             @"background-color": A3ColorInactiveDarkBorder, // Gray Dot
+                                                             @"width": @"5px",
+                                                             @"height": @"5px",
+                                                             @"border-radius": @"50%",
+                                                             @"content": @"''",
+                                                             @"left": @"2.5px", // Centered
+                                                             @"top": @"2.5px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(14,14)],
+
+    // --- Mini Size (12x12, Border 2px, Dot 4px, Offset 2px) ---
+    miniImageNormal = [CPImage imageWithCSSDictionary:@{
+                                                           @"border-color": A3ColorActiveBorder,
+                                                           @"border-style": @"solid",
+                                                           @"border-width": @"1px",
+                                                           @"border-radius": @"50%",
+                                                           @"box-sizing": @"border-box",
+                                                           @"background-color": A3ColorBackgroundWhite,
+                                                           @"transition-duration": @"0.35s",
+                                                           @"transition-property": @"all"
+                                                           }
+                                                    size:CGSizeMake(12,12)],
+
+    miniImageSelected = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": @"A3ColorBorderBlue",
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"2px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             @"background-color": @"A3ColorBorderBlue",
+                                                             @"width": @"4px", // Smallest dot
+                                                             @"height": @"4px",
+                                                             @"border-radius": @"50%",
+                                                             @"content": @"''",
+                                                             @"left": @"2px", // Centered (12 - 4 - 4) / 2
+                                                             @"top": @"2px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(12,12)],
+
+    miniImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                                    size:CGSizeMake(12,12)],
+
+    miniImageHighlighted = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorBorderBlueHighlighted,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             @"background-color": A3ColorBorderBlueHighlighted,
+                                                             @"width": @"4px",
+                                                             @"height": @"4px",
+                                                             @"border-radius": @"50%",
+                                                             @"content": @"''",
+                                                             @"left": @"2px", // Centered
+                                                             @"top": @"2px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(12,12)],
+
+    miniImageSelectedNotKey = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveDarkBorder, // Gray Border
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"2px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             @"background-color": A3ColorInactiveDarkBorder, // Gray Dot
+                                                             @"width": @"4px",
+                                                             @"height": @"4px",
+                                                             @"border-radius": @"50%",
+                                                             @"content": @"''",
+                                                             @"left": @"2px", // Centered
+                                                             @"top": @"2px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(12,12)],
+
+    // --- HUD IMAGES (16x16, Border 1px, Dot 6px, Offset 4px) ---
+    hudImageNormal = [CPImage imageWithCSSDictionary:@{
+                                                            @"border-color": @"rgba(255,255,255,0.5)",
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"border-radius": @"50%",
+                                                            @"box-sizing": @"border-box",
+                                                            @"background-color": @"rgba(0,0,0,0.3)",
+                                                            @"transition-duration": @"0.2s",
+                                                            @"transition-property": @"border-color, background-color"
+                                                        } size:CGSizeMake(16,16)],
+
+    hudImageSelected = [CPImage imageWithCSSDictionary:@{
+                                                            @"border-color": @"#ffffff",
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"border-radius": @"50%",
+                                                            @"box-sizing": @"border-box",
+                                                            @"background-color": @"rgba(0,0,0,0.3)"
+                                                        }
+                                      beforeDictionary:nil
+                                       afterDictionary:@{
+                                                            @"background-color": @"#ffffff",
+                                                            @"width": @"6px",
+                                                            @"height": @"6px",
+                                                            @"border-radius": @"50%",
+                                                            @"content": @"''",
+                                                            @"left": @"4px", // Centered (16 - 2 - 6) / 2
+                                                            @"top": @"4px",
+                                                            @"position": @"absolute",
+                                                            @"z-index": @"300"
+                                                        } size:CGSizeMake(16,16)],
+
+    hudImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": @"rgba(255,255,255,0.3)",
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"50%",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": @"rgba(0,0,0,0.1)"
+                                                         } size:CGSizeMake(16,16)],
+
     // Global
     themedRadioButtonValues =
     [
-     [@"alignment",                  CPLeftTextAlignment,                CPThemeStateNormal],
-     [@"content-inset",              CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
+     // --- Regular Size ---
+     [@"alignment",                  CPLeftTextAlignment,                                CPThemeStateNormal],
+     [@"content-inset",              CGInsetMake(0.0, 0.0, 0.0, 0.0),                    CPThemeStateNormal],
      [@"direct-nib2cib-adjustment",  YES],
-
-     [@"text-color",                 A3CPColorActiveText,                  CPThemeStateNormal],
-     [@"text-color",                 A3CPColorInactiveText,                CPThemeStateDisabled],
-
-     [@"image",                      regularImageNormal,                    CPThemeStateNormal],
-     [@"image",                      regularImageSelected,                  [CPThemeStateSelected, CPThemeStateKeyWindow]],
-     [@"image",                      regularImageSelectedNotKey,            CPThemeStateSelected],
-
-     // (Simplified for brevity, assuming similar definitions for Disabled/Highlighted states using CSS colors)
-     
+     [@"text-color",                 A3CPColorActiveText,                                CPThemeStateNormal],
+     [@"text-color",                 A3CPColorInactiveText,                              CPThemeStateDisabled],
+     [@"image",                      regularImageNormal,                                 CPThemeStateNormal],
+     [@"image",                      regularImageSelectedNotKey,                         CPThemeStateSelected],
+     [@"image",                      regularImageSelected,                               [CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"image",                      regularImageDisabled,                               CPThemeStateDisabled],
+     [@"image",                      regularImageHighlighted,                            CPThemeStateHighlighted],
+     [@"image",                      regularImageSelected,                               [CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]], // Override disabled when selected
+     [@"image",                      regularImageSelectedNotKey,                         [CPThemeStateSelected, CPThemeStateDisabled]], // Override disabled when selected
      [@"image-offset",               3],
-
      [@"min-size",                   CGSizeMake(16, 16)],
      [@"max-size",                   CGSizeMake(-1.0, -1.0)],
-     [@"nib2cib-adjustment-frame",   CGRectMake(1.0, -1.0, -1.0, -2.0)]
+     [@"nib2cib-adjustment-frame",   CGRectMake(1.0, -1.0, -1.0, -2.0)],
+
+     // --- Small Size ---
+     [@"alignment",                  CPLeftTextAlignment,                                CPThemeStateControlSizeSmall],
+     [@"content-inset",              CGInsetMake(0.0, 0.0, 0.0, 0.0),                    CPThemeStateControlSizeSmall],
+     [@"text-color",                 A3CPColorActiveText,                                [CPThemeStateControlSizeSmall, CPThemeStateNormal]],
+     [@"text-color",                 A3CPColorInactiveText,                              [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     [@"image",                      smallImageNormal,                                   [CPThemeStateControlSizeSmall, CPThemeStateNormal]],
+     [@"image",                      smallImageSelectedNotKey,                           [CPThemeStateControlSizeSmall, CPThemeStateSelected]],
+     [@"image",                      smallImageSelected,                                 [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"image",                      smallImageDisabled,                                 [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     [@"image",                      smallImageHighlighted,                              [CPThemeStateControlSizeSmall, CPThemeStateHighlighted]],
+     [@"image",                      smallImageSelected,                                 [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]], // Override disabled when selected
+     [@"image",                      smallImageSelectedNotKey,                           [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateDisabled]], // Override disabled when selected
+     [@"image-offset",               3,                                                  CPThemeStateControlSizeSmall],
+     [@"min-size",                   CGSizeMake(14, 14)],
+     [@"max-size",                   CGSizeMake(-1.0, -1.0)],
+     [@"nib2cib-adjustment-frame",   CGRectMake(1.0, -1.0, -1.0, -2.0),                  CPThemeStateControlSizeSmall],
+
+     // --- Mini Size ---
+     [@"alignment",                  CPLeftTextAlignment,                                CPThemeStateControlSizeMini],
+     [@"content-inset",              CGInsetMake(0.0, 0.0, 0.0, 0.0),                    CPThemeStateControlSizeMini],
+     [@"text-color",                 A3CPColorActiveText,                                [CPThemeStateControlSizeMini, CPThemeStateNormal]],
+     [@"text-color",                 A3CPColorInactiveText,                              [CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     [@"image",                      miniImageNormal,                                    [CPThemeStateControlSizeMini, CPThemeStateNormal]],
+     [@"image",                      miniImageSelectedNotKey,                            [CPThemeStateControlSizeMini, CPThemeStateSelected]],
+     [@"image",                      miniImageSelected,                                  [CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"image",                      miniImageDisabled,                                  [CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     [@"image",                      miniImageHighlighted,                               [CPThemeStateControlSizeMini, CPThemeStateHighlighted]],
+     [@"image",                      miniImageSelected,                                  [CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]], // Override disabled when selected
+     [@"image",                      miniImageSelectedNotKey,                            [CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateDisabled]], // Override disabled when selected
+     [@"image-offset",               3,                                                  CPThemeStateControlSizeMini],
+     [@"min-size",                   CGSizeMake(12, 12)],
+     [@"max-size",                   CGSizeMake(-1.0, -1.0)],
+     [@"nib2cib-adjustment-frame",   CGRectMake(1.0, -1.0, -1.0, -2.0),                  CPThemeStateControlSizeMini],
+
+     // --- HUD MAPPINGS ---
+     [@"text-color",                 [CPColor whiteColor],                               CPThemeStateHUD],
+     [@"text-color",                 [CPColor colorWithWhite:1 alpha:0.4],               [CPThemeStateHUD, CPThemeStateDisabled]],
+     
+     [@"image",                      hudImageNormal,                                     CPThemeStateHUD],
+     [@"image",                      hudImageSelected,                                   [CPThemeStateHUD, CPThemeStateSelected]],
+     [@"image",                      hudImageDisabled,                                   [CPThemeStateHUD, CPThemeStateDisabled]],
+     
+     // Adjust layout slightly for HUD
+     [@"image-offset",               4,                                                  CPThemeStateHUD]
      ];
 
     [self registerThemeValues:themedRadioButtonValues forView:button];
@@ -4008,11 +4304,11 @@ var themedButtonValues                      = nil,
     return button;
 }
 
-
 + (CPCheckBox)themedCheckBoxButton
 {
     var button = [CPCheckBox checkBoxWithTitle:@"Checkbox"],
 
+    // --- Regular Size (16x16, Border 1px, Checkmark 10px, Offset 2px) ---
     regularImageNormal = [CPImage imageWithCSSDictionary:@{
                                                            @"border-color": A3ColorActiveBorder,
                                                            @"border-style": @"solid",
@@ -4025,7 +4321,6 @@ var themedButtonValues                      = nil,
                                                            }
                                                     size:CGSizeMake(16,16)],
 
-    // Replaced matrix-transform CSS hack with clean SVG mask
     regularImageSelected = [CPImage imageWithCSSDictionary:@{
                                                              @"border-color": A3ColorActiveBorder,
                                                              @"border-style": @"solid",
@@ -4055,8 +4350,57 @@ var themedButtonValues                      = nil,
                                                              }
                                                       size:CGSizeMake(16,16)],
 
+    regularImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                                    size:CGSizeMake(16,16)],
+
+    regularImageSelectedDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgCheckmark,
+                                                             "mask-image": svgCheckmark,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": A3ColorInactiveDarkBorder, // Gray Checkmark
+                                                             @"width": @"10px",
+                                                             @"height": @"10px",
+                                                             @"content": @"''",
+                                                             @"left": @"2px",
+                                                             @"top": @"2px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(16,16)],
+
+    regularImageHighlighted = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorBorderBlueHighlighted,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                                    size:CGSizeMake(16,16)],
+
     regularImageSelectedNotKey = [CPImage imageWithCSSDictionary:@{
-                                                             @"border-color": A3ColorInactiveDarkBorder, // Gray Border
+                                                             @"border-color": A3ColorInactiveDarkBorder,
                                                              @"border-style": @"solid",
                                                              @"border-width": @"1px",
                                                              @"border-radius": @"2px",
@@ -4084,6 +4428,247 @@ var themedButtonValues                      = nil,
                                                              }
                                                       size:CGSizeMake(16,16)],
 
+    // --- Small Size (14x14, Border 1px, Checkmark 8px, Offset 2px) ---
+    smallImageNormal = [CPImage imageWithCSSDictionary:@{
+                                                           @"border-color": A3ColorActiveBorder,
+                                                           @"border-style": @"solid",
+                                                           @"border-width": @"1px",
+                                                           @"border-radius": @"2px",
+                                                           @"box-sizing": @"border-box",
+                                                           @"background-color": A3ColorBackgroundWhite,
+                                                           @"transition-duration": @"0.35s",
+                                                           @"transition-property": @"all"
+                                                           }
+                                                    size:CGSizeMake(14,14)],
+
+    smallImageSelected = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorActiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgCheckmark,
+                                                             "mask-image": svgCheckmark,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": @"A3ColorBorderBlue",
+                                                             @"width": @"8px",
+                                                             @"height": @"8px",
+                                                             @"content": @"''",
+                                                             @"left": @"2px",
+                                                             @"top": @"2px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(14,14)],
+
+    smallImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                                    size:CGSizeMake(14,14)],
+
+    smallImageSelectedDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgCheckmark,
+                                                             "mask-image": svgCheckmark,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": A3ColorInactiveDarkBorder,
+                                                             @"width": @"8px",
+                                                             @"height": @"8px",
+                                                             @"content": @"''",
+                                                             @"left": @"2px",
+                                                             @"top": @"2px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(14,14)],
+
+    smallImageHighlighted = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorBorderBlueHighlighted,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                                    size:CGSizeMake(14,14)],
+
+    smallImageSelectedNotKey = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveDarkBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgCheckmark,
+                                                             "mask-image": svgCheckmark,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": A3ColorInactiveDarkBorder,
+                                                             @"width": @"8px",
+                                                             @"height": @"8px",
+                                                             @"content": @"''",
+                                                             @"left": @"2px",
+                                                             @"top": @"2px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(14,14)],
+
+    // --- Mini Size (12x12, Border 1px, Checkmark 7px, Offset 1.5px) ---
+    miniImageNormal = [CPImage imageWithCSSDictionary:@{
+                                                           @"border-color": A3ColorActiveBorder,
+                                                           @"border-style": @"solid",
+                                                           @"border-width": @"1px",
+                                                           @"border-radius": @"2px",
+                                                           @"box-sizing": @"border-box",
+                                                           @"background-color": A3ColorBackgroundWhite,
+                                                           @"transition-duration": @"0.35s",
+                                                           @"transition-property": @"all"
+                                                           }
+                                                    size:CGSizeMake(12,12)],
+
+    miniImageSelected = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorActiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgCheckmark,
+                                                             "mask-image": svgCheckmark,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": @"A3ColorBorderBlue",
+                                                             @"width": @"7px",
+                                                             @"height": @"7px",
+                                                             @"content": @"''",
+                                                             @"left": @"1.5px",
+                                                             @"top": @"1.5px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(12,12)],
+
+    miniImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                                    size:CGSizeMake(12,12)],
+
+    miniImageSelectedDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgCheckmark,
+                                                             "mask-image": svgCheckmark,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": A3ColorInactiveDarkBorder,
+                                                             @"width": @"7px",
+                                                             @"height": @"7px",
+                                                             @"content": @"''",
+                                                             @"left": @"1.5px",
+                                                             @"top": @"1.5px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(12,12)],
+
+    miniImageHighlighted = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorBorderBlueHighlighted,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                                    size:CGSizeMake(12,12)],
+
+    miniImageSelectedNotKey = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveDarkBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgCheckmark,
+                                                             "mask-image": svgCheckmark,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": A3ColorInactiveDarkBorder,
+                                                             @"width": @"7px",
+                                                             @"height": @"7px",
+                                                             @"content": @"''",
+                                                             @"left": @"1.5px",
+                                                             @"top": @"1.5px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(12,12)],
+
+    // --- HUD IMAGES (14x14, Border 1px, Checkmark 10px, Offset 1px) ---
     hudImageNormal = [CPImage imageWithCSSDictionary:@{
                                                             @"border-color": @"rgba(255,255,255,0.5)",
                                                             @"border-style": @"solid",
@@ -4091,6 +4676,8 @@ var themedButtonValues                      = nil,
                                                             @"border-radius": @"2px",
                                                             @"box-sizing": @"border-box",
                                                             @"background-color": @"rgba(0,0,0,0.3)",
+                                                            @"transition-duration": @"0.2s",
+                                                            @"transition-property": @"border-color, background-color"
                                                         } size:CGSizeMake(14,14)],
 
     hudImageSelected = [CPImage imageWithCSSDictionary:@{
@@ -4119,24 +4706,102 @@ var themedButtonValues                      = nil,
                                                              @"z-index": @"300"
                                                         } size:CGSizeMake(14,14)],
 
+    hudImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": @"rgba(255,255,255,0.3)",
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": @"rgba(0,0,0,0.1)"
+                                                         } size:CGSizeMake(14,14)],
+
+    hudImageSelectedDisabled = [CPImage imageWithCSSDictionary:@{
+                                                            @"border-color": @"rgba(255,255,255,0.3)",
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"border-radius": @"2px",
+                                                            @"box-sizing": @"border-box",
+                                                            @"background-color": @"rgba(0,0,0,0.1)"
+                                                        } beforeDictionary:nil afterDictionary:@{
+                                                             "-webkit-mask-image": svgCheckmark,
+                                                             "mask-image": svgCheckmark,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": @"rgba(255,255,255,0.5)", // Dimmed White checkmark
+                                                             @"width": @"10px",
+                                                             @"height": @"10px",
+                                                             @"content": @"''",
+                                                             @"left": @"1px",
+                                                             @"top": @"1px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                        } size:CGSizeMake(14,14)],
+
+
     // Global
     themedCheckBoxValues =
     [
-     [@"alignment",                 CPLeftTextAlignment,                                        CPThemeStateNormal],
-     [@"content-inset",             CGInsetMakeZero(),                                          CPThemeStateNormal],
-     [@"text-color",                A3CPColorActiveText,                                        CPThemeStateNormal],
-     [@"text-color",                A3CPColorInactiveText,                                      CPThemeStateDisabled],
+     // --- Regular Size ---
+     [@"alignment",                 CPLeftTextAlignment,                                CPThemeStateNormal],
+     [@"content-inset",             CGInsetMakeZero(),                                  CPThemeStateNormal],
+     [@"text-color",                A3CPColorActiveText,                                CPThemeStateNormal],
+     [@"text-color",                A3CPColorInactiveText,                              CPThemeStateDisabled],
+     [@"direct-nib2cib-adjustment", YES],
 
-     // CPThemeStateControlSizeRegular
-     [@"image",                     regularImageNormal,                                         CPThemeStateNormal],
-     [@"image",                     regularImageSelectedNotKey,                                 CPThemeStateSelected],
-     [@"image",                     regularImageSelected,                                       [CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"image",                     regularImageNormal,                                 CPThemeStateNormal],
+     [@"image",                     regularImageSelectedNotKey,                         CPThemeStateSelected],
+     [@"image",                     regularImageSelected,                               [CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"image",                     regularImageDisabled,                               CPThemeStateDisabled],
+     [@"image",                     regularImageHighlighted,                            CPThemeStateHighlighted],
+     [@"image",                     regularImageSelectedDisabled,                       [CPThemeStateSelected, CPThemeStateDisabled]], // Selected but Disabled
+     [@"image",                     regularImageSelectedDisabled,                       [CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]], 
      
      [@"min-size",                  CGSizeMake(16.0, 16.0)],
      [@"max-size",                  CGSizeMake(-1.0, -1.0)],
      [@"nib2cib-adjustment-frame",  CGRectMake(1.0, -1.0, -2.0, -2.0)],
-     [@"direct-nib2cib-adjustment", YES],
      [@"image-offset",              3],
+
+     // --- Small Size ---
+     [@"alignment",                 CPLeftTextAlignment,                                CPThemeStateControlSizeSmall],
+     [@"content-inset",             CGInsetMakeZero(),                                  CPThemeStateControlSizeSmall],
+     [@"text-color",                A3CPColorActiveText,                                [CPThemeStateControlSizeSmall, CPThemeStateNormal]],
+     [@"text-color",                A3CPColorInactiveText,                              [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+
+     [@"image",                     smallImageNormal,                                   [CPThemeStateControlSizeSmall, CPThemeStateNormal]],
+     [@"image",                     smallImageSelectedNotKey,                           [CPThemeStateControlSizeSmall, CPThemeStateSelected]],
+     [@"image",                     smallImageSelected,                                 [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"image",                     smallImageDisabled,                                 [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     [@"image",                     smallImageHighlighted,                              [CPThemeStateControlSizeSmall, CPThemeStateHighlighted]],
+     [@"image",                     smallImageSelectedDisabled,                         [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateDisabled]],
+     [@"image",                     smallImageSelectedDisabled,                         [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]],
+
+     [@"min-size",                  CGSizeMake(14.0, 14.0)],
+     [@"max-size",                  CGSizeMake(-1.0, -1.0)],
+     [@"nib2cib-adjustment-frame",  CGRectMake(1.0, -1.0, -2.0, -2.0),                  CPThemeStateControlSizeSmall],
+     [@"image-offset",              3,                                                  CPThemeStateControlSizeSmall],
+
+     // --- Mini Size ---
+     [@"alignment",                 CPLeftTextAlignment,                                CPThemeStateControlSizeMini],
+     [@"content-inset",             CGInsetMakeZero(),                                  CPThemeStateControlSizeMini],
+     [@"text-color",                A3CPColorActiveText,                                [CPThemeStateControlSizeMini, CPThemeStateNormal]],
+     [@"text-color",                A3CPColorInactiveText,                              [CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+
+     [@"image",                     miniImageNormal,                                    [CPThemeStateControlSizeMini, CPThemeStateNormal]],
+     [@"image",                     miniImageSelectedNotKey,                            [CPThemeStateControlSizeMini, CPThemeStateSelected]],
+     [@"image",                     miniImageSelected,                                  [CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"image",                     miniImageDisabled,                                  [CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     [@"image",                     miniImageHighlighted,                               [CPThemeStateControlSizeMini, CPThemeStateHighlighted]],
+     [@"image",                     miniImageSelectedDisabled,                          [CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateDisabled]],
+     [@"image",                     miniImageSelectedDisabled,                          [CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]],
+
+     [@"min-size",                  CGSizeMake(12.0, 12.0)],
+     [@"max-size",                  CGSizeMake(-1.0, -1.0)],
+     [@"nib2cib-adjustment-frame",  CGRectMake(1.0, -1.0, -2.0, -2.0),                  CPThemeStateControlSizeMini],
+     [@"image-offset",              3,                                                  CPThemeStateControlSizeMini],
 
      // --- HUD MAPPINGS ---
      [@"text-color",    [CPColor whiteColor],                   CPThemeStateHUD],
@@ -4144,6 +4809,8 @@ var themedButtonValues                      = nil,
      
      [@"image",         hudImageNormal,                         CPThemeStateHUD],
      [@"image",         hudImageSelected,                       [CPThemeStateHUD, CPThemeStateSelected]],
+     [@"image",         hudImageDisabled,                       [CPThemeStateHUD, CPThemeStateDisabled]],
+     [@"image",         hudImageSelectedDisabled,               [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateDisabled]],
      
      // Adjust layout slightly for HUD
      [@"image-offset",  4,                                      CPThemeStateHUD]
@@ -4162,40 +4829,349 @@ var themedButtonValues                      = nil,
     [button setAllowsMixedState:YES];
     [button setState:CPMixedState];
 
-    mixedImage = [CPImage imageWithCSSDictionary:@{
-                                                   @"border-color": A3ColorActiveBorder,
-                                                   @"border-style": @"solid",
-                                                   @"border-width": @"1px",
-                                                   @"border-radius": @"2px",
-                                                   @"box-sizing": @"border-box",
-                                                   @"background-color": A3ColorBackgroundWhite
-                                                   }
-                                beforeDictionary:nil
-                                 afterDictionary:@{
-                                                   "-webkit-mask-image": svgDash,
-                                                   "mask-image": svgDash,
-                                                   "-webkit-mask-size": "contain",
-                                                   "mask-size": "contain",
-                                                   "-webkit-mask-repeat": "no-repeat",
-                                                   "mask-repeat": "no-repeat",
-                                                   "-webkit-mask-position": "center",
-                                                   "mask-position": "center",
-                                                   @"background-color": @"A3ColorBorderBlue",
-                                                   @"width": @"10px",
-                                                   @"height": @"10px",
-                                                   @"content": @"''",
-                                                   @"left": @"2px",
-                                                   @"top": @"2px",
-                                                   @"position": @"absolute",
-                                                   @"z-index": @"300"
-                                                   }
-                                            size:CGSizeMake(16,16)],
+    // --- Regular Size (16x16) ---
+    var regularImageMixed = [CPImage imageWithCSSDictionary:@{
+                                                       @"border-color": A3ColorActiveBorder,
+                                                       @"border-style": @"solid",
+                                                       @"border-width": @"1px",
+                                                       @"border-radius": @"2px",
+                                                       @"box-sizing": @"border-box",
+                                                       @"background-color": A3ColorBackgroundWhite
+                                                       }
+                                    beforeDictionary:nil
+                                     afterDictionary:@{
+                                                       "-webkit-mask-image": svgDash,
+                                                       "mask-image": svgDash,
+                                                       "-webkit-mask-size": "contain",
+                                                       "mask-size": "contain",
+                                                       "-webkit-mask-repeat": "no-repeat",
+                                                       "mask-repeat": "no-repeat",
+                                                       "-webkit-mask-position": "center",
+                                                       "mask-position": "center",
+                                                       @"background-color": @"A3ColorBorderBlue",
+                                                       @"width": @"10px",
+                                                       @"height": @"10px",
+                                                       @"content": @"''",
+                                                       @"left": @"2px",
+                                                       @"top": @"2px",
+                                                       @"position": @"absolute",
+                                                       @"z-index": @"300"
+                                                       }
+                                                size:CGSizeMake(16,16)],
+
+    regularImageMixedNotKey = [CPImage imageWithCSSDictionary:@{
+                                                       @"border-color": A3ColorInactiveDarkBorder,
+                                                       @"border-style": @"solid",
+                                                       @"border-width": @"1px",
+                                                       @"border-radius": @"2px",
+                                                       @"box-sizing": @"border-box",
+                                                       @"background-color": A3ColorBackgroundWhite
+                                                       }
+                                    beforeDictionary:nil
+                                     afterDictionary:@{
+                                                       "-webkit-mask-image": svgDash,
+                                                       "mask-image": svgDash,
+                                                       "-webkit-mask-size": "contain",
+                                                       "mask-size": "contain",
+                                                       "-webkit-mask-repeat": "no-repeat",
+                                                       "mask-repeat": "no-repeat",
+                                                       "-webkit-mask-position": "center",
+                                                       "mask-position": "center",
+                                                       @"background-color": A3ColorInactiveDarkBorder,
+                                                       @"width": @"10px",
+                                                       @"height": @"10px",
+                                                       @"content": @"''",
+                                                       @"left": @"2px",
+                                                       @"top": @"2px",
+                                                       @"position": @"absolute",
+                                                       @"z-index": @"300"
+                                                       }
+                                                size:CGSizeMake(16,16)],
+
+    regularImageMixedDisabled = [CPImage imageWithCSSDictionary:@{
+                                                         @"border-color": A3ColorInactiveBorder,
+                                                         @"border-style": @"solid",
+                                                         @"border-width": @"1px",
+                                                         @"border-radius": @"2px",
+                                                         @"box-sizing": @"border-box",
+                                                         @"background-color": A3ColorBackgroundInactive
+                                                         }
+                                      beforeDictionary:nil
+                                       afterDictionary:@{
+                                                         "-webkit-mask-image": svgDash,
+                                                         "mask-image": svgDash,
+                                                         "-webkit-mask-size": "contain",
+                                                         "mask-size": "contain",
+                                                         "-webkit-mask-repeat": "no-repeat",
+                                                         "mask-repeat": "no-repeat",
+                                                         "-webkit-mask-position": "center",
+                                                         "mask-position": "center",
+                                                         @"background-color": A3ColorInactiveDarkBorder,
+                                                         @"width": @"10px",
+                                                         @"height": @"10px",
+                                                         @"content": @"''",
+                                                         @"left": @"2px",
+                                                         @"top": @"2px",
+                                                         @"position": @"absolute",
+                                                         @"z-index": @"300"
+                                                         }
+                                                  size:CGSizeMake(16,16)],
+
+    // --- Small Size (14x14) ---
+    smallImageMixed = [CPImage imageWithCSSDictionary:@{
+                                                         @"border-color": A3ColorActiveBorder,
+                                                         @"border-style": @"solid",
+                                                         @"border-width": @"1px",
+                                                         @"border-radius": @"2px",
+                                                         @"box-sizing": @"border-box",
+                                                         @"background-color": A3ColorBackgroundWhite
+                                                         }
+                                      beforeDictionary:nil
+                                       afterDictionary:@{
+                                                         "-webkit-mask-image": svgDash,
+                                                         "mask-image": svgDash,
+                                                         "-webkit-mask-size": "contain",
+                                                         "mask-size": "contain",
+                                                         "-webkit-mask-repeat": "no-repeat",
+                                                         "mask-repeat": "no-repeat",
+                                                         "-webkit-mask-position": "center",
+                                                         "mask-position": "center",
+                                                         @"background-color": @"A3ColorBorderBlue",
+                                                         @"width": @"8px",
+                                                         @"height": @"8px",
+                                                         @"content": @"''",
+                                                         @"left": @"2px",
+                                                         @"top": @"2px",
+                                                         @"position": @"absolute",
+                                                         @"z-index": @"300"
+                                                         }
+                                                  size:CGSizeMake(14,14)],
+
+    smallImageMixedNotKey = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveDarkBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgDash,
+                                                             "mask-image": svgDash,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": A3ColorInactiveDarkBorder,
+                                                             @"width": @"8px",
+                                                             @"height": @"8px",
+                                                             @"content": @"''",
+                                                             @"left": @"2px",
+                                                             @"top": @"2px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(14,14)],
+
+    smallImageMixedDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgDash,
+                                                             "mask-image": svgDash,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": A3ColorInactiveDarkBorder,
+                                                             @"width": @"8px",
+                                                             @"height": @"8px",
+                                                             @"content": @"''",
+                                                             @"left": @"2px",
+                                                             @"top": @"2px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(14,14)],
+
+    // --- Mini Size (12x12) ---
+    miniImageMixed = [CPImage imageWithCSSDictionary:@{
+                                                         @"border-color": A3ColorActiveBorder,
+                                                         @"border-style": @"solid",
+                                                         @"border-width": @"1px",
+                                                         @"border-radius": @"2px",
+                                                         @"box-sizing": @"border-box",
+                                                         @"background-color": A3ColorBackgroundWhite
+                                                         }
+                                      beforeDictionary:nil
+                                       afterDictionary:@{
+                                                         "-webkit-mask-image": svgDash,
+                                                         "mask-image": svgDash,
+                                                         "-webkit-mask-size": "contain",
+                                                         "mask-size": "contain",
+                                                         "-webkit-mask-repeat": "no-repeat",
+                                                         "mask-repeat": "no-repeat",
+                                                         "-webkit-mask-position": "center",
+                                                         "mask-position": "center",
+                                                         @"background-color": @"A3ColorBorderBlue",
+                                                         @"width": @"7px",
+                                                         @"height": @"7px",
+                                                         @"content": @"''",
+                                                         @"left": @"1.5px",
+                                                         @"top": @"1.5px",
+                                                         @"position": @"absolute",
+                                                         @"z-index": @"300"
+                                                         }
+                                                  size:CGSizeMake(12,12)],
+
+    miniImageMixedNotKey = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveDarkBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundWhite
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgDash,
+                                                             "mask-image": svgDash,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": A3ColorInactiveDarkBorder,
+                                                             @"width": @"7px",
+                                                             @"height": @"7px",
+                                                             @"content": @"''",
+                                                             @"left": @"1.5px",
+                                                             @"top": @"1.5px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(12,12)],
+
+    miniImageMixedDisabled = [CPImage imageWithCSSDictionary:@{
+                                                             @"border-color": A3ColorInactiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"2px",
+                                                             @"box-sizing": @"border-box",
+                                                             @"background-color": A3ColorBackgroundInactive
+                                                             }
+                                          beforeDictionary:nil
+                                           afterDictionary:@{
+                                                             "-webkit-mask-image": svgDash,
+                                                             "mask-image": svgDash,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": A3ColorInactiveDarkBorder,
+                                                             @"width": @"7px",
+                                                             @"height": @"7px",
+                                                             @"content": @"''",
+                                                             @"left": @"1.5px",
+                                                             @"top": @"1.5px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                             }
+                                                      size:CGSizeMake(12,12)],
+
+    // --- HUD Mixed (14x14) ---
+    hudImageMixed = [CPImage imageWithCSSDictionary:@{
+                                                        @"border-color": @"#ffffff",
+                                                        @"border-style": @"solid",
+                                                        @"border-width": @"1px",
+                                                        @"border-radius": @"2px",
+                                                        @"box-sizing": @"border-box",
+                                                        @"background-color": @"rgba(0,0,0,0.3)"
+                                                    } beforeDictionary:nil afterDictionary:@{
+                                                         "-webkit-mask-image": svgDash,
+                                                         "mask-image": svgDash,
+                                                         "-webkit-mask-size": "contain",
+                                                         "mask-size": "contain",
+                                                         "-webkit-mask-repeat": "no-repeat",
+                                                         "mask-repeat": "no-repeat",
+                                                         "-webkit-mask-position": "center",
+                                                         "mask-position": "center",
+                                                         @"background-color": @"#ffffff", // White dash
+                                                         @"width": @"10px",
+                                                         @"height": @"10px",
+                                                         @"content": @"''",
+                                                         @"left": @"1px",
+                                                         @"top": @"1px",
+                                                         @"position": @"absolute",
+                                                         @"z-index": @"300"
+                                                    } size:CGSizeMake(14,14)],
+
+    hudImageMixedDisabled = [CPImage imageWithCSSDictionary:@{
+                                                        @"border-color": @"rgba(255,255,255,0.3)",
+                                                        @"border-style": @"solid",
+                                                        @"border-width": @"1px",
+                                                        @"border-radius": @"2px",
+                                                        @"box-sizing": @"border-box",
+                                                        @"background-color": @"rgba(0,0,0,0.1)"
+                                                    } beforeDictionary:nil afterDictionary:@{
+                                                         "-webkit-mask-image": svgDash,
+                                                         "mask-image": svgDash,
+                                                         "-webkit-mask-size": "contain",
+                                                         "mask-size": "contain",
+                                                         "-webkit-mask-repeat": "no-repeat",
+                                                         "mask-repeat": "no-repeat",
+                                                         "-webkit-mask-position": "center",
+                                                         "mask-position": "center",
+                                                         @"background-color": @"rgba(255,255,255,0.5)", // Dimmed White dash
+                                                         @"width": @"10px",
+                                                         @"height": @"10px",
+                                                         @"content": @"''",
+                                                         @"left": @"1px",
+                                                         @"top": @"1px",
+                                                         @"position": @"absolute",
+                                                         @"z-index": @"300"
+                                                    } size:CGSizeMake(14,14)],
+
 
     themeValues =
     [
-     [@"image",          mixedImage,                    [CPButtonStateMixed, CPThemeStateKeyWindow]],
-     [@"image-offset",   3,                             CPButtonStateMixed], 
-     [@"max-size",       CGSizeMake(-1.0, -1.0)] 
+     // Regular Size
+     [@"image",          regularImageMixedNotKey,       CPButtonStateMixed],
+     [@"image",          regularImageMixed,             [CPButtonStateMixed, CPThemeStateKeyWindow]],
+     [@"image",          regularImageMixedDisabled,     [CPButtonStateMixed, CPThemeStateDisabled]],
+     [@"image",          regularImageMixedDisabled,     [CPButtonStateMixed, CPThemeStateDisabled, CPThemeStateKeyWindow]],
+     [@"image-offset",   3,                             CPButtonStateMixed],
+     
+     // Small Size
+     [@"image",          smallImageMixedNotKey,         [CPThemeStateControlSizeSmall, CPButtonStateMixed]],
+     [@"image",          smallImageMixed,               [CPThemeStateControlSizeSmall, CPButtonStateMixed, CPThemeStateKeyWindow]],
+     [@"image",          smallImageMixedDisabled,       [CPThemeStateControlSizeSmall, CPButtonStateMixed, CPThemeStateDisabled]],
+     [@"image-offset",   3,                             [CPThemeStateControlSizeSmall, CPButtonStateMixed]],
+     
+     // Mini Size
+     [@"image",          miniImageMixedNotKey,          [CPThemeStateControlSizeMini, CPButtonStateMixed]],
+     [@"image",          miniImageMixed,                [CPThemeStateControlSizeMini, CPButtonStateMixed, CPThemeStateKeyWindow]],
+     [@"image",          miniImageMixedDisabled,        [CPThemeStateControlSizeMini, CPButtonStateMixed, CPThemeStateDisabled]],
+     [@"image-offset",   3,                             [CPThemeStateControlSizeMini, CPButtonStateMixed]],
+
+     // HUD
+     [@"image",          hudImageMixed,                 [CPThemeStateHUD, CPButtonStateMixed]],
+     [@"image",          hudImageMixedDisabled,         [CPThemeStateHUD, CPButtonStateMixed, CPThemeStateDisabled]],
+     [@"image-offset",   4,                             [CPThemeStateHUD, CPButtonStateMixed]]
      ];
 
     [self registerThemeValues:themeValues forView:button];
@@ -4229,7 +5205,11 @@ var themedButtonValues                      = nil,
 {
     var segmentedControl = [self makeSegmentedControl],
 
-    // --- Normal States (Existing) ---
+    // ==========================================================
+    // STANDARD THEME (Light)
+    // ==========================================================
+
+    // --- Normal States ---
     centerBezelColor = [CPColor colorWithCSSDictionary:@{
                                                          @"display": @"table-cell",
                                                          @"background-color": A3ColorBackgroundWhite,
@@ -4261,7 +5241,7 @@ var themedButtonValues                      = nil,
                                                         @"box-sizing": @"border-box"
                                                         }],
 
-    // --- FIX: Active Selected (Blue) States ---
+    // --- Selected Active (Blue) States ---
     centerSelectedBezelColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBorderBlue,
                                                                  @"border-color": A3ColorBorderBlue,
@@ -4290,7 +5270,7 @@ var themedButtonValues                      = nil,
                                                                 @"box-sizing": @"border-box"
                                                                 }],
 
-    // --- FIX: Inactive Selected (Gray) States ---
+    // --- Selected Inactive (Gray) States ---
     centerSelectedNotKeyBezelColor = [CPColor colorWithCSSDictionary:@{
                                                                        @"background-color": A3ColorBackgroundInactive,
                                                                        @"border-color": A3ColorInactiveDarkBorder,
@@ -4319,41 +5299,198 @@ var themedButtonValues                      = nil,
                                                                       @"box-sizing": @"border-box"
                                                                       }],
 
+    // --- Disabled States ---
+    centerDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                 @"background-color": A3ColorBackgroundInactive,
+                                                                 @"border-color": A3ColorInactiveBorder,
+                                                                 @"border-style": @"solid",
+                                                                 @"border-width": @"1px",
+                                                                 @"box-sizing": @"border-box"
+                                                                 }],
+
+    leftDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                               @"background-color": A3ColorBackgroundInactive,
+                                                               @"border-color": A3ColorInactiveBorder,
+                                                               @"border-style": @"solid",
+                                                               @"border-width": @"1px",
+                                                               @"border-top-left-radius": @"3px",
+                                                               @"border-bottom-left-radius": @"3px",
+                                                               @"box-sizing": @"border-box"
+                                                               }],
+
+    rightDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                @"background-color": A3ColorBackgroundInactive,
+                                                                @"border-color": A3ColorInactiveBorder,
+                                                                @"border-style": @"solid",
+                                                                @"border-width": @"1px",
+                                                                @"border-top-right-radius": @"3px",
+                                                                @"border-bottom-right-radius": @"3px",
+                                                                @"box-sizing": @"border-box"
+                                                                }],
+
+    // ==========================================================
+    // HUD THEME (Dark/Transparent)
+    // ==========================================================
+
+    // --- HUD Normal ---
+    hudCenterBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(0, 0, 0, 0.25)",
+                                                            @"border-color": @"rgba(255, 255, 255, 0.25)",
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"box-sizing": @"border-box"
+                                                            }],
+
+    hudLeftBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                          @"background-color": @"rgba(0, 0, 0, 0.25)",
+                                                          @"border-color": @"rgba(255, 255, 255, 0.25)",
+                                                          @"border-style": @"solid",
+                                                          @"border-width": @"1px",
+                                                          @"border-top-left-radius": @"3px",
+                                                          @"border-bottom-left-radius": @"3px",
+                                                          @"box-sizing": @"border-box"
+                                                          }],
+
+    hudRightBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                           @"background-color": @"rgba(0, 0, 0, 0.25)",
+                                                           @"border-color": @"rgba(255, 255, 255, 0.25)",
+                                                           @"border-style": @"solid",
+                                                           @"border-width": @"1px",
+                                                           @"border-top-right-radius": @"3px",
+                                                           @"border-bottom-right-radius": @"3px",
+                                                           @"box-sizing": @"border-box"
+                                                           }],
+
+    // --- HUD Selected ---
+    hudCenterSelectedBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                    @"background-color": @"rgba(0, 0, 0, 0.5)",
+                                                                    @"border-color": @"rgba(255, 255, 255, 0.5)",
+                                                                    @"border-style": @"solid",
+                                                                    @"border-width": @"1px",
+                                                                    @"box-sizing": @"border-box"
+                                                                    }],
+
+    hudLeftSelectedBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                  @"background-color": @"rgba(0, 0, 0, 0.5)",
+                                                                  @"border-color": @"rgba(255, 255, 255, 0.5)",
+                                                                  @"border-style": @"solid",
+                                                                  @"border-width": @"1px",
+                                                                  @"border-top-left-radius": @"3px",
+                                                                  @"border-bottom-left-radius": @"3px",
+                                                                  @"box-sizing": @"border-box"
+                                                                  }],
+
+    hudRightSelectedBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                   @"background-color": @"rgba(0, 0, 0, 0.5)",
+                                                                   @"border-color": @"rgba(255, 255, 255, 0.5)",
+                                                                   @"border-style": @"solid",
+                                                                   @"border-width": @"1px",
+                                                                   @"border-top-right-radius": @"3px",
+                                                                   @"border-bottom-right-radius": @"3px",
+                                                                   @"box-sizing": @"border-box"
+                                                                   }],
+
+    // --- HUD Disabled ---
+    hudCenterDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                    @"background-color": @"rgba(0, 0, 0, 0.1)",
+                                                                    @"border-color": @"rgba(255, 255, 255, 0.1)",
+                                                                    @"border-style": @"solid",
+                                                                    @"border-width": @"1px",
+                                                                    @"box-sizing": @"border-box"
+                                                                    }],
+
+    hudLeftDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                  @"background-color": @"rgba(0, 0, 0, 0.1)",
+                                                                  @"border-color": @"rgba(255, 255, 255, 0.1)",
+                                                                  @"border-style": @"solid",
+                                                                  @"border-width": @"1px",
+                                                                  @"border-top-left-radius": @"3px",
+                                                                  @"border-bottom-left-radius": @"3px",
+                                                                  @"box-sizing": @"border-box"
+                                                                  }],
+
+    hudRightDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                   @"background-color": @"rgba(0, 0, 0, 0.1)",
+                                                                   @"border-color": @"rgba(255, 255, 255, 0.1)",
+                                                                   @"border-style": @"solid",
+                                                                   @"border-width": @"1px",
+                                                                   @"border-top-right-radius": @"3px",
+                                                                   @"border-bottom-right-radius": @"3px",
+                                                                   @"box-sizing": @"border-box"
+                                                                   }],
+
+
     themedSegmentedControlValues =
     [
      // Center Segment
      [@"center-segment-bezel-color",     centerBezelColor,                       CPThemeStateNormal],
      [@"center-segment-bezel-color",     centerSelectedBezelColor,               [CPThemeStateSelected, CPThemeStateKeyWindow]],
      [@"center-segment-bezel-color",     centerSelectedNotKeyBezelColor,         CPThemeStateSelected],
+     [@"center-segment-bezel-color",     centerDisabledBezelColor,               CPThemeStateDisabled],
 
      // Left Segment
      [@"left-segment-bezel-color",       leftBezelColor,                         CPThemeStateNormal],
      [@"left-segment-bezel-color",       leftSelectedBezelColor,                 [CPThemeStateSelected, CPThemeStateKeyWindow]],
      [@"left-segment-bezel-color",       leftSelectedNotKeyBezelColor,           CPThemeStateSelected],
+     [@"left-segment-bezel-color",       leftDisabledBezelColor,                 CPThemeStateDisabled],
 
      // Right Segment
      [@"right-segment-bezel-color",      rightBezelColor,                        CPThemeStateNormal],
      [@"right-segment-bezel-color",      rightSelectedBezelColor,                [CPThemeStateSelected, CPThemeStateKeyWindow]],
      [@"right-segment-bezel-color",      rightSelectedNotKeyBezelColor,          CPThemeStateSelected],
+     [@"right-segment-bezel-color",      rightDisabledBezelColor,                CPThemeStateDisabled],
 
-     // Text Colors for Selection (White when Blue, Black when Gray)
+     // Text Colors
+     [@"text-color",                     A3CPColorActiveText],
      [@"text-color",                     A3CPColorDefaultText,                   [CPThemeStateSelected, CPThemeStateKeyWindow]], 
      [@"text-color",                     A3CPColorActiveText,                    CPThemeStateSelected], 
+     [@"text-color",                     A3CPColorInactiveText,                  CPThemeStateDisabled],
 
+     // Layout (Regular)
      [@"content-inset",              CGInsetMake(-1.0, 11.0, 0.0, 12.0)],
      [@"bezel-inset",                CGInsetMake(0.0, 0.0, 0.0, 0.0)],
-
      [@"min-size",                   CGSizeMake(-1.0, 21.0)],
      [@"max-size",                   CGSizeMake(-1.0, 21.0)],
      [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -2.0, -4.0, -3.0)],
+     [@"font",                       [CPFont systemFontOfSize:13.0]],
+     [@"vertical-alignment",         CPCenterVerticalTextAlignment],
+     [@"line-break-mode",            CPLineBreakByTruncatingTail],
+     [@"divider-thickness",          1.0],
 
-     [@"font",               [CPFont systemFontOfSize:13.0]],
-     [@"text-color",         A3CPColorActiveText],
-     [@"text-color",         A3CPColorInactiveText,                           CPThemeStateDisabled],
-     [@"vertical-alignment",    CPCenterVerticalTextAlignment],
-     [@"line-break-mode",    CPLineBreakByTruncatingTail],
+     // Small Size
+     [@"min-size",                   CGSizeMake(-1.0, 18.0),                 CPThemeStateControlSizeSmall],
+     [@"max-size",                   CGSizeMake(-1.0, 18.0),                 CPThemeStateControlSizeSmall],
+     [@"font",                       [CPFont systemFontOfSize:11.0],         CPThemeStateControlSizeSmall],
 
-     [@"divider-thickness",  1.0]
+     // Mini Size
+     [@"min-size",                   CGSizeMake(-1.0, 15.0),                 CPThemeStateControlSizeMini],
+     [@"max-size",                   CGSizeMake(-1.0, 15.0),                 CPThemeStateControlSizeMini],
+     [@"font",                       [CPFont systemFontOfSize:9.0],          CPThemeStateControlSizeMini],
+
+     // --- HUD MAPPINGS ---
+     
+     // HUD Text Colors
+     [@"text-color",                 [CPColor whiteColor],                   CPThemeStateHUD],
+     [@"text-color",                 [CPColor whiteColor],                   [CPThemeStateHUD, CPThemeStateSelected]],
+     [@"text-color",                 [CPColor colorWithWhite:1 alpha:0.4],   [CPThemeStateHUD, CPThemeStateDisabled]],
+
+     // HUD Center Segment
+     [@"center-segment-bezel-color",     hudCenterBezelColor,                [CPThemeStateHUD, CPThemeStateNormal]],
+     [@"center-segment-bezel-color",     hudCenterSelectedBezelColor,        [CPThemeStateHUD, CPThemeStateSelected]],
+     [@"center-segment-bezel-color",     hudCenterSelectedBezelColor,        [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"center-segment-bezel-color",     hudCenterDisabledBezelColor,        [CPThemeStateHUD, CPThemeStateDisabled]],
+
+     // HUD Left Segment
+     [@"left-segment-bezel-color",       hudLeftBezelColor,                  [CPThemeStateHUD, CPThemeStateNormal]],
+     [@"left-segment-bezel-color",       hudLeftSelectedBezelColor,          [CPThemeStateHUD, CPThemeStateSelected]],
+     [@"left-segment-bezel-color",       hudLeftSelectedBezelColor,          [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"left-segment-bezel-color",       hudLeftDisabledBezelColor,          [CPThemeStateHUD, CPThemeStateDisabled]],
+
+     // HUD Right Segment
+     [@"right-segment-bezel-color",      hudRightBezelColor,                 [CPThemeStateHUD, CPThemeStateNormal]],
+     [@"right-segment-bezel-color",      hudRightSelectedBezelColor,         [CPThemeStateHUD, CPThemeStateSelected]],
+     [@"right-segment-bezel-color",      hudRightSelectedBezelColor,         [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"right-segment-bezel-color",      hudRightDisabledBezelColor,         [CPThemeStateHUD, CPThemeStateDisabled]]
      ];
 
     [self registerThemeValues:themedSegmentedControlValues forView:segmentedControl];
@@ -4444,8 +5581,7 @@ var themedButtonValues                      = nil,
 
      // --- HUD SPECIFIC FIXES ---
      [@"knob-color",        hudKnobColor,       CPThemeStateHUD],
-     [@"knob-size",  CGSizeMake(13, 13),        [CPThemeStateVertical, CPThemeStateHUD]],
-  
+
      // Left Track (Filled part) - White
      [@"left-track-color",  hudLeftTrackColor,  CPThemeStateHUD],
      
