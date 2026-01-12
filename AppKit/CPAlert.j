@@ -418,9 +418,7 @@ var bottomHeight = 71;
 */
 - (void)addButtonWithTitle:(CPString)aTitle
 {
-    var bounds = [[_window contentView] bounds],
-        count = [_buttons count],
-
+    var count = [_buttons count],
         button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
 
     [button setTitle:aTitle];
@@ -429,7 +427,10 @@ var bottomHeight = 71;
     [button setAction:@selector(_takeReturnCodeFrom:)];
     [button setBezelStyle:CPSmallSquareBezelStyle];
 
-    [[_window contentView] addSubview:button];
+    // Only add subview if the window has been created.
+    // Otherwise, _createWindowWithStyle will handle adding the buttons from the _buttons array later.
+    if (_window)
+        [[_window contentView] addSubview:button];
 
     if (count == 0)
     {
@@ -769,6 +770,12 @@ var bottomHeight = 71;
     var frame = CGRectMakeZero();
     frame.size = [_themeView currentValueForThemeAttribute:@"size"];
 
+    //  Propagate CPHUDBackgroundWindowMask from _defaultWindowStyle to forceStyle.
+    // This ensures that even if we force CPDocModalWindowMask (for sheets), 
+    // the window still knows it should be a HUD.
+    if (_defaultWindowStyle & CPHUDBackgroundWindowMask)
+        forceStyle |= CPHUDBackgroundWindowMask;
+
     _window = [[CPPanel alloc] initWithContentRect:frame styleMask:forceStyle || _defaultWindowStyle];
     [_window setLevel:CPStatusWindowLevel];
     [_window setPlatformWindow:[[CPApp keyWindow] platformWindow]];
@@ -776,6 +783,7 @@ var bottomHeight = 71;
     if (_title)
         [_window setTitle:_title];
 
+debugger
     var contentView = [_window contentView],
         count = [_buttons count];
 

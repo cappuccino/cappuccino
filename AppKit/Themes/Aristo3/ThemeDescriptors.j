@@ -1080,25 +1080,59 @@ var themedButtonValues                      = nil,
 
      [@"image-offset",   CPButtonImageOffset],
 
-     // --- HUD MAPPINGS ---
+// --- HUD MAPPINGS ---
      
      // 1. Force Text Color White
      [@"text-color",    [CPColor whiteColor],                   CPThemeStateHUD],
      [@"text-color",    [CPColor colorWithWhite:1 alpha:0.4],   [CPThemeStateHUD, CPThemeStateDisabled]],
+     
+     // Ensure white text persists even when button thinks it is Default or Highlighted in HUD
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateDefault]],
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateHighlighted]],
+
+     // Force white text for Bordered + Highlighted states in HUD to override standard theme specificity
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered]],
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateSelected]],
+     
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleSmallSquare, CPThemeStateHUD]],
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleSmallSquare, CPThemeStateHUD, CPThemeStateHighlighted]],
 
      // 2. Rounded Bezel Style (Standard Push Button)
-     [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
-     [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateHighlighted]],
-     [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateDisabled]],
+     [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered]],
+     [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDefault]],
+     [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
      
-     // 3. Textured Rounded (Often used in HUDs)
-     [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleTexturedRounded, CPThemeStateHUD]],
-     [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleTexturedRounded, CPThemeStateHUD, CPThemeStateHighlighted]],
-     [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleTexturedRounded, CPThemeStateHUD, CPThemeStateDisabled]],
+     // 3. Small Square Bezel Style (Secondary Alert Buttons)
+     [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleSmallSquare, CPThemeStateHUD, CPThemeStateBordered]],
+     [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleSmallSquare, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleSmallSquare, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
 
-     // 4. Adjust Layout for HUD
+     // 4. Textured Rounded
+     [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleTexturedRounded, CPThemeStateHUD, CPThemeStateBordered]],
+     [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleTexturedRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleTexturedRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+
+     // 5. Round Rect (This is the default style in CPButton.j)
+     [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered]],
+     [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+
+     // Adjust Layout for HUD
+     // Rounded
      [@"min-size",      CGSizeMake(0.0, 18.0),                  [CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
-     [@"content-inset", CGInsetMake(0.0, 10.0, 1.0, 10.0),      [CPButtonStateBezelStyleRounded, CPThemeStateHUD]]
+     [@"content-inset", CGInsetMake(0.0, 10.0, 1.0, 10.0),      [CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
+
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateHighlighted]],
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateKeyWindow, CPThemeStateHighlighted]],
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateHighlighted]],
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateKeyWindow, CPThemeStateHighlighted]],
+
+     // Small Square
+     [@"min-size",      CGSizeMake(0.0, 18.0),                  [CPButtonStateBezelStyleSmallSquare, CPThemeStateHUD]],
+     [@"content-inset", CGInsetMake(0.0, 10.0, 1.0, 10.0),      [CPButtonStateBezelStyleSmallSquare, CPThemeStateHUD]]
     ];
 
     [self registerThemeValues:themedButtonValues forView:button];
@@ -7393,9 +7427,26 @@ var themedButtonValues                      = nil,
 
     return standardWindowView;
 }
+
 + (_CPDocModalWindowView)themedDocModalWindowView
 {
-    return [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:nil];
+    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:nil];
+
+    // Apply the same styling as the standard Modal Window to cover the background
+    var bezelColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": A3ColorBackground,
+                                                            @"border": @"1px solid " + A3ColorWindowBorder,
+                                                            @"border-radius": @"6px",
+                                                            @"box-shadow": @"0 5px 15px rgba(0,0,0,0.5)"
+                                                        }];
+
+    var themeValues = [
+        [@"bezel-color", bezelColor]
+    ];
+
+    [self registerThemeValues:themeValues forView:docModalWindowView];
+
+    return docModalWindowView;
 }
 
 + (_CPBorderlessBridgeWindowView)themedBorderlessBridgeWindowView

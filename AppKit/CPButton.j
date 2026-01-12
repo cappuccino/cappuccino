@@ -98,7 +98,8 @@ var CPButtonBezelStyleStateMap = @{
         CPRegularSquareBezelStyle:      CPButtonStateBezelStyleRegularSquare,
         CPTexturedSquareBezelStyle:     CPButtonStateBezelStyleTextured,
         CPDisclosureBezelStyle:         CPButtonStateBezelStyleDisclosure,
-        CPRoundedDisclosureBezelStyle:  CPButtonStateBezelStyleRoundedDisclosure
+        CPRoundedDisclosureBezelStyle:  CPButtonStateBezelStyleRoundedDisclosure,
+        CPHUDBezelStyle:                CPThemeStateHUD
     };
 
 /// @cond IGNORE
