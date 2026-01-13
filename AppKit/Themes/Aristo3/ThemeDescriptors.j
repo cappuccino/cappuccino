@@ -7481,6 +7481,7 @@ var themedButtonValues                      = nil,
     var themeValues = [
         [@"bezel-color", bezelColor],
         [@"body-color", [CPColor whiteColor]],
+        [@"shadow-height", 0.0],
         [@"title-bar-height", 0.0]
     ];
 
