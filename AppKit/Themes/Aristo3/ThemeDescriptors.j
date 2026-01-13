@@ -854,7 +854,7 @@ var themedButtonValues                      = nil,
      [@"image-color",                   A3CPColorBlack25,                       [CPButtonStateBezelStyleSmallSquare, CPThemeStateBordered, CPThemeStateDisabled]],
      [@"image-offset",                  2.0,                                    [CPButtonStateBezelStyleSmallSquare, CPThemeStateBordered]],
 
-     [@"content-inset",                 CGInsetMake(2.0, 2.0, 2.0, 2.0),       [CPButtonStateBezelStyleSmallSquare, CPThemeStateBordered]],
+     [@"content-inset",                 CGInsetMake(0.0, 2.0, 2.0, 2.0),       [CPButtonStateBezelStyleSmallSquare, CPThemeStateBordered]],
      [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -1.0, 0.0, -2.0),       [CPButtonStateBezelStyleSmallSquare, CPThemeStateBordered]],
      [@"min-size",                      CGSizeMake(0.0, 0.0),                  [CPButtonStateBezelStyleSmallSquare, CPThemeStateBordered]],
      [@"max-size",                      CGSizeMake(-1.0, -1.0),                 [CPButtonStateBezelStyleSmallSquare, CPThemeStateBordered]],
@@ -2853,6 +2853,7 @@ var themedButtonValues                      = nil,
     var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40.0, 40.0, 170.0, 29.0)],
 
     bezelCssColor = [CPColor colorWithCSSDictionary:@{
+                                                      @"background-color": A3ColorBackgroundWhite,
                                                       @"border-color": A3ColorTextfieldActiveBorder,
                                                       @"border-style": @"solid",
                                                       @"border-width": @"1px",
@@ -2863,6 +2864,7 @@ var themedButtonValues                      = nil,
                                                       }],
 
     bezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
+                                                             @"background-color": A3ColorBackgroundWhite,
                                                              @"border-color": @"A3ColorBorderBlue",
                                                              @"border-style": @"solid",
                                                              @"border-width": @"1px",
@@ -2874,6 +2876,7 @@ var themedButtonValues                      = nil,
                                                              }],
 
     bezelDisabledCssColor = [CPColor colorWithCSSDictionary:@{
+                                                              @"background-color": A3ColorBackgroundWhite,
                                                               @"border-color": A3ColorTextfieldInactiveBorder,
                                                               @"border-style": @"solid",
                                                               @"border-width": @"1px",
@@ -7469,7 +7472,7 @@ var themedButtonValues                      = nil,
 
     // Apply the same styling as the standard Modal Window to cover the background
     var bezelColor = [CPColor colorWithCSSDictionary:@{
-                                                            @"background-color": A3ColorBackground,
+                                                            @"background-color": A3ColorBackgroundWhite,
                                                             @"border": @"1px solid " + A3ColorWindowBorder,
                                                             @"border-radius": @"6px",
                                                             @"box-shadow": @"0 5px 15px rgba(0,0,0,0.5)"
@@ -7477,6 +7480,7 @@ var themedButtonValues                      = nil,
 
     var themeValues = [
         [@"bezel-color", bezelColor],
+        [@"body-color", [CPColor whiteColor]],
         [@"title-bar-height", 0.0]
     ];
 
