@@ -6517,8 +6517,9 @@ var themedButtonValues                      = nil,
 {
     var alert = [CPAlert new],
         buttonOffset = 10.0,
-        defaultElementsMargin = 3.0,
+        defaultElementsMargin = 5.0, // Slightly increased spacing
 
+        // ... Keep your icon definitions (errorIcon, helpIcon, etc.) exactly as they are in your file ...
         errorIcon = [CPImage imageWithCSSDictionary:@{
             @"background-image": svgAlertIconError,
             @"background-size": @"contain",
@@ -6547,21 +6548,26 @@ var themedButtonValues                      = nil,
             @"background-position": @"center"
         } size:CGSizeMake(48, 43)],
 
-        helpIconPressed = helpIcon, // Simplification
+        helpIconPressed = helpIcon,
 
         helpLeftOffset = 15,
-        imageOffset = CGPointMake(15, 18),
+        imageOffset = CGPointMake(20, 20), // Adjusted for better alignment
         informativeFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize],
+        
+        // Standard Window Inset (Asymmetrical for icon)
         inset = CGInsetMake(15, 15, 15, 80),
+        // HUD Window Inset (Symmetrical, visually pleasing for bubbles)
+        hudInset = CGInsetMake(20, 20, 20, 20),
+        
         messageFont = [CPFont boldSystemFontOfSize:CPFontDefaultSystemFontSize + 1],
         size = CGSizeMake(400.0, 120.0),
         suppressionButtonXOffset = 2.0,
         suppressionButtonYOffset = 10.0,
         suppressionButtonFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize];
 
-    // Global
     themedAlertValues =
     [
+     // Common / Standard
      [@"button-offset",                      buttonOffset],
      [@"content-inset",                      inset],
      [@"default-elements-margin",            defaultElementsMargin],
@@ -6574,17 +6580,46 @@ var themedButtonValues                      = nil,
      [@"informative-text-alignment",         CPJustifiedTextAlignment],
      [@"informative-text-color",             [CPColor blackColor]],
      [@"informative-text-font",              informativeFont],
+     [@"informative-text-shadow-color",      nil],
+     [@"informative-text-shadow-offset",     CGSizeMakeZero()],
+     
      [@"message-text-alignment",             CPJustifiedTextAlignment],
      [@"message-text-color",                 [CPColor blackColor]],
      [@"message-text-font",                  messageFont],
+     [@"message-text-shadow-color",          nil],
+     [@"message-text-shadow-offset",         CGSizeMakeZero()],
+
      [@"modal-window-button-margin-x",       -18.0],
      [@"modal-window-button-margin-y",       15.0],
      [@"suppression-button-text-color",      [CPColor blackColor]],
      [@"suppression-button-text-font",       suppressionButtonFont],
+     [@"suppression-button-text-shadow-color", nil],
+     [@"suppression-button-text-shadow-offset", CGSizeMakeZero()],
      [@"size",                               size],
      [@"suppression-button-x-offset",        suppressionButtonXOffset],
      [@"suppression-button-y-offset",        suppressionButtonYOffset],
-     [@"warning-image",                      warningIcon]
+     [@"warning-image",                      warningIcon],
+
+     // --- HUD Specific Overrides ---
+     // Balanced padding
+     [@"content-inset",                      hudInset,               CPThemeStateHUD],
+     
+     // White text for dark background
+     [@"message-text-color",                 [CPColor whiteColor],   CPThemeStateHUD],
+     [@"informative-text-color",             [CPColor whiteColor],   CPThemeStateHUD],
+     [@"suppression-button-text-color",      [CPColor whiteColor],   CPThemeStateHUD],
+
+     // Text Shadows for readability on HUD
+     [@"message-text-shadow-color",          [CPColor blackColor],   CPThemeStateHUD],
+     [@"message-text-shadow-offset",         CGSizeMake(0, 1),       CPThemeStateHUD],
+     [@"informative-text-shadow-color",      [CPColor blackColor],   CPThemeStateHUD],
+     [@"informative-text-shadow-offset",     CGSizeMake(0, 1),       CPThemeStateHUD],
+     [@"suppression-button-text-shadow-color", [CPColor blackColor], CPThemeStateHUD],
+     [@"suppression-button-text-shadow-offset", CGSizeMake(0, 1),    CPThemeStateHUD],
+
+     // Reset button margins for HUD as they are usually self-contained
+     [@"modal-window-button-margin-x",       0.0,                   CPThemeStateHUD],
+     [@"modal-window-button-margin-y",       0.0,                   CPThemeStateHUD]
      ];
 
     [self registerThemeValues:themedAlertValues forView:alert];
@@ -7441,7 +7476,8 @@ var themedButtonValues                      = nil,
                                                         }];
 
     var themeValues = [
-        [@"bezel-color", bezelColor]
+        [@"bezel-color", bezelColor],
+        [@"title-bar-height", 0.0]
     ];
 
     [self registerThemeValues:themeValues forView:docModalWindowView];

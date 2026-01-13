@@ -51,7 +51,7 @@
 {
     [self _init];
 
-    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(100, 100, 500, 500) styleMask:CPTitledWindowMask | CPHUDBackgroundWindowMask];
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(100, 100, 500, 500) styleMask:CPTitledWindowMask]; //  | CPHUDBackgroundWindowMask
     [theWindow setTitle:@"CPAlert Test"];
 
     var contentView = [theWindow contentView];

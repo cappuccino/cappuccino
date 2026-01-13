@@ -538,6 +538,9 @@ var bottomHeight = 71;
 /*!
     @ignore
 */
+/*!
+    @ignore
+*/
 - (CGSize)_layoutButtonsFromView:(CPView)lastView
 {
     var inset = [_themeView currentValueForThemeAttribute:@"content-inset"],
@@ -545,35 +548,16 @@ var bottomHeight = 71;
         buttonOffset = [_themeView currentValueForThemeAttribute:@"button-offset"],
         helpLeftOffset = [_themeView currentValueForThemeAttribute:@"help-image-left-offset"],
         defaultElementsMargin = [_themeView currentValueForThemeAttribute:@"default-elements-margin"],
-        panelSize = [[_window contentView] frame].size,
+        
         buttonsOriginY,
         buttonMarginY,
         buttonMarginX,
         theme = [self theme],
         offsetX;
 
-    // 1. Calculate the maximum button height first to ensure the row fits the tallest button
-    // (The default button is usually taller than secondary buttons).
-    var maxButtonHeight = 0.0;
-    
-    for (var i = 0; i < [_buttons count]; i++)
-    {
-        var btn = _buttons[i];
-        [btn setTheme:theme];
-        [btn sizeToFit];
-        maxButtonHeight = MAX(maxButtonHeight, CGRectGetHeight([btn frame]));
-    }
+    var isHUD = (_defaultWindowStyle & CPHUDBackgroundWindowMask) || (theme === [CPTheme defaultHudTheme]);
 
-    // 2. Calculate the base panel height based on content + max button height
-    panelSize.height = CGRectGetMaxY([lastView frame]) + defaultElementsMargin + maxButtonHeight;
-    
-    if (panelSize.height < minimumSize.height)
-        panelSize.height = minimumSize.height;
-
-    // 3. Determine the top Y position for the button row
-    buttonsOriginY = panelSize.height - maxButtonHeight + buttonOffset;
-    offsetX = panelSize.width - inset.right;
-
+    // 1. Determine Margins (Moved up so we can use them in height calculation)
     switch ([_window styleMask])
     {
         case _CPModalWindowMask:
@@ -587,14 +571,45 @@ var bottomHeight = 71;
             break;
     }
 
-    // 4. Position buttons, centering them vertically within maxButtonHeight
+    // 2. Prepare buttons and get row height
+    var maxButtonHeight = 0.0;
+    
+    for (var i = 0; i < [_buttons count]; i++)
+    {
+        var btn = _buttons[i];
+        [btn sizeToFit];
+
+        if (isHUD)
+            [btn setThemeState:CPThemeStateHUD];
+        else
+            [btn unsetThemeState:CPThemeStateHUD];
+
+        maxButtonHeight = MAX(maxButtonHeight, CGRectGetHeight([btn frame]));
+    }
+
+    // 3. Calculate Content Height
+    // We add buttonMarginY to the height requirement to compensate for the downward shift it causes.
+    var lastViewMaxY = CGRectGetMaxY([lastView frame]);
+    var requiredContentHeight = lastViewMaxY + buttonOffset + maxButtonHeight + buttonMarginY + inset.bottom;
+    
+    var finalContentSize = CGSizeMake(
+        [[_window contentView] frame].size.width,
+        MAX(requiredContentHeight, minimumSize.height)
+    );
+
+    // 4. Position Buttons
+    // We subtract buttonMarginY from the origin base. Since setFrame adds it back later, 
+    // the net result is that the visual bottom of the button is exactly 'inset.bottom' from the window edge.
+    buttonsOriginY = finalContentSize.height - inset.bottom - maxButtonHeight - buttonMarginY;
+    offsetX = finalContentSize.width - inset.right;
+
+    // Loop and set frames
     for (var i = [_buttons count] - 1; i >= 0 ; i--)
     {
         var button = _buttons[i],
             buttonFrame = [button frame],
             width = MAX(80.0, CGRectGetWidth(buttonFrame)),
             height = CGRectGetHeight(buttonFrame),
-            // Calculate offset to center shorter buttons relative to the tallest one
             yOffset = FLOOR((maxButtonHeight - height) / 2.0);
 
         offsetX -= width;
@@ -602,13 +617,13 @@ var bottomHeight = 71;
         offsetX -= 10;
     }
 
+    // Position Help Button if needed
     if (_showHelp)
     {
         var helpImage = [_themeView currentValueForThemeAttribute:@"help-image"],
             helpImagePressed = [_themeView currentValueForThemeAttribute:@"help-image-pressed"],
             helpImageSize = helpImage ? [helpImage size] : CGSizeMakeZero(),
-            // Center help button vertically as well
-            helpYOffset = floor((maxButtonHeight - helpImageSize.height) / 2.0),
+            helpYOffset = FLOOR((maxButtonHeight - helpImageSize.height) / 2.0),
             helpFrame = CGRectMake(helpLeftOffset, buttonsOriginY + buttonMarginY + helpYOffset, helpImageSize.width, helpImageSize.height);
 
         [_alertHelpButton setImage:helpImage];
@@ -617,8 +632,7 @@ var bottomHeight = 71;
         [_alertHelpButton setFrame:helpFrame];
     }
 
-    panelSize.height += maxButtonHeight + inset.bottom + buttonOffset;
-    return panelSize;
+    return finalContentSize;
 }
 
 /*!
@@ -632,9 +646,14 @@ var bottomHeight = 71;
     if (!_window)
         [self _createWindowWithStyle:nil];
 
+    // Ensure the theme view knows if we are in HUD mode so it picks up the right specificities
+    if ((_defaultWindowStyle & CPHUDBackgroundWindowMask) || ([self theme] === [CPTheme defaultHudTheme]))
+        [_themeView setThemeState:CPThemeStateHUD];
+    else
+        [_themeView unsetThemeState:CPThemeStateHUD];
+
     var iconOffset = [_themeView currentValueForThemeAttribute:@"image-offset"],
-        theImage = _icon,
-        finalSize;
+        theImage = _icon;
 
     if (!theImage)
         switch (_alertStyle)
@@ -666,11 +685,17 @@ var bottomHeight = 71;
     else if (_accessoryView)
         lastView = _accessoryView;
 
-    finalSize = [self _layoutButtonsFromView:lastView];
-    if ([_window styleMask] & CPDocModalWindowMask)
-        finalSize.height -= 26; // adjust the absence of title bar
-
-    [_window setFrameSize:finalSize];
+    // 1. Get the size needed for the *content* (text, buttons, padding)
+    var finalContentSize = [self _layoutButtonsFromView:lastView];
+    
+    // 2. Convert Content Size -> Frame Size
+    // This accounts for the Title Bar and borders automatically.
+    var contentRect = CGRectMake(0.0, 0.0, finalContentSize.width, finalContentSize.height);
+    var frameRect = [[_window class] frameRectForContentRect:contentRect styleMask:[_window styleMask]];
+    
+    // 3. Apply the calculated Frame Size
+    [_window setFrameSize:frameRect.size];
+    
     [_window center];
 
     if ([_window styleMask] & _CPModalWindowMask || [_window styleMask] & CPHUDBackgroundWindowMask)
@@ -771,7 +796,7 @@ var bottomHeight = 71;
     frame.size = [_themeView currentValueForThemeAttribute:@"size"];
 
     //  Propagate CPHUDBackgroundWindowMask from _defaultWindowStyle to forceStyle.
-    // This ensures that even if we force CPDocModalWindowMask (for sheets), 
+    // This ensures that even if we force CPDocModalWindowMask (for sheets),
     // the window still knows it should be a HUD.
     if (_defaultWindowStyle & CPHUDBackgroundWindowMask)
         forceStyle |= CPHUDBackgroundWindowMask;
@@ -783,7 +808,6 @@ var bottomHeight = 71;
     if (_title)
         [_window setTitle:_title];
 
-debugger
     var contentView = [_window contentView],
         count = [_buttons count];
 
