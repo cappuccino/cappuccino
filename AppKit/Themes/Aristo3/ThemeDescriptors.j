@@ -1554,7 +1554,7 @@ var themedButtonValues                      = nil,
                                                              @"top": @"3px",
                                                              @"width": @"1px"
                                                              }
-                                           afterDictionary:arrowCSS(A3ColorInactiveText, "-8px", "25px")],
+                                           afterDictionary:arrowCSS(A3ColorInactiveText, "-4px", "25px")],
 
     disabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                @"background-color": A3ColorBackgroundInactive,
@@ -1565,7 +1565,7 @@ var themedButtonValues                      = nil,
                                                                @"box-sizing": @"border-box"
                                                                }
                                             beforeDictionary:nil
-                                             afterDictionary:arrowCSS(A3ColorInactiveText, "-8px", "25px")],
+                                             afterDictionary:arrowCSS(A3ColorInactiveText, "-4px", "25px")],
 
     highlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                   @"border-color": A3ColorBorderDark,
