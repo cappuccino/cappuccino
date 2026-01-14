@@ -2326,7 +2326,7 @@ var themedButtonValues                      = nil,
     themedTextFieldValues =
     [
      // CPThemeStateControlSizeRegular
-     [@"vertical-alignment",    CPTopVerticalTextAlignment,                                 CPThemeStateBezeled],
+     [@"vertical-alignment",    CPCenterVerticalTextAlignment,                              CPThemeStateBezeled],
 
      [@"bezel-color",           bezelCssColor,                                              CPThemeStateBezeled],
      [@"bezel-color",           bezelFocusedCssColor,                                       [CPThemeStateBezeled, CPThemeStateEditing]],
@@ -2346,15 +2346,15 @@ var themedButtonValues                      = nil,
      [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            CPThemeStateBezeled],
      [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            [CPThemeStateBezeled, CPThemeStateEditing]],
      [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            CPThemeStateBordered],
-     [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            [CPThemeStateBordered, CPThemeStateEditing]],
+     [@"content-inset",      CGInsetMake(4.0, 5.0, 3.0, 3.0),                            [CPThemeStateBordered, CPThemeStateEditing]],
 
      [@"bezel-inset",        CGInsetMake(2.0, 5.0, 4.0, 4.0),                            CPThemeStateBezeled],
      [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),                            [CPThemeStateBezeled, CPThemeStateEditing]],
 
-     [@"text-color",         A3CPColorInactiveText,                                        CPTextFieldStatePlaceholder],
+     [@"text-color",         A3CPColorInactiveText,                                      CPTextFieldStatePlaceholder],
 
-     [@"background-inset",      CGInsetMake(1.0, 3.0, 3.0, 1.0),                        CPThemeStateBezeled],
-     [@"background-inset",      CGInsetMake(0.0, 0.0, 0.0, 0.0),                        CPThemeStateNormal],
+     [@"background-inset",   CGInsetMake(1.0, 3.0, 3.0, 1.0),                            CPThemeStateBezeled],
+     [@"background-inset",   CGInsetMake(0.0, 0.0, 0.0, 0.0),                            CPThemeStateNormal],
 
      // TableDataView
 
