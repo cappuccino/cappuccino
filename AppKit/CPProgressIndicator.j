@@ -71,6 +71,7 @@ CPProgressIndicatorHUDBarStyle = 2;
 }
 
 // Inject CSS Keyframes for spinning animation (Standard + WebKit)
+
 + (void)initialize
 {
     if (self !== [CPProgressIndicator class])
@@ -85,8 +86,15 @@ CPProgressIndicatorHUDBarStyle = 2;
     style.id = "cp-progress-indicator-style";
     style.type = "text/css";
     
-    var css = "@keyframes cp-progress-indicator-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } " +
-              "@-webkit-keyframes cp-progress-indicator-spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }";
+    // We define two animations:
+    // 1. cp-progress-indicator-spin: Rotates 360 degrees (for spinners)
+    // 2. cp-progress-indicator-bar-slide: Moves background-position (for striped bars)
+    var css = 
+        "@keyframes cp-progress-indicator-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } " +
+        "@-webkit-keyframes cp-progress-indicator-spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } } " +
+        
+        "@keyframes cp-progress-indicator-bar-slide { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } } " +
+        "@-webkit-keyframes cp-progress-indicator-bar-slide { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } }";
     
     if (style.styleSheet)
         style.styleSheet.cssText = css;

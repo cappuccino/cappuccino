@@ -7047,12 +7047,14 @@ var themedButtonValues                      = nil,
     return progressBar;
 }
 
+// ThemeDescriptors.j
+
 + (CPProgressIndicator)themedIndeterminateBarProgressIndicator
 {
     var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 100, 20)];
     [progressBar setIndeterminate:YES];
 
-    // --- Standard Colors ---
+    // --- Standard Colors (Blue with White Stripes) ---
     var bezelColor = [CPColor colorWithCSSDictionary:@{
             @"border": @"1px solid " + A3ColorBorderDark,
             @"background-color": A3ColorBackgroundWhite,
@@ -7060,15 +7062,18 @@ var themedButtonValues                      = nil,
             @"box-sizing": @"border-box"
         }],
 
-        // Ideally this would be a striped CSS gradient animation, 
-        // but for now we use the solid blue matching Aristo3 style
+        // Gradient: Blue base + diagonal white stripes
+        // Uses the class-defined animation 'cp-progress-indicator-bar-slide'
         barColor = [CPColor colorWithCSSDictionary:@{
             @"background-color": @"#5982DA",
+            @"background-image": @"linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent)",
+            @"background-size": @"30px 30px",
             @"border-radius": @"2px",
-            @"opacity": @"0.8"
+            @"animation": @"cp-progress-indicator-bar-slide 1s linear infinite",
+            @"-webkit-animation": @"cp-progress-indicator-bar-slide 1s linear infinite"
         }],
 
-    // --- HUD Colors ---
+    // --- HUD Colors (White with Dark Stripes) ---
         hudBezelColor = [CPColor colorWithCSSDictionary:@{
             @"background-color": @"rgba(0, 0, 0, 0.2)",
             @"border": @"1px solid rgba(255, 255, 255, 0.2)",
@@ -7077,10 +7082,15 @@ var themedButtonValues                      = nil,
             @"box-shadow": @"inset 0 1px 2px rgba(0,0,0,0.1)"
         }],
 
+        // Gradient: White base + diagonal dark stripes (faint)
         hudBarColor = [CPColor colorWithCSSDictionary:@{
             @"background-color": @"rgba(255, 255, 255, 0.8)",
+            @"background-image": @"linear-gradient(45deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.1) 75%, transparent 75%, transparent)",
+            @"background-size": @"30px 30px",
             @"border-radius": @"2px",
-            @"box-shadow": @"0 0 4px rgba(255, 255, 255, 0.4)"
+            @"box-shadow": @"0 0 4px rgba(255, 255, 255, 0.4)",
+            @"animation": @"cp-progress-indicator-bar-slide 1s linear infinite",
+            @"-webkit-animation": @"cp-progress-indicator-bar-slide 1s linear infinite"
         }];
 
     themedIndeterminateProgressIndicator =
@@ -7555,9 +7565,21 @@ var themedButtonValues                      = nil,
      [@"zoom-image-button",                     zoomButtonImage],
 
      // --- REGISTER PRESSED STATES (Using CPThemeStateHighlighted) ---
+     
+     // Case 1: Just Highlighted (rare for window buttons)
      [@"close-image-button",                    closeButtonImageHighlighted,    CPThemeStateHighlighted],
      [@"minimize-image-button",                 minimizeButtonImageHighlighted, CPThemeStateHighlighted],
      [@"zoom-image-button",                     zoomButtonImageHighlighted,     CPThemeStateHighlighted],
+
+     // Case 2: Highlighted AND Key Window (Common case when clicking)
+     [@"close-image-button",                    closeButtonImageHighlighted,    [CPThemeStateHighlighted, CPThemeStateKeyWindow]],
+     [@"minimize-image-button",                 minimizeButtonImageHighlighted, [CPThemeStateHighlighted, CPThemeStateKeyWindow]],
+     [@"zoom-image-button",                     zoomButtonImageHighlighted,     [CPThemeStateHighlighted, CPThemeStateKeyWindow]],
+
+     // Case 3: Highlighted AND Main Window (Fallback for some scenarios)
+     [@"close-image-button",                    closeButtonImageHighlighted,    [CPThemeStateHighlighted, CPThemeStateMainWindow]],
+     [@"minimize-image-button",                 minimizeButtonImageHighlighted, [CPThemeStateHighlighted, CPThemeStateMainWindow]],
+     [@"zoom-image-button",                     zoomButtonImageHighlighted,     [CPThemeStateHighlighted, CPThemeStateMainWindow]],
 
      [@"close-image-size",                      CGSizeMake(12.0, 12.0)],
      [@"close-image-origin",                    CGPointMake(10.0, 10.0)],
