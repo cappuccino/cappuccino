@@ -6995,24 +6995,51 @@ var themedButtonValues                      = nil,
 
 + (CPProgressIndicator)themedBarProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 20)];
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 100, 20)];
     [progressBar setDoubleValue:30];
 
-    // Using CSS for progress bars
+    // --- Standard Colors ---
     var bezelColor = [CPColor colorWithCSSDictionary:@{
-        @"border": @"1px solid " + A3ColorBorderDark,
-        @"background-color": A3ColorBackground
-    }],
+            @"border": @"1px solid " + A3ColorBorderDark,
+            @"background-color": A3ColorBackgroundWhite,
+            @"border-radius": @"3px",
+            @"box-sizing": @"border-box"
+        }],
 
-    barColor = [CPColor colorWithCSSDictionary:@{
-        @"background-color": @"#5982DA"
-    }];
+        barColor = [CPColor colorWithCSSDictionary:@{
+            @"background-color": @"#5982DA",
+            @"border-radius": @"2px"
+        }],
+
+    // --- HUD Colors ---
+        hudBezelColor = [CPColor colorWithCSSDictionary:@{
+            @"background-color": @"rgba(0, 0, 0, 0.2)",
+            @"border": @"1px solid rgba(255, 255, 255, 0.2)",
+            @"border-radius": @"3px",
+            @"box-sizing": @"border-box",
+            @"box-shadow": @"inset 0 1px 2px rgba(0,0,0,0.1)"
+        }],
+
+        hudBarColor = [CPColor colorWithCSSDictionary:@{
+            @"background-color": @"rgba(255, 255, 255, 0.9)",
+            @"border-radius": @"2px",
+            @"box-shadow": @"0 0 4px rgba(255, 255, 255, 0.4)"
+        }];
 
     themedProgressIndicator =
     [
-     [@"bezel-color", bezelColor],
-     [@"bar-color", barColor],
-     [@"default-height", 20]
+     // Standard State
+     [@"bezel-color",       bezelColor],
+     [@"bar-color",         barColor],
+     
+     // HUD State
+     [@"bezel-color",       hudBezelColor,  CPThemeStateHUD],
+     [@"bar-color",         hudBarColor,    CPThemeStateHUD],
+
+     // Control Sizes (Heights)
+     [@"default-height",    20.0], // Regular
+     [@"default-height",    16.0,           CPThemeStateControlSizeSmall],
+     [@"default-height",    10.0,           CPThemeStateControlSizeMini]
      ];
 
     [self registerThemeValues:themedProgressIndicator forView:progressBar];
@@ -7022,24 +7049,54 @@ var themedButtonValues                      = nil,
 
 + (CPProgressIndicator)themedIndeterminateBarProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 20)];
-
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 100, 20)];
     [progressBar setIndeterminate:YES];
 
+    // --- Standard Colors ---
     var bezelColor = [CPColor colorWithCSSDictionary:@{
-        @"border": @"1px solid " + A3ColorBorderDark,
-        @"background-color": A3ColorBackground
-    }],
+            @"border": @"1px solid " + A3ColorBorderDark,
+            @"background-color": A3ColorBackgroundWhite,
+            @"border-radius": @"3px",
+            @"box-sizing": @"border-box"
+        }],
 
-    barColor = [CPColor colorWithCSSDictionary:@{
-        @"background-color": @"#5982DA"
-    }];
+        // Ideally this would be a striped CSS gradient animation, 
+        // but for now we use the solid blue matching Aristo3 style
+        barColor = [CPColor colorWithCSSDictionary:@{
+            @"background-color": @"#5982DA",
+            @"border-radius": @"2px",
+            @"opacity": @"0.8"
+        }],
+
+    // --- HUD Colors ---
+        hudBezelColor = [CPColor colorWithCSSDictionary:@{
+            @"background-color": @"rgba(0, 0, 0, 0.2)",
+            @"border": @"1px solid rgba(255, 255, 255, 0.2)",
+            @"border-radius": @"3px",
+            @"box-sizing": @"border-box",
+            @"box-shadow": @"inset 0 1px 2px rgba(0,0,0,0.1)"
+        }],
+
+        hudBarColor = [CPColor colorWithCSSDictionary:@{
+            @"background-color": @"rgba(255, 255, 255, 0.8)",
+            @"border-radius": @"2px",
+            @"box-shadow": @"0 0 4px rgba(255, 255, 255, 0.4)"
+        }];
 
     themedIndeterminateProgressIndicator =
     [
-     [@"bezel-color", bezelColor],
-     [@"indeterminate-bar-color", barColor],
-     [@"default-height", 20]
+     // Standard State
+     [@"bezel-color",               bezelColor],
+     [@"indeterminate-bar-color",   barColor],
+     
+     // HUD State
+     [@"bezel-color",               hudBezelColor,  CPThemeStateHUD],
+     [@"indeterminate-bar-color",   hudBarColor,    CPThemeStateHUD],
+
+     // Control Sizes
+     [@"default-height",            20.0], // Regular
+     [@"default-height",            16.0,           CPThemeStateControlSizeSmall],
+     [@"default-height",            10.0,           CPThemeStateControlSizeMini]
      ];
 
     [self registerThemeValues:themedIndeterminateProgressIndicator forView:progressBar];
@@ -7049,20 +7106,33 @@ var themedButtonValues                      = nil,
 
 + (CPProgressIndicator)themedSpinningProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 64, 64)];
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
     [progressBar setStyle:CPProgressIndicatorSpinningStyle];
+    [progressBar setIndeterminate:YES];
+    [progressBar startAnimation:nil];
 
-    // Keep GIFs for complex spinning animation as CSS/SVG spinning requires code support in CPProgressIndicator
-    // Assuming Aristo3Colors doesn't define these, we reference local resources
-    var spinningMini = PatternColor(@"progress-indicator-spinning-style-mini.gif", 16.0, 16.0),
-    spinningSmall = PatternColor(@"progress-indicator-spinning-style-small.gif", 32.0, 32.0),
-    spinningRegular = PatternColor(@"progress-indicator-spinning-style-regular.gif", 64.0, 64.0),
+    // Standard Colors (Grey)
+    var spinnerColor        = [CPColor colorWithHexString:@"888888"],
+        spinnerTrackColor   = [CPColor colorWithHexString:@"e6e6e6"],
+    
+    // HUD Colors (White/Transparent)
+        hudSpinnerColor      = [CPColor whiteColor],
+        hudSpinnerTrackColor = [CPColor colorWithWhite:1.0 alpha:0.2];
 
-    themeValues =
+    var themeValues =
     [
-     [@"spinning-mini-gif", spinningMini],
-     [@"spinning-small-gif", spinningSmall],
-     [@"spinning-regular-gif", spinningRegular]
+     // --- Standard Theme ---
+     [@"spinner-color",         spinnerColor],
+     [@"spinner-track-color",   spinnerTrackColor],
+
+     // Line widths based on size
+     [@"spinner-line-width",    4.0],                               // Regular
+     [@"spinner-line-width",    3.0,    CPThemeStateControlSizeSmall], // Small
+     [@"spinner-line-width",    2.0,    CPThemeStateControlSizeMini],  // Mini
+
+     // --- HUD Theme ---
+     [@"spinner-color",         hudSpinnerColor,        CPThemeStateHUD],
+     [@"spinner-track-color",   hudSpinnerTrackColor,   CPThemeStateHUD]
      ];
 
     [self registerThemeValues:themeValues forView:progressBar];
@@ -7333,11 +7403,11 @@ var themedButtonValues                      = nil,
     var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:CPClosableWindowMask],
 
     bezelHeadCssColor = [CPColor colorWithCSSDictionary:@{
-                                                          @"background-color": A3ColorWindowHeadActive, 
+                                                          @"background-color": A3ColorWindowHeadActive,
                                                           @"border-top-color": A3ColorWindowBorder,
                                                           @"border-top-style": @"solid",
                                                           @"border-top-width": @"1px",
-                                                          @"border-left-color": A3ColorWindowBorder, 
+                                                          @"border-left-color": A3ColorWindowBorder,
                                                           @"border-left-style": @"solid",
                                                           @"border-left-width": @"1px",
                                                           @"border-right-color": A3ColorWindowBorder,
@@ -7351,11 +7421,11 @@ var themedButtonValues                      = nil,
                                                           }],
 
     inactiveBezelHeadCssColor = [CPColor colorWithCSSDictionary:@{
-                                                                  @"background-color": A3ColorWindowHeadInactive, 
-                                                                  @"border-top-color": A3ColorWindowBorder, 
+                                                                  @"background-color": A3ColorWindowHeadInactive,
+                                                                  @"border-top-color": A3ColorWindowBorder,
                                                                   @"border-top-style": @"solid",
                                                                   @"border-top-width": @"1px",
-                                                                  @"border-left-color": A3ColorWindowBorder, 
+                                                                  @"border-left-color": A3ColorWindowBorder,
                                                                   @"border-left-style": @"solid",
                                                                   @"border-left-width": @"1px",
                                                                   @"border-right-color": A3ColorWindowBorder,
@@ -7374,7 +7444,7 @@ var themedButtonValues                      = nil,
 
     bezelCssColor = [CPColor colorWithCSSDictionary:@{
                                                       @"background-color": A3ColorBackground,
-                                                      @"border-color": A3ColorWindowBorder, 
+                                                      @"border-color": A3ColorWindowBorder,
                                                       @"border-style": @"solid",
                                                       @"border-width": @"1px",
                                                       @"border-top-left-radius": @"0px",
@@ -7388,30 +7458,63 @@ var themedButtonValues                      = nil,
                                                         @"background-color": A3ColorBorderMedium
                                                         }],
 
-    // Pure CSS Close button
+    // --- BUTTON DEFINITIONS (Normal vs Highlighted/Pressed) ---
+    // Note: We include the 'transition' property so the color change animates when clicked.
+
+    // 1. Close Button (Red)
     closeButtonImage = [CPImage imageWithCSSDictionary:@{
                                                          @"background-color": A3ColorWindowButtonClose,
                                                          @"border-radius": @"50%",
                                                          @"width": @"12px",
-                                                         @"height": @"12px"
+                                                         @"height": @"12px",
+                                                         @"transition": @"background-color 0.15s ease-in-out"
                                                          }
                                                   size:CGSizeMake(12,12)],
 
-    // Pure CSS Minimize button
+    closeButtonImageHighlighted = [CPImage imageWithCSSDictionary:@{
+                                                         @"background-color": A3ColorWindowButtonCloseDark, // Darker Red
+                                                         @"border-radius": @"50%",
+                                                         @"width": @"12px",
+                                                         @"height": @"12px",
+                                                         @"transition": @"background-color 0.15s ease-in-out"
+                                                         }
+                                                  size:CGSizeMake(12,12)],
+
+    // 2. Minimize Button (Yellow)
     minimizeButtonImage = [CPImage imageWithCSSDictionary:@{
                                                             @"background-color": A3ColorWindowButtonMin,
                                                             @"border-radius": @"50%",
                                                             @"width": @"12px",
-                                                            @"height": @"12px"
+                                                            @"height": @"12px",
+                                                            @"transition": @"background-color 0.15s ease-in-out"
                                                             }
                                                      size:CGSizeMake(12,12)],
 
-    // Pure CSS Zoom button
+    minimizeButtonImageHighlighted = [CPImage imageWithCSSDictionary:@{
+                                                            @"background-color": A3ColorWindowButtonMinDark, // Darker Yellow
+                                                            @"border-radius": @"50%",
+                                                            @"width": @"12px",
+                                                            @"height": @"12px",
+                                                            @"transition": @"background-color 0.15s ease-in-out"
+                                                            }
+                                                     size:CGSizeMake(12,12)],
+
+    // 3. Zoom Button (Green)
     zoomButtonImage = [CPImage imageWithCSSDictionary:@{
                                                         @"background-color": A3ColorWindowButtonZoom,
                                                         @"border-radius": @"50%",
                                                         @"width": @"12px",
-                                                        @"height": @"12px"
+                                                        @"height": @"12px",
+                                                        @"transition": @"background-color 0.15s ease-in-out"
+                                                        }
+                                                 size:CGSizeMake(12,12)],
+
+    zoomButtonImageHighlighted = [CPImage imageWithCSSDictionary:@{
+                                                        @"background-color": A3ColorWindowButtonZoomDark, // Darker Green
+                                                        @"border-radius": @"50%",
+                                                        @"width": @"12px",
+                                                        @"height": @"12px",
+                                                        @"transition": @"background-color 0.15s ease-in-out"
                                                         }
                                                  size:CGSizeMake(12,12)],
 
@@ -7427,7 +7530,7 @@ var themedButtonValues                      = nil,
      [@"bezel-head-color",           inactiveBezelHeadCssColor, CPThemeStateNormal],
      [@"bezel-head-color",           bezelHeadCssColor, CPThemeStateKeyWindow],
      [@"bezel-head-color",           bezelHeadCssColor, CPThemeStateMainWindow],
-     [@"bezel-head-sheet-color",     [CPColor redColor]], 
+     [@"bezel-head-sheet-color",     [CPColor redColor]],
      [@"solid-color",                solidCssColor],
 
      [@"title-font",                 [CPFont systemFontOfSize:CPFontCurrentSystemSize+1]],
@@ -7446,9 +7549,15 @@ var themedButtonValues                      = nil,
      [@"title-margin",                          4],
      [@"frame-outset",                          CGInsetMake(1, 1, 1, 1)],
 
+     // --- REGISTER NORMAL STATES ---
      [@"close-image-button",                    closeButtonImage],
      [@"minimize-image-button",                 minimizeButtonImage],
      [@"zoom-image-button",                     zoomButtonImage],
+
+     // --- REGISTER PRESSED STATES (Using CPThemeStateHighlighted) ---
+     [@"close-image-button",                    closeButtonImageHighlighted,    CPThemeStateHighlighted],
+     [@"minimize-image-button",                 minimizeButtonImageHighlighted, CPThemeStateHighlighted],
+     [@"zoom-image-button",                     zoomButtonImageHighlighted,     CPThemeStateHighlighted],
 
      [@"close-image-size",                      CGSizeMake(12.0, 12.0)],
      [@"close-image-origin",                    CGPointMake(10.0, 10.0)],
