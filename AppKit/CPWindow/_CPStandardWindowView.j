@@ -44,7 +44,11 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
 + (CPDictionary)themeAttributes
 {
-    return @{};
+    return @{
+                @"close-active-image-button": [CPNull null],
+                @"minimize-active-image-button": [CPNull null],
+                @"zoom-active-image-button": [CPNull null],
+            };
 }
 
 - (id)initWithFrame:(CGRect)aFrame windowView:(_CPWindowView)parentView

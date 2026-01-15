@@ -7412,121 +7412,108 @@ var themedButtonValues                      = nil,
 {
     var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:CPClosableWindowMask],
 
+    // --- Colors ---
     bezelHeadCssColor = [CPColor colorWithCSSDictionary:@{
-                                                          @"background-color": A3ColorWindowHeadActive,
-                                                          @"border-top-color": A3ColorWindowBorder,
-                                                          @"border-top-style": @"solid",
-                                                          @"border-top-width": @"1px",
-                                                          @"border-left-color": A3ColorWindowBorder,
-                                                          @"border-left-style": @"solid",
-                                                          @"border-left-width": @"1px",
-                                                          @"border-right-color": A3ColorWindowBorder,
-                                                          @"border-right-style": @"solid",
-                                                          @"border-right-width": @"1px",
-                                                          @"border-top-left-radius": @"6px",
-                                                          @"border-top-right-radius": @"6px",
-                                                          @"border-bottom-left-radius": @"0px",
-                                                          @"border-bottom-right-radius": @"0px",
-                                                          @"box-sizing": @"border-box"
-                                                          }],
+        @"background-color": A3ColorWindowHeadActive,
+        @"border-top-color": A3ColorWindowBorder,
+        @"border-top-style": @"solid",
+        @"border-top-width": @"1px",
+        @"border-left-color": A3ColorWindowBorder,
+        @"border-left-style": @"solid",
+        @"border-left-width": @"1px",
+        @"border-right-color": A3ColorWindowBorder,
+        @"border-right-style": @"solid",
+        @"border-right-width": @"1px",
+        @"border-top-left-radius": @"6px",
+        @"border-top-right-radius": @"6px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    }],
 
     inactiveBezelHeadCssColor = [CPColor colorWithCSSDictionary:@{
-                                                                  @"background-color": A3ColorWindowHeadInactive,
-                                                                  @"border-top-color": A3ColorWindowBorder,
-                                                                  @"border-top-style": @"solid",
-                                                                  @"border-top-width": @"1px",
-                                                                  @"border-left-color": A3ColorWindowBorder,
-                                                                  @"border-left-style": @"solid",
-                                                                  @"border-left-width": @"1px",
-                                                                  @"border-right-color": A3ColorWindowBorder,
-                                                                  @"border-right-style": @"solid",
-                                                                  @"border-right-width": @"1px",
-                                                                  @"border-top-left-radius": @"6px",
-                                                                  @"border-top-right-radius": @"6px",
-                                                                  @"border-bottom-left-radius": @"0px",
-                                                                  @"border-bottom-right-radius": @"0px",
-                                                                  @"box-sizing": @"border-box"
-                                                                  }],
+        @"background-color": A3ColorWindowHeadInactive,
+        @"border-top-color": A3ColorWindowBorder,
+        @"border-top-style": @"solid",
+        @"border-top-width": @"1px",
+        @"border-left-color": A3ColorWindowBorder,
+        @"border-left-style": @"solid",
+        @"border-left-width": @"1px",
+        @"border-right-color": A3ColorWindowBorder,
+        @"border-right-style": @"solid",
+        @"border-right-width": @"1px",
+        @"border-top-left-radius": @"6px",
+        @"border-top-right-radius": @"6px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    }],
 
-    solidCssColor = [CPColor colorWithCSSDictionary:@{
-                                                      @"background-color": A3ColorBackgroundHighlighted
-                                                      }],
+    solidCssColor = [CPColor colorWithCSSDictionary:@{ @"background-color": A3ColorBackgroundHighlighted }],
 
     bezelCssColor = [CPColor colorWithCSSDictionary:@{
-                                                      @"background-color": A3ColorBackground,
-                                                      @"border-color": A3ColorWindowBorder,
-                                                      @"border-style": @"solid",
-                                                      @"border-width": @"1px",
-                                                      @"border-top-left-radius": @"0px",
-                                                      @"border-top-right-radius": @"0px",
-                                                      @"border-bottom-left-radius": @"7px",
-                                                      @"border-bottom-right-radius": @"7px",
-                                                      @"box-sizing": @"border-box"
-                                                      }],
+        @"background-color": A3ColorBackground,
+        @"border-color": A3ColorWindowBorder,
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-top-left-radius": @"0px",
+        @"border-top-right-radius": @"0px",
+        @"border-bottom-left-radius": @"7px",
+        @"border-bottom-right-radius": @"7px",
+        @"box-sizing": @"border-box"
+    }],
 
-    dividerCssColor = [CPColor colorWithCSSDictionary:@{
-                                                        @"background-color": A3ColorBorderMedium
-                                                        }],
+    dividerCssColor = [CPColor colorWithCSSDictionary:@{ @"background-color": A3ColorBorderMedium }],
 
-    // --- BUTTON DEFINITIONS (Normal vs Highlighted/Pressed) ---
-    // Note: We include the 'transition' property so the color change animates when clicked.
-
-    // 1. Close Button (Red)
+    // --- BUTTON IMAGES (Normal) ---
+    // Note: We include 'transition' for smooth fade between normal and active
+    
     closeButtonImage = [CPImage imageWithCSSDictionary:@{
-                                                         @"background-color": A3ColorWindowButtonClose,
-                                                         @"border-radius": @"50%",
-                                                         @"width": @"12px",
-                                                         @"height": @"12px",
-                                                         @"transition": @"background-color 0.15s ease-in-out"
-                                                         }
-                                                  size:CGSizeMake(12,12)],
+        @"background-color": A3ColorWindowButtonClose,
+        @"border-radius": @"50%",
+        @"width": @"12px",
+        @"height": @"12px",
+        @"transition": @"background-color 0.15s ease-in-out"
+    } size:CGSizeMake(12,12)],
 
-    closeButtonImageHighlighted = [CPImage imageWithCSSDictionary:@{
-                                                         @"background-color": A3ColorWindowButtonCloseDark, // Darker Red
-                                                         @"border-radius": @"50%",
-                                                         @"width": @"12px",
-                                                         @"height": @"12px",
-                                                         @"transition": @"background-color 0.15s ease-in-out"
-                                                         }
-                                                  size:CGSizeMake(12,12)],
-
-    // 2. Minimize Button (Yellow)
     minimizeButtonImage = [CPImage imageWithCSSDictionary:@{
-                                                            @"background-color": A3ColorWindowButtonMin,
-                                                            @"border-radius": @"50%",
-                                                            @"width": @"12px",
-                                                            @"height": @"12px",
-                                                            @"transition": @"background-color 0.15s ease-in-out"
-                                                            }
-                                                     size:CGSizeMake(12,12)],
+        @"background-color": A3ColorWindowButtonMin,
+        @"border-radius": @"50%",
+        @"width": @"12px",
+        @"height": @"12px",
+        @"transition": @"background-color 0.15s ease-in-out"
+    } size:CGSizeMake(12,12)],
+
+    zoomButtonImage = [CPImage imageWithCSSDictionary:@{
+        @"background-color": A3ColorWindowButtonZoom,
+        @"border-radius": @"50%",
+        @"width": @"12px",
+        @"height": @"12px",
+        @"transition": @"background-color 0.15s ease-in-out"
+    } size:CGSizeMake(12,12)],
+
+    // --- BUTTON IMAGES (Active/Highlighted) ---
+    
+    closeButtonImageHighlighted = [CPImage imageWithCSSDictionary:@{
+        @"background-color": A3ColorWindowButtonCloseDark,
+        @"border-radius": @"50%",
+        @"width": @"12px",
+        @"height": @"12px"
+    } size:CGSizeMake(12,12)],
 
     minimizeButtonImageHighlighted = [CPImage imageWithCSSDictionary:@{
-                                                            @"background-color": A3ColorWindowButtonMinDark, // Darker Yellow
-                                                            @"border-radius": @"50%",
-                                                            @"width": @"12px",
-                                                            @"height": @"12px",
-                                                            @"transition": @"background-color 0.15s ease-in-out"
-                                                            }
-                                                     size:CGSizeMake(12,12)],
-
-    // 3. Zoom Button (Green)
-    zoomButtonImage = [CPImage imageWithCSSDictionary:@{
-                                                        @"background-color": A3ColorWindowButtonZoom,
-                                                        @"border-radius": @"50%",
-                                                        @"width": @"12px",
-                                                        @"height": @"12px",
-                                                        @"transition": @"background-color 0.15s ease-in-out"
-                                                        }
-                                                 size:CGSizeMake(12,12)],
+        @"background-color": A3ColorWindowButtonMinDark,
+        @"border-radius": @"50%",
+        @"width": @"12px",
+        @"height": @"12px"
+    } size:CGSizeMake(12,12)],
 
     zoomButtonImageHighlighted = [CPImage imageWithCSSDictionary:@{
-                                                        @"background-color": A3ColorWindowButtonZoomDark, // Darker Green
-                                                        @"border-radius": @"50%",
-                                                        @"width": @"12px",
-                                                        @"height": @"12px",
-                                                        @"transition": @"background-color 0.15s ease-in-out"
-                                                        }
-                                                 size:CGSizeMake(12,12)],
+        @"background-color": A3ColorWindowButtonZoomDark,
+        @"border-radius": @"50%",
+        @"width": @"12px",
+        @"height": @"12px"
+    } size:CGSizeMake(12,12)],
 
     resizeIndicator = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": @"url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMiAxMiI+PHBhdGggZD0iTTEwIDEwTDIgMTBtOCAwaDB2LTh6IiBzdHJva2U9IiM2NjYiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==')",
@@ -7559,27 +7546,18 @@ var themedButtonValues                      = nil,
      [@"title-margin",                          4],
      [@"frame-outset",                          CGInsetMake(1, 1, 1, 1)],
 
-     // --- REGISTER NORMAL STATES ---
+     // --- REGISTER BUTTON IMAGES ---
+     
+     // 1. Normal State
      [@"close-image-button",                    closeButtonImage],
      [@"minimize-image-button",                 minimizeButtonImage],
      [@"zoom-image-button",                     zoomButtonImage],
 
-     // --- REGISTER PRESSED STATES (Using CPThemeStateHighlighted) ---
-     
-     // Case 1: Just Highlighted (rare for window buttons)
-     [@"close-image-button",                    closeButtonImageHighlighted,    CPThemeStateHighlighted],
-     [@"minimize-image-button",                 minimizeButtonImageHighlighted, CPThemeStateHighlighted],
-     [@"zoom-image-button",                     zoomButtonImageHighlighted,     CPThemeStateHighlighted],
-
-     // Case 2: Highlighted AND Key Window (Common case when clicking)
-     [@"close-image-button",                    closeButtonImageHighlighted,    [CPThemeStateHighlighted, CPThemeStateKeyWindow]],
-     [@"minimize-image-button",                 minimizeButtonImageHighlighted, [CPThemeStateHighlighted, CPThemeStateKeyWindow]],
-     [@"zoom-image-button",                     zoomButtonImageHighlighted,     [CPThemeStateHighlighted, CPThemeStateKeyWindow]],
-
-     // Case 3: Highlighted AND Main Window (Fallback for some scenarios)
-     [@"close-image-button",                    closeButtonImageHighlighted,    [CPThemeStateHighlighted, CPThemeStateMainWindow]],
-     [@"minimize-image-button",                 minimizeButtonImageHighlighted, [CPThemeStateHighlighted, CPThemeStateMainWindow]],
-     [@"zoom-image-button",                     zoomButtonImageHighlighted,     [CPThemeStateHighlighted, CPThemeStateMainWindow]],
+     // 2. Highlighted (Pressed) State
+     // Use the specific keys defined in _CPStandardWindowView source
+     [@"close-image-highlighted-button",        closeButtonImageHighlighted],
+     [@"minimize-image-highlighted-button",     minimizeButtonImageHighlighted],
+     [@"zoom-image-highlighted-button",         zoomButtonImageHighlighted],
 
      [@"close-image-size",                      CGSizeMake(12.0, 12.0)],
      [@"close-image-origin",                    CGPointMake(10.0, 10.0)],
