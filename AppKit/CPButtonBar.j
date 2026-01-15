@@ -1524,6 +1524,7 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 @implementation _CPButtonBarPopUpButton : CPPopUpButton
 {
     CPImage _image;
+    BOOL    _isLocallyHighlighted;
 }
 
 + (CPString)defaultThemeClass
@@ -1554,7 +1555,10 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     {
         [self addItemWithTitle:@""];
         [self setControlSize:CPSmallControlSize];
+        
         _image = image;
+        _isLocallyHighlighted = NO;
+
         [self setImagePosition:CPImageOnly];
         [self setAlternateImage:alternateImage];
         [self setBezelStyle:CPRegularSquareBezelStyle];
@@ -1569,6 +1573,21 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 - (void)_initThemedValues
 {
     [self setFrameSize:[self currentValueForThemeAttribute:@"min-size"]];
+}
+
+// Track the highlight state
+- (void)highlight:(BOOL)shouldHighlight
+{
+    if (_isLocallyHighlighted === shouldHighlight)
+        return;
+
+    _isLocallyHighlighted = shouldHighlight;
+    
+    // Call super to ensure internal CPButton state updates
+    [super highlight:shouldHighlight];
+
+    // Trigger layout to update the image
+    [self setNeedsLayout];
 }
 
 - (void)layoutSubviews
@@ -1607,9 +1626,27 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     {
         var imageToShow = _image;
 
-        // Check if the button is highlighted (menu open) and an alternate image exists
-        if (_isHighlighted && [self alternateImage])
-            imageToShow = [self alternateImage];
+        // Image swapping logic
+        if (_isLocallyHighlighted)
+        {
+            if ([self alternateImage])
+            {
+                // 1. If an alternate image exists (like plus/minus buttons), use it.
+                imageToShow = [self alternateImage];
+                [contentView setAlphaValue:1.0];
+            }
+            else
+            {
+                // 2. Fallback: If no alternate image exists (like the gear button),
+                // reduce opacity to 0.5 to simulate a "pressed" state visually.
+                [contentView setAlphaValue:0.5];
+            }
+        }
+        else
+        {
+            // Normal state
+            [contentView setAlphaValue:1.0];
+        }
             
         [contentView setImage:imageToShow];
 
