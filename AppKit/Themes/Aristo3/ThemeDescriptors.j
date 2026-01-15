@@ -790,10 +790,10 @@ var themedButtonValues                      = nil,
      // Without this, unbordered image color values would be used
      [@"image-color",                   @"FollowTextColor",                     [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
-     [@"content-inset",                 CGInsetMake(-1.0, 6.0, 1.0, 5.0),        [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"content-inset",                 CGInsetMake(-1.0, 6.0, 1.0, 5.0),       [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"image-offset",                  1.0,                                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(6.0, 0.0, -12.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered]], // Height is fixed by min/max -size
-     [@"nib2cib-adjustment-frame",      CGRectMake(7.0, 0.0, -13.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDefault]],
+     [@"nib2cib-adjustment-frame",      CGRectMake(6.0, -6.0, -12.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered]], // Height is fixed by min/max -size
+     [@"nib2cib-adjustment-frame",      CGRectMake(7.0, -6.0, -13.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDefault]],
      [@"min-size",                      CGSizeMake(0.0, 22.0),                  [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"max-size",                      CGSizeMake(-1.0, 22.0),                 [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
