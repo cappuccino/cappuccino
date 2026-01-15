@@ -1382,11 +1382,11 @@ var themedButtonValues                      = nil,
      [@"bezel-color",                disabledButtonCssColor,                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDisabled]],
      [@"bezel-color",                disabledButtonCssColor,                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      
-     [@"content-inset",              CGInsetMake(1.0, 19.0, 1.0, 9.0),          [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"content-inset",              CGInsetMake(0.0, 19.0, 1.0, 9.0),          [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
      // We must include CPThemeStateBordered here to override CPButton's definition
-     [@"min-size",                   CGSizeMake(32.0, 21.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"max-size",                   CGSizeMake(-1.0, 21.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"min-size",                   CGSizeMake(32.0, 22.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"max-size",                   CGSizeMake(-1.0, 22.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -8.0, -5.0, -4.5),        [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
      // Small size
@@ -2326,7 +2326,7 @@ var themedButtonValues                      = nil,
     themedTextFieldValues =
     [
      // CPThemeStateControlSizeRegular
-     [@"vertical-alignment",    CPCenterVerticalTextAlignment,                              CPThemeStateBezeled],
+     [@"vertical-alignment",    CPCenterVerticalTextAlignment],
 
      [@"bezel-color",           bezelCssColor,                                              CPThemeStateBezeled],
      [@"bezel-color",           bezelFocusedCssColor,                                       [CPThemeStateBezeled, CPThemeStateEditing]],
@@ -2346,7 +2346,7 @@ var themedButtonValues                      = nil,
      [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            CPThemeStateBezeled],
      [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            [CPThemeStateBezeled, CPThemeStateEditing]],
      [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            CPThemeStateBordered],
-     [@"content-inset",      CGInsetMake(4.0, 5.0, 3.0, 3.0),                            [CPThemeStateBordered, CPThemeStateEditing]],
+     [@"content-inset",      CGInsetMake(3.5, 5.0, 3.0, 3.0),                            [CPThemeStateBordered, CPThemeStateEditing]],
 
      [@"bezel-inset",        CGInsetMake(2.0, 5.0, 4.0, 4.0),                            CPThemeStateBezeled],
      [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),                            [CPThemeStateBezeled, CPThemeStateEditing]],
@@ -2888,6 +2888,8 @@ var themedButtonValues                      = nil,
 
     themeValues =
     [
+     [@"vertical-alignment",            CPCenterVerticalTextAlignment],
+
      [@"bezel-color",                   bezelCssColor,                              [CPThemeStateBezeled, CPThemeStateBordered]],
      [@"bezel-color",                   bezelFocusedCssColor,                       [CPThemeStateBezeled, CPThemeStateBordered, CPThemeStateEditing, CPThemeStateKeyWindow]],
      [@"bezel-color",                   bezelDisabledCssColor,                      [CPThemeStateBezeled, CPThemeStateBordered, CPThemeStateDisabled]],
@@ -3899,6 +3901,8 @@ var themedButtonValues                      = nil,
         [@"text-color",                 A3CPColorActiveText],
         [@"text-color",                 A3CPColorInactiveText,                     [CPThemeStateDisabled]],
 
+        [@"vertical-alignment",         CPCenterVerticalTextAlignment],
+
         // Bordered, IB style "Push" (CPRoundedBezelStyle)
 
         // Regular size
@@ -3908,11 +3912,11 @@ var themedButtonValues                      = nil,
         [@"bezel-color",                highlightedButtonCssColor,                 [CPComboBoxStateButtonBordered, CPThemeStateHighlighted]],
         [@"bezel-color",                disabledButtonCssColor,                    [CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
         [@"bezel-color",                disabledButtonCssColor,                    [CPComboBoxStateButtonBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
-        [@"content-inset",              CGInsetMake(1.0, 19.0, 1.0, 9.0),          [CPComboBoxStateButtonBordered]],
-        [@"content-inset",              CGInsetMake(2.0, 17.0, 0, 2),              [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-        [@"min-size",                   CGSizeMake(32.0, 21.0)],
-        [@"max-size",                   CGSizeMake(-1.0, 21.0)],
-        
+        [@"content-inset",              CGInsetMake(0.0, 19.0, 1.0, 9.0),          [CPComboBoxStateButtonBordered]],
+        [@"content-inset",              CGInsetMake(0.0, 17.0, 0, 2),              [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+        [@"min-size",                   CGSizeMake(32.0, 22.0)],
+        [@"max-size",                   CGSizeMake(-1.0, 22.0)],
+
         // Small Size
         [@"bezel-color",                smallBezelFocusedCssColor,                 [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
         [@"bezel-color",                smallButtonCssColor,                       [CPThemeStateControlSizeSmall, CPComboBoxStateButtonBordered, CPThemeStateKeyWindow]],
