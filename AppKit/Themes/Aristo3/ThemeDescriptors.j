@@ -3654,7 +3654,6 @@ var themedButtonValues                      = nil,
                                                        }
                                      afterDictionary:arrowCSS(A3ColorBorderBlue, "-8px", "25px")],
 
-    // FIX: Changed border-radius from "0px" to "3px" to prevent layout shift
     bezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
                                                                  @"border-color": A3ColorBorderBlue,
@@ -6536,7 +6535,6 @@ var themedButtonValues                      = nil,
         buttonOffset = 10.0,
         defaultElementsMargin = 5.0, // Slightly increased spacing
 
-        // ... Keep your icon definitions (errorIcon, helpIcon, etc.) exactly as they are in your file ...
         errorIcon = [CPImage imageWithCSSDictionary:@{
             @"background-image": svgAlertIconError,
             @"background-size": @"contain",
