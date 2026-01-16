@@ -6990,7 +6990,6 @@ var themedButtonValues                      = nil,
 
     var colorWell = [[CPColorWell alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)],
 
-    // Simplified to standard borders instead of PatternColor pngs
     bezelColor = [CPColor colorWithCSSDictionary:@{
         @"border": @"1px solid " + A3ColorBorderDark,
         @"background-color": A3ColorBackgroundWhite
@@ -7220,7 +7219,6 @@ var themedButtonValues                      = nil,
 {
     var levelIndicator = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
 
-    // Simplified to CSS Colors
     bezelColor = [CPColor colorWithCSSDictionary:@{
         @"border": @"1px solid " + A3ColorBorderDark
     }],
@@ -7617,7 +7615,6 @@ var themedButtonValues                      = nil,
 {
     var bordelessBridgeWindowView = [[_CPBorderlessBridgeWindowView alloc] initWithFrame:CGRectMake(0,0,0,0)],
 
-    // Simplified to CSS color
     toolbarBackgroundColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": A3ColorBackground
     }],
