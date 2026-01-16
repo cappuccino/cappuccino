@@ -792,8 +792,8 @@ var themedButtonValues                      = nil,
 
      [@"content-inset",                 CGInsetMake(-1.0, 6.0, 1.0, 5.0),       [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"image-offset",                  1.0,                                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(4.0,  0.0, -12.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered]], // Height is fixed by min/max -size
-     [@"nib2cib-adjustment-frame",      CGRectMake(5.0,  0.0, -13.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDefault]],
+     [@"nib2cib-adjustment-frame",      CGRectMake(0.0,  0.0, -12.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered]], // Height is fixed by min/max -size
+     [@"nib2cib-adjustment-frame",      CGRectMake(1.0,  0.0, -13.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDefault]],
      [@"min-size",                      CGSizeMake(0.0, 22.0),                  [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"max-size",                      CGSizeMake(-1.0, 22.0),                 [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
@@ -906,7 +906,7 @@ var themedButtonValues                      = nil,
      [@"text-color",                    A3CPColorActiveText,                    [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateHighlighted]],
 
      [@"content-inset",                 CGInsetMake(1.0, 7.0, 1.0, 7.0),        [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -2.0, 0.0, -1.0),       [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered]],
+     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -3.0, 0.0, -1.0),       [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered]],
      [@"min-size",                      CGSizeMake(0.0, 18.0),                  [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered]],
      [@"max-size",                      CGSizeMake(-1.0, 18.0),                 [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered]],
 
