@@ -3601,11 +3601,11 @@ var themedButtonValues                      = nil,
 {
     var combo = [[CPComboBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 31.0)],
 
-    // Helper for Consistent Arrow Styling (reusing logic)
+    // Helper for Consistent Arrow Styling
     arrowCSS = function(color, rightOffset, boxSize) {
         var size = boxSize || "25px",
             offset = rightOffset || "-8px",
-            marginTop = -(parseInt(size) / 2.5);
+            marginTop = -(parseInt(size) / 2.5); // Centers the arrow visually
 
         return @{
                     @"content": @"''",
@@ -3654,12 +3654,13 @@ var themedButtonValues                      = nil,
                                                        }
                                      afterDictionary:arrowCSS(A3ColorBorderBlue, "-8px", "25px")],
 
+    // FIX: Changed border-radius from "0px" to "3px" to prevent layout shift
     bezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
                                                                  @"border-color": A3ColorBorderBlue,
                                                                  @"border-style": @"solid",
                                                                  @"border-width": @"1px",
-                                                                 @"border-radius": @"0px",
+                                                                 @"border-radius": @"3px", // Was 0px
                                                                  @"box-sizing": @"border-box",
                                                                  @"box-shadow": @"0px 0px 2px 0px rgb(59,127,202)",
                                                                  @"transition-duration": @"0.35s, 0.35s",
@@ -3734,19 +3735,20 @@ var themedButtonValues                      = nil,
                                                            @"bottom": @"3px",
                                                            @"content": @"''",
                                                            @"position": @"absolute",
-                                                           @"right": @"15px", // Adjusted
+                                                           @"right": @"15px",
                                                            @"top": @"3px",
                                                            @"z-index": "+1",
                                                            @"width": @"1px"
                                                        }
                                      afterDictionary:arrowCSS(A3ColorBorderBlue, "-7px", "23px")],
 
+    // FIX: Changed border-radius from "0px" to "3px"
     smallBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
                                                                  @"border-color": A3ColorBorderBlue,
                                                                  @"border-style": @"solid",
                                                                  @"border-width": @"1px",
-                                                                 @"border-radius": @"0px",
+                                                                 @"border-radius": @"3px", // Was 0px
                                                                  @"box-sizing": @"border-box",
                                                                  @"box-shadow": @"0px 0px 2px 0px rgb(59,127,202)",
                                                                  @"transition-duration": @"0.35s, 0.35s",
@@ -3757,7 +3759,7 @@ var themedButtonValues                      = nil,
                                                                  @"bottom": @"3px",
                                                                  @"content": @"''",
                                                                  @"position": @"absolute",
-                                                                 @"right": @"15px", // Adjusted
+                                                                 @"right": @"15px",
                                                                  @"top": @"3px",
                                                                  @"z-index": "+1",
                                                                  @"width": @"1px"
@@ -3777,7 +3779,7 @@ var themedButtonValues                      = nil,
                                                                  @"bottom": @"3px",
                                                                  @"content": @"''",
                                                                  @"position": @"absolute",
-                                                                 @"right": @"15px", // Adjusted
+                                                                 @"right": @"15px",
                                                                  @"top": @"3px",
                                                                  @"z-index": "+1",
                                                                  @"width": @"1px"
@@ -3821,19 +3823,20 @@ var themedButtonValues                      = nil,
                                                            @"bottom": @"2px",
                                                            @"content": @"''",
                                                            @"position": @"absolute",
-                                                           @"right": @"13px", // Adjusted
+                                                           @"right": @"13px",
                                                            @"top": @"2px",
                                                            @"z-index": "+1",
                                                            @"width": @"1px"
                                                        }
                                      afterDictionary:arrowCSS(A3ColorBorderBlue, "-7px", "20px")],
 
+    // FIX: Changed border-radius from "0px" to "3px"
     miniBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
                                                                  @"border-color": A3ColorBorderBlue,
                                                                  @"border-style": @"solid",
                                                                  @"border-width": @"1px",
-                                                                 @"border-radius": @"0px",
+                                                                 @"border-radius": @"3px", // Was 0px
                                                                  @"box-sizing": @"border-box",
                                                                  @"box-shadow": @"0px 0px 2px 0px rgb(59,127,202)",
                                                                  @"transition-duration": @"0.35s, 0.35s",
@@ -3844,7 +3847,7 @@ var themedButtonValues                      = nil,
                                                                  @"bottom": @"2px",
                                                                  @"content": @"''",
                                                                  @"position": @"absolute",
-                                                                 @"right": @"13px", // Adjusted
+                                                                 @"right": @"13px",
                                                                  @"top": @"2px",
                                                                  @"z-index": "+1",
                                                                  @"width": @"1px"
@@ -3864,7 +3867,7 @@ var themedButtonValues                      = nil,
                                                                  @"bottom": @"2px",
                                                                  @"content": @"''",
                                                                  @"position": @"absolute",
-                                                                 @"right": @"13px", // Adjusted
+                                                                 @"right": @"13px",
                                                                  @"top": @"2px",
                                                                  @"z-index": "+1",
                                                                  @"width": @"1px"
@@ -3900,7 +3903,8 @@ var themedButtonValues                      = nil,
         [@"direct-nib2cib-adjustment",  YES],
         [@"text-color",                 A3CPColorActiveText],
         [@"text-color",                 A3CPColorInactiveText,                     [CPThemeStateDisabled]],
-
+        
+        // Ensure text is centered
         [@"vertical-alignment",         CPCenterVerticalTextAlignment],
 
         // Bordered, IB style "Push" (CPRoundedBezelStyle)
@@ -3912,8 +3916,14 @@ var themedButtonValues                      = nil,
         [@"bezel-color",                highlightedButtonCssColor,                 [CPComboBoxStateButtonBordered, CPThemeStateHighlighted]],
         [@"bezel-color",                disabledButtonCssColor,                    [CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
         [@"bezel-color",                disabledButtonCssColor,                    [CPComboBoxStateButtonBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
+        
+        // Regular Button Inset
         [@"content-inset",              CGInsetMake(0.0, 19.0, 1.0, 9.0),          [CPComboBoxStateButtonBordered]],
-        [@"content-inset",              CGInsetMake(0.0, 17.0, 0, 2),              [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+        
+        // Text Field Part Inset (0 top to fix text baseline)
+        [@"content-inset",              CGInsetMake(0.0, 17.0, 0.0, 5.0),          [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+        
+        // Standardize Height to 22.0
         [@"min-size",                   CGSizeMake(32.0, 22.0)],
         [@"max-size",                   CGSizeMake(-1.0, 22.0)],
 
@@ -3941,15 +3951,15 @@ var themedButtonValues                      = nil,
         [@"min-size",                   CGSizeMake(32.0, 15.0),                    CPThemeStateControlSizeMini],
         [@"max-size",                   CGSizeMake(-1.0, 15.0),                    CPThemeStateControlSizeMini],
 
-        // Popup Button sizes
-        [@"popup-button-size",  CGSizeMake(21.0, 23.0),                            [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-        [@"popup-button-size",  CGSizeMake(17.0, 23.0),                            CPThemeStateBezeled],
+        // Popup Button sizes - Standardize Height to match control
+        [@"popup-button-size",  CGSizeMake(21.0, 22.0),                            [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+        [@"popup-button-size",  CGSizeMake(17.0, 22.0),                            CPThemeStateBezeled],
         
-        [@"popup-button-size",  CGSizeMake(19.0, 21.0),                            [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-        [@"popup-button-size",  CGSizeMake(15.0, 21.0),                            [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
+        [@"popup-button-size",  CGSizeMake(19.0, 19.0),                            [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+        [@"popup-button-size",  CGSizeMake(15.0, 19.0),                            [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
         
-        [@"popup-button-size",  CGSizeMake(17.0, 19.0),                            [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-        [@"popup-button-size",  CGSizeMake(13.0, 19.0),                            [CPThemeStateControlSizeMini, CPThemeStateBezeled]]
+        [@"popup-button-size",  CGSizeMake(17.0, 16.0),                            [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+        [@"popup-button-size",  CGSizeMake(13.0, 16.0),                            [CPThemeStateControlSizeMini, CPThemeStateBezeled]]
      ];
 
     [self registerThemeValues:overrides forView:combo inherit:themedTextFieldValues];
