@@ -3902,7 +3902,10 @@ var themedButtonValues                      = nil,
         [@"direct-nib2cib-adjustment",  YES],
         [@"text-color",                 A3CPColorActiveText],
         [@"text-color",                 A3CPColorInactiveText,                     [CPThemeStateDisabled]],
-        
+
+        [@"text-color",                 A3CPColorDefaultText,                      [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],  // Row selected and active
+        [@"text-color",                 A3CPColorActiveText,                  [CPThemeStateTableDataView, CPThemeStateSelectedDataView]], // Row selected but not active
+
         // Ensure text is centered
         [@"vertical-alignment",         CPCenterVerticalTextAlignment],
 
