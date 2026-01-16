@@ -352,9 +352,6 @@ CPProgressIndicatorHUDBarStyle = 2;
 
     _style = aStyle;
 
-    if (_style === CPProgressIndicatorSpinningStyle)
-        [self startAnimation:nil];
-
     [self setNeedsLayout];
 }
 
@@ -604,9 +601,6 @@ CPProgressIndicatorHUDBarStyle = 2;
         _isAnimating                = [aCoder decodeObjectForKey:@"_isAnimating"];
         _isDisplayedWhenStoppedSet  = [aCoder decodeObjectForKey:@"_isDisplayedWhenStoppedSet"];
         _isDisplayedWhenStopped     = [aCoder decodeObjectForKey:@"_isDisplayedWhenStopped"];
-
-        if (_style === CPProgressIndicatorSpinningStyle)
-            [self startAnimation:nil];
 
         [self setNeedsLayout];
     }
