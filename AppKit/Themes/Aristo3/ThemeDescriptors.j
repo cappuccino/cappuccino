@@ -1096,6 +1096,9 @@ var themedButtonValues                      = nil,
      [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateSelected]],
      
+     // High specificity rule for Disabled HUD buttons to prevent them from looking enabled (white)
+     [@"text-color",    [CPColor colorWithWhite:1 alpha:0.4],   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+
      [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleSmallSquare, CPThemeStateHUD]],
      [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleSmallSquare, CPThemeStateHUD, CPThemeStateHighlighted]],
 
@@ -7772,6 +7775,19 @@ var themedButtonValues                      = nil,
         @"background-color": A3ColorActiveText
     }],
 
+    // --- HUD Styles ---
+    hudBezelColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.2)",
+        @"border": @"1px solid rgba(255, 255, 255, 0.2)",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"inset 0 1px 2px rgba(0,0,0,0.1)"
+    }],
+
+    hudSegmentColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(255, 255, 255, 0.9)",
+        @"box-shadow": @"0 0 2px rgba(255, 255, 255, 0.4)"
+    }],
+
     themeValues =
     [
      [@"bezel-color",    bezelColor],
@@ -7779,7 +7795,11 @@ var themedButtonValues                      = nil,
      [@"color-normal",   segmentColor],
      [@"color-warning",  [CPColor orangeColor]],
      [@"color-critical", [CPColor redColor]],
-     [@"spacing",        1.0]
+     [@"spacing",        1.0],
+
+     // --- HUD Mappings ---
+     [@"bezel-color",    hudBezelColor,      CPThemeStateHUD],
+     [@"color-normal",   hudSegmentColor,    CPThemeStateHUD]
      ];
 
     [self registerThemeValues:themeValues forView:levelIndicator];

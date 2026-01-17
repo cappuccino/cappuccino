@@ -91,32 +91,43 @@ CPRatingLevelIndicatorStyle                 = 3;
     var bezelView = [self layoutEphemeralSubviewNamed:"bezel"
                                            positioned:CPWindowBelow
                       relativeToEphemeralSubviewNamed:nil];
-    // TODO Make themable.
-    [bezelView setBackgroundColor:[self valueForThemeAttribute:@"bezel-color"]];
+    
+    // Explicitly retrieve the theme state.
+    var themeState = [self themeState];
+
+    // Ensure HUD state is included if the window is HUD (robustness check)
+    if ([[self window] styleMask] & CPHUDBackgroundWindowMask)
+        themeState = themeState.and(CPThemeStateHUD);
+
+    // Use inState: explicitly
+    [bezelView setBackgroundColor:[self valueForThemeAttribute:@"bezel-color" inState:themeState]];
 
     var segmentCount = _maxValue - _minValue;
 
     if (segmentCount <= 0)
         return;
 
-    var filledColor = [self valueForThemeAttribute:@"color-normal"],
+    // Use inState: explicitly
+    var filledColor = [self valueForThemeAttribute:@"color-normal" inState:themeState],
         value = [self doubleValue];
 
     if (_warningValue < _criticalValue)
     {
         if (value >= _criticalValue)
-            filledColor = [self valueForThemeAttribute:@"color-critical"];
+            filledColor = [self valueForThemeAttribute:@"color-critical" inState:themeState];
         else if (value >= _warningValue)
-            filledColor = [self valueForThemeAttribute:@"color-warning"];
+            filledColor = [self valueForThemeAttribute:@"color-warning" inState:themeState];
     }
     else
     {
         if (value <= _criticalValue)
-            filledColor = [self valueForThemeAttribute:@"color-critical"];
+            filledColor = [self valueForThemeAttribute:@"color-critical" inState:themeState];
         else if (value <= _warningValue)
-            filledColor = [self valueForThemeAttribute:@"color-warning"];
+            filledColor = [self valueForThemeAttribute:@"color-warning" inState:themeState];
     }
 
+    // Use inState: explicitly for empty color too
+    var emptyColor = [self valueForThemeAttribute:@"color-empty" inState:themeState];
 
     for (var i = 0; i < segmentCount; i++)
     {
@@ -124,7 +135,7 @@ CPRatingLevelIndicatorStyle                 = 3;
                                                positioned:CPWindowAbove
                           relativeToEphemeralSubviewNamed:bezelView];
 
-        [segmentView setBackgroundColor:(_minValue + i) < value ? filledColor : [self valueForThemeAttribute:@"color-empty"]];
+        [segmentView setBackgroundColor:(_minValue + i) < value ? filledColor : emptyColor];
     }
 }
 
