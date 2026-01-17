@@ -248,6 +248,10 @@ var ListColumnIdentifier = @"1";
         [[_panel contentView] addSubview:_scrollView];
         [_panel setInitialFirstResponder:_tableView];
 
+        // fixme: this really should be properly themed
+        if ([_dataSource respondsToSelector:@selector(hasThemeState:)] && [_dataSource hasThemeState:CPThemeStateHUD])
+            [_tableView setBackgroundColor:[CPColor blackColor]];
+
         if ([_dataSource numberOfItemsInList:self] > 0)
             [_tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
         else
@@ -263,6 +267,11 @@ var ListColumnIdentifier = @"1";
 - (CPPanel)makeListPanelWithFrame:(CGRect)aFrame
 {
     var panel = [[_CPPopUpPanel alloc] initWithContentRect:aFrame styleMask:CPBorderlessWindowMask];
+
+    // Check if the data source (e.g. CPComboBox) is in HUD mode.
+    // hack to set the HUD background mask to the panel but using the standard WindowView class (not the HUD one).
+    if ([_dataSource respondsToSelector:@selector(hasThemeState:)] && [_dataSource hasThemeState:CPThemeStateHUD])
+        panel._styleMask |= CPHUDBackgroundWindowMask;
 
     [panel setTitle:@""];
     [panel setFloatingPanel:YES];

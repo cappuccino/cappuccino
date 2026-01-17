@@ -276,7 +276,7 @@
     windows = [];
 
     var winWidth = 400.0,
-        winHeight = 420.0,
+        winHeight = 380.0,
         padding = 20.0;
 
     // 1. Top Left: Normal, Enabled
