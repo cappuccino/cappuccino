@@ -2522,208 +2522,235 @@ var themedButtonValues                      = nil,
 
 + (CPSearchField)themedSearchField
 {
-    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 22.0)], // small: 19, mini: 17 - cancel/loupe 16/13/11
+    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 22.0)],
 
-    // Regular (16x16)
+    // ==========================================================
+    // 1. REGULAR IMAGES (16x16)
+    // ==========================================================
+
     imageSearch = [CPImage imageWithCSSDictionary:@{
-                                                    "-webkit-mask-image": svgMagnifier,
-                                                    "mask-image": svgMagnifier,
-                                                    "background-color": A3ColorActiveText,
-                                                    "-webkit-mask-size": "contain",
-                                                    "mask-size": "contain",
-                                                    "-webkit-mask-repeat": "no-repeat",
-                                                    "mask-repeat": "no-repeat",
-                                                    "-webkit-mask-position": "center",
-                                                    "mask-position": "center"
-                                                    }
-                                             size:CGSizeMake(16,16)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorActiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(16,16)],
 
     imageFind = [CPImage imageWithCSSDictionary:@{
-                                                  "-webkit-mask-image": svgMagnifier,
-                                                  "mask-image": svgMagnifier,
-                                                  "background-color": A3ColorActiveText,
-                                                  "-webkit-mask-size": "contain",
-                                                  "mask-size": "contain",
-                                                  "-webkit-mask-repeat": "no-repeat",
-                                                  "mask-repeat": "no-repeat",
-                                                  "-webkit-mask-position": "center",
-                                                  "mask-position": "center"
-                                                  }
-                                           size:CGSizeMake(16,16)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorActiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(16,16)],
 
     imageCancel = [CPImage imageWithCSSDictionary:@{
-                                                    "-webkit-mask-image": svgCancel,
-                                                    "mask-image": svgCancel,
-                                                    "background-color": A3ColorActiveText,
-                                                    "-webkit-mask-size": "contain",
-                                                    "mask-size": "contain",
-                                                    "-webkit-mask-repeat": "no-repeat",
-                                                    "mask-repeat": "no-repeat",
-                                                    "-webkit-mask-position": "center",
-                                                    "mask-position": "center"
-                                                    }
-                                             size:CGSizeMake(11,11)],
+        "-webkit-mask-image": svgCancel,
+        "mask-image": svgCancel,
+        "background-color": A3ColorActiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(11,11)],
 
     imageSearchLight = [CPImage imageWithCSSDictionary:@{
-                                                         "-webkit-mask-image": svgMagnifier,
-                                                         "mask-image": svgMagnifier,
-                                                         "background-color": A3ColorInactiveText,
-                                                         "-webkit-mask-size": "contain",
-                                                         "mask-size": "contain",
-                                                         "-webkit-mask-repeat": "no-repeat",
-                                                         "mask-repeat": "no-repeat",
-                                                         "-webkit-mask-position": "center",
-                                                         "mask-position": "center"
-                                                         }
-                                                  size:CGSizeMake(16,16)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorInactiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(16,16)],
 
     imageFindLight = [CPImage imageWithCSSDictionary:@{
-                                                       "-webkit-mask-image": svgMagnifier,
-                                                       "mask-image": svgMagnifier,
-                                                       "background-color": A3ColorInactiveText,
-                                                       "-webkit-mask-size": "contain",
-                                                       "mask-size": "contain",
-                                                       "-webkit-mask-repeat": "no-repeat",
-                                                       "mask-repeat": "no-repeat",
-                                                       "-webkit-mask-position": "center",
-                                                       "mask-position": "center"
-                                                       }
-                                                size:CGSizeMake(16,16)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorInactiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(16,16)],
 
-    // Small (13x13)
+    // ==========================================================
+    // 2. SMALL IMAGES (13x13)
+    // ==========================================================
+
     imageSearchSmall = [CPImage imageWithCSSDictionary:@{
-                                                         "-webkit-mask-image": svgMagnifier,
-                                                         "mask-image": svgMagnifier,
-                                                         "background-color": A3ColorActiveText,
-                                                         "-webkit-mask-size": "contain",
-                                                         "mask-size": "contain",
-                                                         "-webkit-mask-repeat": "no-repeat",
-                                                         "mask-repeat": "no-repeat",
-                                                         "-webkit-mask-position": "center",
-                                                         "mask-position": "center"
-                                                         }
-                                                  size:CGSizeMake(13,13)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorActiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(13,13)],
 
     imageFindSmall = [CPImage imageWithCSSDictionary:@{
-                                                       "-webkit-mask-image": svgMagnifier,
-                                                       "mask-image": svgMagnifier,
-                                                       "background-color": A3ColorActiveText,
-                                                       "-webkit-mask-size": "contain",
-                                                       "mask-size": "contain",
-                                                       "-webkit-mask-repeat": "no-repeat",
-                                                       "mask-repeat": "no-repeat",
-                                                       "-webkit-mask-position": "center",
-                                                       "mask-position": "center"
-                                                       }
-                                                size:CGSizeMake(13,13)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorActiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(13,13)],
 
     imageCancelSmall = [CPImage imageWithCSSDictionary:@{
-                                                         "-webkit-mask-image": svgCancel,
-                                                         "mask-image": svgCancel,
-                                                         "background-color": A3ColorActiveText,
-                                                         "-webkit-mask-size": "contain",
-                                                         "mask-size": "contain",
-                                                         "-webkit-mask-repeat": "no-repeat",
-                                                         "mask-repeat": "no-repeat",
-                                                         "-webkit-mask-position": "center",
-                                                         "mask-position": "center"
-                                                         }
-                                                  size:CGSizeMake(9,9)],
+        "-webkit-mask-image": svgCancel,
+        "mask-image": svgCancel,
+        "background-color": A3ColorActiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(9,9)],
 
     imageSearchLightSmall = [CPImage imageWithCSSDictionary:@{
-                                                              "-webkit-mask-image": svgMagnifier,
-                                                              "mask-image": svgMagnifier,
-                                                              "background-color": A3ColorInactiveText,
-                                                              "-webkit-mask-size": "contain",
-                                                              "mask-size": "contain",
-                                                              "-webkit-mask-repeat": "no-repeat",
-                                                              "mask-repeat": "no-repeat",
-                                                              "-webkit-mask-position": "center",
-                                                              "mask-position": "center"
-                                                              }
-                                                       size:CGSizeMake(13,13)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorInactiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(13,13)],
 
     imageFindLightSmall = [CPImage imageWithCSSDictionary:@{
-                                                            "-webkit-mask-image": svgMagnifier,
-                                                            "mask-image": svgMagnifier,
-                                                            "background-color": A3ColorInactiveText,
-                                                            "-webkit-mask-size": "contain",
-                                                            "mask-size": "contain",
-                                                            "-webkit-mask-repeat": "no-repeat",
-                                                            "mask-repeat": "no-repeat",
-                                                            "-webkit-mask-position": "center",
-                                                            "mask-position": "center"
-                                                            }
-                                                     size:CGSizeMake(13,13)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorInactiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(13,13)],
 
-    // Mini (11x11)
+    // ==========================================================
+    // 3. MINI IMAGES (11x11)
+    // ==========================================================
+
     imageSearchMini = [CPImage imageWithCSSDictionary:@{
-                                                        "-webkit-mask-image": svgMagnifier,
-                                                        "mask-image": svgMagnifier,
-                                                        "background-color": A3ColorActiveText,
-                                                        "-webkit-mask-size": "contain",
-                                                        "mask-size": "contain",
-                                                        "-webkit-mask-repeat": "no-repeat",
-                                                        "mask-repeat": "no-repeat",
-                                                        "-webkit-mask-position": "center",
-                                                        "mask-position": "center"
-                                                        }
-                                                 size:CGSizeMake(11,11)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorActiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(11,11)],
 
     imageFindMini = [CPImage imageWithCSSDictionary:@{
-                                                      "-webkit-mask-image": svgMagnifier,
-                                                      "mask-image": svgMagnifier,
-                                                      "background-color": A3ColorActiveText,
-                                                      "-webkit-mask-size": "contain",
-                                                      "mask-size": "contain",
-                                                      "-webkit-mask-repeat": "no-repeat",
-                                                      "mask-repeat": "no-repeat",
-                                                      "-webkit-mask-position": "center",
-                                                      "mask-position": "center"
-                                                      }
-                                               size:CGSizeMake(11,11)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorActiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(11,11)],
 
     imageCancelMini = [CPImage imageWithCSSDictionary:@{
-                                                        "-webkit-mask-image": svgCancel,
-                                                        "mask-image": svgCancel,
-                                                        "background-color": A3ColorActiveText,
-                                                        "-webkit-mask-size": "contain",
-                                                        "mask-size": "contain",
-                                                        "-webkit-mask-repeat": "no-repeat",
-                                                        "mask-repeat": "no-repeat",
-                                                        "-webkit-mask-position": "center",
-                                                        "mask-position": "center"
-                                                        }
-                                                 size:CGSizeMake(7,7)],
+        "-webkit-mask-image": svgCancel,
+        "mask-image": svgCancel,
+        "background-color": A3ColorActiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(7,7)],
 
     imageSearchLightMini = [CPImage imageWithCSSDictionary:@{
-                                                             "-webkit-mask-image": svgMagnifier,
-                                                             "mask-image": svgMagnifier,
-                                                             "background-color": A3ColorInactiveText,
-                                                             "-webkit-mask-size": "contain",
-                                                             "mask-size": "contain",
-                                                             "-webkit-mask-repeat": "no-repeat",
-                                                             "mask-repeat": "no-repeat",
-                                                             "-webkit-mask-position": "center",
-                                                             "mask-position": "center"
-                                                             }
-                                                      size:CGSizeMake(11,11)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorInactiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(11,11)],
 
     imageFindLightMini = [CPImage imageWithCSSDictionary:@{
-                                                           "-webkit-mask-image": svgMagnifier,
-                                                           "mask-image": svgMagnifier,
-                                                           "background-color": A3ColorInactiveText,
-                                                           "-webkit-mask-size": "contain",
-                                                           "mask-size": "contain",
-                                                           "-webkit-mask-repeat": "no-repeat",
-                                                           "mask-repeat": "no-repeat",
-                                                           "-webkit-mask-position": "center",
-                                                           "mask-position": "center"
-                                                           }
-                                                    size:CGSizeMake(11,11)],
+        "-webkit-mask-image": svgMagnifier,
+        "mask-image": svgMagnifier,
+        "background-color": A3ColorInactiveText,
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(11,11)],
+
+    // ==========================================================
+    // 4. HUD IMAGES (White) - ALL SIZES
+    // ==========================================================
+
+    // Regular HUD
+    imageSearchHUD = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgMagnifier, "mask-image": svgMagnifier,
+        "background-color": @"#ffffff",
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(16,16)],
+
+    imageCancelHUD = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgCancel, "mask-image": svgCancel,
+        "background-color": @"#ffffff",
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(11,11)],
+
+    // Small HUD
+    imageSearchHUDSmall = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgMagnifier, "mask-image": svgMagnifier,
+        "background-color": @"#ffffff",
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(13,13)],
+
+    imageCancelHUDSmall = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgCancel, "mask-image": svgCancel,
+        "background-color": @"#ffffff",
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(9,9)],
+
+    // Mini HUD
+    imageSearchHUDMini = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgMagnifier, "mask-image": svgMagnifier,
+        "background-color": @"#ffffff",
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(11,11)],
+
+    imageCancelHUDMini = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgCancel, "mask-image": svgCancel,
+        "background-color": @"#ffffff",
+        "-webkit-mask-size": "contain", "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center", "mask-position": "center"
+    } size:CGSizeMake(7,7)],
+
+    // ==========================================================
+    // 5. COLORS & LAYOUT
+    // ==========================================================
+
+    hudBezelCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.25)",
+        @"border-color": @"rgba(255, 255, 255, 0.25)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"11px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0 1px 0 rgba(255,255,255,0.1) inset"
+    }],
+
+    hudBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.4)",
+        @"border-color": @"rgba(255, 255, 255, 0.5)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"11px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0 0 3px rgba(255,255,255,0.3)"
+    }],
 
     calcRectFunctionNotEditing = "" + function(s, rect) {
-
         var size        = [[s _potentialCurrentValueForThemeAttribute:@"image-search"] size],
             inset       = [s _potentialCurrentValueForThemeAttribute:@"image-search-inset"],
             margin      = [s _potentialCurrentValueForThemeAttribute:@"search-right-margin"],
@@ -2740,103 +2767,116 @@ var themedButtonValues                      = nil,
     },
 
     calcRectFunctionEditing = "" + function(s, rect) {
-
         var size = [[s _potentialCurrentValueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero(),
             inset = [s _potentialCurrentValueForThemeAttribute:@"image-search-inset"];
-
         return CGRectMake(inset.left - inset.right, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
     },
 
     animateLayoutFunction = "" + function(s) {
-
-        // Search for the CPImageAndTextView subview of mine
-
         for (var i = 0, subviews = [s subviews], nb = [subviews count], textView = nil; (!textView && (i < nb)); i++)
-            if ([subviews[i] isKindOfClass:_CPImageAndTextView])
-                textView = subviews[i];
-
-        // Animate change
+            if ([subviews[i] isKindOfClass:_CPImageAndTextView]) textView = subviews[i];
 
         [CPAnimationContext beginGrouping];
-
         var context = [CPAnimationContext currentContext];
-
         [context setDuration:0.2];
         [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
         [context setCompletionHandler:function() { [s themedLayoutFunctionCompletionHandler]; }];
-
         [[[s searchButton] animator] setFrame:[s searchButtonRectForBounds:[s bounds]]];
         [[textView animator]         setFrame:[s contentRectForBounds:[s bounds]]];
-
         [CPAnimationContext endGrouping];
     },
 
+    // ==========================================================
+    // 6. REGISTRATION
+    // ==========================================================
+
     overrides =
     [
-     // Regular
-     [@"image-search-inset",        CGInsetMake(-1, 0, 0, 2)], // was 0, 5, 0, 5
+     // --- Regular Size ---
+     [@"image-search-inset",        CGInsetMake(-1, 0, 0, 2)],
      [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, 0)],
+     
      [@"image-search",              imageSearch],
-     [@"image-find",                imageSearch], // In Cocoa, special find image is shown only while editing
+     [@"image-find",                imageSearch], // In Cocoa, find image shows only while editing
      [@"image-search",              imageSearch,                    CPThemeStateEditing],
      [@"image-find",                imageFind,                      CPThemeStateEditing],
      [@"image-search",              imageSearchLight,               CPThemeStateDisabled],
-     [@"image-find",                imageSearchLight,               CPThemeStateDisabled],
+     [@"image-find",                imageFindLight,                 CPThemeStateDisabled],
      [@"image-cancel",              imageCancel],
-     [@"image-cancel-pressed",      imageCancel], // In Cocoa, there's no pressed visual state
+     [@"image-cancel-pressed",      imageCancel],
      [@"search-right-margin",       4],
+
+     // --- HUD Regular Overrides ---
+     [@"image-search",              imageSearchHUD,                 CPThemeStateHUD],
+     [@"image-find",                imageSearchHUD,                 [CPThemeStateHUD, CPThemeStateEditing]],
+     [@"image-cancel",              imageCancelHUD,                 CPThemeStateHUD],
+     [@"text-color",                [CPColor whiteColor],           [CPThemeStateHUD, CPTextFieldStateRounded, CPThemeStateBezeled]],
+     [@"text-color",                [CPColor colorWithWhite:1 alpha:0.5], [CPThemeStateHUD, CPTextFieldStateRounded, CPTextFieldStatePlaceholder]],
+     [@"bezel-color",               hudBezelCssColor,               [CPThemeStateHUD, CPTextFieldStateRounded, CPThemeStateBezeled]],
+     [@"bezel-color",               hudBezelFocusedCssColor,        [CPThemeStateHUD, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+
+     // --- Alignment Fixes (For All) ---
      [@"vertical-alignment",        CPCenterVerticalTextAlignment],
-
-     // Small
-     [@"image-search-inset",        CGInsetMake(-1, -1, 0, 2),      CPThemeStateControlSizeSmall], // was 0, 5, 0, 5
-     [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, -1),      CPThemeStateControlSizeSmall],
-     [@"image-search",              imageSearchSmall,               CPThemeStateControlSizeSmall],
-     [@"image-find",                imageSearchSmall,               CPThemeStateControlSizeSmall], // In Cocoa, special find image is shown only while editing
-     [@"image-search",              imageSearchSmall,               [CPThemeStateControlSizeSmall, CPThemeStateEditing]],
-     [@"image-find",                imageFindSmall,                 [CPThemeStateControlSizeSmall, CPThemeStateEditing]],
-     [@"image-search",              imageSearchLightSmall,          [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
-     [@"image-find",                imageSearchLightSmall,          [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
-     [@"image-cancel",              imageCancelSmall,               CPThemeStateControlSizeSmall],
-     [@"image-cancel-pressed",      imageCancelSmall,               CPThemeStateControlSizeSmall], // In Cocoa, there's no pressed visual state
-     [@"search-right-margin",       6,                              CPThemeStateControlSizeSmall],
-
-     // Mini
-     [@"image-search-inset",        CGInsetMake(-1, -2, 0, 2),      CPThemeStateControlSizeMini], // was 0, 5, 0, 5
-     [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, -2),      CPThemeStateControlSizeMini],
-     [@"image-search",              imageSearchMini,                CPThemeStateControlSizeMini],
-     [@"image-find",                imageSearchMini,                CPThemeStateControlSizeMini], // In Cocoa, special find image is shown only while editing
-     [@"image-search",              imageSearchMini,                [CPThemeStateControlSizeMini, CPThemeStateEditing]],
-     [@"image-find",                imageFindMini,                  [CPThemeStateControlSizeMini, CPThemeStateEditing]],
-     [@"image-search",              imageSearchLightMini,           [CPThemeStateControlSizeMini, CPThemeStateDisabled]],
-     [@"image-find",                imageSearchLightMini,           [CPThemeStateControlSizeMini, CPThemeStateDisabled]],
-     [@"image-cancel",              imageCancelMini,                CPThemeStateControlSizeMini],
-     [@"image-cancel-pressed",      imageCancelMini,                CPThemeStateControlSizeMini], // In Cocoa, there's no pressed visual state
-     [@"search-right-margin",       8,                              CPThemeStateControlSizeMini],
-
-     // FIXME: utile ?
-     // Overide
-     [@"content-inset",             CGInsetMake(2, 11, 4, 11),      [CPTextFieldStateRounded, CPThemeStateBezeled]],
-     [@"content-inset",             CGInsetMake(2, 11, 4, 11),      [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+     [@"vertical-alignment",        CPCenterVerticalTextAlignment,  [CPTextFieldStateRounded, CPThemeStateBezeled]],
+     [@"vertical-alignment",        CPCenterVerticalTextAlignment,  [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+     [@"content-inset",             CGInsetMake(0, 11, 0, 11),      [CPTextFieldStateRounded, CPThemeStateBezeled]],
+     [@"content-inset",             CGInsetMake(0, 11, 0, 11),      [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
      [@"bezel-inset",               CGInsetMake(2, 11, 4, 11),      [CPTextFieldStateRounded, CPThemeStateBezeled]],
      [@"min-size",                  CGSizeMake(0, 22.0),            [CPTextFieldStateRounded, CPThemeStateBezeled]],
      [@"max-size",                  CGSizeMake(-1, 22.0),           [CPTextFieldStateRounded, CPThemeStateBezeled]],
 
-     [@"content-inset",             CGInsetMake(2, 11, 4, 11),      [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
-     [@"content-inset",             CGInsetMake(2, 11, 4, 11),      [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+     // --- Small Size ---
+     [@"image-search-inset",        CGInsetMake(-1, -1, 0, 2),      CPThemeStateControlSizeSmall],
+     [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, -1),      CPThemeStateControlSizeSmall],
+     [@"image-search",              imageSearchSmall,               CPThemeStateControlSizeSmall],
+     [@"image-find",                imageSearchSmall,               [CPThemeStateControlSizeSmall, CPThemeStateEditing]],
+     [@"image-find",                imageFindSmall,                 [CPThemeStateControlSizeSmall, CPThemeStateEditing]], // Specific override
+     [@"image-search",              imageSearchLightSmall,          [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     [@"image-find",                imageFindLightSmall,            [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     [@"image-cancel",              imageCancelSmall,               CPThemeStateControlSizeSmall],
+     [@"image-cancel-pressed",      imageCancelSmall,               CPThemeStateControlSizeSmall],
+     [@"search-right-margin",       6,                              CPThemeStateControlSizeSmall],
+
+     [@"content-inset",             CGInsetMake(0, 11, 0, 11),      [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
+     [@"content-inset",             CGInsetMake(0, 11, 0, 11),      [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
      [@"min-size",                  CGSizeMake(0, 19.0),            [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
      [@"max-size",                  CGSizeMake(-1, 19.0),           [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
 
-     [@"content-inset",             CGInsetMake(-1, 11, 1, 11),     [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
-     [@"content-inset",             CGInsetMake(-1, 11, 1, 11),     [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+     // --- HUD Small Overrides ---
+     [@"image-search",              imageSearchHUDSmall,            [CPThemeStateHUD, CPThemeStateControlSizeSmall]],
+     [@"image-find",                imageSearchHUDSmall,            [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateEditing]],
+     [@"image-cancel",              imageCancelHUDSmall,            [CPThemeStateHUD, CPThemeStateControlSizeSmall]],
+     [@"bezel-color",               hudBezelCssColor,               [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
+     [@"bezel-color",               hudBezelFocusedCssColor,        [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+
+     // --- Mini Size ---
+     [@"image-search-inset",        CGInsetMake(-1, -2, 0, 2),      CPThemeStateControlSizeMini],
+     [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, -2),      CPThemeStateControlSizeMini],
+     [@"image-search",              imageSearchMini,                CPThemeStateControlSizeMini],
+     [@"image-find",                imageSearchMini,                [CPThemeStateControlSizeMini, CPThemeStateEditing]],
+     [@"image-find",                imageFindMini,                  [CPThemeStateControlSizeMini, CPThemeStateEditing]],
+     [@"image-search",              imageSearchLightMini,           [CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     [@"image-find",                imageFindLightMini,             [CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     [@"image-cancel",              imageCancelMini,                CPThemeStateControlSizeMini],
+     [@"image-cancel-pressed",      imageCancelMini,                CPThemeStateControlSizeMini],
+     [@"search-right-margin",       8,                              CPThemeStateControlSizeMini],
+
+     [@"content-inset",             CGInsetMake(0, 11, 0, 11),      [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
+     [@"content-inset",             CGInsetMake(0, 11, 0, 11),      [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
      [@"min-size",                  CGSizeMake(0, 17.0),            [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
      [@"max-size",                  CGSizeMake(-1, 17.0),           [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
 
-     // Animation
+     // --- HUD Mini Overrides ---
+     [@"image-search",              imageSearchHUDMini,             [CPThemeStateHUD, CPThemeStateControlSizeMini]],
+     [@"image-find",                imageSearchHUDMini,             [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateEditing]],
+     [@"image-cancel",              imageCancelHUDMini,             [CPThemeStateHUD, CPThemeStateControlSizeMini]],
+     [@"bezel-color",               hudBezelCssColor,               [CPThemeStateHUD, CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
+     [@"bezel-color",               hudBezelFocusedCssColor,        [CPThemeStateHUD, CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+
+     // --- Animation & Menu ---
      [@"search-button-rect-function",  calcRectFunctionNotEditing,  [CPTextFieldStateRounded, CPThemeStateBezeled]],
      [@"search-button-rect-function",  calcRectFunctionEditing,     [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
      [@"layout-function",              animateLayoutFunction],
-
-     // Menu
      [@"search-menu-offset",        CGPointMake(1, 0)]
      ];
 
@@ -2884,7 +2924,29 @@ var themedButtonValues                      = nil,
                                                               @"box-sizing": @"border-box",
                                                               @"transition-duration": @"0.35s, 0.35s",
                                                               @"transition-property": @"box-shadow, border"
-                                                              }];
+                                                              }],
+   hudBezelCssColor = [CPColor colorWithCSSDictionary:@{
+                                                        @"background-color": @"rgba(0, 0, 0, 0.3)",
+                                                        @"border-color": @"rgba(255, 255, 255, 0.3)",
+                                                        @"border-style": @"solid",
+                                                        @"border-width": @"1px",
+                                                        @"border-radius": @"0px",
+                                                        @"box-sizing": @"border-box",
+                                                        @"transition-duration": @"0.35s, 0.35s",
+                                                        @"transition-property": @"box-shadow, border"
+                                                        }],
+
+    hudBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
+                                                        @"background-color": @"rgba(0, 0, 0, 0.5)",
+                                                        @"border-color": @"#ffffff",
+                                                        @"border-style": @"solid",
+                                                        @"border-width": @"1px",
+                                                        @"border-radius": @"0px",
+                                                        @"box-sizing": @"border-box",
+                                                        @"box-shadow": @"0px 0px 3px 0px rgba(255,255,255,0.5)",
+                                                        @"transition-duration": @"0.35s, 0.35s",
+                                                        @"transition-property": @"box-shadow, border"
+                                                        }],
 
     themeValues =
     [
@@ -2893,6 +2955,13 @@ var themedButtonValues                      = nil,
      [@"bezel-color",                   bezelCssColor,                              [CPThemeStateBezeled, CPThemeStateBordered]],
      [@"bezel-color",                   bezelFocusedCssColor,                       [CPThemeStateBezeled, CPThemeStateBordered, CPThemeStateEditing, CPThemeStateKeyWindow]],
      [@"bezel-color",                   bezelDisabledCssColor,                      [CPThemeStateBezeled, CPThemeStateBordered, CPThemeStateDisabled]],
+
+     // --- HUD Mappings ---
+     [@"bezel-color",                   hudBezelCssColor,                           [CPThemeStateHUD, CPThemeStateBezeled, CPThemeStateBordered]],
+     [@"bezel-color",                   hudBezelFocusedCssColor,                    [CPThemeStateHUD, CPThemeStateBezeled, CPThemeStateBordered, CPThemeStateEditing]],
+     [@"text-color",                    [CPColor whiteColor],                       CPThemeStateHUD],
+     [@"text-color",                    [CPColor colorWithWhite:1 alpha:0.4],       [CPThemeStateHUD, CPThemeStateDisabled]],
+     // ------
 
      [@"uses-focus-ring",               YES],
 
@@ -3328,18 +3397,22 @@ var themedButtonValues                      = nil,
 
     themeValues =
     [
-     // CPThemeStateDisabled    = out of range tiles
-     // CPThemeStateHighlighted = current day
-     // CPThemeStateSelected    = selection
+     // Standard
      [@"text-color",            A3CPColorCalendarTile],
      [@"text-color",            A3CPColorCalendarTile,              CPThemeStateHighlighted],
      [@"text-color",            A3CPColorCalendarCurrentDayTile,    [CPThemeStateHighlighted, CPThemeStateKeyWindow]],
      [@"text-color",            A3CPColorCalendarOutOfRangeTile,    CPThemeStateDisabled],
-     [@"text-color",            A3CPColorCalendarOutOfRangeTile,    [CPThemeStateDisabled, CPThemeStateKeyWindow]],
      [@"text-color",            A3CPColorCalendarTile,              CPThemeStateSelected],
      [@"text-color",            A3CPColorCalendarSelectedTile,      [CPThemeStateSelected, CPThemeStateKeyWindow]],
-     [@"text-color",            A3CPColorCalendarTile,              [CPThemeStateSelected, CPThemeStateDisabled]],
-     [@"text-color",            A3CPColorCalendarTile,              [CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]],
+     
+     // --- HUD Mappings ---
+     // Normal Days: White
+     [@"text-color",            [CPColor whiteColor],               CPThemeStateHUD],
+     // Highlighted/Selected Days: Black (since background will be light white/transparent)
+     [@"text-color",            [CPColor blackColor],               [CPThemeStateHUD, CPThemeStateSelected]], 
+     [@"text-color",            [CPColor blackColor],               [CPThemeStateHUD, CPThemeStateHighlighted]],
+     // Out of Range: Dimmed White
+     [@"text-color",            [CPColor colorWithWhite:1 alpha:0.4], [CPThemeStateHUD, CPThemeStateDisabled]],
 
      [@"font",                  [CPFont systemFontOfSize:10.0]],
      [@"font",                  [CPFont boldSystemFontOfSize:10.0], CPThemeStateHighlighted],
@@ -3372,7 +3445,11 @@ var themedButtonValues                      = nil,
                                                                               @"border-radius": @"3px",
                                                                               @"box-sizing": @"border-box"
                                                                               }],
-
+    // --- HUD Selected Background ---
+    hudSelectedBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                              @"background-color": @"rgba(255,255,255,0.3)",
+                                                              @"border-radius": @"3px"
+                                                             }],
     themeValues =
     [
      [@"content-inset",     CGInsetMake(2.0, 1.0, 0.0, -1.0)],
@@ -3385,7 +3462,12 @@ var themedButtonValues                      = nil,
      [@"font",              [CPFont systemFontForControlSize:CPSmallControlSize],       CPThemeStateControlSizeSmall],
      [@"font",              [CPFont systemFontForControlSize:CPMiniControlSize],        CPThemeStateControlSizeMini],
      [@"text-color",        A3CPColorActiveText],
-     [@"text-color",        A3CPColorInactiveText,                                      CPThemeStateDisabled]
+     [@"text-color",        A3CPColorInactiveText,                                      CPThemeStateDisabled],
+
+     // --- HUD States ---
+     [@"bezel-color",       hudSelectedBezelColor,                                      [CPThemeStateHUD, CPThemeStateSelected]],
+     [@"text-color",        [CPColor whiteColor],                                       CPThemeStateHUD],
+     [@"text-color",        [CPColor colorWithWhite:1 alpha:0.4],                       [CPThemeStateHUD, CPThemeStateDisabled]]
      ];
 
     [self registerThemeValues:themeValues forView:textField];
@@ -3407,8 +3489,12 @@ var themedButtonValues                      = nil,
      [@"font",              [CPFont systemFontForControlSize:CPSmallControlSize],       CPThemeStateControlSizeSmall],
      [@"font",              [CPFont systemFontForControlSize:CPMiniControlSize],        CPThemeStateControlSizeMini],
      [@"text-color",        A3CPColorActiveText],
-     [@"text-color",        A3CPColorInactiveText,                                      CPThemeStateDisabled]
-     ];
+     [@"text-color",        A3CPColorInactiveText,                                      CPThemeStateDisabled],
+
+          // --- HUD States ---
+     [@"text-color",        [CPColor whiteColor],                                       CPThemeStateHUD],
+     [@"text-color",        [CPColor colorWithWhite:1 alpha:0.4],                       [CPThemeStateHUD, CPThemeStateDisabled]]
+    ];
 
     [self registerThemeValues:themeValues forView:textField];
 
@@ -6649,29 +6735,27 @@ var themedButtonValues                      = nil,
 {
     var stepper = [CPStepper stepper],
 
-    // Helper to create the arrow CSS. 
-    // Ensures 'content' is set and background-color is used for the mask.
+    // Helper to create the arrow CSS.
+    // Uses ::after pseudo-element to draw the arrow via mask-image.
     arrowCSS = function(svg, color) {
         return @{
-            @"content": @"''", // REQUIRED for visibility
+            @"content": @"''",
             @"width": @"100%",
             @"height": @"100%",
             @"top": @"0px",
             @"left": @"0px",
             @"position": @"absolute",
             @"z-index": @"300",
-            
-            // Masking
+
             "-webkit-mask-image": svg,
             "mask-image": svg,
-            "-webkit-mask-size": "100%",
-            "mask-size": "100%",
-            "-webkit-mask-repeat": "no-repeat",
-            "mask-repeat": "no-repeat",
-            "-webkit-mask-position": "center",
-            "mask-position": "center",
-            
-            // Color
+            "-webkit-mask-size": @"100%",
+            "mask-size": @"100%",
+            "-webkit-mask-repeat": @"no-repeat",
+            "mask-repeat": @"no-repeat",
+            "-webkit-mask-position": @"center",
+            "mask-position": @"center",
+
             @"background-color": color
         };
     },
@@ -6682,7 +6766,7 @@ var themedButtonValues                      = nil,
         @"background-color": A3ColorBackgroundWhite,
         @"border-color": A3ColorActiveBorder,
         @"border-style": @"solid",
-        @"border-width": @"1px 1px 0px 1px", // Top Left Bottom Right
+        @"border-width": @"1px 1px 0px 1px",
         @"border-top-left-radius": @"3px",
         @"border-top-right-radius": @"3px",
         @"box-sizing": @"border-box"
@@ -6737,6 +6821,81 @@ var themedButtonValues                      = nil,
         @"border-bottom-right-radius": @"3px",
         @"box-sizing": @"border-box"
     } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, A3ColorHighlightedStepperArrow)],
+
+    // --- HUD Colors (White Arrows, Transparent/Dark Backgrounds) ---
+    // Note: We use specific border radii to ensure they don't look like capsules (10px).
+
+    hudUpCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.2)",
+        @"border-color": @"rgba(255,255,255,0.3)",
+        @"border-style": @"solid",
+        @"border-width": @"1px 1px 0px 1px",
+        @"border-top-left-radius": @"3px",
+        @"border-top-right-radius": @"3px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowUp, @"#FFFFFF")],
+
+    hudUpHighlightedCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.4)",
+        @"border-color": @"rgba(255,255,255,0.5)",
+        @"border-style": @"solid",
+        @"border-width": @"1px 1px 0px 1px",
+        @"border-top-left-radius": @"3px",
+        @"border-top-right-radius": @"3px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowUp, @"#FFFFFF")],
+
+    hudUpDisabledCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.1)",
+        @"border-color": @"rgba(255,255,255,0.1)",
+        @"border-style": @"solid",
+        @"border-width": @"1px 1px 0px 1px",
+        @"border-top-left-radius": @"3px",
+        @"border-top-right-radius": @"3px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowUp, @"rgba(255,255,255,0.3)")],
+
+    hudDownCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.2)",
+        @"border-color": @"rgba(255,255,255,0.3)",
+        @"border-style": @"solid",
+        @"border-width": @"0px 1px 1px 1px",
+        @"border-top-left-radius": @"0px",
+        @"border-top-right-radius": @"0px",
+        @"border-bottom-left-radius": @"3px",
+        @"border-bottom-right-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, @"#FFFFFF")],
+
+    hudDownHighlightedCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.4)",
+        @"border-color": @"rgba(255,255,255,0.5)",
+        @"border-style": @"solid",
+        @"border-width": @"0px 1px 1px 1px",
+        @"border-top-left-radius": @"0px",
+        @"border-top-right-radius": @"0px",
+        @"border-bottom-left-radius": @"3px",
+        @"border-bottom-right-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, @"#FFFFFF")],
+
+    hudDownDisabledCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.1)",
+        @"border-color": @"rgba(255,255,255,0.1)",
+        @"border-style": @"solid",
+        @"border-width": @"0px 1px 1px 1px",
+        @"border-top-left-radius": @"0px",
+        @"border-top-right-radius": @"0px",
+        @"border-bottom-left-radius": @"3px",
+        @"border-bottom-right-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, @"rgba(255,255,255,0.3)")],
 
     // --- Small Size ---
 
@@ -6874,10 +7033,30 @@ var themedButtonValues                      = nil,
      [@"bezel-color-up-button",      highlightedUpCssColor,                 [CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"bezel-color-down-button",    highlightedDownCssColor,               [CPThemeStateBordered, CPThemeStateHighlighted]],
 
+     // --- HUD Mappings (High Specificity + Default Fallback) ---
+     // We register these for CPThemeStateHUD alone to catch unbordered steppers (like in DatePickers)
+     // AND for CPThemeStateHUD + Bordered to catch standard bordered steppers.
+
+     // Up Button
+     [@"bezel-color-up-button",      hudUpCssColor,                         CPThemeStateHUD],
+     [@"bezel-color-up-button",      hudUpCssColor,                         [CPThemeStateHUD, CPThemeStateBordered]],
+     [@"bezel-color-up-button",      hudUpHighlightedCssColor,              [CPThemeStateHUD, CPThemeStateHighlighted]],
+     [@"bezel-color-up-button",      hudUpHighlightedCssColor,              [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color-up-button",      hudUpDisabledCssColor,                 [CPThemeStateHUD, CPThemeStateDisabled]],
+     [@"bezel-color-up-button",      hudUpDisabledCssColor,                 [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+
+     // Down Button
+     [@"bezel-color-down-button",    hudDownCssColor,                       CPThemeStateHUD],
+     [@"bezel-color-down-button",    hudDownCssColor,                       [CPThemeStateHUD, CPThemeStateBordered]],
+     [@"bezel-color-down-button",    hudDownHighlightedCssColor,            [CPThemeStateHUD, CPThemeStateHighlighted]],
+     [@"bezel-color-down-button",    hudDownHighlightedCssColor,            [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color-down-button",    hudDownDisabledCssColor,               [CPThemeStateHUD, CPThemeStateDisabled]],
+     [@"bezel-color-down-button",    hudDownDisabledCssColor,               [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+     // ----------------------------------------------------------
+
      [@"up-button-size",             CGSizeMake(13.0, 11.0)],
      [@"down-button-size",           CGSizeMake(13.0, 11.0)],
-     // Use original offset logic as starting point, adjust Y if necessary for CSS borders
-     [@"nib2cib-adjustment-frame",   CGRectMake(3.0, -24.0, -6.0, -4.0)], 
+     [@"nib2cib-adjustment-frame",   CGRectMake(3.0, -24.0, -6.0, -4.0)],
 
      // CPThemeStateControlSizeSmall
      [@"bezel-color-up-button",      smallUpCssColor,                       [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
@@ -6886,6 +7065,14 @@ var themedButtonValues                      = nil,
      [@"bezel-color-down-button",    smallDisabledDownCssColor,             [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled]],
      [@"bezel-color-up-button",      smallHighlightedUpCssColor,            [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"bezel-color-down-button",    smallHighlightedDownCssColor,          [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
+
+     // --- HUD Small ---
+     [@"bezel-color-up-button",      hudUpCssColor,                         [CPThemeStateHUD, CPThemeStateControlSizeSmall]],
+     [@"bezel-color-down-button",    hudDownCssColor,                       [CPThemeStateHUD, CPThemeStateControlSizeSmall]],
+     [@"bezel-color-up-button",      hudUpHighlightedCssColor,              [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateHighlighted]],
+     [@"bezel-color-down-button",    hudDownHighlightedCssColor,            [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateHighlighted]],
+     [@"bezel-color-up-button",      hudUpDisabledCssColor,                 [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     [@"bezel-color-down-button",    hudDownDisabledCssColor,               [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
 
      [@"up-button-size",             CGSizeMake(11.0, 10.0),                CPThemeStateControlSizeSmall],
      [@"down-button-size",           CGSizeMake(11.0, 9.0),                 CPThemeStateControlSizeSmall],
@@ -6898,6 +7085,14 @@ var themedButtonValues                      = nil,
      [@"bezel-color-down-button",    miniDisabledDownCssColor,              [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
      [@"bezel-color-up-button",      miniHighlightedUpCssColor,             [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"bezel-color-down-button",    miniHighlightedDownCssColor,           [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+
+     // --- HUD Mini ---
+     [@"bezel-color-up-button",      hudUpCssColor,                         [CPThemeStateHUD, CPThemeStateControlSizeMini]],
+     [@"bezel-color-down-button",    hudDownCssColor,                       [CPThemeStateHUD, CPThemeStateControlSizeMini]],
+     [@"bezel-color-up-button",      hudUpHighlightedCssColor,              [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateHighlighted]],
+     [@"bezel-color-down-button",    hudDownHighlightedCssColor,            [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateHighlighted]],
+     [@"bezel-color-up-button",      hudUpDisabledCssColor,                 [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     [@"bezel-color-down-button",    hudDownDisabledCssColor,               [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateDisabled]],
 
      [@"up-button-size",             CGSizeMake(9.0, 8.0),                  CPThemeStateControlSizeMini],
      [@"down-button-size",           CGSizeMake(9.0, 7.0),                  CPThemeStateControlSizeMini],

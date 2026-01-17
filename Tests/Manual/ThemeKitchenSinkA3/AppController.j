@@ -86,44 +86,44 @@
     [contentView addSubview:roundRectButton];
 
     // Placeholder TextField
-    var placeholderField = [[CPTextField alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 3), width, 29)];
+    var placeholderField = [[CPTextField alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 3), width, 24)];
     [placeholderField setEditable:YES];
     [placeholderField setBezeled:YES];
     [placeholderField setPlaceholderString:@"Placeholder"];
     [contentView addSubview:placeholderField];
 
     // Normal TextField
-    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 4), width, 29)];
+    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 4), width, 25)];
     [textField setEditable:YES];
     [textField setBezeled:YES];
     [textField setStringValue:@"Text Field"];
     [contentView addSubview:textField];
 
     // Search Field
-    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 5), width, 30)];
+    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 5), width, 25)];
     [searchField setPlaceholderString:@"Search..."];
     [contentView addSubview:searchField];
 
     // Token Field
-    var tokenField = [[CPTokenField alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 6), width, 30)];
+    var tokenField = [[CPTokenField alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 6), width, 25)];
     [tokenField setObjectValue:["Token", "Field"]];
     [contentView addSubview:tokenField];
 
     // Combo Box
-    var comboBox = [[CPComboBox alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 7), width, 29)];
+    var comboBox = [[CPComboBox alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 7), width, 25)];
     [comboBox setPlaceholderString:@"Combo Box"];
     [comboBox addItemsWithObjectValues:["Alpha", "Beta", "Gamma"]];
     [contentView addSubview:comboBox];
 
     // Slider
-    var bottomSlider = [[CPSlider alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 8.5), width, 24)];
+    var bottomSlider = [[CPSlider alloc] initWithFrame:CGRectMake(col1X, startY + (gapY * 8.5), width, 25)];
     [contentView addSubview:bottomSlider];
 
 
     // --- COLUMN 2 ---
 
     // Date Picker
-    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(col2X, startY, 140, 28)];
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(col2X, startY, 155, 28)];
     [datePicker setDatePickerStyle:CPTextFieldAndStepperDatePickerStyle];
     [datePicker setDateValue:[CPDate date]];
     [contentView addSubview:datePicker];
@@ -307,6 +307,7 @@
     [wc4 showWindow:self];
     [windows addObject:wc4];
 
+    [CPMenu setMenuBarVisible:YES];
 }
 
 @end
