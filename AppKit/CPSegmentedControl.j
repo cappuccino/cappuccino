@@ -420,7 +420,11 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     [segment setSelected:isSelected];
 
-    _themeStates[aSegment] = isSelected ? CPThemeStateSelected : CPThemeStateNormal;
+    // Update state using .and() / .without() to preserve existing states (like Disabled)
+    if (isSelected)
+        _themeStates[aSegment] = _themeStates[aSegment].and(CPThemeStateSelected);
+    else
+        _themeStates[aSegment] = _themeStates[aSegment].without(CPThemeStateSelected);
 
     // We need to do some cleanup if we only allow one selection.
     if (isSelected)
@@ -432,7 +436,10 @@ CPSegmentSwitchTrackingMomentary = 2;
         if (_trackingMode == CPSegmentSwitchTrackingSelectOne && oldSelectedSegment != aSegment && oldSelectedSegment != -1 && oldSelectedSegment < _segments.length)
         {
             [_segments[oldSelectedSegment] setSelected:NO];
-            _themeStates[oldSelectedSegment] = CPThemeStateNormal;
+            
+            // Update old segment using .without() to preserve other states
+            // Previously: _themeStates[oldSelectedSegment] = CPThemeStateNormal;
+            _themeStates[oldSelectedSegment] = _themeStates[oldSelectedSegment].without(CPThemeStateSelected);
 
             [self drawSegmentBezel:oldSelectedSegment highlight:NO];
         }
@@ -641,6 +648,9 @@ CPSegmentSwitchTrackingMomentary = 2;
     if ([self segmentCount] <= 0)
         return;
 
+    // Check for HUD state globally
+    var isHUD = [self hasThemeState:CPThemeStateHUD];
+
     if ([[self actualTheme] isCSSBased])
     {
         // CSS Styling
@@ -660,6 +670,10 @@ CPSegmentSwitchTrackingMomentary = 2;
                 themeState = themeState.and(CPThemeStateControlSizeSmall);
             else if (isControlSizeMini)
                 themeState = themeState.and(CPThemeStateControlSizeMini);
+
+            // Apply HUD state to lookup
+            if (isHUD)
+                themeState = themeState.and(CPThemeStateHUD);
 
             themeState = isKeyWindow ? themeState.and(CPThemeStateKeyWindow) : themeState;
 
@@ -708,6 +722,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else
     {
+        // Legacy (Canvas) Styling
         var themeState = _themeStates[0],
             isDisabled = [self hasThemeState:CPThemeStateDisabled],
             isControlSizeSmall = [self hasThemeState:CPThemeStateControlSizeSmall],
@@ -719,6 +734,10 @@ CPSegmentSwitchTrackingMomentary = 2;
             themeState = themeState.and(CPThemeStateControlSizeSmall);
         else if (isControlSizeMini)
             themeState = themeState.and(CPThemeStateControlSizeMini);
+
+        // Apply HUD state to Left Cap
+        if (isHUD)
+            themeState = themeState.and(CPThemeStateHUD);
 
         var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color"
                                                 inState:themeState],
@@ -737,6 +756,10 @@ CPSegmentSwitchTrackingMomentary = 2;
             themeState = themeState.and(CPThemeStateControlSizeSmall);
         else if (isControlSizeMini)
             themeState = themeState.and(CPThemeStateControlSizeMini);
+
+        // Apply HUD state to Right Cap
+        if (isHUD)
+            themeState = themeState.and(CPThemeStateHUD);
 
         var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color"
                                                  inState:themeState],
@@ -757,6 +780,10 @@ CPSegmentSwitchTrackingMomentary = 2;
                 themeState = themeState.and(CPThemeStateControlSizeSmall);
             else if (isControlSizeMini)
                 themeState = themeState.and(CPThemeStateControlSizeMini);
+
+            // Apply HUD state to Center Segments
+            if (isHUD)
+                themeState = themeState.and(CPThemeStateHUD);
 
             var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color"
                                                   inState:themeState],
@@ -802,6 +829,10 @@ CPSegmentSwitchTrackingMomentary = 2;
                 borderState = borderState.and(CPThemeStateControlSizeSmall);
             else if (isControlSizeMini)
                 borderState = borderState.and(CPThemeStateControlSizeMini);
+
+            // Apply HUD state to Dividers
+            if (isHUD)
+                borderState = borderState.and(CPThemeStateHUD);
 
             var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
                                                    inState:borderState],

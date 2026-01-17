@@ -5539,9 +5539,9 @@ var themedButtonValues                      = nil,
                                                                       @"box-sizing": @"border-box"
                                                                       }],
 
-    // --- Disabled States ---
+    // --- Disabled States (Unselected) ---
     centerDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
-                                                                 @"background-color": A3ColorBackgroundInactive,
+                                                                 @"background-color": A3ColorBackgroundWhite, 
                                                                  @"border-color": A3ColorInactiveBorder,
                                                                  @"border-style": @"solid",
                                                                  @"border-width": @"1px",
@@ -5549,7 +5549,7 @@ var themedButtonValues                      = nil,
                                                                  }],
 
     leftDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
-                                                               @"background-color": A3ColorBackgroundInactive,
+                                                               @"background-color": A3ColorBackgroundWhite,
                                                                @"border-color": A3ColorInactiveBorder,
                                                                @"border-style": @"solid",
                                                                @"border-width": @"1px",
@@ -5559,8 +5559,37 @@ var themedButtonValues                      = nil,
                                                                }],
 
     rightDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
-                                                                @"background-color": A3ColorBackgroundInactive,
+                                                                @"background-color": A3ColorBackgroundWhite,
                                                                 @"border-color": A3ColorInactiveBorder,
+                                                                @"border-style": @"solid",
+                                                                @"border-width": @"1px",
+                                                                @"border-top-right-radius": @"3px",
+                                                                @"border-bottom-right-radius": @"3px",
+                                                                @"box-sizing": @"border-box"
+                                                                }],
+
+    // --- Selected Disabled States ---
+    centerSelectedDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                 @"background-color": A3ColorBackgroundInactive,
+                                                                 @"border-color": A3ColorInactiveDarkBorder,
+                                                                 @"border-style": @"solid",
+                                                                 @"border-width": @"1px",
+                                                                 @"box-sizing": @"border-box"
+                                                                 }],
+
+    leftSelectedDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                               @"background-color": A3ColorBackgroundInactive,
+                                                               @"border-color": A3ColorInactiveDarkBorder,
+                                                               @"border-style": @"solid",
+                                                               @"border-width": @"1px",
+                                                               @"border-top-left-radius": @"3px",
+                                                               @"border-bottom-left-radius": @"3px",
+                                                               @"box-sizing": @"border-box"
+                                                               }],
+
+    rightSelectedDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                @"background-color": A3ColorBackgroundInactive,
+                                                                @"border-color": A3ColorInactiveDarkBorder,
                                                                 @"border-style": @"solid",
                                                                 @"border-width": @"1px",
                                                                 @"border-top-right-radius": @"3px",
@@ -5603,7 +5632,7 @@ var themedButtonValues                      = nil,
 
     // --- HUD Selected ---
     hudCenterSelectedBezelColor = [CPColor colorWithCSSDictionary:@{
-                                                                    @"background-color": @"rgba(0, 0, 0, 0.5)",
+                                                                    @"background-color": @"rgba(255, 255, 255, 0.25)",
                                                                     @"border-color": @"rgba(255, 255, 255, 0.5)",
                                                                     @"border-style": @"solid",
                                                                     @"border-width": @"1px",
@@ -5611,7 +5640,7 @@ var themedButtonValues                      = nil,
                                                                     }],
 
     hudLeftSelectedBezelColor = [CPColor colorWithCSSDictionary:@{
-                                                                  @"background-color": @"rgba(0, 0, 0, 0.5)",
+                                                                  @"background-color": @"rgba(255, 255, 255, 0.25)",
                                                                   @"border-color": @"rgba(255, 255, 255, 0.5)",
                                                                   @"border-style": @"solid",
                                                                   @"border-width": @"1px",
@@ -5621,7 +5650,7 @@ var themedButtonValues                      = nil,
                                                                   }],
 
     hudRightSelectedBezelColor = [CPColor colorWithCSSDictionary:@{
-                                                                   @"background-color": @"rgba(0, 0, 0, 0.5)",
+                                                                   @"background-color": @"rgba(255, 255, 255, 0.25)",
                                                                    @"border-color": @"rgba(255, 255, 255, 0.5)",
                                                                    @"border-style": @"solid",
                                                                    @"border-width": @"1px",
@@ -5630,7 +5659,7 @@ var themedButtonValues                      = nil,
                                                                    @"box-sizing": @"border-box"
                                                                    }],
 
-    // --- HUD Disabled ---
+    // --- HUD Disabled (Unselected) ---
     hudCenterDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
                                                                     @"background-color": @"rgba(0, 0, 0, 0.1)",
                                                                     @"border-color": @"rgba(255, 255, 255, 0.1)",
@@ -5659,6 +5688,35 @@ var themedButtonValues                      = nil,
                                                                    @"box-sizing": @"border-box"
                                                                    }],
 
+    // --- HUD Selected Disabled ---
+    hudCenterSelectedDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                    @"background-color": @"rgba(255, 255, 255, 0.15)",
+                                                                    @"border-color": @"rgba(255, 255, 255, 0.1)",
+                                                                    @"border-style": @"solid",
+                                                                    @"border-width": @"1px",
+                                                                    @"box-sizing": @"border-box"
+                                                                    }],
+
+    hudLeftSelectedDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                  @"background-color": @"rgba(255, 255, 255, 0.15)",
+                                                                  @"border-color": @"rgba(255, 255, 255, 0.1)",
+                                                                  @"border-style": @"solid",
+                                                                  @"border-width": @"1px",
+                                                                  @"border-top-left-radius": @"3px",
+                                                                  @"border-bottom-left-radius": @"3px",
+                                                                  @"box-sizing": @"border-box"
+                                                                  }],
+
+    hudRightSelectedDisabledBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                   @"background-color": @"rgba(255, 255, 255, 0.15)",
+                                                                   @"border-color": @"rgba(255, 255, 255, 0.1)",
+                                                                   @"border-style": @"solid",
+                                                                   @"border-width": @"1px",
+                                                                   @"border-top-right-radius": @"3px",
+                                                                   @"border-bottom-right-radius": @"3px",
+                                                                   @"box-sizing": @"border-box"
+                                                                   }];
+
 
     themedSegmentedControlValues =
     [
@@ -5666,24 +5724,35 @@ var themedButtonValues                      = nil,
      [@"center-segment-bezel-color",     centerBezelColor,                       CPThemeStateNormal],
      [@"center-segment-bezel-color",     centerSelectedBezelColor,               [CPThemeStateSelected, CPThemeStateKeyWindow]],
      [@"center-segment-bezel-color",     centerSelectedNotKeyBezelColor,         CPThemeStateSelected],
+     
+     [@"center-segment-bezel-color",     centerSelectedDisabledBezelColor,       [CPThemeStateSelected, CPThemeStateDisabled]],
      [@"center-segment-bezel-color",     centerDisabledBezelColor,               CPThemeStateDisabled],
 
      // Left Segment
      [@"left-segment-bezel-color",       leftBezelColor,                         CPThemeStateNormal],
      [@"left-segment-bezel-color",       leftSelectedBezelColor,                 [CPThemeStateSelected, CPThemeStateKeyWindow]],
      [@"left-segment-bezel-color",       leftSelectedNotKeyBezelColor,           CPThemeStateSelected],
+     
+     [@"left-segment-bezel-color",       leftSelectedDisabledBezelColor,         [CPThemeStateSelected, CPThemeStateDisabled]],
      [@"left-segment-bezel-color",       leftDisabledBezelColor,                 CPThemeStateDisabled],
 
      // Right Segment
      [@"right-segment-bezel-color",      rightBezelColor,                        CPThemeStateNormal],
      [@"right-segment-bezel-color",      rightSelectedBezelColor,                [CPThemeStateSelected, CPThemeStateKeyWindow]],
      [@"right-segment-bezel-color",      rightSelectedNotKeyBezelColor,          CPThemeStateSelected],
+     
+     [@"right-segment-bezel-color",      rightSelectedDisabledBezelColor,        [CPThemeStateSelected, CPThemeStateDisabled]],
      [@"right-segment-bezel-color",      rightDisabledBezelColor,                CPThemeStateDisabled],
 
      // Text Colors
      [@"text-color",                     A3CPColorActiveText],
-     [@"text-color",                     A3CPColorDefaultText,                   [CPThemeStateSelected, CPThemeStateKeyWindow]], 
      [@"text-color",                     A3CPColorActiveText,                    CPThemeStateSelected], 
+     
+     // Only turn white if Key, Selected AND Enabled.
+     [@"text-color",                     A3CPColorDefaultText,                   [CPThemeStateSelected, CPThemeStateKeyWindow]], 
+     
+     // Explicitly override White text for Disabled+Selected+KeyWindow state
+     [@"text-color",                     A3CPColorInactiveText,                  [CPThemeStateSelected, CPThemeStateKeyWindow, CPThemeStateDisabled]],
      [@"text-color",                     A3CPColorInactiveText,                  CPThemeStateDisabled],
 
      // Layout (Regular)
@@ -5712,27 +5781,34 @@ var themedButtonValues                      = nil,
      // HUD Text Colors
      [@"text-color",                 [CPColor whiteColor],                   CPThemeStateHUD],
      [@"text-color",                 [CPColor whiteColor],                   [CPThemeStateHUD, CPThemeStateSelected]],
-
-     // Ensure White wins over Standard "Key" color
      [@"text-color",                 [CPColor whiteColor],                   [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     
+     // Explicitly override White text for HUD Disabled+Selected+KeyWindow state
+     [@"text-color",                 [CPColor colorWithWhite:1 alpha:0.4],   [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateKeyWindow, CPThemeStateDisabled]],
      [@"text-color",                 [CPColor colorWithWhite:1 alpha:0.4],   [CPThemeStateHUD, CPThemeStateDisabled]],
 
      // HUD Center Segment
      [@"center-segment-bezel-color",     hudCenterBezelColor,                [CPThemeStateHUD, CPThemeStateNormal]],
      [@"center-segment-bezel-color",     hudCenterSelectedBezelColor,        [CPThemeStateHUD, CPThemeStateSelected]],
      [@"center-segment-bezel-color",     hudCenterSelectedBezelColor,        [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     
+     [@"center-segment-bezel-color",     hudCenterSelectedDisabledBezelColor,[CPThemeStateHUD, CPThemeStateSelected, CPThemeStateDisabled]],
      [@"center-segment-bezel-color",     hudCenterDisabledBezelColor,        [CPThemeStateHUD, CPThemeStateDisabled]],
 
      // HUD Left Segment
      [@"left-segment-bezel-color",       hudLeftBezelColor,                  [CPThemeStateHUD, CPThemeStateNormal]],
      [@"left-segment-bezel-color",       hudLeftSelectedBezelColor,          [CPThemeStateHUD, CPThemeStateSelected]],
      [@"left-segment-bezel-color",       hudLeftSelectedBezelColor,          [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     
+     [@"left-segment-bezel-color",       hudLeftSelectedDisabledBezelColor,  [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateDisabled]],
      [@"left-segment-bezel-color",       hudLeftDisabledBezelColor,          [CPThemeStateHUD, CPThemeStateDisabled]],
 
      // HUD Right Segment
      [@"right-segment-bezel-color",      hudRightBezelColor,                 [CPThemeStateHUD, CPThemeStateNormal]],
      [@"right-segment-bezel-color",      hudRightSelectedBezelColor,         [CPThemeStateHUD, CPThemeStateSelected]],
      [@"right-segment-bezel-color",      hudRightSelectedBezelColor,         [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     
+     [@"right-segment-bezel-color",      hudRightSelectedDisabledBezelColor, [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateDisabled]],
      [@"right-segment-bezel-color",      hudRightDisabledBezelColor,         [CPThemeStateHUD, CPThemeStateDisabled]]
     ];
 
