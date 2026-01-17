@@ -196,6 +196,14 @@
     var knob = [[CPSlider alloc] initWithFrame:CGRectMake(col2X, startY + (gapY * 7.5), 32, 32)];
     [knob setSliderType:CPCircularSlider];
     [contentView addSubview:knob];
+
+    // Indeterminate Progress Bar
+    // Placed to the right of the knob
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(col2X + 40, startY + (gapY * 7.5) + 8, 80, 16)];
+    [progressBar setStyle:CPProgressIndicatorBarStyle];
+    [progressBar setIndeterminate:YES];
+    [progressBar startAnimation:self];
+    [contentView addSubview:progressBar];
 }
 
 - (void)_disableAllControls
@@ -210,13 +218,6 @@
         if ([view respondsToSelector:@selector(setEnabled:)])
         {
             [view setEnabled:NO];
-        }
-        
-        // Handle specific case for labels usually associated with controls 
-        // (Not strictly necessary as CPTextField disables nicely, but good for completeness)
-        if ([view isKindOfClass:[CPTextField class]] && ![view isEditable])
-        {
-             //[view setTextColor:[CPColor disabledControlTextColor]];
         }
     }
 }
@@ -247,9 +248,9 @@
         [item setLabel:@"Colors"];
         [item setPaletteLabel:@"Colors"];
         
-        // Simulating the Color Wheel icon via a drawing block or placeholder resource
-        // Since we don't have the PNG, we assume standard bundle presence or generic text
-        [item setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/ColorWheel.png" size:CGSizeMake(32, 32)]];
+        // Use system provided color panel images
+        [item setImage:[CPImage imageNamed:CPImageNameColorPanel]];
+        [item setAlternateImage:[CPImage imageNamed:CPImageNameColorPanelHighlighted]];
         
         [item setTarget:self];
         [item setAction:@selector(orderFrontColorPanel:)];
