@@ -6780,7 +6780,6 @@ var themedButtonValues                      = nil,
     var stepper = [CPStepper stepper],
 
     // Helper to create the arrow CSS.
-    // Uses ::after pseudo-element to draw the arrow via mask-image.
     arrowCSS = function(svg, color) {
         return @{
             @"content": @"''",
@@ -6866,8 +6865,7 @@ var themedButtonValues                      = nil,
         @"box-sizing": @"border-box"
     } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, A3ColorHighlightedStepperArrow)],
 
-    // --- HUD Colors (White Arrows, Transparent/Dark Backgrounds) ---
-    // Note: We use specific border radii to ensure they don't look like capsules (10px).
+    // --- HUD Regular Colors ---
 
     hudUpCssColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": @"rgba(0,0,0,0.2)",
@@ -6930,6 +6928,154 @@ var themedButtonValues                      = nil,
     } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, @"#FFFFFF")],
 
     hudDownDisabledCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.1)",
+        @"border-color": @"rgba(255,255,255,0.1)",
+        @"border-style": @"solid",
+        @"border-width": @"0px 1px 1px 1px",
+        @"border-top-left-radius": @"0px",
+        @"border-top-right-radius": @"0px",
+        @"border-bottom-left-radius": @"3px",
+        @"border-bottom-right-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, @"rgba(255,255,255,0.3)")],
+
+    // --- HUD Small Colors ---
+
+    smallHudUpCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.2)",
+        @"border-color": @"rgba(255,255,255,0.3)",
+        @"border-style": @"solid",
+        @"border-width": @"1px 1px 0px 1px",
+        @"border-top-left-radius": @"3px",
+        @"border-top-right-radius": @"3px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowUp, @"#FFFFFF")],
+
+    smallHudUpHighlightedCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.4)",
+        @"border-color": @"rgba(255,255,255,0.5)",
+        @"border-style": @"solid",
+        @"border-width": @"1px 1px 0px 1px",
+        @"border-top-left-radius": @"3px",
+        @"border-top-right-radius": @"3px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowUp, @"#FFFFFF")],
+
+    smallHudUpDisabledCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.1)",
+        @"border-color": @"rgba(255,255,255,0.1)",
+        @"border-style": @"solid",
+        @"border-width": @"1px 1px 0px 1px",
+        @"border-top-left-radius": @"3px",
+        @"border-top-right-radius": @"3px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowUp, @"rgba(255,255,255,0.3)")],
+
+    smallHudDownCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.2)",
+        @"border-color": @"rgba(255,255,255,0.3)",
+        @"border-style": @"solid",
+        @"border-width": @"0px 1px 1px 1px",
+        @"border-top-left-radius": @"0px",
+        @"border-top-right-radius": @"0px",
+        @"border-bottom-left-radius": @"3px",
+        @"border-bottom-right-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, @"#FFFFFF")],
+
+    smallHudDownHighlightedCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.4)",
+        @"border-color": @"rgba(255,255,255,0.5)",
+        @"border-style": @"solid",
+        @"border-width": @"0px 1px 1px 1px",
+        @"border-top-left-radius": @"0px",
+        @"border-top-right-radius": @"0px",
+        @"border-bottom-left-radius": @"3px",
+        @"border-bottom-right-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, @"#FFFFFF")],
+
+    smallHudDownDisabledCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.1)",
+        @"border-color": @"rgba(255,255,255,0.1)",
+        @"border-style": @"solid",
+        @"border-width": @"0px 1px 1px 1px",
+        @"border-top-left-radius": @"0px",
+        @"border-top-right-radius": @"0px",
+        @"border-bottom-left-radius": @"3px",
+        @"border-bottom-right-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, @"rgba(255,255,255,0.3)")],
+
+    // --- HUD Mini Colors ---
+
+    miniHudUpCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.2)",
+        @"border-color": @"rgba(255,255,255,0.3)",
+        @"border-style": @"solid",
+        @"border-width": @"1px 1px 0px 1px",
+        @"border-top-left-radius": @"3px",
+        @"border-top-right-radius": @"3px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowUp, @"#FFFFFF")],
+
+    miniHudUpHighlightedCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.4)",
+        @"border-color": @"rgba(255,255,255,0.5)",
+        @"border-style": @"solid",
+        @"border-width": @"1px 1px 0px 1px",
+        @"border-top-left-radius": @"3px",
+        @"border-top-right-radius": @"3px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowUp, @"#FFFFFF")],
+
+    miniHudUpDisabledCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.1)",
+        @"border-color": @"rgba(255,255,255,0.1)",
+        @"border-style": @"solid",
+        @"border-width": @"1px 1px 0px 1px",
+        @"border-top-left-radius": @"3px",
+        @"border-top-right-radius": @"3px",
+        @"border-bottom-left-radius": @"0px",
+        @"border-bottom-right-radius": @"0px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowUp, @"rgba(255,255,255,0.3)")],
+
+    miniHudDownCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.2)",
+        @"border-color": @"rgba(255,255,255,0.3)",
+        @"border-style": @"solid",
+        @"border-width": @"0px 1px 1px 1px",
+        @"border-top-left-radius": @"0px",
+        @"border-top-right-radius": @"0px",
+        @"border-bottom-left-radius": @"3px",
+        @"border-bottom-right-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, @"#FFFFFF")],
+
+    miniHudDownHighlightedCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0,0,0,0.4)",
+        @"border-color": @"rgba(255,255,255,0.5)",
+        @"border-style": @"solid",
+        @"border-width": @"0px 1px 1px 1px",
+        @"border-top-left-radius": @"0px",
+        @"border-top-right-radius": @"0px",
+        @"border-bottom-left-radius": @"3px",
+        @"border-bottom-right-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:arrowCSS(svgArrowDown, @"#FFFFFF")],
+
+    miniHudDownDisabledCssColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": @"rgba(0,0,0,0.1)",
         @"border-color": @"rgba(255,255,255,0.1)",
         @"border-style": @"solid",
@@ -7077,11 +7223,11 @@ var themedButtonValues                      = nil,
      [@"bezel-color-up-button",      highlightedUpCssColor,                 [CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"bezel-color-down-button",    highlightedDownCssColor,               [CPThemeStateBordered, CPThemeStateHighlighted]],
 
-     // --- HUD Mappings (High Specificity + Default Fallback) ---
-     // We register these for CPThemeStateHUD alone to catch unbordered steppers (like in DatePickers)
-     // AND for CPThemeStateHUD + Bordered to catch standard bordered steppers.
+     // --- HUD Regular Mappings ---
+     // We explicitly register Bordered combinations because CPDatePickers usually render steppers as "Bordered"
+     // even in HUD mode, and specificity rules might otherwise pick the standard bordered look.
 
-     // Up Button
+     // Up Button (Regular)
      [@"bezel-color-up-button",      hudUpCssColor,                         CPThemeStateHUD],
      [@"bezel-color-up-button",      hudUpCssColor,                         [CPThemeStateHUD, CPThemeStateBordered]],
      [@"bezel-color-up-button",      hudUpHighlightedCssColor,              [CPThemeStateHUD, CPThemeStateHighlighted]],
@@ -7089,14 +7235,13 @@ var themedButtonValues                      = nil,
      [@"bezel-color-up-button",      hudUpDisabledCssColor,                 [CPThemeStateHUD, CPThemeStateDisabled]],
      [@"bezel-color-up-button",      hudUpDisabledCssColor,                 [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
 
-     // Down Button
+     // Down Button (Regular)
      [@"bezel-color-down-button",    hudDownCssColor,                       CPThemeStateHUD],
      [@"bezel-color-down-button",    hudDownCssColor,                       [CPThemeStateHUD, CPThemeStateBordered]],
      [@"bezel-color-down-button",    hudDownHighlightedCssColor,            [CPThemeStateHUD, CPThemeStateHighlighted]],
      [@"bezel-color-down-button",    hudDownHighlightedCssColor,            [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"bezel-color-down-button",    hudDownDisabledCssColor,               [CPThemeStateHUD, CPThemeStateDisabled]],
      [@"bezel-color-down-button",    hudDownDisabledCssColor,               [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
-     // ----------------------------------------------------------
 
      [@"up-button-size",             CGSizeMake(13.0, 11.0)],
      [@"down-button-size",           CGSizeMake(13.0, 11.0)],
@@ -7111,12 +7256,22 @@ var themedButtonValues                      = nil,
      [@"bezel-color-down-button",    smallHighlightedDownCssColor,          [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
 
      // --- HUD Small ---
-     [@"bezel-color-up-button",      hudUpCssColor,                         [CPThemeStateHUD, CPThemeStateControlSizeSmall]],
-     [@"bezel-color-down-button",    hudDownCssColor,                       [CPThemeStateHUD, CPThemeStateControlSizeSmall]],
-     [@"bezel-color-up-button",      hudUpHighlightedCssColor,              [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateHighlighted]],
-     [@"bezel-color-down-button",    hudDownHighlightedCssColor,            [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateHighlighted]],
-     [@"bezel-color-up-button",      hudUpDisabledCssColor,                 [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
-     [@"bezel-color-down-button",    hudDownDisabledCssColor,               [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     // Explicitly covering Bordered states to ensure HUD override
+     // Up Button
+     [@"bezel-color-up-button",      smallHudUpCssColor,                    [CPThemeStateHUD, CPThemeStateControlSizeSmall]],
+     [@"bezel-color-up-button",      smallHudUpCssColor,                    [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+     [@"bezel-color-up-button",      smallHudUpHighlightedCssColor,         [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateHighlighted]],
+     [@"bezel-color-up-button",      smallHudUpHighlightedCssColor,         [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color-up-button",      smallHudUpDisabledCssColor,            [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     [@"bezel-color-up-button",      smallHudUpDisabledCssColor,            [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled]],
+
+     // Down Button
+     [@"bezel-color-down-button",    smallHudDownCssColor,                  [CPThemeStateHUD, CPThemeStateControlSizeSmall]],
+     [@"bezel-color-down-button",    smallHudDownCssColor,                  [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+     [@"bezel-color-down-button",    smallHudDownHighlightedCssColor,       [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateHighlighted]],
+     [@"bezel-color-down-button",    smallHudDownHighlightedCssColor,       [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color-down-button",    smallHudDownDisabledCssColor,          [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     [@"bezel-color-down-button",    smallHudDownDisabledCssColor,          [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled]],
 
      [@"up-button-size",             CGSizeMake(11.0, 10.0),                CPThemeStateControlSizeSmall],
      [@"down-button-size",           CGSizeMake(11.0, 9.0),                 CPThemeStateControlSizeSmall],
@@ -7131,12 +7286,22 @@ var themedButtonValues                      = nil,
      [@"bezel-color-down-button",    miniHighlightedDownCssColor,           [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
 
      // --- HUD Mini ---
-     [@"bezel-color-up-button",      hudUpCssColor,                         [CPThemeStateHUD, CPThemeStateControlSizeMini]],
-     [@"bezel-color-down-button",    hudDownCssColor,                       [CPThemeStateHUD, CPThemeStateControlSizeMini]],
-     [@"bezel-color-up-button",      hudUpHighlightedCssColor,              [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateHighlighted]],
-     [@"bezel-color-down-button",    hudDownHighlightedCssColor,            [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateHighlighted]],
-     [@"bezel-color-up-button",      hudUpDisabledCssColor,                 [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateDisabled]],
-     [@"bezel-color-down-button",    hudDownDisabledCssColor,               [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     // Explicitly covering Bordered states to ensure HUD override
+     // Up Button
+     [@"bezel-color-up-button",      miniHudUpCssColor,                     [CPThemeStateHUD, CPThemeStateControlSizeMini]],
+     [@"bezel-color-up-button",      miniHudUpCssColor,                     [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateBordered]],
+     [@"bezel-color-up-button",      miniHudUpHighlightedCssColor,          [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateHighlighted]],
+     [@"bezel-color-up-button",      miniHudUpHighlightedCssColor,          [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color-up-button",      miniHudUpDisabledCssColor,             [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     [@"bezel-color-up-button",      miniHudUpDisabledCssColor,             [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
+
+     // Down Button
+     [@"bezel-color-down-button",    miniHudDownCssColor,                   [CPThemeStateHUD, CPThemeStateControlSizeMini]],
+     [@"bezel-color-down-button",    miniHudDownCssColor,                   [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateBordered]],
+     [@"bezel-color-down-button",    miniHudDownHighlightedCssColor,        [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateHighlighted]],
+     [@"bezel-color-down-button",    miniHudDownHighlightedCssColor,        [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color-down-button",    miniHudDownDisabledCssColor,           [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     [@"bezel-color-down-button",    miniHudDownDisabledCssColor,           [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
 
      [@"up-button-size",             CGSizeMake(9.0, 8.0),                  CPThemeStateControlSizeMini],
      [@"down-button-size",           CGSizeMake(9.0, 7.0),                  CPThemeStateControlSizeMini],
