@@ -3550,6 +3550,7 @@ var themedButtonValues                      = nil,
 {
     var token = [[_CPTokenFieldToken alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 19.0)],
 
+    // --- Standard Colors ---
     bezelColorHighlighted = [CPColor colorWithCSSDictionary:@{
                                                               @"background-color": @"A3ColorBorderBlue",
                                                               @"border-color": @"A3ColorBorderBlue",
@@ -3568,15 +3569,42 @@ var themedButtonValues                      = nil,
                                                    @"box-sizing": @"border-box"
                                                    }],
 
+    // --- HUD Colors ---
+    hudBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                        @"background-color": @"rgba(255, 255, 255, 0.2)",
+                                                        @"border-color": @"rgba(255, 255, 255, 0.25)",
+                                                        @"border-style": @"solid",
+                                                        @"border-width": @"1px",
+                                                        @"border-radius": @"3px",
+                                                        @"box-sizing": @"border-box"
+                                                    }],
+
+    hudBezelColorHighlighted = [CPColor colorWithCSSDictionary:@{
+                                                        @"background-color": @"rgba(255, 255, 255, 0.45)",
+                                                        @"border-color": @"rgba(255, 255, 255, 0.5)",
+                                                        @"border-style": @"solid",
+                                                        @"border-width": @"1px",
+                                                        @"border-radius": @"3px",
+                                                        @"box-sizing": @"border-box"
+                                                    }],
+
     themeValues =
     [
+     // Standard
      [@"bezel-color",    bezelColor,                     CPThemeStateBezeled],
      [@"bezel-color",    bezelColorHighlighted,          [CPThemeStateBezeled, CPThemeStateHighlighted]],
      [@"bezel-color",    bezelColor,                     [CPThemeStateBezeled, CPThemeStateDisabled]],
 
      [@"text-color",     A3CPColorActiveText],
-     [@"text-color",     A3CPColorDefaultText,               CPThemeStateHighlighted],
-     [@"text-color",     A3CPColorInactiveText,              CPThemeStateDisabled],
+     [@"text-color",     A3CPColorDefaultText,           CPThemeStateHighlighted],
+     [@"text-color",     A3CPColorInactiveText,          CPThemeStateDisabled],
+
+     // HUD Overrides
+     [@"bezel-color",    hudBezelColor,                  [CPThemeStateHUD, CPThemeStateBezeled]],
+     [@"bezel-color",    hudBezelColorHighlighted,       [CPThemeStateHUD, CPThemeStateBezeled, CPThemeStateHighlighted]],
+     [@"text-color",     [CPColor whiteColor],           CPThemeStateHUD],
+     [@"text-color",     [CPColor whiteColor],           [CPThemeStateHUD, CPThemeStateHighlighted]],
+     [@"text-color",     [CPColor colorWithWhite:1 alpha:0.4], [CPThemeStateHUD, CPThemeStateDisabled]],
 
      [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
      [@"content-inset",  CGInsetMake(-3.0, 16.0, 0.0, 16.0),  CPThemeStateBezeled],
@@ -3621,6 +3649,18 @@ var themedButtonValues                      = nil,
                                                                 "-webkit-mask-position": "center",
                                                                 "mask-position": "center"
                                                             }],
+    // HUD Arrow (White)
+    hudArrowColor = [CPColor colorWithCSSDictionary:@{
+                                                    "-webkit-mask-image": svgArrowDown,
+                                                    "mask-image": svgArrowDown,
+                                                    "background-color": @"#FFFFFF",
+                                                    "-webkit-mask-size": "contain",
+                                                    "mask-size": "contain",
+                                                    "-webkit-mask-repeat": "no-repeat",
+                                                    "mask-repeat": "no-repeat",
+                                                    "-webkit-mask-position": "center",
+                                                    "mask-position": "center"
+                                                 }],
 
     themeValues =
     [
@@ -3628,9 +3668,14 @@ var themedButtonValues                      = nil,
 
      [@"bezel-color",    nil,                                CPThemeStateBordered],
      
-     // Use the new CPColor objects
+     // Standard
      [@"bezel-color",    arrowColor,                         [CPThemeStateBordered, CPThemeStateHovered]],
      [@"bezel-color",    arrowColorHighlighted,              [CPThemeStateBordered, CPThemeStateHighlighted]],
+
+     // HUD
+     [@"bezel-color",    hudArrowColor,                      [CPThemeStateHUD, CPThemeStateBordered]],
+     [@"bezel-color",    hudArrowColor,                      [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHovered]],
+     [@"bezel-color",    hudArrowColor,                      [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
 
      [@"min-size",       CGSizeMake(14.0, 12.0)],
      [@"max-size",       CGSizeMake(14.0, 12.0)],
@@ -3676,11 +3721,30 @@ var themedButtonValues                      = nil,
     // Disabled State
     bezelDisabledColor = [CPColor clearColor],
 
+    // HUD Color (White)
+    hudBezelColor = [CPColor colorWithCSSDictionary:@{
+        "-webkit-mask-image": svgCancel,
+        "mask-image": svgCancel,
+        "background-color": @"#FFFFFF",
+        "-webkit-mask-size": "contain",
+        "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat",
+        "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center",
+        "mask-position": "center"
+    }],
+
     themeValues =
     [
+     // Standard
      [@"bezel-color",    bezelColor,                             [CPThemeStateBordered, CPThemeStateHovered]],
      [@"bezel-color",    bezelDisabledColor,                     [CPThemeStateBordered, CPThemeStateDisabled]], 
      [@"bezel-color",    bezelHighlightedColor,                  [CPThemeStateBordered, CPThemeStateHighlighted]],
+
+     // HUD
+     // We make it visible on hover and highlight in HUD
+     [@"bezel-color",    hudBezelColor,                          [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHovered]],
+     [@"bezel-color",    hudBezelColor,                          [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
 
      [@"min-size",       CGSizeMake(8.0, 8.0)],
      [@"max-size",       CGSizeMake(8.0, 8.0)],
