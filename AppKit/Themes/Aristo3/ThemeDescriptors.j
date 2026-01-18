@@ -1367,6 +1367,16 @@ var themedButtonValues                      = nil,
         @"box-sizing": @"border-box"
     } beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff")],
 
+    // NEW: Disabled HUD state with gray background and dimmed arrow
+    hudDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.1)",
+        @"border-color": @"rgba(255, 255, 255, 0.1)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:hudArrowCSS(@"rgba(255,255,255,0.3)")],
+
 
     // ==========================================================
     // REGISTRATION
@@ -1431,11 +1441,15 @@ var themedButtonValues                      = nil,
      [@"nib2cib-adjustment-frame",   CGRectMake(0.0, -0.0, -0.0, -0.0),       [CPButtonStateBezelStyleRegularSquare]],
 
      // --- HUD MAPPINGS ---
+     // 1. Text Colors
      [@"text-color",    [CPColor whiteColor],                                 CPThemeStateHUD],
-     [@"bezel-color",   [CPColor colorWithWhite:1 alpha:0.5],                 [CPButtonStateBezelStyleRounded, CPThemeStateDisabled, CPThemeStateBordered, CPThemeStateHUD]],
+     [@"text-color",    [CPColor colorWithWhite:1 alpha:0.4],                 [CPThemeStateHUD, CPThemeStateDisabled]],
 
+     // 2. Bezel Colors
      [@"bezel-color",   hudButtonCssColor,          [CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
-     [@"bezel-color",   hudButtonCssColor,          [CPButtonStateBezelStyleRounded, CPThemeStateDisabled, CPThemeStateBordered, CPThemeStateHUD]],
+     
+     [@"bezel-color",   hudDisabledButtonCssColor,  [CPButtonStateBezelStyleRounded, CPThemeStateDisabled, CPThemeStateBordered, CPThemeStateHUD]],
+     
      [@"bezel-color",   hudButtonCssColor,          [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateKeyWindow]],
      [@"bezel-color",   hudHighlightedButtonCssColor, [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateHighlighted]]
     ];
