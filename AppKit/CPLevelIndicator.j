@@ -88,18 +88,20 @@ CPRatingLevelIndicatorStyle                 = 3;
 
 - (void)layoutSubviews
 {
+    // 1. Calculate the Theme State
+    // We explicitly check the window style mask to see if we are in a HUD.
+    // This allows us to pass CPThemeStateHUD to the theme system, even if the control 
+    // itself isn't explicitly set to HUD, inheriting the style from the window.
+    var themeState = [self themeState];
+
+    if ([[self window] styleMask] & CPHUDBackgroundWindowMask)
+        themeState = themeState.and(CPThemeStateHUD);
+
+    // 2. Layout the Bezel
     var bezelView = [self layoutEphemeralSubviewNamed:"bezel"
                                            positioned:CPWindowBelow
                       relativeToEphemeralSubviewNamed:nil];
     
-    // Explicitly retrieve the theme state.
-    var themeState = [self themeState];
-
-    // Ensure HUD state is included if the window is HUD (robustness check)
-    if ([[self window] styleMask] & CPHUDBackgroundWindowMask)
-        themeState = themeState.and(CPThemeStateHUD);
-
-    // Use inState: explicitly
     [bezelView setBackgroundColor:[self valueForThemeAttribute:@"bezel-color" inState:themeState]];
 
     var segmentCount = _maxValue - _minValue;
@@ -107,12 +109,16 @@ CPRatingLevelIndicatorStyle                 = 3;
     if (segmentCount <= 0)
         return;
 
-    // Use inState: explicitly
+    // 3. Determine the Color based on Value and Thresholds
+    // We pass 'themeState' here. If it contains CPThemeStateHUD, the ThemeDescriptor 
+    // will return the monochrome color for normal/warning/critical. 
+    // If not, it returns Green/Yellow/Red.
     var filledColor = [self valueForThemeAttribute:@"color-normal" inState:themeState],
         value = [self doubleValue];
 
     if (_warningValue < _criticalValue)
     {
+        // Standard ascending scale (e.g. Volume)
         if (value >= _criticalValue)
             filledColor = [self valueForThemeAttribute:@"color-critical" inState:themeState];
         else if (value >= _warningValue)
@@ -120,15 +126,16 @@ CPRatingLevelIndicatorStyle                 = 3;
     }
     else
     {
+        // Descending scale (e.g. Battery Life)
         if (value <= _criticalValue)
             filledColor = [self valueForThemeAttribute:@"color-critical" inState:themeState];
         else if (value <= _warningValue)
             filledColor = [self valueForThemeAttribute:@"color-warning" inState:themeState];
     }
 
-    // Use inState: explicitly for empty color too
     var emptyColor = [self valueForThemeAttribute:@"color-empty" inState:themeState];
 
+    // 4. Paint Segments
     for (var i = 0; i < segmentCount; i++)
     {
         var segmentView = [self layoutEphemeralSubviewNamed:"segment-bezel-" + i
@@ -315,20 +322,6 @@ CPRatingLevelIndicatorStyle                 = 3;
 
     [self setNeedsLayout];
 }
-
-/*
-- (CPTickMarkPosition)tickMarkPosition;
-- (void)setTickMarkPosition:(CPTickMarkPosition)position;
-
-- (int)numberOfTickMarks;
-- (void)setNumberOfTickMarks:(int)count;
-
-- (int)numberOfMajorTickMarks;
-- (void)setNumberOfMajorTickMarks:(int)count;
-
-- (double)tickMarkValueAtIndex:(int)index;
-- (CGRect)rectOfTickMarkAtIndex:(int)index;
-*/
 
 @end
 

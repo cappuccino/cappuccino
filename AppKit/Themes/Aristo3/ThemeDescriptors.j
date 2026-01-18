@@ -4,6 +4,7 @@
  *
  * Created by Didier Korthoudt
  * Copyright 2018 <didier.korthoudt@uliege.be>
+ * HUD design copyright 2026 <daboe01@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1390,7 +1391,7 @@ var themedButtonValues                      = nil,
      // We must include CPThemeStateBordered here to override CPButton's definition
      [@"min-size",                   CGSizeMake(32.0, 22.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"max-size",                   CGSizeMake(-1.0, 22.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -8.0, -5.0, -4.5),        [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -8.0, -5.0, -4.5),         [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
      // Small size
      [@"bezel-color",                smallButtonCssColor,                       [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateKeyWindow]],
@@ -1424,15 +1425,17 @@ var themedButtonValues                      = nil,
      [@"bezel-color",                highlightedButtonCssColor,               [CPButtonStateBezelStyleRegularSquare, CPThemeStateHighlighted]],
      [@"bezel-color",                disabledButtonCssColor,                  [CPButtonStateBezelStyleRegularSquare, CPThemeStateDisabled]],
 
-     [@"content-inset",              CGInsetMake(2.0, 10, 1.0, 10.0),           [CPButtonStateBezelStyleRegularSquare]],
-     [@"min-size",                   CGSizeMake(32.0, 21.0),                    [CPButtonStateBezelStyleRegularSquare]],
-     [@"max-size",                   CGSizeMake(-1.0, 21.0),                    [CPButtonStateBezelStyleRegularSquare]],
-     [@"nib2cib-adjustment-frame",   CGRectMake(0.0, -0.0, -0.0, -0.0),         [CPButtonStateBezelStyleRegularSquare]],
+     [@"content-inset",              CGInsetMake(2.0, 10, 1.0, 10.0),         [CPButtonStateBezelStyleRegularSquare]],
+     [@"min-size",                   CGSizeMake(32.0, 21.0),                  [CPButtonStateBezelStyleRegularSquare]],
+     [@"max-size",                   CGSizeMake(-1.0, 21.0),                  [CPButtonStateBezelStyleRegularSquare]],
+     [@"nib2cib-adjustment-frame",   CGRectMake(0.0, -0.0, -0.0, -0.0),       [CPButtonStateBezelStyleRegularSquare]],
 
      // --- HUD MAPPINGS ---
-     [@"text-color",    [CPColor whiteColor],       CPThemeStateHUD],
-     
+     [@"text-color",    [CPColor whiteColor],                                 CPThemeStateHUD],
+     [@"bezel-color",   [CPColor colorWithWhite:1 alpha:0.5],                 [CPButtonStateBezelStyleRounded, CPThemeStateDisabled, CPThemeStateBordered, CPThemeStateHUD]],
+
      [@"bezel-color",   hudButtonCssColor,          [CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
+     [@"bezel-color",   hudButtonCssColor,          [CPButtonStateBezelStyleRounded, CPThemeStateDisabled, CPThemeStateBordered, CPThemeStateHUD]],
      [@"bezel-color",   hudButtonCssColor,          [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateKeyWindow]],
      [@"bezel-color",   hudHighlightedButtonCssColor, [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateHighlighted]]
     ];
@@ -4475,6 +4478,28 @@ var themedButtonValues                      = nil,
                                                              @"background-color": @"rgba(0,0,0,0.1)"
                                                          } size:CGSizeMake(16,16)],
 
+    // HUD Selected & Disabled: Must include the dot but dimmed
+    hudImageSelectedDisabled = [CPImage imageWithCSSDictionary:@{
+                                                            @"border-color": @"rgba(255,255,255,0.3)",
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"border-radius": @"50%",
+                                                            @"box-sizing": @"border-box",
+                                                            @"background-color": @"rgba(0,0,0,0.1)"
+                                                        }
+                                      beforeDictionary:nil
+                                       afterDictionary:@{
+                                                            @"background-color": @"rgba(255,255,255,0.5)", // Dimmed White Dot
+                                                            @"width": @"6px",
+                                                            @"height": @"6px",
+                                                            @"border-radius": @"50%",
+                                                            @"content": @"''",
+                                                            @"left": @"4px", // Matches hudImageSelected offset
+                                                            @"top": @"4px",
+                                                            @"position": @"absolute",
+                                                            @"z-index": @"300"
+                                                        } size:CGSizeMake(16,16)],
+
     // Global
     themedRadioButtonValues =
     [
@@ -4535,8 +4560,20 @@ var themedButtonValues                      = nil,
      [@"text-color",                 [CPColor colorWithWhite:1 alpha:0.4],               [CPThemeStateHUD, CPThemeStateDisabled]],
      
      [@"image",                      hudImageNormal,                                     CPThemeStateHUD],
+     
+     // HUD Selected: We MUST define specific rules for ControlSizes and KeyWindow combinations
+     // to ensure the HUD theme wins over the Standard theme rules which have equal or higher specificity.
+     
      [@"image",                      hudImageSelected,                                   [CPThemeStateHUD, CPThemeStateSelected]],
+     [@"image",                      hudImageSelected,                                   [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateKeyWindow]], // Overrides Standard [Selected, Key]
+     [@"image",                      hudImageSelected,                                   [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateSelected]], // Overrides Standard [Small, Selected]
+     [@"image",                      hudImageSelected,                                   [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateSelected]], // Overrides Standard [Mini, Selected]
+     
      [@"image",                      hudImageDisabled,                                   [CPThemeStateHUD, CPThemeStateDisabled]],
+     
+     // FIX: Use the specific "Selected+Disabled" image for HUD, beating the standard rules
+     [@"image",                      hudImageSelectedDisabled,                           [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateDisabled]], 
+     [@"image",                      hudImageSelectedDisabled,                           [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]], 
      
      // Adjust layout slightly for HUD
      [@"image-offset",               4,                                                  CPThemeStateHUD]
@@ -5851,22 +5888,42 @@ var themedButtonValues                      = nil,
                                                           }],
 
     leftTrackNotKeyCssColor = [CPColor colorWithCSSDictionary:@{
-                                                                @"background-color": A3ColorSliderDisabledTrack // Or A3ColorInactiveBorder
+                                                                @"background-color": A3ColorSliderDisabledTrack
                                                                 }],
+    
+    // --- HUD COLORS ---
     hudKnobColor = [CPColor colorWithCSSDictionary:@{
                                                         @"background-color": @"#FFFFFF",
                                                         @"border": @"1px solid #000000",
                                                         @"border-radius": @"50%",
                                                         @"box-shadow": @"0 1px 2px rgba(0,0,0,0.5)"
                                                     }],
+    
+    // FIX: Use a SOLID color (Hex) instead of RGBA for the background to prevent shine-through
+    hudKnobDisabledColor = [CPColor colorWithCSSDictionary:@{
+                                                        @"background-color": @"#808080", // Solid Grey
+                                                        @"border": @"1px solid #444444",
+                                                        @"border-radius": @"50%"
+                                                    }],
+
     hudLeftTrackColor = [CPColor colorWithCSSDictionary:@{
-                                                            @"background-color": @"#FFFFFF" // White fill
+                                                            @"background-color": @"#FFFFFF"
                                                         }],
 
     hudRightTrackColor = [CPColor colorWithCSSDictionary:@{
-                                                            @"background-color": @"#555555", // Brighter visible grey
+                                                            @"background-color": @"#555555",
                                                             @"border": @"1px solid #000000"
                                                           }],
+
+    hudLeftTrackDisabledColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(255, 255, 255, 0.3)"
+                                                        }],
+
+    hudRightTrackDisabledColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(85, 85, 85, 0.3)",
+                                                            @"border": @"1px solid rgba(0, 0, 0, 0.3)"
+                                                          }],
+
     // Ticked sliders (Down pointing)
     knobDownCssColor = [CPColor colorWithCSSDictionary:@{
                                                          "-webkit-mask-image": svgArrowDown,
@@ -5902,16 +5959,21 @@ var themedButtonValues                      = nil,
      [@"tick-mark-color",               A3CPColorActiveBorder],
 
      // --- HUD SPECIFIC FIXES ---
-     [@"knob-color",        hudKnobColor,       CPThemeStateHUD],
-
-     // Left Track (Filled part) - White
-     [@"left-track-color",  hudLeftTrackColor,  CPThemeStateHUD],
      
-     // Right Track (Empty part) - Visible Grey
-     [@"track-color",       hudRightTrackColor, CPThemeStateHUD],
+     // Knob
+     [@"knob-color",        hudKnobColor,               CPThemeStateHUD],
+     [@"knob-color",        hudKnobDisabledColor,       [CPThemeStateHUD, CPThemeStateDisabled]],
+
+     // Left Track (Filled part)
+     [@"left-track-color",  hudLeftTrackColor,          CPThemeStateHUD],
+     [@"left-track-color",  hudLeftTrackDisabledColor,  [CPThemeStateHUD, CPThemeStateDisabled]],
+     
+     // Right Track (Empty part)
+     [@"track-color",       hudRightTrackColor,         CPThemeStateHUD],
+     [@"track-color",       hudRightTrackDisabledColor, [CPThemeStateHUD, CPThemeStateDisabled]],
      
      // Ensure height is sufficient for visibility
-     [@"track-width",       4.0,                CPThemeStateHUD]
+     [@"track-width",       4.0,                        CPThemeStateHUD]
     ];
 
     [self registerThemeValues:themedHorizontalSliderValues forView:slider];
@@ -7771,8 +7833,18 @@ var themedButtonValues                      = nil,
         @"border": @"1px solid " + A3ColorBorderDark
     }],
 
-    segmentColor = [CPColor colorWithCSSDictionary:@{
-        @"background-color": A3ColorActiveText
+    // --- Standard Colors (Traffic Light) ---
+    // Using CSS Dictionary for consistency and sharp rendering
+    greenColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"#6CC644" // Green
+    }],
+    
+    yellowColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"#F7D325" // Yellow
+    }],
+    
+    redColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"#BD2C00" // Red
     }],
 
     // --- HUD Styles ---
@@ -7783,6 +7855,7 @@ var themedButtonValues                      = nil,
         @"box-shadow": @"inset 0 1px 2px rgba(0,0,0,0.1)"
     }],
 
+    // Monochrome white for HUD
     hudSegmentColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": @"rgba(255, 255, 255, 0.9)",
         @"box-shadow": @"0 0 2px rgba(255, 255, 255, 0.4)"
@@ -7792,14 +7865,21 @@ var themedButtonValues                      = nil,
     [
      [@"bezel-color",    bezelColor],
      [@"color-empty",    [CPColor clearColor]],
-     [@"color-normal",   segmentColor],
-     [@"color-warning",  [CPColor orangeColor]],
-     [@"color-critical", [CPColor redColor]],
+     
+     // Standard State: Traffic Light Colors
+     [@"color-normal",   greenColor],
+     [@"color-warning",  yellowColor],
+     [@"color-critical", redColor],
+     
      [@"spacing",        1.0],
 
      // --- HUD Mappings ---
      [@"bezel-color",    hudBezelColor,      CPThemeStateHUD],
-     [@"color-normal",   hudSegmentColor,    CPThemeStateHUD]
+     
+     // In HUD mode, we force all states (normal, warning, critical) to use the same monochrome HUD color
+     [@"color-normal",   hudSegmentColor,    CPThemeStateHUD],
+     [@"color-warning",  hudSegmentColor,    CPThemeStateHUD],
+     [@"color-critical", hudSegmentColor,    CPThemeStateHUD]
      ];
 
     [self registerThemeValues:themeValues forView:levelIndicator];
