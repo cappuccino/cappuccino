@@ -7968,29 +7968,55 @@ var themedButtonValues                      = nil,
 {
     var box = [[CPBox alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
 
+    // Standard Style
+    backgroundColor = [CPColor colorWithCSSDictionary:@{
+                                                         @"background-color": @"rgba(0,0,0,0.04)",
+                                                         @"border-color": @"rgba(0,0,0,0.1)",
+                                                         @"border-style": @"solid",
+                                                         @"border-width": @"1px",
+                                                         @"border-radius": @"5px",
+                                                         @"box-sizing": @"border-box"
+                                                         }],
+    borderColor = [CPColor colorWithCSSDictionary:@{
+                                                     @"background-color": @"rgba(0,0,0,0.1)"
+                                                    }],
+
+    // --- HUD Styles ---
+    hudBackgroundColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(0, 0, 0, 0.25)",
+                                                            @"border-color": @"rgba(255, 255, 255, 0.25)",
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"border-radius": @"5px",
+                                                            @"box-sizing": @"border-box"
+                                                        }],
+    
+    // For CPBoxSeparator and custom borders in HUD
+    hudBorderColor = [CPColor colorWithCSSDictionary:@{
+                                                        @"background-color": @"rgba(255, 255, 255, 0.25)"
+                                                    }],
+
     themeValues =
     [
-     [@"background-color", [CPColor colorWithCSSDictionary:@{
-                                                             @"background-color": @"rgba(0,0,0,0.04)",
-                                                             @"border-color": @"rgba(0,0,0,0.1)",
-                                                             @"border-style": @"solid",
-                                                             @"border-width": @"1px",
-                                                             @"border-radius": @"5px",
-                                                             @"box-sizing": @"border-box"
-                                                             }]],
-     [@"border-color", [CPColor colorWithCSSDictionary:@{
-                                                         @"background-color": @"rgba(0,0,0,0.1)"
-                                                        }]],
-     [@"border-width", 1.0],
-     [@"content-margin", CGSizeMakeZero()],
-     [@"title-font", [CPFont systemFontOfSize:11]],
+     [@"background-color", backgroundColor],
+     [@"border-color",     borderColor],
+     [@"border-width",     1.0],
+     [@"content-margin",   CGSizeMakeZero()],
+     
+     [@"title-font",       [CPFont systemFontOfSize:11]],
      [@"title-left-offset", 10.0],
      [@"title-top-offset", -3.0],
-     [@"title-color", A3CPColorActiveText],
+     [@"title-color",      A3CPColorActiveText],
+
      [@"nib2cib-adjustment-primary-frame",   CGRectMake(3, -4, -6, -6)], 
      [@"content-adjustment", CGRectMake(-1, -1, 2, 2)],
      [@"min-y-correction-no-title", 1],
-     [@"min-y-correction-title", 2]
+     [@"min-y-correction-title", 2],
+
+     // --- HUD MAPPINGS ---
+     [@"background-color", hudBackgroundColor,      CPThemeStateHUD],
+     [@"border-color",     hudBorderColor,          CPThemeStateHUD],
+     [@"title-color",      [CPColor whiteColor],    CPThemeStateHUD]
      ];
 
     [self registerThemeValues:themeValues forView:box];
