@@ -6061,6 +6061,40 @@ var themedButtonValues                      = nil,
                                                       @"background-color": A3ColorBackgroundWhite
                                                       }],
 
+    // --- HUD COLORS ---
+    hudTrackCssColor = [CPColor colorWithCSSDictionary:@{
+                                                         @"border-color": @"rgba(255, 255, 255, 0.3)",
+                                                         @"border-style": @"solid",
+                                                         @"border-width": @"1px",
+                                                         @"border-radius": @"50%",
+                                                         @"box-sizing": @"border-box",
+                                                         @"background-color": @"rgba(0, 0, 0, 0.2)"
+                                                         }],
+
+    hudKnobCssColor = [CPColor colorWithCSSDictionary:@{
+                                                        @"border-style": @"none",
+                                                        @"border-radius": @"50%",
+                                                        @"box-sizing": @"border-box",
+                                                        @"background-color": @"#FFFFFF"
+                                                        }],
+
+    // Explicitly define disabled HUD styles with border-radius: 50% to prevent rectangular fallback
+    hudTrackDisabledCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                 @"border-color": @"rgba(255, 255, 255, 0.1)",
+                                                                 @"border-style": @"solid",
+                                                                 @"border-width": @"1px",
+                                                                 @"border-radius": @"50%", // Essential for shape
+                                                                 @"box-sizing": @"border-box",
+                                                                 @"background-color": @"rgba(0, 0, 0, 0.1)"
+                                                                 }],
+
+    hudKnobDisabledCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                @"border-style": @"none",
+                                                                @"border-radius": @"50%", // Essential for shape
+                                                                @"box-sizing": @"border-box",
+                                                                @"background-color": @"#808080" // Solid Grey
+                                                                }],
+
     themedCircularSliderValues =
     [
      [@"track-color",                   trackCssColor,                          CPThemeStateCircular],
@@ -6070,7 +6104,15 @@ var themedButtonValues                      = nil,
      
      [@"nib2cib-adjustment-frame",      CGRectMake(2.0, -3.0, -4.0, -6.0),      CPThemeStateCircular],
      [@"direct-nib2cib-adjustment",     YES,                                    CPThemeStateCircular],
-     [@"ib-size",                       24,                                     CPThemeStateCircular]
+     [@"ib-size",                       24,                                     CPThemeStateCircular],
+
+     // --- HUD SPECIFIC FIXES ---
+     [@"track-color",   hudTrackCssColor,           [CPThemeStateHUD, CPThemeStateCircular]],
+     [@"knob-color",    hudKnobCssColor,            [CPThemeStateHUD, CPThemeStateCircular]],
+     
+     // Disabled States
+     [@"track-color",   hudTrackDisabledCssColor,   [CPThemeStateHUD, CPThemeStateCircular, CPThemeStateDisabled]],
+     [@"knob-color",    hudKnobDisabledCssColor,    [CPThemeStateHUD, CPThemeStateCircular, CPThemeStateDisabled]]
      ];
 
     [self registerThemeValues:themedCircularSliderValues forView:slider];

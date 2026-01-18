@@ -172,15 +172,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 - (void)setBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
 {
-    var isHUD = [_menuView hasThemeState:CPThemeStateHUD],
-        color = nil;
-
-    if (isHUD && aBackgroundStyle == _CPMenuWindowPopUpBackgroundStyle)
-    {
-        // Directly query the attribute for the HUD state
-        // We use currentValueForThemeAttribute because _menuView already has the correct state set.
-        color = [_menuView currentValueForThemeAttribute:@"menu-window-pop-up-background-style-color"];
-    }
+    var color = [_menuView currentValueForThemeAttribute:@"menu-window-pop-up-background-style-color"];
 
     // Fallback to standard logic if not HUD or if attribute wasn't found
     if (!color)
