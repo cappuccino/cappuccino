@@ -8681,9 +8681,11 @@ var themedButtonValues                      = nil,
                                                                  }
                                                           size:CGSizeMake(40, 24)],
 
+    // Define the HUD Window style (The container)
+    // Dark background (95% opaque black) + Light Gray Border (30% opaque white)
     menuWindowPopUpBackgroundStyleColorHUD = [CPColor colorWithCSSDictionary:@{
-                                                                                    @"background-color": @"rgba(30, 30, 30, 0.95)", // Dark background
-                                                                                    @"border-color": @"rgba(255, 255, 255, 0.3)",   // Light border
+                                                                                    @"background-color": @"rgba(30, 30, 30, 0.95)", 
+                                                                                    @"border-color": @"rgba(255, 255, 255, 0.3)",   
                                                                                     @"border-style": @"solid",
                                                                                     @"border-width": @"1px",
                                                                                     @"border-radius": @"6px",
@@ -8691,7 +8693,6 @@ var themedButtonValues                      = nil,
                                                                                     @"box-sizing": @"border-box"
                                                                                 }],
 
-    // Placeholder generic icons
     generalIconNew = [CPImage imageWithCSSDictionary:@{"background-color": A3ColorActiveText} size:CGSizeMake(16,16)],
     
     menuWindowPopUpBackgroundStyleColor = [CPColor colorWithCSSDictionary:@{
@@ -8775,8 +8776,8 @@ var themedButtonValues                      = nil,
 
      [@"menu-general-icon-new",                              generalIconNew],
 
-     // HUD
      [@"menu-window-pop-up-background-style-color", menuWindowPopUpBackgroundStyleColorHUD, CPThemeStateHUD],
+
      [@"menu-bar-text-color",                       [CPColor whiteColor],                   CPThemeStateHUD],
      [@"menu-window-more-above-image",              menuWindowMoreAboveImageHUD,            CPThemeStateHUD],
      [@"menu-window-more-below-image",              menuWindowMoreBelowImageHUD,            CPThemeStateHUD]
