@@ -7014,7 +7014,72 @@ var themedButtonValues                      = nil,
                                                                     @"margin": @"auto",
                                                                     @"position": @"absolute",
                                                                     @"z-index": @"300"
-                                                                    }];
+                                                                    }],
+                                                                    
+    // --- HUD STYLES ---
+    
+    // Thin Divider (Simple Light Line)
+    hudThinDividerCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(255, 255, 255, 0.2)"
+    }],
+
+    // Horizontal Thick/Pane (Dark track, light borders, light dimple)
+    hudThickDividerCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.15)",
+        @"border-color": @"rgba(255, 255, 255, 0.15)",
+        @"box-sizing": @"border-box",
+        @"border-style": @"solid",
+        @"border-top-width": @"1px",
+        @"border-left-width": @"0px",
+        @"border-right-width": @"0px",
+        @"border-bottom-width": @"1px"
+    } beforeDictionary:nil afterDictionary:@{
+        @"border-color": @"rgba(255, 255, 255, 0.4)",
+        @"background-color": @"rgba(255, 255, 255, 0.4)",
+        @"width": @"6px",
+        @"height": @"6px",
+        @"box-sizing": @"border-box",
+        @"border-style": @"solid",
+        @"border-radius": @"50%",
+        @"border-width": @"1px",
+        @"content": @"''",
+        @"left": @"0px",
+        @"top": @"2px",
+        @"right": @"0px",
+        @"bottom": @"1px",
+        @"margin": @"auto",
+        @"position": @"absolute",
+        @"z-index": @"300"
+    }],
+
+    // Vertical Thick/Pane (Dark track, light borders, light dimple)
+    hudVerticalThickDividerCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.15)",
+        @"border-color": @"rgba(255, 255, 255, 0.15)",
+        @"box-sizing": @"border-box",
+        @"border-style": @"solid",
+        @"border-top-width": @"0px",
+        @"border-left-width": @"1px",
+        @"border-right-width": @"1px",
+        @"border-bottom-width": @"0px"
+    } beforeDictionary:nil afterDictionary:@{
+        @"border-color": @"rgba(255, 255, 255, 0.4)",
+        @"background-color": @"rgba(255, 255, 255, 0.4)",
+        @"width": @"6px",
+        @"height": @"6px",
+        @"box-sizing": @"border-box",
+        @"border-style": @"solid",
+        @"border-radius": @"50%",
+        @"border-width": @"1px",
+        @"content": @"''",
+        @"left": @"1px",
+        @"top": @"0px",
+        @"right": @"2px",
+        @"bottom": @"0px",
+        @"margin": @"auto",
+        @"position": @"absolute",
+        @"z-index": @"300"
+    }];
 
     var themedSplitViewValues =
     [
@@ -7028,11 +7093,24 @@ var themedButtonValues                      = nil,
      [@"divider-thickness",         1,                              CPThemeStateSplitViewDividerStyleThin],
      [@"divider-thickness",         10,                             CPThemeStateSplitViewDividerStylePaneSplitter],
 
+     // Standard Colors
      [@"divider-color",             thickDividerCssColor,           CPThemeStateSplitViewDividerStyleThick],
      [@"divider-color",             verticalThickDividerCssColor,   [CPThemeStateSplitViewDividerStyleThick, CPThemeStateVertical]],
      [@"divider-color",             thinDividerCssColor,            CPThemeStateSplitViewDividerStyleThin],
      [@"divider-color",             paneDividerCssColor,            CPThemeStateSplitViewDividerStylePaneSplitter],
-     [@"divider-color",             verticalPaneDividerCssColor,    [CPThemeStateSplitViewDividerStylePaneSplitter, CPThemeStateVertical]]
+     [@"divider-color",             verticalPaneDividerCssColor,    [CPThemeStateSplitViewDividerStylePaneSplitter, CPThemeStateVertical]],
+
+     // --- HUD Mappings ---
+     // Thin Divider
+     [@"divider-color",             hudThinDividerCssColor,         [CPThemeStateHUD, CPThemeStateSplitViewDividerStyleThin]],
+     
+     // Thick Divider (Horizontal & Vertical)
+     [@"divider-color",             hudThickDividerCssColor,        [CPThemeStateHUD, CPThemeStateSplitViewDividerStyleThick]],
+     [@"divider-color",             hudVerticalThickDividerCssColor,[CPThemeStateHUD, CPThemeStateSplitViewDividerStyleThick, CPThemeStateVertical]],
+     
+     // Pane Splitter (Horizontal & Vertical) - Uses same style as Thick for HUD
+     [@"divider-color",             hudThickDividerCssColor,        [CPThemeStateHUD, CPThemeStateSplitViewDividerStylePaneSplitter]],
+     [@"divider-color",             hudVerticalThickDividerCssColor,[CPThemeStateHUD, CPThemeStateSplitViewDividerStylePaneSplitter, CPThemeStateVertical]]
      ];
 
     [self registerThemeValues:themedSplitViewValues forView:splitView];
