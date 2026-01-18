@@ -62,6 +62,9 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
         // Do this so that coordinates will be accurate.
         [menuWindow setFrameOrigin:CGPointMakeZero()];
+        // we need to reset the HUD state as this may be a recycled instance with HUD rund on non-HUD      
+        [[menuWindow _windowView] unsetThemeState:CPThemeStateHUD];
+        [[menuWindow _menuView] unsetThemeState:CPThemeStateHUD];
     }
     else
         menuWindow = [[_CPMenuWindow alloc] init];
@@ -174,7 +177,6 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 {
     var color = [_menuView currentValueForThemeAttribute:@"menu-window-pop-up-background-style-color"];
 
-    // Fallback to standard logic if not HUD or if attribute wasn't found
     if (!color)
         color = [[self class] backgroundColorForBackgroundStyle:aBackgroundStyle];
 
