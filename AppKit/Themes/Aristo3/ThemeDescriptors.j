@@ -6120,7 +6120,28 @@ var themedButtonValues                      = nil,
                                                         @"background-color": A3ColorSplitPaneDividerBorder
                                                         }],
 
-    // Replaced Base64 SVGs with clean reusable SVGs
+    // --- HUD COLORS ---
+    hudBorderedBezelCssColor = [CPColor colorWithCSSDictionary:@{
+                                                              @"border-color": @"rgba(255, 255, 255, 0.2)",
+                                                              @"border-style": @"solid",
+                                                              @"border-width": @"1px 0px 0px 0px",
+                                                              @"box-sizing": @"border-box",
+                                                              @"background-color": @"rgba(0, 0, 0, 0.3)"
+                                                              }],
+
+    hudResizeCssColor = [CPColor colorWithCSSDictionary:@{
+                                                       @"border-color": @"rgba(255, 255, 255, 0.2)",
+                                                       @"border-style": @"solid",
+                                                       @"border-width": @"0px 1px 0px 1px",
+                                                       @"box-sizing": @"border-box",
+                                                       @"background-color": @"rgba(0, 0, 0, 0.3)"
+                                                       }],
+
+    hudDividerCssColor = [CPColor colorWithCSSDictionary:@{
+                                                        @"background-color": @"rgba(255, 255, 255, 0.2)"
+                                                        }],
+
+    // --- ICONS (Standard) ---
     plusIcon = [CPImage imageWithCSSDictionary:@{
                                                  "-webkit-mask-image": svgPlus,
                                                  "mask-image": svgPlus,
@@ -6161,9 +6182,62 @@ var themedButtonValues                      = nil,
                                              size:CGSizeMake(16,16)],
 
      actionIconHighlighted = [CPImage imageWithCSSDictionary:@{
-                                                   "-webkit-mask-image": svgGear2, // Use svgGear2 here
-                                                   "mask-image": svgGear2,         // Use svgGear2 here
+                                                   "-webkit-mask-image": svgGear2,
+                                                   "mask-image": svgGear2,
                                                    "background-color": A3ColorActiveText,
+                                                   "-webkit-mask-size": "contain",
+                                                   "mask-size": "contain",
+                                                   "-webkit-mask-repeat": "no-repeat",
+                                                   "mask-repeat": "no-repeat",
+                                                   "-webkit-mask-position": "center",
+                                                   "mask-position": "center"
+                                                  }
+                                                size:CGSizeMake(16,16)],
+
+    // --- HUD ICONS (White) ---
+    plusIconHUD = [CPImage imageWithCSSDictionary:@{
+                                                 "-webkit-mask-image": svgPlus,
+                                                 "mask-image": svgPlus,
+                                                 "background-color": @"#FFFFFF",
+                                                 "-webkit-mask-size": "contain",
+                                                 "mask-size": "contain",
+                                                 "-webkit-mask-repeat": "no-repeat",
+                                                 "mask-repeat": "no-repeat",
+                                                 "-webkit-mask-position": "center",
+                                                 "mask-position": "center"
+                                                }
+                                         size:CGSizeMake(16,16)],
+
+    minusIconHUD =  [CPImage imageWithCSSDictionary:@{
+                                                   "-webkit-mask-image": svgMinus,
+                                                   "mask-image": svgMinus,
+                                                   "background-color": @"#FFFFFF",
+                                                   "-webkit-mask-size": "contain",
+                                                   "mask-size": "contain",
+                                                   "-webkit-mask-repeat": "no-repeat",
+                                                   "mask-repeat": "no-repeat",
+                                                   "-webkit-mask-position": "center",
+                                                   "mask-position": "center"
+                                                  }
+                                             size:CGSizeMake(16,16)],
+
+    actionIconHUD = [CPImage imageWithCSSDictionary:@{
+                                                   "-webkit-mask-image": svgGear,
+                                                   "mask-image": svgGear,
+                                                   "background-color": @"#FFFFFF",
+                                                   "-webkit-mask-size": "contain",
+                                                   "mask-size": "contain",
+                                                   "-webkit-mask-repeat": "no-repeat",
+                                                   "mask-repeat": "no-repeat",
+                                                   "-webkit-mask-position": "center",
+                                                   "mask-position": "center"
+                                                  }
+                                             size:CGSizeMake(16,16)],
+
+     actionIconHighlightedHUD = [CPImage imageWithCSSDictionary:@{
+                                                   "-webkit-mask-image": svgGear2, 
+                                                   "mask-image": svgGear2,
+                                                   "background-color": @"#FFFFFF",
                                                    "-webkit-mask-size": "contain",
                                                    "mask-size": "contain",
                                                    "-webkit-mask-repeat": "no-repeat",
@@ -6197,7 +6271,17 @@ var themedButtonValues                      = nil,
      [@"button-image-plus",         plusIcon,         CPThemeStateNormal],
      [@"button-image-minus",        minusIcon,        CPThemeStateNormal],
      [@"button-image-action",       actionIcon,       CPThemeStateNormal],
-     [@"button-image-action",       actionIconHighlighted, CPThemeStateHighlighted]
+     [@"button-image-action",       actionIconHighlighted, CPThemeStateHighlighted],
+
+     // --- HUD MAPPINGS ---
+     [@"bezel-color",               hudBorderedBezelCssColor,           [CPThemeStateHUD, CPThemeStateBordered]],
+     [@"divider-color",             hudDividerCssColor,                 CPThemeStateHUD],
+     [@"resize-control-color",      hudResizeCssColor,                  [CPThemeStateHUD, CPThemeStateBordered]],
+
+     [@"button-image-plus",         plusIconHUD,                        [CPThemeStateHUD, CPThemeStateNormal]],
+     [@"button-image-minus",        minusIconHUD,                       [CPThemeStateHUD, CPThemeStateNormal]],
+     [@"button-image-action",       actionIconHUD,                      [CPThemeStateHUD, CPThemeStateNormal]],
+     [@"button-image-action",       actionIconHighlightedHUD,           [CPThemeStateHUD, CPThemeStateHighlighted]]
     ];
     [self registerThemeValues:themedButtonBarValues forView:buttonBar];
 
@@ -6215,12 +6299,22 @@ var themedButtonValues                      = nil,
     highlightedButtonBezelColor = [CPColor colorWithCSSDictionary:@{
                                                                     @"background-color": A3ColorBackgroundDarkened
                                                                     }],
+    
+    // Light highlight for HUD (on dark background)
+    hudHighlightedButtonBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                    @"background-color": @"rgba(255, 255, 255, 0.2)"
+                                                                    }],
 
     themedButtonBarButtonValues =
     [
      [@"bezel-color",               buttonBezelColor],
      [@"bezel-color",               highlightedButtonBezelColor,        [CPThemeStateHighlighted, CPThemeStateBordered]],
      [@"bezel-color",               highlightedButtonBezelColor,        CPThemeStateHighlighted],
+     
+     // --- HUD Mappings ---
+     [@"bezel-color",               hudHighlightedButtonBezelColor,     [CPThemeStateHUD, CPThemeStateHighlighted]],
+     [@"bezel-color",               hudHighlightedButtonBezelColor,     [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
+
      [@"min-size",                  CGSizeMake(18, 28)],
      [@"max-size",                  CGSizeMake(18, 28)],
      [@"min-size",                  CGSizeMake(34, 28),                 CPThemeStateBordered],
@@ -6246,11 +6340,26 @@ var themedButtonValues                      = nil,
                                                                   @"background-color": A3ColorTextfieldActiveBorder
                                                                   }
                                                            size:CGSizeMake(1,16)],
+    
+    // Light separators for HUD
+    hudSeparatorCssImage = [CPImage imageWithCSSDictionary:@{
+                                                          @"background-color": @"rgba(255, 255, 255, 0.3)"
+                                                          }
+                                                   size:CGSizeMake(1,14)],
+
+    hudBorderedSeparatorCssImage = [CPImage imageWithCSSDictionary:@{
+                                                                  @"background-color": @"rgba(255, 255, 255, 0.3)"
+                                                                  }
+                                                           size:CGSizeMake(1,16)],
 
     themedButtonBarSeparatorValues =
     [
      [@"image",     separatorCssImage],
-     [@"image",     borderedSeparatorCssImage,      CPThemeStateBordered]
+     [@"image",     borderedSeparatorCssImage,      CPThemeStateBordered],
+     
+     // --- HUD Mappings ---
+     [@"image",     hudSeparatorCssImage,           CPThemeStateHUD],
+     [@"image",     hudBorderedSeparatorCssImage,   [CPThemeStateHUD, CPThemeStateBordered]]
      ];
 
     [self registerThemeValues:themedButtonBarSeparatorValues forView:button];
@@ -6375,6 +6484,10 @@ var themedButtonValues                      = nil,
     themedButtonBarAdaptativeLabelValues =
     [
      [@"text-color",        A3CPColorActiveText],
+
+     // --- HUD Mappings ---
+     [@"text-color",        [CPColor whiteColor],               CPThemeStateHUD],
+
      [@"content-inset",     CGInsetMake(0.0, 0.0, 0.0, 0.0)],
      [@"extra-spacing",     0],
      [@"extra-spacing",     4,                                  CPThemeStateBordered]
@@ -6392,6 +6505,10 @@ var themedButtonValues                      = nil,
     themedButtonBarLabelValues =
     [
      [@"text-color",        A3CPColorActiveText],
+     
+     // --- HUD Mappings ---
+     [@"text-color",        [CPColor whiteColor],               CPThemeStateHUD],
+
      [@"content-inset",     CGInsetMake(0.0, 0.0, 0.0, 0.0)],
      [@"extra-spacing",     0],
      [@"extra-spacing",     4,                                  CPThemeStateBordered]
