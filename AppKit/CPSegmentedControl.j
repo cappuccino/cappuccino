@@ -420,6 +420,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     [segment setSelected:isSelected];
 
+    if (_themeStates[aSegment] == undefined)
+        _themeStates[aSegment] = CPThemeStateNormal;
+
     // Update state using .and() / .without() to preserve existing states (like Disabled)
     if (isSelected)
         _themeStates[aSegment] = _themeStates[aSegment].and(CPThemeStateSelected);
