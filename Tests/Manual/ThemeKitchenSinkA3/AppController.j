@@ -37,7 +37,7 @@
         _isHUD = isHUD;
         _areControlsEnabled = isEnabled;
 
-        var title = (isHUD ? @"HUD Theme" : @"Aqua Theme") + (isEnabled ? @" (Enabled)" : @" (Disabled)");
+        var title = (isHUD ? @"HUD Theme" : @"Aristo3 Theme") + (isEnabled ? @" (Enabled)" : @" (Disabled)");
         [theWindow setTitle:title];
 
         // 3. Setup Toolbar
@@ -123,7 +123,7 @@
     // --- COLUMN 2 ---
 
     // Date Picker
-    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(col2X, startY, 155, 28)];
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(col2X, startY, 175, 28)];
     [datePicker setDatePickerStyle:CPTextFieldAndStepperDatePickerStyle];
     [datePicker setDateValue:[CPDate date]];
     [contentView addSubview:datePicker];

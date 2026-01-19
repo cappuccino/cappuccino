@@ -2397,8 +2397,9 @@ var themedButtonValues                      = nil,
      [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],          CPThemeStateTableDataView],
 
      [@"text-color",         A3CPColorActiveText,                 CPThemeStateTableDataView], // Normal
-     [@"text-color",         A3CPColorActiveText,                  [CPThemeStateTableDataView, CPThemeStateSelectedDataView]], // Row selected but not active
-     [@"text-color",         A3CPColorDefaultText,                                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],  // Row selected and active
+     [@"text-color",         A3CPColorActiveText,                 [CPThemeStateTableDataView, CPThemeStateSelectedDataView]], // Row selected but not active
+     [@"text-color",         A3CPColorDefaultText,                [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],  // Row selected and active
+     [@"text-color",         A3CPColorActiveText,                 [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow, CPThemeStateEditing]],
 
      // --- HUD TABLE CELLS ---
      [@"text-color",         [CPColor whiteColor],                [CPThemeStateTableDataView, CPThemeStateHUD]],
@@ -4076,6 +4077,8 @@ var themedButtonValues                      = nil,
 
         [@"text-color",                 A3CPColorDefaultText,                      [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
         [@"text-color",                 A3CPColorActiveText,                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView]],
+        [@"text-color",                 A3CPColorActiveText,                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateKeyWindow]],
+
 
         // --- HUD TEXT COLORS ---
         [@"text-color",                 [CPColor whiteColor],                      CPThemeStateHUD],

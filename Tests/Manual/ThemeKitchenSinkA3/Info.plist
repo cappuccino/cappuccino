@@ -7,7 +7,7 @@
 	<key>CPApplicationDelegateClass</key>
 	<string>AppController</string>
 	<key>CPBundleName</key>
-	<string>kitchensink_a3</string>
+	<string>KitchenSink Aristo3</string>
 	<key>CPPrincipalClass</key>
 	<string>CPApplication</string>
 </dict>
