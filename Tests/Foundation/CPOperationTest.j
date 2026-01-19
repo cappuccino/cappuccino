@@ -1,4 +1,5 @@
 @import <Foundation/CPOperation.j>
+@import <Foundation/CPFunctionOperation.j>
 
 @implementation TestOperation2 : CPOperation
 {
@@ -160,12 +161,16 @@
     [to addDependency:to2];
     [self assert:@"dependencies" equals:[[obs changedKeyPaths] objectAtIndex:0]];
     [self assert:@"isReady" equals:[[obs changedKeyPaths] objectAtIndex:1]];
+    
     [to2 start];
     [self assert:@"isReady" equals:[[obs changedKeyPaths] objectAtIndex:2]];
+    
     [to removeDependency:to2];
     [self assert:@"dependencies" equals:[[obs changedKeyPaths] objectAtIndex:3]];
+    
     [to setQueuePriority:CPOperationQueuePriorityHigh];
     [self assert:@"queuePriority" equals:[[obs changedKeyPaths] objectAtIndex:4]];
+    
     [to setCompletionFunction:function() {}];
     [self assert:@"completionFunction" equals:[[obs changedKeyPaths] objectAtIndex:5]];
 
@@ -195,6 +200,14 @@
     [self assertTrue:[funcOp isFinished]];
 
     [self assertTrue:([results count] == 0)];
+}
+
+- (void)testFunctionOperationIsConcurrent
+{
+    // Verify modernization change: Function Operations are now concurrent 
+    // to support async/await and Promises.
+    var funcOp = [CPFunctionOperation functionOperationWithFunction:function() {}];
+    [self assertTrue:[funcOp isConcurrent]];
 }
 
 @end
