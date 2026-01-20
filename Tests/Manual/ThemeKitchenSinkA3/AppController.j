@@ -3,7 +3,7 @@
  * KitchenSink in Code
  *
  * Created by Daniel Böhringer 2026.
- * Modified for TabView and SplitView (Table + Text) support.
+ * Modified for TabView, SplitView, and Control Sizes support.
  */
 
 @import <Foundation/Foundation.j>
@@ -11,7 +11,7 @@
 
 // --------------------------------------------------------------------------------
 // KitchenSinkWindowController
-// Manages a single window instance with Tabs: Controls & Table/Text Split
+// Manages a single window instance with Tabs: Controls, Table/Text Split, & Sizes
 // --------------------------------------------------------------------------------
 
 @implementation KitchenSinkWindowController : CPWindowController
@@ -87,12 +87,21 @@
 
     // --- TAB 2: Table & Text Split ---
     var item2 = [[CPTabViewItem alloc] initWithIdentifier:@"Table"];
-    [item2 setLabel:@"Data Split"]; // Renamed slightly to reflect content
+    [item2 setLabel:@"Data Split"];
 
     var tableViewWrapper = [[CPView alloc] initWithFrame:[tabView bounds]];
     [self _buildTableTab:tableViewWrapper];
     [item2 setView:tableViewWrapper];
     [tabView addTabViewItem:item2];
+
+    // --- TAB 3: Control Sizes (NEW) ---
+    var item3 = [[CPTabViewItem alloc] initWithIdentifier:@"Sizes"];
+    [item3 setLabel:@"Sizes"];
+
+    var sizesView = [[CPView alloc] initWithFrame:[tabView bounds]];
+    [self _buildSizesTab:sizesView];
+    [item3 setView:sizesView];
+    [tabView addTabViewItem:item3];
 
     [contentView addSubview:tabView];
 }
@@ -204,11 +213,24 @@
     [radio1 setTarget:self]; [radio1 setAction:@selector(dummyAction:)];
     [radio2 setTarget:self]; [radio2 setAction:@selector(dummyAction:)];
 
-    var levelInd = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(col2X, startY + (gapY * 5.5), 150, 18)];
+    // Level Indicator
+    var levelY = startY + (gapY * 5.5);
+    var levelInd = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(col2X, levelY, 130, 18)];
     [levelInd setMaxValue:5];
     [levelInd setDoubleValue:3];
     [levelInd setLevelIndicatorStyle:CPDiscreteCapacityLevelIndicatorStyle];
     [containerView addSubview:levelInd];
+
+    // --- UPDATED: Added Stepper for Level Indicator ---
+    var levelStepper = [[CPStepper alloc] initWithFrame:CGRectMake(col2X + 135, levelY - 2, 19, 24)];
+    [levelStepper setMinValue:0];
+    [levelStepper setMaxValue:5];
+    [levelStepper setDoubleValue:3];
+    [levelStepper setValueWraps:NO];
+    [containerView addSubview:levelStepper];
+    
+    // Bind Level Indicator to Stepper
+    [levelInd bind:CPValueBinding toObject:levelStepper withKeyPath:@"doubleValue" options:nil];
 
     var tickSlider = [[CPSlider alloc] initWithFrame:CGRectMake(col2X, startY + (gapY * 6.5), 110, 24)];
     [containerView addSubview:tickSlider];
@@ -232,16 +254,14 @@
     var bounds = [containerView bounds];
     var bottomBarHeight = 32.0;
 
-    // 1. Calculate Frame for Split View (Everything above the button bar)
+    // Split View Frame
     var splitFrame = CGRectMake(0, 0, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - bottomBarHeight);
     
-    // 2. Create the Split View
     var splitView = [[CPSplitView alloc] initWithFrame:splitFrame];
     [splitView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    [splitView setVertical:NO]; // NO = Horizontal Dividers = Vertical Stacking
+    [splitView setVertical:NO]; 
     
     // --- TOP PANE: Table View ---
-    
     var tableScroll = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), CGRectGetHeight(splitFrame) / 2.0)];
     [tableScroll setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [tableScroll setAutohidesScrollers:YES];
@@ -250,11 +270,9 @@
     [tableView setUsesAlternatingRowBackgroundColors:YES];
     [tableView setCornerView:nil];
     
-    // Bindings
     [tableView bind:CPSelectionIndexesBinding toObject:_arrayController withKeyPath:@"selectionIndexes" options:nil];
     [tableView bind:@"sortDescriptors" toObject:_arrayController withKeyPath:@"sortDescriptors" options:nil];
 
-    // Col 1: Animal
     var colAnimal = [[CPTableColumn alloc] initWithIdentifier:@"animal"];
     [[colAnimal headerView] setStringValue:@"Animal"];
     [colAnimal setWidth:150];
@@ -264,7 +282,6 @@
     [tableView addTableColumn:colAnimal];
     [colAnimal bind:CPValueBinding toObject:_arrayController withKeyPath:@"arrangedObjects.animal" options:nil];
 
-    // Col 2: Legs
     var colLegs = [[CPTableColumn alloc] initWithIdentifier:@"legs"];
     [[colLegs headerView] setStringValue:@"Legs"];
     [colLegs setWidth:100];
@@ -277,7 +294,6 @@
     [tableScroll setDocumentView:tableView];
     
     // --- BOTTOM PANE: Text View ---
-    
     var textScroll = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), CGRectGetHeight(splitFrame) / 2.0)];
     [textScroll setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [textScroll setAutohidesScrollers:YES];
@@ -289,14 +305,12 @@
     
     [textScroll setDocumentView:textView];
     
-    // --- ASSEMBLE SPLIT VIEW ---
-    // Note: The order of addSubview determines top vs bottom
     [splitView addSubview:tableScroll];
     [splitView addSubview:textScroll];
     
     [containerView addSubview:splitView];
 
-    // 3. Button Bar (Remains at bottom, outside split view)
+    // Button Bar
     var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(bounds) - bottomBarHeight, CGRectGetWidth(bounds), bottomBarHeight)];
     [buttonBar setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
     
@@ -319,6 +333,127 @@
     [containerView addSubview:buttonBar];
 }
 
+// --- NEW: SIZES TAB BUILDER ---
+- (void)_buildSizesTab:(CPView)containerView
+{
+    // Layout 3 columns based on the image provided
+    [self _addSizeColumnTo:containerView atX:20.0 controlSize:CPRegularControlSize title:@"Regular size"];
+    [self _addSizeColumnTo:containerView atX:160.0 controlSize:CPSmallControlSize title:@"Small size"];
+    [self _addSizeColumnTo:containerView atX:280.0 controlSize:CPMiniControlSize title:@"Mini size"];
+}
+
+- (void)_addSizeColumnTo:(CPView)parentView atX:(float)xPos controlSize:(CPControlSize)aSize title:(CPString)title
+{
+    var y = 20.0;
+    var rowHeight = 40.0; // Consistent vertical spacing for alignment across columns
+    var width = (aSize == CPRegularControlSize) ? 100.0 : ((aSize == CPSmallControlSize) ? 90.0 : 80.0);
+    
+    // 1. Title Label
+    var label = [CPTextField labelWithTitle:title];
+    [label setFrameOrigin:CGPointMake(xPos, y)];
+    [label setFont:[CPFont systemFontOfSize:13.0]]; // Keep title regular size for readability
+    [parentView addSubview:label];
+    
+    y += 35.0;
+
+    // 2. PopUp Button (simulating the top dropdown in the image)
+    var popUp = [[CPPopUpButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
+    [popUp addItemWithTitle:@"Item 1"];
+    [popUp addItemWithTitle:@"Item 2"];
+    [popUp setControlSize:aSize];
+    [parentView addSubview:popUp];
+    
+    y += rowHeight;
+
+    // 3. Text Field
+    var tf = [[CPTextField alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
+    [tf setStringValue:@"Input"];
+    [tf setBezeled:YES];
+    [tf setEditable:YES];
+    [tf setControlSize:aSize];
+    [parentView addSubview:tf];
+
+    y += rowHeight;
+
+    // 4. Stepper
+    var stepper = [[CPStepper alloc] initWithFrame:CGRectMake(xPos, y, 13, 23)];
+    [stepper setControlSize:aSize];
+    //[stepper sizeToFit]; // Important for steppers to resize correctly
+    [parentView addSubview:stepper];
+
+    y += rowHeight;
+
+    // 5. Date Picker
+    // Width needs to be wider for date pickers usually
+    var dpWidth = width + (aSize == CPRegularControlSize ? 30 : 20);
+    var dp = [[CPDatePicker alloc] initWithFrame:CGRectMake(xPos, y, dpWidth, 28)];
+    [dp setControlSize:aSize];
+    [dp setDatePickerStyle:CPTextFieldAndStepperDatePickerStyle];
+    [dp setDateValue:[CPDate date]];
+    [parentView addSubview:dp];
+
+    y += rowHeight;
+
+    // 6. Checkbox
+    var cb = [CPCheckBox checkBoxWithTitle:@"Check"];
+    [cb setFrameOrigin:CGPointMake(xPos, y)];
+    [cb setControlSize:aSize];
+    [cb sizeToFit];
+    [parentView addSubview:cb];
+
+    y += rowHeight;
+
+    // 7. Standard Button
+    var btn = [[CPButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
+    [btn setTitle:@"Button"];
+    [btn setControlSize:aSize];
+    [parentView addSubview:btn];
+
+    y += rowHeight;
+
+    // 8. Textured Button
+    var texBtn = [[CPButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
+    [texBtn setTitle:@"Textured"];
+    [texBtn setBezelStyle:CPTexturedSquareBezelStyle];
+    [texBtn setControlSize:aSize];
+    [parentView addSubview:texBtn];
+    
+    y += rowHeight;
+
+    // 9. Round Textured Button
+    var roundTexBtn = [[CPButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
+    [roundTexBtn setTitle:@"Round"];
+    [roundTexBtn setBezelStyle:CPTexturedRoundedBezelStyle];
+    [roundTexBtn setControlSize:aSize];
+    [parentView addSubview:roundTexBtn];
+
+    y += rowHeight;
+
+    // 10. Radio Buttons
+    var rad1 = [CPRadio radioWithTitle:@"Radio"];
+    [rad1 setFrameOrigin:CGPointMake(xPos, y)];
+    [rad1 setControlSize:aSize];
+    [rad1 setState:CPOnState];
+    [rad1 sizeToFit];
+    [parentView addSubview:rad1];
+
+    y += 24.0; // Less gap for radio group
+    
+    var rad2 = [CPRadio radioWithTitle:@"Radio"];
+    [rad2 setFrameOrigin:CGPointMake(xPos, y)];
+    [rad2 setControlSize:aSize];
+    [rad2 sizeToFit];
+    [parentView addSubview:rad2];
+    
+    y += rowHeight; // Final gap
+    
+    // 11. Small Bottom PopUp
+    var popUp2 = [[CPPopUpButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
+    [popUp2 setPullsDown:YES]; // Style variation
+    [popUp2 setControlSize:aSize];
+    [parentView addSubview:popUp2];
+}
+
 - (void)_disableControlsInView:(id)aView
 {
     var subviews = [aView subviews],
@@ -328,12 +463,9 @@
     {
         var view = subviews[i];
         
-        // Skip text views to keep them readable even if window is 'disabled' (optional preference)
-        // or disable them too. Here we stick to the requested behavior of disabling controls.
         if ([view respondsToSelector:@selector(setEnabled:)])
             [view setEnabled:NO];
         
-        // Specifically for CPTextView which might rely on setEditable for "enabling"
         if ([view isKindOfClass:[CPTextView class]])
             [view setEditable:NO];
 
@@ -388,7 +520,7 @@
     windows = [];
 
     var winWidth = 430.0,
-        winHeight = 500.0, // Increased height slightly to accommodate the split view better
+        winHeight = 550.0, // Increased height for new tab content
         padding = 20.0;
 
     var wc1 = [[KitchenSinkWindowController alloc] initWithContentRect:CGRectMake(50, 50, winWidth, winHeight) isHUD:NO enabled:YES];
