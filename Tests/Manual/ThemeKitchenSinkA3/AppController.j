@@ -378,7 +378,6 @@
     // 4. Stepper
     var stepper = [[CPStepper alloc] initWithFrame:CGRectMake(xPos, y, 13, 23)];
     [stepper setControlSize:aSize];
-    //[stepper sizeToFit]; // Important for steppers to resize correctly
     [parentView addSubview:stepper];
 
     y += rowHeight;

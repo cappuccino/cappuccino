@@ -370,6 +370,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"dropview-above-border-width": [CPNull null],
             @"dropview-above-selected-border-color": [CPNull null],
             @"dropview-above-selected-border-width": [CPNull null],
+            @"background-color": [CPColor whiteColor],
             @"header-view-height": 25
         };
 }
@@ -419,7 +420,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
         _contentBindingExplicitlySet = NO;
 
-        [self setBackgroundColor:[CPColor whiteColor]];
+        [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
         [self _init];
     }
 
@@ -898,6 +899,20 @@ NOT YET IMPLEMENTED
     return [self currentValueForThemeAttribute:@"alternating-row-colors"];
 }
 
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    // Force update the background color from the theme
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    // Force update the background color from the theme
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
+}
+
 /*!
     Returns an enumerated value for the selection highlight style.
 
@@ -967,7 +982,7 @@ NOT YET IMPLEMENTED
 - (CPColor)unfocusedSelectionHighlightColor
 {
     if (!_unfocusedSelectionHighlightColor)
-        _unfocusedSelectionHighlightColor = [self hasThemeAttribute:@"unfocused-selection-color"] ? [self valueForThemeAttribute:@"unfocused-selection-color"] : [self _unfocusedSelectionColorFromColor:[self selectionHighlightColor] saturation:0];
+        _unfocusedSelectionHighlightColor = [self hasThemeAttribute:@"unfocused-selection-color"] ? [self currentValueForThemeAttribute:@"unfocused-selection-color"] : [self _unfocusedSelectionColorFromColor:[self selectionHighlightColor] saturation:0];
 
     return _unfocusedSelectionHighlightColor;
 }

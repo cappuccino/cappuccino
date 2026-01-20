@@ -1950,11 +1950,11 @@ var themedButtonValues                      = nil,
 + (CPScrollView)themedScrollView
 {
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)],
-        borderColor = /*[CPColor colorWithWhite:0.0 alpha:0.2]*/[CPColor redColor],
-
+        
         bottomCornerColor = [CPColor colorWithCSSDictionary:@{
                                                               @"background-color": A3ColorScrollerBackground
                                                               }],
+    // Standard White Theme
     bezelCssColor = [CPColor colorWithCSSDictionary:@{
                                                       @"background-color": A3ColorBackgroundWhite,
                                                       @"border-color": A3ColorTextfieldActiveBorder,
@@ -1978,9 +1978,31 @@ var themedButtonValues                      = nil,
                                                              @"transition-property": @"box-shadow, border"
                                                              }],
 
+    // --- HUD STYLES ---
+    // Transparent background with a subtle light border
+    hudBezelCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"transparent", 
+        @"border-color": @"rgba(255, 255, 255, 0.2)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"0px",
+        @"box-sizing": @"border-box"
+    }],
+
+    // HUD Focused: Slightly lighter background glow, white border
+    hudBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(255, 255, 255, 0.05)",
+        @"border-color": @"#ffffff",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"0px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0 0 3px rgba(255,255,255,0.3)"
+    }],
+
     themedScrollViewValues =
     [
-     // FIXME: ajouter les backgrounds pour no-border, line-border et groove-border
+     // --- Standard States ---
      [@"background-color-no-border",        bezelCssColor],
      [@"background-color-no-border",        bezelFocusedCssColor,       [CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
      [@"background-color-line-border",      bezelCssColor],
@@ -1997,12 +2019,24 @@ var themedButtonValues                      = nil,
      [@"bottom-corner-color", bottomCornerColor],
 
 
-     // --- HUD ---
-     [@"background-color-no-border",    [CPColor clearColor],       CPThemeStateHUD],
-     [@"background-color-line-border",  [CPColor clearColor],       CPThemeStateHUD],
-     [@"background-color-bezel-border", [CPColor clearColor],       CPThemeStateHUD],
-     [@"background-color-groove-border",[CPColor clearColor],       CPThemeStateHUD]
-     // -------------------------------
+     // --- HUD OVERRIDES ---
+     // We map all border types to the HUD style. 
+     // Crucially, we override the FirstResponder+KeyWindow combination to prevent the white focused style from appearing.
+     
+     // 1. Base HUD State
+     [@"background-color-no-border",    hudBezelCssColor,       CPThemeStateHUD],
+     [@"background-color-line-border",  hudBezelCssColor,       CPThemeStateHUD],
+     [@"background-color-bezel-border", hudBezelCssColor,       CPThemeStateHUD],
+     
+     // 2. HUD + Focused (Active)
+     [@"background-color-no-border",    hudBezelFocusedCssColor, [CPThemeStateHUD, CPThemeStateFirstResponder]],
+     [@"background-color-line-border",  hudBezelFocusedCssColor, [CPThemeStateHUD, CPThemeStateFirstResponder]],
+     [@"background-color-bezel-border", hudBezelFocusedCssColor, [CPThemeStateHUD, CPThemeStateFirstResponder]],
+     
+     // 3. HUD + Focused + Key Window (Highest Specificity - overrides standard focused state)
+     [@"background-color-no-border",    hudBezelFocusedCssColor, [CPThemeStateHUD, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
+     [@"background-color-line-border",  hudBezelFocusedCssColor, [CPThemeStateHUD, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
+     [@"background-color-bezel-border", hudBezelFocusedCssColor, [CPThemeStateHUD, CPThemeStateFirstResponder, CPThemeStateKeyWindow]]
     ];
 
     [self registerThemeValues:themedScrollViewValues forView:scrollView];
@@ -6580,7 +6614,7 @@ var themedButtonValues                      = nil,
 {
     var header = [self makeColumnHeader],
     
-    // Replaced PatternImage with pure CSS gradients or solid colors
+    // Standard Background
     background = [CPColor colorWithCSSDictionary:@{
                                                    @"background-color": A3ColorBackgroundWhite,
                                                    @"border-bottom": @"1px solid " + A3ColorTableDivider
@@ -6778,46 +6812,51 @@ var themedButtonValues                      = nil,
 {
     var tableview = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 150.0, 150.0)],
         
-        // Replaced PatternImage with SVG
+        // Images
         sortImage = [CPImage imageWithCSSDictionary:@{
-                                                      "-webkit-mask-image": svgArrowUp,
-                                                      "mask-image": svgArrowUp,
-                                                      "background-color": A3ColorActiveText,
-                                                      "-webkit-mask-size": "contain",
-                                                      "mask-size": "contain",
-                                                      "-webkit-mask-repeat": "no-repeat",
-                                                      "mask-repeat": "no-repeat",
-                                                      "-webkit-mask-position": "center",
-                                                      "mask-position": "center"
-                                                      } size:CGSizeMake(18, 16)],
+            "-webkit-mask-image": svgArrowUp,
+            "mask-image": svgArrowUp,
+            "background-color": A3ColorActiveText,
+            "-webkit-mask-size": "contain", "mask-size": "contain",
+            "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+            "-webkit-mask-position": "center", "mask-position": "center"
+        } size:CGSizeMake(18, 16)],
 
         sortImageReversed = [CPImage imageWithCSSDictionary:@{
-                                                              "-webkit-mask-image": svgArrowDown,
-                                                              "mask-image": svgArrowDown,
-                                                              "background-color": A3ColorActiveText,
-                                                              "-webkit-mask-size": "contain",
-                                                              "mask-size": "contain",
-                                                              "-webkit-mask-repeat": "no-repeat",
-                                                              "mask-repeat": "no-repeat",
-                                                              "-webkit-mask-position": "center",
-                                                              "mask-position": "center"
-                                                              } size:CGSizeMake(18, 16)],
+            "-webkit-mask-image": svgArrowDown,
+            "mask-image": svgArrowDown,
+            "background-color": A3ColorActiveText,
+            "-webkit-mask-size": "contain", "mask-size": "contain",
+            "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+            "-webkit-mask-position": "center", "mask-position": "center"
+        } size:CGSizeMake(18, 16)],
 
-        imageGenericFile = nil, // Placeholder for generic file if needed, or remove
+        imageGenericFile = nil, 
         
         alternatingRowColors = [A3CPColorTableRow, A3CPColorTableAlternateRow],
         gridColor = [CPColor colorWithHexString:@"dce0e2"],
         sourceListSelectionColor = @{
-                                 CPSourceListGradient: CGGradientCreateWithColorComponents(
-                                                                                           CGColorSpaceCreateDeviceRGB(),
-                                                                                           [109.0 / 255.0, 150.0 / 255.0, 238.0 / 255.0, 1.0, 72.0 / 255.0, 113.0 / 255.0, 201.0 / 255.0, 1.0],
-                                                                                           [0, 1],
-                                                                                           2
-                                                                                           ),
-                                 CPSourceListTopLineColor: [CPColor colorWithCalibratedRed:70.0 / 255.0 green:107.0 / 255.0 blue:215.0 / 255.0 alpha:1.0],
-                                 CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:42.0 / 255.0 green:74.0 / 255.0 blue:177.0 / 255.0 alpha:1.0]
-                                 },
-    hudSelectionColor = [CPColor colorWithCSSDictionary:@{@"background-color": @"rgba(255, 255, 255, 0.3)"}],
+             CPSourceListGradient: CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [109.0/255.0, 150.0/255.0, 238.0/255.0, 1.0, 72.0/255.0, 113.0/255.0, 201.0/255.0, 1.0], [0, 1], 2),
+             CPSourceListTopLineColor: [CPColor colorWithCalibratedRed:70.0/255.0 green:107.0/255.0 blue:215.0/255.0 alpha:1.0],
+             CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:42.0/255.0 green:74.0/255.0 blue:177.0/255.0 alpha:1.0]
+        },
+
+    // --- HUD STYLES ---
+    
+    // Selection: Sehr helles Weiß (0.9) für guten Kontrast zum schwarzen Text
+    hudSelectionColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(255, 255, 255, 0.9)",
+        @"border-radius": @"4px",
+    }],
+
+    // Unfocused Selection: Dim Grey/White (Text ist hier weiß, also passt dunklerer Hintergrund)
+    hudUnfocusedSelectionColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(255, 255, 255, 0.9)",
+        @"border-radius": @"4px"
+    }],
+
+    // Alternating Rows: Clear + Very Faint White
+    hudAlternatingRowColors = [[CPColor clearColor], [CPColor colorWithWhite:1.0 alpha:0.05]],
 
     themedTableViewValues =
     [
@@ -6832,32 +6871,34 @@ var themedButtonValues                      = nil,
      [@"image-generic-file",                     imageGenericFile],
      [@"default-row-height",                     17.0], 
      [@"header-view-height",                     22],
+     [@"background-color",                       [CPColor whiteColor]],
 
-     [@"header-view-height",                     0.0,                CPThemeStateHUD],
-     
-     // 2. Make rows transparent (Fixes the white background block)
-     // Note: We use [CPColor clearColor] because nil causes array issues in Obj-J
-     [@"alternating-row-colors",                 [[CPColor clearColor], [CPColor clearColor]], CPThemeStateHUD],
-     
-     // 3. Set visible selection color
-     [@"selection-color",                        hudSelectionColor,                      CPThemeStateHUD],
-     [@"unfocused-selection-color",              hudSelectionColor,                      CPThemeStateHUD],
+     // --- HUD OVERRIDES ---
+     [@"header-view-height",                     22.0,                                   CPThemeStateHUD], // Header sichtbar lassen
+     [@"background-color",                       [CPColor clearColor],                   CPThemeStateHUD],
+     [@"alternating-row-colors",                 hudAlternatingRowColors,                CPThemeStateHUD],
 
-     [@"dropview-on-background-color",           [CPColor colorWithRed:72 / 255 green:134 / 255 blue:202 / 255 alpha:0.25]],
+     // Key/Active Selection
+     [@"selection-color",                        [CPColor whiteColor],                      CPThemeStateHUD],
+     [@"selection-color",                        [CPColor whiteColor],                      [CPThemeStateHUD, CPThemeStateKeyWindow]],
+
+     // Inactive Selection
+     [@"unfocused-selection-color",              hudUnfocusedSelectionColor,             CPThemeStateHUD],
+     [@"unfocused-selection-color",              hudUnfocusedSelectionColor,             [CPThemeStateHUD, CPThemeStateKeyWindow]],
+
+     // --- DRAG & DROP ---
+     [@"dropview-on-background-color",           [CPColor colorWithRed:72/255 green:134/255 blue:202/255 alpha:0.25]],
      [@"dropview-on-border-color",               [CPColor colorWithHexString:@"4886ca"]],
      [@"dropview-on-border-width",               3.0],
      [@"dropview-on-border-radius",              8.0],
-
      [@"dropview-on-selected-background-color",  [CPColor clearColor]],
      [@"dropview-on-selected-border-color",      [CPColor whiteColor]],
      [@"dropview-on-selected-border-width",      2.0],
      [@"dropview-on-selected-border-radius",     8.0],
-
      [@"dropview-above-border-color",            [CPColor colorWithHexString:@"4886ca"]],
      [@"dropview-above-border-width",            3.0],
-
      [@"dropview-above-selected-border-color",   [CPColor colorWithHexString:@"8BB6F0"]],
-     [@"dropview-above-selected-border-width",   2.0],
+     [@"dropview-above-selected-border-width",   2.0]
      ];
 
     [tableview setUsesAlternatingRowBackgroundColors:YES];
