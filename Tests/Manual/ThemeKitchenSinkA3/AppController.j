@@ -356,6 +356,7 @@
     [minusBtn bind:CPEnabledBinding toObject:_arrayController withKeyPath:@"canRemove" options:nil];
 
     [buttonBar setButtons:[plusBtn, minusBtn]];
+
     [containerView addSubview:buttonBar];
 }
 

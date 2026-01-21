@@ -149,22 +149,16 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
 + (id)plusButton
 {
-    CPLog.warn("[CPButtonBar plusButton] is deprecated, use -(id)plusButton instance method instead.");
-
     return [[CPButtonBar _sharedDummyButtonBar] plusButton];
 }
 
 + (id)minusButton
 {
-    CPLog.warn("[CPButtonBar minusButton] is deprecated, use -(id)minusButton instance method instead.");
-
     return [[CPButtonBar _sharedDummyButtonBar] minusButton];
 }
 
 + (id)actionPopupButton
 {
-    CPLog.warn("[CPButtonBar actionPopupButton] is deprecated, use -(id)actionPopupButton instance method instead.");
-
     return [[CPButtonBar _sharedDummyButtonBar] actionPopupButton];
 }
 
@@ -180,9 +174,15 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 {
     var attributeName  = [_templateImageMap valueForKey:templateImage],
         image          = [self valueForThemeAttribute:attributeName inState:CPThemeStateNormal],
-        alternateImage = [self valueForThemeAttribute:attributeName inState:CPThemeStateHighlighted];
+        alternateImage = [self valueForThemeAttribute:attributeName inState:CPThemeStateHighlighted],
+        button         = [self buttonWithImage:image alternateImage:alternateImage];
 
-    return [self buttonWithImage:image alternateImage:alternateImage];
+    // FIX: Track that this button was created from a template (e.g. Plus/Minus).
+    // This allows us to reload the image later if the ButtonBar becomes HUD.
+    if ([button respondsToSelector:@selector(setTemplateImageName:)])
+        [button setTemplateImageName:templateImage];
+
+    return button;
 }
 
 - (id)buttonWithMaterialIconNamed:(CPString)iconName
@@ -202,9 +202,14 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 {
     var attributeName  = [_templateImageMap valueForKey:templateImage],
         image          = [self valueForThemeAttribute:attributeName inState:CPThemeStateNormal],
-        alternateImage = [self valueForThemeAttribute:attributeName inState:CPThemeStateHighlighted];
+        alternateImage = [self valueForThemeAttribute:attributeName inState:CPThemeStateHighlighted],
+        button         = [self pulldownButtonWithImage:image alternateImage:alternateImage];
 
-    return [self pulldownButtonWithImage:image alternateImage:alternateImage];
+    // FIX: Track that this button was created from a template.
+    if ([button respondsToSelector:@selector(setTemplateImageName:)])
+        [button setTemplateImageName:templateImage];
+
+    return button;
 }
 
 - (id)pulldownButtonWithMaterialIconNamed:(CPString)iconName
@@ -324,6 +329,50 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     return self;
 }
 
+// FIX: Helper to refresh button images based on the CURRENT state of the bar.
+// This is called by setButtons: and viewDidMoveToWindow.
+- (void)_reloadButtonImages
+{
+    var count = [_buttons count],
+        // The magic happens here: [self themeState] will include CPThemeStateHUD 
+        // if this bar was manually set to HUD or is inside a HUD window.
+        // We OR it with Normal/Highlighted to look up the correct image variant.
+        currentState = [self themeState],
+        normalState  = currentState.and(CPThemeStateNormal),
+        highlightedState = currentState.and(CPThemeStateHighlighted);
+
+    for (var i = 0; i < count; i++)
+    {
+        var button = _buttons[i];
+        
+        // Only update buttons that we know are based on a template (Plus/Minus/Action)
+        if ([button respondsToSelector:@selector(templateImageName)] && [button templateImageName])
+        {
+            var templateName = [button templateImageName],
+                attributeName = [_templateImageMap valueForKey:templateName];
+            
+            if (attributeName)
+            {
+                // Fetch the image from the ButtonBar's theme using the ButtonBar's current state
+                var image = [self valueForThemeAttribute:attributeName inState:normalState],
+                    altImage = [self valueForThemeAttribute:attributeName inState:highlightedState];
+                
+                // Apply the new images to the button
+                if ([button isKindOfClass:[_CPButtonBarPopUpButton class]])
+                {
+                    [button setButtonImage:image];
+                    [button setAlternateImage:altImage];
+                }
+                else if ([button isKindOfClass:[CPButton class]])
+                {
+                    [button setImage:image];
+                    [button setAlternateImage:altImage];
+                }
+            }
+        }
+    }
+}
+
 - (void)_loadThemeValues
 {
     _bezelColor                  = [self currentValueForThemeAttribute:@"bezel-color"];
@@ -336,8 +385,40 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
     [self setBackgroundColor:_bezelColor];
 
+    // FIX: Reload images whenever theme values load (e.g. state change)
+    [self _reloadButtonImages];
+
     _needsToLoadThemeValues    = NO;
     _needsToComputeNeededSpace = YES;
+}
+
+// FIX: Ensure we update appearances when added to a window (which might be HUD)
+- (void)viewDidMoveToWindow
+{
+    [super viewDidMoveToWindow];
+    _needsToLoadThemeValues = YES;
+    [self setNeedsLayout:YES];
+}
+
+// FIX: Ensure we update if the HUD state is toggled manually
+- (void)setThemeState:(CPThemeState)aState
+{
+    var oldState = [self themeState];
+    [super setThemeState:aState];
+    if (oldState !== aState) {
+        _needsToLoadThemeValues = YES;
+        [self setNeedsLayout:YES];
+    }
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    var oldState = [self themeState];
+    [super unsetThemeState:aState];
+    if (oldState !== [self themeState]) {
+        _needsToLoadThemeValues = YES;
+        [self setNeedsLayout:YES];
+    }
 }
 
 - (void)awakeFromCib
@@ -355,29 +436,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     {
         if ([view isKindOfClass:[CPSplitView class]])
         {
-//            // ATTENTION !
-//            // If the button bar is created via IB, at this moment, the split view may not be ready : subviews are OK but
-//            // not arrangedSubviews. We can then assume that all subviews will be arranged subviews (as subviews declared
-//            // in IB are, in fact, arranged subviews).
-//            // BUT if the split view is ready, when must work on arranged subviews.
-//            //
-//            // To determine if the split view is ready, we have to make an hypothesis :
-//            //      if the number of subviews > 0 and the number of arranged subviews = 0, then the split view is not ready
-//            //
-//            // This hypothesis could be false if the split view doesn't arrange all subviews and if all subviews are not
-//            // arranged subviews. BUT this would mean that the split view has no real panes. And this should never happen
-//            // in real life.
-//
-//            var arrangedSubviews      = [view arrangedSubviews],
-//                arrangedSubviewsCount = [arrangedSubviews count],
-//                subviews              = [view subviews],
-//                subviewsCount         = [subviews count],
-//                splitViewIsNotReady   = (subviewsCount > 0) && (arrangedSubviewsCount == 0),
-//                viewIndex             = [(splitViewIsNotReady ? subviews : arrangedSubviews) indexOfObject:subview],
-//                dividerIndex          = (viewIndex < (splitViewIsNotReady ? subviewsCount : arrangedSubviewsCount) - 1) ? viewIndex : MAX(viewIndex - 1, 0);
-//
-//            [view setButtonBar:self forDividerAtIndex:dividerIndex addResizeControl:_automaticResizeControl];
-
             [view attachButtonBar:self];
             break;
         }
@@ -420,12 +478,8 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
     _style = style;
 
-    // If we already have buttons (surely a live style change), we have to
-    // reload them in order to have correct behaviors
     if ([_buttons count] > 0)
     {
-        // Clear existing buttons before asking delegate to re-populate,
-        // otherwise we get duplicates (A, B -> A, B, A, B).
         [self setButtons:@[]]; 
         [self _sendDelegatePopulateButtonBar];
     }
@@ -450,6 +504,12 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     for (var i = 0, count = [buttons count]; i < count; i++)
         [self addButton:buttons[i]];
 
+    // FIX: This is the critical fix.
+    // When buttons are set, we immediately force them to match the Button Bar's current state.
+    // If the bar was manually set to CPThemeStateHUD before calling setButtons:, this ensures
+    // the buttons (which might have been created as black icons) are swapped to white icons.
+    [self _reloadButtonImages];
+
     [self setNeedsRelayout:YES];
 }
 
@@ -466,18 +526,14 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     [button setBordered:_buttonsAreBordered];
     [self addSubview:button];
 
-    // Add a corresponding divider
     var newDivider = [[CPView alloc] initWithFrame:CGRectMakeZero()];
 
     [_dividers addObject:newDivider];
     [newDivider setBackgroundColor:_dividerColor];
     [self addSubview:newDivider];
 
-    // Is this a flexible space ?
     if ([button isKindOfClass:_CPButtonBarFlexibleSpace])
         _flexibleSpacesCount++;
-
-    // Is this a flexible item (other than space)
     else if ([button isFlexible])
         [_flexibles addObject:button];
 
@@ -503,7 +559,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
     [self _loadThemeValues];
 
-    // Update buttons
     for (var i = 0, count = [_buttons count]; i < count; i++)
     {
         [_buttons[i] setBordered:_buttonsAreBordered];
@@ -512,7 +567,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
     var useDividers = _buttonsAreBordered && !!_dividerColor;
 
-    // Adapt dividers
     for (var i = 0, count = [_dividers count]; i < count; i++)
     {
         [_dividers[i] setBackgroundColor:_dividerColor];
@@ -536,7 +590,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
     _buttonsSize = aSize;
 
-    // Update existing buttons size
     for (var i = 0, count = [_buttons count]; i < count; i++)
         if ([_buttons[i] isKindOfClass:_CPButtonBarButton])
             [_buttons[i] setFrameSize:_buttonsSize];
@@ -593,7 +646,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
 - (void)setHasResizeControl:(BOOL)shouldHaveResizeControl
 {
-    // For compatibility with previous implementation
     [self setAutomaticResizeControl:shouldHaveResizeControl];
 }
 
@@ -604,7 +656,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
 - (void)setResizeControlIsLeftAligned:(BOOL)shouldBeLeftAligned
 {
-    // For compatibility with previous implementation
     [self setHasLeftResizeControl:shouldBeLeftAligned];
     [self setHasRightResizeControl:!shouldBeLeftAligned];
 }
@@ -733,18 +784,15 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     {
         button = _buttons[i];
 
-        // Skip hidden buttons and separators if buttons are bordered
         if ([button isHidden] || (_buttonsAreBordered && [button isKindOfClass:_CPButtonBarSeparator]))
             continue;
 
         if ([button isFlexible])
         {
-            // This is a flexible item (space, search field, ...)
             width = [button minWidth];
 
-            if (width > 0) // not a _CPButtonBarFlexibleSpace
+            if (width > 0)
             {
-                // If maxWidth == -1, the item wants all the remaining space
                 if ([button maxWidth] != -1)
                     _flexibleDelta += (delta = [button maxWidth] - width);
                 else
@@ -755,7 +803,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
             }
         }
         else
-            // This is a fixed size item
             width = [button frame].size.width;
 
         _neededWidth += width + _spacing - buttonHorizontalOffset + 2 * [button extraSpacing];
@@ -790,7 +837,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
         remainingSpace         = availableWidth - _neededWidth,
         nbDividersToRemove     = 0;
 
-    // If we can collapse dividers (avoiding double dividers), get back freed space
     if (useDividers && (remainingSpace < _flexibleDelta))
     {
         nbDividersToRemove = MIN(_flexibleSpacesCount, _flexibleDelta - remainingSpace);
@@ -799,14 +845,8 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
     if (remainingSpace > 0)
     {
-        // Some space remains.
-
-        // If we have flexible items (other than spaces), distribute remaining space
         if (_flexibleCount > 0)
         {
-            // We first distribute to non "all space" items
-            // flexibleDelta is the total needed extra space for non "all space" items
-
             var distributionRatio  = (_flexibleDelta > remainingSpace) ? remainingSpace / _flexibleDelta : 1.0,
                 allSpaceItemsCount = 0;
 
@@ -824,9 +864,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
             if ((remainingSpace > 0) && (allSpaceItemsCount > 0))
             {
-                // Some space remains.
-                // We now distribute it evenly to "all space" items
-
                 var evenSpace = remainingSpace / allSpaceItemsCount;
 
                 for (var i = 0, count = _flexibles.length, item; i < count; i++)
@@ -841,7 +878,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
             }
         }
 
-        // If we have flexible space(s), distribute remaining space evenly
         if (_flexibleSpacesCount > 0)
             flexibleSpaceWidth = (remainingSpace > 0) ? remainingSpace / _flexibleSpacesCount : 0;
     }
@@ -850,14 +886,11 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     {
         button = _buttons[i];
 
-        // Skip separators if buttons are bordered
         if ([button isKindOfClass:_CPButtonBarSeparator])
             [button setHidden:_buttonsAreBordered];
 
-        // Skip hidden buttons
         if ([button isHidden])
         {
-            // We mask the related divider
             [_dividers[i] setHidden:YES];
             continue;
         }
@@ -866,11 +899,9 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
         extraSpace   = [button extraSpacing];
         buttonHeight = [button frame].size.height;
 
-        // Avoid double separators if width = 0
         if ((width == 0) && (nbDividersToRemove > 0))
         {
             [_dividers[i] setHidden:YES];
-
             nbDividersToRemove--;
             continue;
         }
@@ -1458,6 +1489,10 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 #pragma mark Button
 
 @implementation _CPButtonBarButton : CPButton
+{
+    // FIX: Added property to store template image name
+    CPString _templateImageName @accessors(property=templateImageName);
+}
 
 + (CPString)defaultThemeClass
 {
@@ -1525,6 +1560,9 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 {
     CPImage _image;
     BOOL    _isLocallyHighlighted;
+    
+    // FIX: Added property to store template image name
+    CPString _templateImageName @accessors(property=templateImageName);
 }
 
 + (CPString)defaultThemeClass
@@ -1573,6 +1611,16 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 - (void)_initThemedValues
 {
     [self setFrameSize:[self currentValueForThemeAttribute:@"min-size"]];
+}
+
+// FIX: Helper to update the main image from CPButtonBar logic
+- (void)setButtonImage:(CPImage)anImage
+{
+    if (_image === anImage)
+        return;
+    
+    _image = anImage;
+    [self setNeedsLayout];
 }
 
 // Track the highlight state
@@ -1803,4 +1851,3 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 }
 
 @end
-
