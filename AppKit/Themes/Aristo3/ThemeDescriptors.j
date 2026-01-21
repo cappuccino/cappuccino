@@ -1482,27 +1482,29 @@ var themedButtonValues                      = nil,
             @"margin-top": marginTop + "px",
 
             "-webkit-mask-image": svgSingleArrow,
-            "mask-image": svgSingleArrow, // FIX: Ensure consistent mask image
+            "mask-image": svgSingleArrow,
             "-webkit-mask-size": "contain",
             "mask-size": "contain",
             "-webkit-mask-repeat": "no-repeat",
             "mask-repeat": "no-repeat",
             "-webkit-mask-position": "center",
             "mask-position": "center",
-            
+
             @"background-color": color
         };
     },
+
+    // HUD Arrow (White)
     hudArrowCSS = function(color) {
         return @{
             @"content": @"''",
             @"position": @"absolute",
             @"top": @"50%",
-            @"right": @"-8px",
+            @"right": @"-4px",
             @"width": @"25px",
             @"height": @"25px",
             @"margin-top": @"-12.5px",
-            "-webkit-mask-image": svgSingleArrow, // Use Single Arrow for Pull Down
+            "-webkit-mask-image": svgSingleArrow,
             "mask-image": svgSingleArrow,
             "-webkit-mask-size": "contain",
             "mask-size": "contain",
@@ -1554,7 +1556,6 @@ var themedButtonValues                      = nil,
                                                        @"top": @"3px",
                                                        @"width": @"1px"
                                                        }
-                                     // FIX: Use A3ColorBorderBlue
                                      afterDictionary:arrowCSS(A3ColorBorderBlue, "-4px", "25px")],
 
     notKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1604,7 +1605,6 @@ var themedButtonValues                      = nil,
                                                                   @"top": @"3px",
                                                                   @"width": @"1px"
                                                                   }
-                                                // FIX: Use A3ColorBorderBlue
                                                 afterDictionary:arrowCSS(A3ColorBorderBlue, "-4px", "25px")],
 
     // ==========================================================
@@ -1700,7 +1700,6 @@ var themedButtonValues                      = nil,
                                                            @"top": @"2px",
                                                            @"width": @"1px"
                                                            }
-                                         // FIX: Use A3ColorBorderBlue
                                          afterDictionary:arrowCSS(A3ColorBorderBlue, "-3px", "20px")],
 
     miniNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1750,7 +1749,6 @@ var themedButtonValues                      = nil,
                                                                       @"top": @"2px",
                                                                       @"width": @"1px"
                                                                       }
-                                                    // FIX: Use A3ColorBorderBlue
                                                     afterDictionary:arrowCSS(A3ColorBorderBlue, "-3px", "20px")],
 
     // ==========================================================
@@ -1789,7 +1787,7 @@ var themedButtonValues                      = nil,
                                                                     }
                                                  beforeDictionary:nil
                                                   afterDictionary:arrowCSS(A3ColorActiveText, "-8px", "25px")],
-                                                  
+
     // Small NB
     smallNbButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                               @"background-color": A3ColorTransparent,
@@ -1823,7 +1821,7 @@ var themedButtonValues                      = nil,
                                                                          }
                                                       beforeDictionary:nil
                                                        afterDictionary:arrowCSS(A3ColorActiveText, "-6px", "23px")],
-    
+
     // Mini NB
     miniNbButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                              @"background-color": A3ColorTransparent,
@@ -1931,10 +1929,18 @@ var themedButtonValues                      = nil,
 
      // Register HUD states
      [@"text-color",    [CPColor whiteColor],       [CPPopUpButtonStatePullsDown, CPThemeStateHUD]],
-     
-     [@"bezel-color",   hudButtonCssColor,          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
-     [@"bezel-color",   hudButtonCssColor,          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateKeyWindow]],
-     [@"bezel-color",   hudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateHighlighted]]
+
+     // Normal HUD
+     [@"bezel-color",   hudButtonCssColor,          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered]],
+
+     // Key Window HUD
+     [@"bezel-color",   hudButtonCssColor,          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateKeyWindow]],
+
+     // Highlighted HUD
+     [@"bezel-color",   hudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
+
+     // Highlighted + Key Window HUD (The Fix for Specificity)
+     [@"bezel-color",   hudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted, CPThemeStateKeyWindow]]
     ];
 
     [self registerThemeValues:themeValues forView:button];
