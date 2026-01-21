@@ -6669,6 +6669,22 @@ var themedButtonValues                      = nil,
                                                 @"width": @"1px"
                                                 }],
 
+    // --- HUD Background ---
+    hudBackground = [CPColor colorWithCSSDictionary:@{
+                                                   @"background-color": @"rgba(0, 0, 0, 0.25)",
+                                                   @"border-bottom": @"1px solid rgba(255, 255, 255, 0.2)"
+                                                   }
+                                beforeDictionary:nil
+                                 afterDictionary:@{
+                                                   @"background-color": @"rgba(255, 255, 255, 0.2)",
+                                                   @"bottom": @"3px",
+                                                   @"content": @"''",
+                                                   @"position": @"absolute",
+                                                   @"right": @"0px",
+                                                   @"top": @"2px",
+                                                   @"width": @"1px"
+                                                   }],
+
     ghost = [CPColor colorWithCSSDictionary:@{}
                            beforeDictionary:nil
                             afterDictionary:nil],
@@ -6678,6 +6694,11 @@ var themedButtonValues                      = nil,
      [@"background-color",      background],
      [@"background-color",      pressed,            CPThemeStateHighlighted],
      [@"background-color",      ghost,              CPThemeStateVertical],
+     
+     // HUD Mapping
+     [@"background-color",      hudBackground,      CPThemeStateHUD],
+     [@"text-color",            [CPColor whiteColor], CPThemeStateHUD],
+
      [@"dont-draw-separator",   YES],
 
      [@"text-inset",            CGInsetMake(-2, 5, 0, 6)],
@@ -6697,6 +6718,7 @@ var themedButtonValues                      = nil,
 {
     var header = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 23.0)],
 
+    // Standard Background
     background = [CPColor colorWithCSSDictionary:@{
                                                    @"background-color": A3ColorBackgroundWhite,
                                                    @"border-color": A3ColorTableDivider,
@@ -6706,9 +6728,19 @@ var themedButtonValues                      = nil,
                                                    @"border-left-width": @"0px",
                                                    @"border-right-width": @"0px",
                                                    @"box-sizing": @"border-box"
-                                                   }
-                                beforeDictionary:nil
-                                 afterDictionary:nil],
+                                                   }],
+
+    // HUD Background
+    hudBackground = [CPColor colorWithCSSDictionary:@{
+                                                   @"background-color": @"rgba(0, 0, 0, 0.25)",
+                                                   @"border-color": @"rgba(255, 255, 255, 0.2)",
+                                                   @"border-style": @"solid",
+                                                   @"border-bottom-width": @"1px",
+                                                   @"border-top-width": @"0px",
+                                                   @"border-left-width": @"0px",
+                                                   @"border-right-width": @"0px",
+                                                   @"box-sizing": @"border-box"
+                                                   }],
 
     animateSwapFunction = "" + function(s, aFromIndex, aToIndex, _columnDragClipView, _columnDragView) {
 
@@ -6793,11 +6825,16 @@ var themedButtonValues                      = nil,
         [[_columnDragView animator] setFrameOrigin:CGPointMake(animatedHeaderOrigin.x, 0)];
 
         [CPAnimationContext endGrouping];
-    };
+    },
 
-    [header setValue:background             forThemeAttribute:@"background-color"];
-    [header setValue:animateSwapFunction    forThemeAttribute:@"swap-animation"];
-    [header setValue:animateReturnFunction  forThemeAttribute:@"return-animation"];
+    themeValues = [
+        [@"background-color",   background],
+        [@"background-color",   hudBackground,          CPThemeStateHUD],
+        [@"swap-animation",     animateSwapFunction],
+        [@"return-animation",   animateReturnFunction]
+    ];
+
+    [self registerThemeValues:themeValues forView:header];
 
     return header;
 }
@@ -6807,6 +6844,7 @@ var themedButtonValues                      = nil,
     var scrollerWidth = [CPScroller scrollerWidth],
         corner = [[_CPCornerView alloc] initWithFrame:CGRectMake(0.0, 0.0, scrollerWidth, 23.0)],
 
+    // Standard Background (White)
     background = [CPColor colorWithCSSDictionary:@{
                                                    @"background-color": A3ColorBackgroundWhite,
                                                    @"border-color": A3ColorTableDivider,
@@ -6816,14 +6854,30 @@ var themedButtonValues                      = nil,
                                                    @"border-left-width": @"0px",
                                                    @"border-right-width": @"0px",
                                                    @"box-sizing": @"border-box"
-                                                   }
-                                beforeDictionary:nil
-                                 afterDictionary:nil];
+                                                   }],
+    
+    // HUD Background (Dark Transparent)
+    hudBackground = [CPColor colorWithCSSDictionary:@{
+                                                   @"background-color": @"rgba(0, 0, 0, 0.25)",
+                                                   @"border-color": @"rgba(255, 255, 255, 0.2)",
+                                                   @"border-style": @"solid",
+                                                   @"border-bottom-width": @"1px",
+                                                   @"border-top-width": @"0px",
+                                                   @"border-left-width": @"0px",
+                                                   @"border-right-width": @"0px",
+                                                   @"box-sizing": @"border-box"
+                                                   }],
 
-    [corner setValue:background  forThemeAttribute:"background-color"];
+    themeValues = [
+        [@"background-color", background],
+        [@"background-color", hudBackground, CPThemeStateHUD]
+    ];
+
+    [self registerThemeValues:themeValues forView:corner];
 
     return corner;
 }
+
 
 + (CPTableView)themedTableView
 {
