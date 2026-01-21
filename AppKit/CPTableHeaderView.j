@@ -382,6 +382,8 @@ var CPTableHeaderViewResizeZone = 3.0,
 
 - (void)layoutSubviews
 {
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
+    
     var tableColumns = [_tableView tableColumns],
         count = [tableColumns count];
 
