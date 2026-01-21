@@ -5946,14 +5946,14 @@ var themedButtonValues                      = nil,
     hudKnobColor = [CPColor colorWithCSSDictionary:@{
                                                         @"background-color": @"#FFFFFF",
                                                         @"border": @"1px solid #000000",
-                                                        @"border-radius": @"50%",
-                                                        @"box-shadow": @"0 1px 2px rgba(0,0,0,0.5)"
+                                                        @"box-sizing": @"border-box",
+                                                        @"border-radius": @"50%"
                                                     }],
     
-    // FIX: Use a SOLID color (Hex) instead of RGBA for the background to prevent shine-through
     hudKnobDisabledColor = [CPColor colorWithCSSDictionary:@{
                                                         @"background-color": @"#808080", // Solid Grey
                                                         @"border": @"1px solid #444444",
+                                                        @"box-sizing": @"border-box",
                                                         @"border-radius": @"50%"
                                                     }],
 
@@ -6054,12 +6054,29 @@ var themedButtonValues                      = nil,
                                                       @"background-color": A3ColorActiveBorder
                                                       }],
 
+    // --- HUD COLORS ---
+    hudKnobColor = [CPColor colorWithCSSDictionary:@{
+                                                        @"background-color": @"#FFFFFF",
+                                                        @"border": @"1px solid #000000",
+                                                        @"box-sizing": @"border-box",
+                                                        @"border-radius": @"50%"
+                                                    }],
+
+    hudKnobDisabledColor = [CPColor colorWithCSSDictionary:@{
+                                                        @"background-color": @"#808080", // Solid Grey
+                                                        @"border": @"1px solid #444444",
+                                                        @"box-sizing": @"border-box",
+                                                        @"border-radius": @"50%"
+                                                    }],
+
     themedVerticalSliderValues =
     [
      [@"track-width", 3],
      [@"track-color", trackCssColor,            CPThemeStateVertical],
      [@"knob-size",  CGSizeMake(15, 15),        CPThemeStateVertical],
      [@"knob-color", knobCssColor,              CPThemeStateVertical],
+     [@"knob-color", hudKnobColor,             [CPThemeStateHUD, CPThemeStateVertical]],
+     [@"knob-color", hudKnobDisabledColor,     [CPThemeStateHUD, CPThemeStateDisabled, CPThemeStateVertical]],
 
      [@"nib2cib-adjustment-frame",      CGRectMake(2.0, -3.0, -4.0, -6.0),      CPThemeStateVertical],
      [@"direct-nib2cib-adjustment",     YES,                                    CPThemeStateVertical],
@@ -6841,15 +6858,7 @@ var themedButtonValues                      = nil,
              CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:42.0/255.0 green:74.0/255.0 blue:177.0/255.0 alpha:1.0]
         },
 
-    // --- HUD STYLES ---
-    
-    // Selection: Sehr helles Weiß (0.9) für guten Kontrast zum schwarzen Text
-    hudSelectionColor = [CPColor colorWithCSSDictionary:@{
-        @"background-color": @"rgba(255, 255, 255, 0.9)",
-        @"border-radius": @"4px",
-    }],
-
-    // Unfocused Selection: Dim Grey/White (Text ist hier weiß, also passt dunklerer Hintergrund)
+    // Unfocused HUD Selection: Dim Grey/White (Text ist hier weiß, also passt dunklerer Hintergrund)
     hudUnfocusedSelectionColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": @"rgba(255, 255, 255, 0.9)",
         @"border-radius": @"4px"
@@ -6874,8 +6883,8 @@ var themedButtonValues                      = nil,
      [@"background-color",                       [CPColor whiteColor]],
 
      // --- HUD OVERRIDES ---
-     [@"header-view-height",                     22.0,                                   CPThemeStateHUD], // Header sichtbar lassen
-     [@"background-color",                       [CPColor clearColor],                   CPThemeStateHUD],
+     [@"header-view-height",                     22.0,                                   CPThemeStateHUD],
+     [@"background-color",                       [CPColor clearColor],                   CPThemeStateHUD], // CSS colors do not work here
      [@"alternating-row-colors",                 hudAlternatingRowColors,                CPThemeStateHUD],
 
      // Key/Active Selection
@@ -8106,7 +8115,7 @@ var themedButtonValues                      = nil,
     // --- HUD Styles ---
     hudBackgroundColor = [CPColor colorWithCSSDictionary:@{
                                                             @"background-color": @"rgba(0, 0, 0, 0.25)",
-                                                            @"border-color": @"rgba(255, 255, 255, 0.25)",
+                                                            @"border-color": @"rgba(255, 255, 255, 0.45)", // Increased from 0.25 to 0.45 for visibility
                                                             @"border-style": @"solid",
                                                             @"border-width": @"1px",
                                                             @"border-radius": @"5px",
@@ -8115,9 +8124,8 @@ var themedButtonValues                      = nil,
     
     // For CPBoxSeparator and custom borders in HUD
     hudBorderColor = [CPColor colorWithCSSDictionary:@{
-                                                        @"background-color": @"rgba(255, 255, 255, 0.25)"
+                                                        @"background-color": @"rgba(255, 255, 255, 0.45)"
                                                     }],
-
     themeValues =
     [
      [@"background-color", backgroundColor],

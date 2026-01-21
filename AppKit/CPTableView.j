@@ -370,7 +370,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"dropview-above-border-width": [CPNull null],
             @"dropview-above-selected-border-color": [CPNull null],
             @"dropview-above-selected-border-width": [CPNull null],
-            @"background-color": [CPColor whiteColor],
+            @"background-color": [CPNull null],
             @"header-view-height": 25
         };
 }
