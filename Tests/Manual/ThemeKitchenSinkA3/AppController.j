@@ -4,6 +4,7 @@
  *
  * Created by Daniel Böhringer 2026.
  * Modified for TabView, SplitView, Control Sizes support & Grouped Boxes.
+ * Update: Added Pull Down Menu to Controls Tab.
  */
 
 @import <Foundation/Foundation.j>
@@ -58,7 +59,7 @@
         [_arrayController setContent:contentData];
         [_arrayController setEditable:YES];
 
-        [self _buildInterface];
+        [self _buildInterfaceIsHUD:isHUD];
 
         if (!isEnabled)
             [self _disableControlsInView:[theWindow contentView]];
@@ -67,7 +68,7 @@
     return self;
 }
 
-- (void)_buildInterface
+- (void)_buildInterfaceIsHUD:(BOOL)isHUD
 {
     var window = [self window],
         contentView = [window contentView],
@@ -81,8 +82,9 @@
     [item1 setLabel:@"Controls"];
     
     var controlsView = [[CPView alloc] initWithFrame:[tabView bounds]];
-    [self _buildControlsTab:controlsView];
+    [self _buildControlsTab:controlsView isHUD:isHUD];
     [item1 setView:controlsView];
+    [item1 setLabel:@"Controls"]; // Redundant but safe
     [tabView addTabViewItem:item1];
 
     // --- TAB 2: Table & Text Split ---
@@ -90,7 +92,7 @@
     [item2 setLabel:@"Data Split"];
 
     var tableViewWrapper = [[CPView alloc] initWithFrame:[tabView bounds]];
-    [self _buildTableTab:tableViewWrapper];
+    [self _buildTableTab:tableViewWrapper isHUD:isHUD];
     [item2 setView:tableViewWrapper];
     [tabView addTabViewItem:item2];
 
@@ -99,14 +101,14 @@
     [item3 setLabel:@"Sizes"];
 
     var sizesView = [[CPView alloc] initWithFrame:[tabView bounds]];
-    [self _buildSizesTab:sizesView];
+    [self _buildSizesTab:sizesView isHUD:isHUD];
     [item3 setView:sizesView];
     [tabView addTabViewItem:item3];
 
     [contentView addSubview:tabView];
 }
 
-- (void)_buildControlsTab:(CPView)containerView
+- (void)_buildControlsTab:(CPView)containerView isHUD:(BOOL)isHUD
 {
     // Layout Constants
     var boxMargin = 15.0,
@@ -167,7 +169,16 @@
     [comboBox addItemsWithObjectValues:["Alpha", "Beta", "Gamma"]];
     [leftContent addSubview:comboBox];
 
-    var bottomSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, startY + (gapY * 8.5), controlWidth, 25)];
+    // --- NEW PULL DOWN MENU ---
+    var pullDown = [[CPPopUpButton alloc] initWithFrame:CGRectMake(innerX, startY + (gapY * 8), controlWidth, 25) pullsDown:YES];
+    [pullDown addItemWithTitle:@"Pull Down Menu"]; // The first item is the title/cover
+    [pullDown addItemWithTitle:@"Action A"];
+    [pullDown addItemWithTitle:@"Action B"];
+    [pullDown addItemWithTitle:@"Action C"];
+    [leftContent addSubview:pullDown];
+
+    // Shifted slider down to 9.5 to make room for Pull Down
+    var bottomSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, startY + (gapY * 9.5), controlWidth, 25)];
     [leftContent addSubview:bottomSlider];
 
 
@@ -275,7 +286,7 @@
     [rightContent addSubview:progressBar];
 }
 
-- (void)_buildTableTab:(CPView)containerView
+- (void)_buildTableTab:(CPView)containerView isHUD:(BOOL)isHUD
 {
     var bounds = [containerView bounds];
     var bottomBarHeight = 32.0;
@@ -328,12 +339,25 @@
     [textView setEditable:YES];
     [textView setString:@"Select an item in the table above...\n\n(This is a CPTextView inside a CPScrollView inside a CPSplitView)"];
     [textView setFont:[CPFont fontWithName:@"Courier" size:13.0]];
-    
+
+    if (isHUD)
+    {
+        [textView setBackgroundColor:[CPColor blackColor]];
+        [textView setTextColor:[CPColor whiteColor]];
+    }
     [textScroll setDocumentView:textView];
     
     [splitView addSubview:tableScroll];
     [splitView addSubview:textScroll];
-    
+
+    if (isHUD)
+    {
+        [splitView setThemeState:CPThemeStateHUD];
+        [tableScroll setThemeState:CPThemeStateHUD];
+        [textScroll setThemeState:CPThemeStateHUD];
+        [tableView setThemeState:CPThemeStateHUD]; // Also apply to table view for alternating row colors
+    }
+
     [containerView addSubview:splitView];
 
     // Button Bar
@@ -361,7 +385,7 @@
 }
 
 // --- SIZES TAB BUILDER ---
-- (void)_buildSizesTab:(CPView)containerView
+- (void)_buildSizesTab:(CPView)containerView isHUD:(BOOL)isHUD
 {
     [self _addSizeColumnTo:containerView atX:20.0 controlSize:CPRegularControlSize title:@"Regular size"];
     [self _addSizeColumnTo:containerView atX:160.0 controlSize:CPSmallControlSize title:@"Small size"];

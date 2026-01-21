@@ -177,7 +177,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
         alternateImage = [self valueForThemeAttribute:attributeName inState:CPThemeStateHighlighted],
         button         = [self buttonWithImage:image alternateImage:alternateImage];
 
-    // FIX: Track that this button was created from a template (e.g. Plus/Minus).
+    // Track that this button was created from a template (e.g. Plus/Minus).
     // This allows us to reload the image later if the ButtonBar becomes HUD.
     if ([button respondsToSelector:@selector(setTemplateImageName:)])
         [button setTemplateImageName:templateImage];
@@ -205,7 +205,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
         alternateImage = [self valueForThemeAttribute:attributeName inState:CPThemeStateHighlighted],
         button         = [self pulldownButtonWithImage:image alternateImage:alternateImage];
 
-    // FIX: Track that this button was created from a template.
+    // Track that this button was created from a template.
     if ([button respondsToSelector:@selector(setTemplateImageName:)])
         [button setTemplateImageName:templateImage];
 
@@ -329,7 +329,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     return self;
 }
 
-// FIX: Helper to refresh button images based on the CURRENT state of the bar.
+// Helper to refresh button images based on the CURRENT state of the bar.
 // This is called by setButtons: and viewDidMoveToWindow.
 - (void)_reloadButtonImages
 {
@@ -385,14 +385,14 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
     [self setBackgroundColor:_bezelColor];
 
-    // FIX: Reload images whenever theme values load (e.g. state change)
+    // Reload images whenever theme values load (e.g. state change)
     [self _reloadButtonImages];
 
     _needsToLoadThemeValues    = NO;
     _needsToComputeNeededSpace = YES;
 }
 
-// FIX: Ensure we update appearances when added to a window (which might be HUD)
+// Ensure we update appearances when added to a window (which might be HUD)
 - (void)viewDidMoveToWindow
 {
     [super viewDidMoveToWindow];
@@ -400,7 +400,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     [self setNeedsLayout:YES];
 }
 
-// FIX: Ensure we update if the HUD state is toggled manually
+// Ensure we update if the HUD state is toggled manually
 - (void)setThemeState:(CPThemeState)aState
 {
     var oldState = [self themeState];
@@ -504,7 +504,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     for (var i = 0, count = [buttons count]; i < count; i++)
         [self addButton:buttons[i]];
 
-    // FIX: This is the critical fix.
     // When buttons are set, we immediately force them to match the Button Bar's current state.
     // If the bar was manually set to CPThemeStateHUD before calling setButtons:, this ensures
     // the buttons (which might have been created as black icons) are swapped to white icons.
@@ -1490,7 +1489,6 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @implementation _CPButtonBarButton : CPButton
 {
-    // FIX: Added property to store template image name
     CPString _templateImageName @accessors(property=templateImageName);
 }
 
@@ -1561,7 +1559,6 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     CPImage _image;
     BOOL    _isLocallyHighlighted;
     
-    // FIX: Added property to store template image name
     CPString _templateImageName @accessors(property=templateImageName);
 }
 
@@ -1613,7 +1610,7 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     [self setFrameSize:[self currentValueForThemeAttribute:@"min-size"]];
 }
 
-// FIX: Helper to update the main image from CPButtonBar logic
+// Helper to update the main image from CPButtonBar logic
 - (void)setButtonImage:(CPImage)anImage
 {
     if (_image === anImage)

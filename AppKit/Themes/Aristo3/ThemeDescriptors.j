@@ -1874,7 +1874,7 @@ var themedButtonValues                      = nil,
      [@"bezel-color",               disabledButtonCssColor,                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDisabled]],
      [@"bezel-color",               disabledButtonCssColor,                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      [@"nib2cib-adjustment-frame",  CGRectMake(3.0, -8.0, -6.0, -5.0),      [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"content-inset",             CGInsetMake(1.0, 19.0, 1.0, 9.0),       [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"content-inset",             CGInsetMake(3.0, 19.0, 1.0, 6.0),       [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"min-size",                  CGSizeMake(32.0, 21.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
      // Small size
@@ -1954,6 +1954,15 @@ var themedButtonValues                      = nil,
         bottomCornerColor = [CPColor colorWithCSSDictionary:@{
                                                               @"background-color": A3ColorScrollerBackground
                                                               }],
+        
+        // --- ADD THIS: HUD Corner Color ---
+        hudBottomCornerColor = [CPColor colorWithCSSDictionary:@{
+                                                                 @"background-color": @"rgba(0, 0, 0, 0.25)",
+                                                                 @"border-left": @"1px solid rgba(255, 255, 255, 0.2)",
+                                                                 @"border-top": @"1px solid rgba(255, 255, 255, 0.2)"
+                                                                 }],
+        // ----------------------------------
+
     // Standard White Theme
     bezelCssColor = [CPColor colorWithCSSDictionary:@{
                                                       @"background-color": A3ColorBackgroundWhite,
@@ -2016,7 +2025,9 @@ var themedButtonValues                      = nil,
      [@"content-inset-line-border",     CGInsetMake(0,2,2,0)],
      [@"content-inset-bezel-border",    CGInsetMake(0,2,2,0)],
      [@"content-inset-groove-border",   CGInsetMake(0,2,2,0)],
+     
      [@"bottom-corner-color", bottomCornerColor],
+     [@"bottom-corner-color", hudBottomCornerColor, CPThemeStateHUD],
 
 
      // --- HUD OVERRIDES ---
