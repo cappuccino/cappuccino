@@ -4109,7 +4109,8 @@ var themedButtonValues                      = nil,
         [@"text-color",                 A3CPColorActiveText],
         [@"text-color",                 A3CPColorInactiveText,                     [CPThemeStateDisabled]],
 
-        [@"text-color",                 A3CPColorDefaultText,                      [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
+        [@"text-color",                 A3CPColorActiveText,                      [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
+        [@"text-color",                 A3CPColorActiveText,                      [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow, CPThemeStateEditing]],
         [@"text-color",                 A3CPColorActiveText,                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView]],
         [@"text-color",                 A3CPColorActiveText,                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateKeyWindow]],
 
