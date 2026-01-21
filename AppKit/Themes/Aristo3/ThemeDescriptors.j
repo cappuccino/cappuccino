@@ -6913,11 +6913,8 @@ var themedButtonValues                      = nil,
              CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:42.0/255.0 green:74.0/255.0 blue:177.0/255.0 alpha:1.0]
         },
 
-    // Unfocused HUD Selection: Dim Grey/White (Text ist hier weiß, also passt dunklerer Hintergrund)
-    hudUnfocusedSelectionColor = [CPColor colorWithCSSDictionary:@{
-        @"background-color": @"rgba(255, 255, 255, 0.9)",
-        @"border-radius": @"4px"
-    }],
+    // Unfocused HUD Selection
+    hudUnfocusedSelectionColor = [CPColor colorWithWhite:1.0 alpha:0.9],
 
     // Alternating Rows: Clear + Very Faint White
     hudAlternatingRowColors = [[CPColor clearColor], [CPColor colorWithWhite:1.0 alpha:0.05]],
