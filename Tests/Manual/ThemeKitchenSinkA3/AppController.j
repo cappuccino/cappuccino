@@ -4,7 +4,7 @@
  *
  * Created by Daniel Böhringer 2026.
  * Modified for TabView, SplitView, Control Sizes support & Grouped Boxes.
- * Update: Added Pull Down Menu to Controls Tab.
+ * Update: Fixed Button Bezel Styles (Push, Gradient, Round Rect).
  */
 
 @import <Foundation/Foundation.j>
@@ -131,17 +131,22 @@
     // Note: We add subviews to [leftBox contentView]
     var leftContent = [leftBox contentView];
 
+    // 1. Push Button (Standard Rounded)
     var pushButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, startY, controlWidth, 24)];
     [pushButton setTitle:@"Push Button"];
+    [pushButton setBezelStyle:CPRoundedBezelStyle];
     [leftContent addSubview:pushButton];
 
+    // 2. Gradient Button (Small Square)
     var gradientButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, startY + gapY, controlWidth, 24)];
     [gradientButton setTitle:@"Gradient Button"];
+    [gradientButton setBezelStyle:CPSmallSquareBezelStyle];
     [leftContent addSubview:gradientButton];
 
+    // 3. Round Rect Button
     var roundRectButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, startY + (gapY * 2), controlWidth, 24)];
     [roundRectButton setTitle:@"Round Rect Button"];
-    [roundRectButton setBezelStyle:CPRoundedBezelStyle];
+    [roundRectButton setBezelStyle:CPRoundRectBezelStyle];
     [leftContent addSubview:roundRectButton];
 
     var placeholderField = [[CPTextField alloc] initWithFrame:CGRectMake(innerX, startY + (gapY * 3), controlWidth, 24)];
