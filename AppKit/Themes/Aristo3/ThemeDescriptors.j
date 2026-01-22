@@ -8269,14 +8269,26 @@ var themedButtonValues                      = nil,
 + (CPRuleEditor)themedRuleEditor
 {
     var ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 300.0)],
+    
+    // --- Standard Colors ---
     backgroundColors = [[CPColor whiteColor], [CPColor colorWithRed:235 / 255 green:239 / 255 blue:252 / 255 alpha:1]],
     selectedActiveRowColor = [CPColor colorWithHexString:@"5f83b9"],
     selectedInactiveRowColor = [CPColor colorWithWhite:0.83 alpha:1],
     sliceTopBorderColor = [CPColor colorWithWhite:0.9 alpha:1.0],
     sliceBottomBorderColor = [CPColor colorWithWhite:0.729412 alpha:1.0],
     sliceLastBottomBorderColor = [CPColor colorWithWhite:0.6 alpha:1.0],
+    fontColor = [CPColor colorWithWhite:150 / 255 alpha:1],
     
-    // SVGs for buttons
+    // --- HUD Colors ---
+    // Alternating rows: Transparent and very faint white
+    hudBackgroundColors = [[CPColor clearColor], [CPColor colorWithWhite:1.0 alpha:0.05]],
+    // Selection: Semi-transparent white
+    hudSelectedRowColor = [CPColor colorWithWhite:1.0 alpha:0.2],
+    // Borders: Very faint white lines
+    hudSliceBorderColor = [CPColor colorWithWhite:1.0 alpha:0.1],
+    hudFontColor = [CPColor whiteColor],
+
+    // --- Standard Images ---
     buttonAddImage = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": svgPlus,
         "mask-image": svgPlus,
@@ -8301,10 +8313,34 @@ var themedButtonValues                      = nil,
         "mask-position": "center"
     } size:CGSizeMake(12, 12)],
 
-    fontColor = [CPColor colorWithWhite:150 / 255 alpha:1],
+    // --- HUD Images (White Icons) ---
+    buttonAddImageHUD = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgPlus,
+        "mask-image": svgPlus,
+        "background-color": @"#FFFFFF", // White
+        "-webkit-mask-size": "contain",
+        "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat",
+        "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center",
+        "mask-position": "center"
+    } size:CGSizeMake(12, 12)],
+
+    buttonRemoveImageHUD = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgMinus,
+        "mask-image": svgMinus,
+        "background-color": @"#FFFFFF", // White
+        "-webkit-mask-size": "contain",
+        "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat",
+        "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center",
+        "mask-position": "center"
+    } size:CGSizeMake(12, 12)],
 
     ruleEditorThemedValues =
     [
+     // --- Standard Theme ---
      [@"alternating-row-colors",         backgroundColors],
      [@"selected-color",                 selectedActiveRowColor,                 CPThemeStateNormal],
      [@"selected-color",                 selectedInactiveRowColor,               CPThemeStateDisabled],
@@ -8315,7 +8351,24 @@ var themedButtonValues                      = nil,
      [@"font-color",                     fontColor],
      [@"add-image",                      buttonAddImage,                         CPThemeStateNormal],
      [@"remove-image",                   buttonRemoveImage,                      CPThemeStateNormal],
-     [@"vertical-alignment",             CPCenterVerticalTextAlignment]
+     [@"vertical-alignment",             CPCenterVerticalTextAlignment],
+
+     // --- HUD Mappings ---
+     [@"alternating-row-colors",         hudBackgroundColors,                    CPThemeStateHUD],
+     [@"selected-color",                 hudSelectedRowColor,                    [CPThemeStateHUD, CPThemeStateNormal]],
+     [@"selected-color",                 hudSelectedRowColor,                    [CPThemeStateHUD, CPThemeStateDisabled]],
+     
+     // HUD Borders
+     [@"slice-top-border-color",         hudSliceBorderColor,                    CPThemeStateHUD],
+     [@"slice-bottom-border-color",      hudSliceBorderColor,                    CPThemeStateHUD],
+     [@"slice-last-bottom-border-color", hudSliceBorderColor,                    CPThemeStateHUD],
+     
+     // HUD Font
+     [@"font-color",                     hudFontColor,                           CPThemeStateHUD],
+     
+     // HUD Icons
+     [@"add-image",                      buttonAddImageHUD,                      [CPThemeStateHUD, CPThemeStateNormal]],
+     [@"remove-image",                   buttonRemoveImageHUD,                   [CPThemeStateHUD, CPThemeStateNormal]]
      ];
 
     [self registerThemeValues:ruleEditorThemedValues forView:ruleEditor];
