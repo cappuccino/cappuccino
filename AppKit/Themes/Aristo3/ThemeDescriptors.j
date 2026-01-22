@@ -1561,7 +1561,7 @@ var themedButtonValues                      = nil,
         };
     },
     
-    // HUD Arrow Helper: Accepts Offset and Size to handle Mini/Small correctly
+    // HUD Arrow Helper
     hudArrowCSS = function(color, offset, size) {
         var _offset = offset || "-4px",
             _size = size || "25px",
@@ -1587,7 +1587,7 @@ var themedButtonValues                      = nil,
         };
     },
 
-    // --- HUD Base Dictionaries ---
+    // --- HUD CSS Dictionaries ---
     hudBaseDict = @{
         @"background-color": @"rgba(0, 0, 0, 0.25)",
         @"border-color": @"rgba(255, 255, 255, 0.25)",
@@ -1607,17 +1607,33 @@ var themedButtonValues                      = nil,
         @"box-sizing": @"border-box"
     },
 
-    // --- HUD Regular Colors (-4px, 25px) ---
-    hudButtonCssColor = [CPColor colorWithCSSDictionary:hudBaseDict beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff", @"-4px", @"25px")],
-    hudHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:hudHighDict beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff", @"-4px", @"25px")],
+    // NEW: Darker, more transparent disabled state
+    hudDisabledDict = @{
+        @"background-color": @"rgba(0, 0, 0, 0.1)", 
+        @"border-color": @"rgba(255, 255, 255, 0.1)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"3px",
+        @"box-sizing": @"border-box"
+    },
 
-    // --- HUD Small Colors (-4px, 23px) ---
-    smallHudButtonCssColor = [CPColor colorWithCSSDictionary:hudBaseDict beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff", @"-4px", @"23px")],
-    smallHudHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:hudHighDict beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff", @"-4px", @"23px")],
+    hudArrowColor = @"#ffffff",
+    hudDisabledArrowColor = @"rgba(255, 255, 255, 0.25)",
 
-    // --- HUD Mini Colors (-3px, 20px) ---
-    miniHudButtonCssColor = [CPColor colorWithCSSDictionary:hudBaseDict beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff", @"-3px", @"20px")],
-    miniHudHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:hudHighDict beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff", @"-3px", @"20px")],
+    // --- HUD Regular Colors ---
+    hudButtonCssColor = [CPColor colorWithCSSDictionary:hudBaseDict beforeDictionary:nil afterDictionary:hudArrowCSS(hudArrowColor, @"-4px", @"25px")],
+    hudHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:hudHighDict beforeDictionary:nil afterDictionary:hudArrowCSS(hudArrowColor, @"-4px", @"25px")],
+    hudDisabledButtonCssColor = [CPColor colorWithCSSDictionary:hudDisabledDict beforeDictionary:nil afterDictionary:hudArrowCSS(hudDisabledArrowColor, @"-4px", @"25px")],
+
+    // --- HUD Small Colors ---
+    smallHudButtonCssColor = [CPColor colorWithCSSDictionary:hudBaseDict beforeDictionary:nil afterDictionary:hudArrowCSS(hudArrowColor, @"-4px", @"23px")],
+    smallHudHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:hudHighDict beforeDictionary:nil afterDictionary:hudArrowCSS(hudArrowColor, @"-4px", @"23px")],
+    smallHudDisabledButtonCssColor = [CPColor colorWithCSSDictionary:hudDisabledDict beforeDictionary:nil afterDictionary:hudArrowCSS(hudDisabledArrowColor, @"-4px", @"23px")],
+
+    // --- HUD Mini Colors ---
+    miniHudButtonCssColor = [CPColor colorWithCSSDictionary:hudBaseDict beforeDictionary:nil afterDictionary:hudArrowCSS(hudArrowColor, @"-3px", @"20px")],
+    miniHudHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:hudHighDict beforeDictionary:nil afterDictionary:hudArrowCSS(hudArrowColor, @"-3px", @"20px")],
+    miniHudDisabledButtonCssColor = [CPColor colorWithCSSDictionary:hudDisabledDict beforeDictionary:nil afterDictionary:hudArrowCSS(hudDisabledArrowColor, @"-3px", @"20px")],
 
 
     // ==========================================================
@@ -2018,8 +2034,13 @@ var themedButtonValues                      = nil,
      
      // HUD Text Colors
      [@"text-color",    [CPColor whiteColor],       [CPPopUpButtonStatePullsDown, CPThemeStateHUD]],
-     [@"text-color",    [CPColor whiteColor],       [CPPopUpButtonStatePullsDown, CPThemeStateControlSizeSmall, CPThemeStateHUD]], // Ensure explicit
-     [@"text-color",    [CPColor whiteColor],       [CPPopUpButtonStatePullsDown, CPThemeStateControlSizeMini, CPThemeStateHUD]],  // Ensure explicit
+     [@"text-color",    [CPColor whiteColor],       [CPPopUpButtonStatePullsDown, CPThemeStateControlSizeSmall, CPThemeStateHUD]],
+     [@"text-color",    [CPColor whiteColor],       [CPPopUpButtonStatePullsDown, CPThemeStateControlSizeMini, CPThemeStateHUD]],
+     
+     // HUD Disabled Text
+     [@"text-color",    [CPColor colorWithWhite:1 alpha:0.4], [CPPopUpButtonStatePullsDown, CPThemeStateHUD, CPThemeStateDisabled]],
+     [@"text-color",    [CPColor colorWithWhite:1 alpha:0.4], [CPPopUpButtonStatePullsDown, CPThemeStateControlSizeSmall, CPThemeStateHUD, CPThemeStateDisabled]],
+     [@"text-color",    [CPColor colorWithWhite:1 alpha:0.4], [CPPopUpButtonStatePullsDown, CPThemeStateControlSizeMini, CPThemeStateHUD, CPThemeStateDisabled]],
 
      // --- HUD Regular Size ---
      
@@ -2029,8 +2050,12 @@ var themedButtonValues                      = nil,
      [@"bezel-color",   hudButtonCssColor,          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateKeyWindow]],
      // Highlighted
      [@"bezel-color",   hudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
-     // Highlighted + Key Window (Overrides Standard Theme specificity)
+     // Highlighted + Key Window (Overrides Standard Theme)
      [@"bezel-color",   hudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted, CPThemeStateKeyWindow]],
+     // Disabled
+     [@"bezel-color",   hudDisabledButtonCssColor,    [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+     // Disabled + Key Window
+     [@"bezel-color",   hudDisabledButtonCssColor,    [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
 
      // --- HUD Small Size ---
      
@@ -2042,6 +2067,10 @@ var themedButtonValues                      = nil,
      [@"bezel-color",   smallHudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
      // Highlighted + Key Window
      [@"bezel-color",   smallHudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted, CPThemeStateKeyWindow]],
+     // Disabled
+     [@"bezel-color",   smallHudDisabledButtonCssColor,    [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+     // Disabled + Key Window
+     [@"bezel-color",   smallHudDisabledButtonCssColor,    [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
 
      // --- HUD Mini Size ---
      
@@ -2052,7 +2081,11 @@ var themedButtonValues                      = nil,
      // Highlighted
      [@"bezel-color",   miniHudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
      // Highlighted + Key Window
-     [@"bezel-color",   miniHudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted, CPThemeStateKeyWindow]]
+     [@"bezel-color",   miniHudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted, CPThemeStateKeyWindow]],
+     // Disabled
+     [@"bezel-color",   miniHudDisabledButtonCssColor,    [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+     // Disabled + Key Window
+     [@"bezel-color",   miniHudDisabledButtonCssColor,    [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]]
     ];
 
     [self registerThemeValues:themeValues forView:button];
