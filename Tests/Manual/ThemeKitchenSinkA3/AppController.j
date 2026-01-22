@@ -3,8 +3,8 @@
  * KitchenSink in Code
  *
  * Created by Daniel Böhringer 2026.
- * Modified for TabView, SplitView, Control Sizes support & Grouped Boxes.
- * Update: Fixed Table Editing (Column Editable Property).
+ * Modified for TabView, SplitView, Control Sizes, Grouped Boxes, Rules & Menus.
+ * Update: Added Edit and Format Menus (Cut/Copy/Paste/Font Panel).
  */
 
 @import <Foundation/Foundation.j>
@@ -90,7 +90,7 @@
     [item1 setView:controlsView];
     [tabView addTabViewItem:item1];
 
-    // --- TAB 2: Table & Text Split (Now with Rule Editor) ---
+    // --- TAB 2: Table & Text Split (Rules & Editable Text) ---
     var item2 = [[CPTabViewItem alloc] initWithIdentifier:@"Table"];
     [item2 setLabel:@"Data & Rules"];
 
@@ -118,13 +118,13 @@
         boxWidth = 190.0,
         innerX = 15.0,     
         startY = 10.0,     
-        gapY = 35.0, // Uniform vertical spacing
+        gapY = 35.0,
         controlWidth = 150.0;
 
     // ------------------------------------------------------
     // LEFT BOX: Standard Controls
     // ------------------------------------------------------
-    var leftBox = [[CPBox alloc] initWithFrame:CGRectMake(boxMargin, 15.0, boxWidth, 100)]; // Height set later
+    var leftBox = [[CPBox alloc] initWithFrame:CGRectMake(boxMargin, 15.0, boxWidth, 100)];
     [leftBox setTitle:@"Standard Controls"];
     [leftBox setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin];
     [containerView addSubview:leftBox];
@@ -246,8 +246,7 @@
     [rightContent addSubview:cbBoth];
     currentY += gapY;
 
-    // 3. Spinners (Indeterminate & Determinate/Circular)
-    // A. Indeterminate Spinner
+    // 3. Spinners
     var spinner = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX + 50, currentY - 4, 32, 32)];
     [spinner setStyle:CPProgressIndicatorSpinningStyle];
     [spinner setIndeterminate:YES];
@@ -255,10 +254,9 @@
     [spinner startAnimation:self];
     [rightContent addSubview:spinner];
 
-    // B. Circular Progress Bar (Determinate Spinner)
     var circProg = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX + 90, currentY - 4, 32, 32)];
     [circProg setStyle:CPProgressIndicatorSpinningStyle];
-    [circProg setIndeterminate:NO]; // Determinate makes it a circular progress bar usually
+    [circProg setIndeterminate:NO];
     [circProg setControlSize:CPRegularControlSize];
     [circProg setDoubleValue:65.0];
     [circProg setMaxValue:100.0];
@@ -275,7 +273,6 @@
     [stepper setDoubleValue:65];
     [rightContent addSubview:stepper];
     
-    // Bind Circular Progress to Stepper
     [circProg bind:CPValueBinding toObject:stepper withKeyPath:@"doubleValue" options:nil];
 
     var detProgress = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX + 25, currentY + 5.5, 125, 16)];
@@ -298,7 +295,7 @@
     [rightContent addSubview:radio2];
     [radio1 setTarget:self]; [radio1 setAction:@selector(dummyAction:)];
     [radio2 setTarget:self]; [radio2 setAction:@selector(dummyAction:)];
-    currentY += gapY * 1.5; // Extra space for radios
+    currentY += gapY * 1.5;
 
     // 6. Level Indicator
     var levelInd = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(innerX, currentY, 130, 18)];
@@ -355,23 +352,15 @@
     
     _ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0,0, CGRectGetWidth(bounds), ruleEditorHeight)];
     [_ruleEditor setRowHeight:25.0];
-    [_ruleEditor setFormattingStringsFilename:@"Rules"]; // Not used without resources, but good practice
+    [_ruleEditor setFormattingStringsFilename:@"Rules"]; 
     [_ruleEditor setCanRemoveAllRows:YES];
     
-    // Create and attach delegate
     _ruleDelegate = [[RuleDelegate alloc] init];
     [_ruleEditor setDelegate:_ruleDelegate];
-    
-    // Add an initial row
     [_ruleEditor addRow:self];
     
     [ruleContainer setDocumentView:_ruleEditor];
     [containerView addSubview:ruleContainer];
-    
-    // Predicate Label (To show output)
-    var predLabel = [CPTextField labelWithTitle:@"Predicate:"];
-    [predLabel setFrame:CGRectMake(10, ruleEditorHeight - 30, 60, 20)];
-    //[containerView addSubview:predLabel]; // Optional
     
     _predicateField = [[CPTextField alloc] initWithFrame:CGRectMake(10, ruleEditorHeight + 5, CGRectGetWidth(bounds) - 20, 20)];
     [_predicateField setEditable:NO];
@@ -380,7 +369,6 @@
     [_predicateField setStringValue:@"(Predicate will appear here)"];
     [containerView addSubview:_predicateField];
     
-    // Hook up notification for changes to update text
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(ruleEditorRowsDidChange:) name:CPRuleEditorRowsDidChangeNotification object:_ruleEditor];
 
 
@@ -408,7 +396,7 @@
     var colAnimal = [[CPTableColumn alloc] initWithIdentifier:@"animal"];
     [[colAnimal headerView] setStringValue:@"Animal"];
     [colAnimal setWidth:150];
-    [colAnimal setEditable:YES]; // <--- CRITICAL FOR EDITING
+    [colAnimal setEditable:YES];
     
     var animalCell = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     [animalCell setEditable:YES];
@@ -420,7 +408,7 @@
     var colLegs = [[CPTableColumn alloc] initWithIdentifier:@"legs"];
     [[colLegs headerView] setStringValue:@"Legs"];
     [colLegs setWidth:100];
-    [colLegs setEditable:YES]; // <--- CRITICAL FOR EDITING
+    [colLegs setEditable:YES];
     
     var legsCell = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     [legsCell setEditable:YES];
@@ -430,14 +418,16 @@
 
     [tableScroll setDocumentView:tableView];
     
-    // Bottom Pane: Text
+    // Bottom Pane: Text (Updated for Menu support)
     var textScroll = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), splitHeight / 2.0)];
     [textScroll setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [textScroll setAutohidesScrollers:YES];
     
     var textView = [[CPTextView alloc] initWithFrame:[textScroll bounds]];
     [textView setEditable:YES];
-    [textView setString:@"1. Use the Rule Editor above to build a predicate.\n2. Edit table cells directly.\n3. Add/Remove rows below."];
+    // --- ENABLE RICH TEXT TO SUPPORT FONTS/UNDERLINE ---
+    [textView setRichText:YES]; 
+    [textView setString:@"Select text here and use the 'Format' or 'Edit' menus.\n\n(This is a Rich Text enabled CPTextView)"];
     [textView setFont:[CPFont fontWithName:@"Courier" size:13.0]];
 
     if (isHUD)
@@ -641,7 +631,7 @@
         [item setPaletteLabel:@"Colors"];
         [item setImage:[CPImage imageNamed:CPImageNameColorPanel]];
         [item setAlternateImage:[CPImage imageNamed:CPImageNameColorPanelHighlighted]];
-        [item setTarget:self];
+        [item setTarget:CPApp];
         [item setAction:@selector(orderFrontColorPanel:)];
     }
     return item;
@@ -652,7 +642,6 @@
 
 // --------------------------------------------------------------------------------
 // RuleDelegate
-// Implements the logic for the CPRuleEditor
 // --------------------------------------------------------------------------------
 
 @implementation RuleDelegate : CPObject
@@ -661,41 +650,27 @@
 
 - (int)ruleEditor:(CPRuleEditor)editor numberOfChildrenForCriterion:(id)criterion withRowType:(CPRuleEditorRowType)rowType
 {
-    // Root Level: 2 options (Animal, Legs)
-    if (criterion == nil) 
-        return 2;
-
-    // Second Level: Operators
-    if (criterion == @"animal")
-        return 2; // contains, is
-    if (criterion == @"legs")
-        return 3; // =, >, <
-
-    // Third Level: The Value input field (Leaf node)
+    if (criterion == nil) return 2;
+    if (criterion == @"animal") return 2;
+    if (criterion == @"legs") return 3;
     return 0;
 }
 
 - (id)ruleEditor:(CPRuleEditor)editor child:(int)index forCriterion:(id)criterion withRowType:(CPRuleEditorRowType)rowType
 {
-    if (criterion == nil)
-    {
+    if (criterion == nil) {
         if (index == 0) return @"animal";
         return @"legs";
     }
-
-    if (criterion == @"animal")
-    {
+    if (criterion == @"animal") {
         if (index == 0) return @"contains";
-        return @"is"; // like (Like)
+        return @"is";
     }
-
-    if (criterion == @"legs")
-    {
+    if (criterion == @"legs") {
         if (index == 0) return @">";
         if (index == 1) return @"<";
         return @"==";
     }
-
     return nil;
 }
 
@@ -703,14 +678,11 @@
 {
     if (criterion == @"animal") return @"Animal Name";
     if (criterion == @"legs") return @"Leg Count";
-    
     if (criterion == @"contains") return @"contains";
     if (criterion == @"is") return @"is";
-    
     if (criterion == @">") return @"is greater than";
     if (criterion == @"<") return @"is less than";
     if (criterion == @"==") return @"is equal to";
-    
     return criterion;
 }
 
@@ -724,6 +696,11 @@
 @implementation AppController : CPObject
 {
     CPArray windows;
+}
+
+- (void)orderFrontFontPanel:(id)sender
+{
+   [[CPFontManager sharedFontManager] orderFrontFontPanel:self];
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -749,6 +726,33 @@
     var wc4 = [[KitchenSinkWindowController alloc] initWithContentRect:CGRectMake(50 + winWidth + padding, 50 + winHeight + padding + 30, winWidth, winHeight) isHUD:YES enabled:NO];
     [wc4 showWindow:self];
     [windows addObject:wc4];
+
+    // --- BUILD MENU FROM EXAMPLE ---
+    var mainMenu = [CPApp mainMenu];
+
+    while ([mainMenu numberOfItems] > 0)
+       [mainMenu removeItemAtIndex:0];
+
+    // Edit Menu
+    var item = [mainMenu insertItemWithTitle:@"Edit" action:nil keyEquivalent:nil atIndex:0],
+        editMenu = [[CPMenu alloc] initWithTitle:@"Edit Menu"];
+
+    [editMenu addItemWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"];
+    [editMenu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];
+    [editMenu addItemWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"];
+    [editMenu addItemWithTitle:@"Delete" action:@selector(delete:) keyEquivalent:@""];
+    [editMenu addItemWithTitle:@"Select All" action:@selector(selectAll:) keyEquivalent:@"a"];
+    [editMenu addItemWithTitle:@"Undo" action:@selector(undo:) keyEquivalent:@"z"];
+    [editMenu addItemWithTitle:@"Redo" action:@selector(redo:) keyEquivalent:@"Z"];
+
+    [mainMenu setSubmenu:editMenu forItem:item];
+
+    // Format Menu
+    item = [mainMenu insertItemWithTitle:@"Format" action:nil keyEquivalent:nil atIndex:0];
+    var formatMenu = [[CPMenu alloc] initWithTitle:@"Format Menu"];
+    [formatMenu addItemWithTitle:@"Font panel" action:@selector(orderFrontFontPanel:) keyEquivalent:@"f"];
+    [formatMenu addItemWithTitle:@"Underline" action:@selector(underline:) keyEquivalent:@"u"];
+    [mainMenu setSubmenu:formatMenu forItem:item];
 
     [CPMenu setMenuBarVisible:YES];
 }
