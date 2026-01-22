@@ -1441,7 +1441,7 @@ var themedButtonValues                      = nil,
      [@"bezel-color",                disabledButtonCssColor,                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDisabled]],
      [@"bezel-color",                disabledButtonCssColor,                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      
-     [@"content-inset",              CGInsetMake(0.0, 19.0, 1.0, 9.0),          [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"content-inset",              CGInsetMake(0.0, 19.0, 1.0, 5.0),          [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
      // We must include CPThemeStateBordered here to override CPButton's definition
      [@"min-size",                   CGSizeMake(32.0, 22.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
@@ -3058,8 +3058,8 @@ var themedButtonValues                      = nil,
      [@"vertical-alignment",        CPCenterVerticalTextAlignment],
      [@"vertical-alignment",        CPCenterVerticalTextAlignment,  [CPTextFieldStateRounded, CPThemeStateBezeled]],
      [@"vertical-alignment",        CPCenterVerticalTextAlignment,  [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
-     [@"content-inset",             CGInsetMake(0, 11, 0, 11),      [CPTextFieldStateRounded, CPThemeStateBezeled]],
-     [@"content-inset",             CGInsetMake(0, 11, 0, 11),      [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+     [@"content-inset",             CGInsetMake(-2, 11, 0, 11),     [CPTextFieldStateRounded, CPThemeStateBezeled]],
+     [@"content-inset",             CGInsetMake(-2, 11, 0, 11),     [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
      [@"bezel-inset",               CGInsetMake(2, 11, 4, 11),      [CPTextFieldStateRounded, CPThemeStateBezeled]],
      [@"min-size",                  CGSizeMake(0, 22.0),            [CPTextFieldStateRounded, CPThemeStateBezeled]],
      [@"max-size",                  CGSizeMake(-1, 22.0),           [CPTextFieldStateRounded, CPThemeStateBezeled]],
@@ -8324,7 +8324,7 @@ var themedButtonValues                      = nil,
 
     // Standard Style
     backgroundColor = [CPColor colorWithCSSDictionary:@{
-                                                         @"background-color": @"rgba(0,0,0,0.04)",
+                                                         @"background-color": @"rgba(0,0,0,0.08)",
                                                          @"border-color": @"rgba(0,0,0,0.1)",
                                                          @"border-style": @"solid",
                                                          @"border-width": @"1px",
