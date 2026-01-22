@@ -1097,6 +1097,10 @@ var themedButtonValues                      = nil,
      [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateSelected]],
      
+     // High Specificity Text Color Rules for Textured Rounded & Textured Square in HUD
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleTexturedRounded, CPThemeStateHUD, CPThemeStateBordered]],
+     [@"text-color",    [CPColor whiteColor],                   [CPButtonStateBezelStyleTextured, CPThemeStateHUD, CPThemeStateBordered]],
+     
      // High specificity rule for Disabled HUD buttons to prevent them from looking enabled (white)
      [@"text-color",    [CPColor colorWithWhite:1 alpha:0.4],   [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
 
@@ -1123,6 +1127,11 @@ var themedButtonValues                      = nil,
      [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered]],
      [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+
+     // 6. Textured Square (Standard "Textured" button in IB)
+     [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleTextured, CPThemeStateHUD, CPThemeStateBordered]],
+     [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleTextured, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleTextured, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
 
      // Adjust Layout for HUD
      // Rounded
@@ -1973,7 +1982,7 @@ var themedButtonValues                      = nil,
      [@"bezel-color",               disabledButtonCssColor,                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDisabled]],
      [@"bezel-color",               disabledButtonCssColor,                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      [@"nib2cib-adjustment-frame",  CGRectMake(3.0, -8.0, -6.0, -5.0),      [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"content-inset",             CGInsetMake(3.0, 19.0, 1.0, 6.0),       [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"content-inset",             CGInsetMake(1.0, 19.0, 1.0, 6.0),       [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"min-size",                  CGSizeMake(32.0, 22.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
      // Small size
@@ -2566,10 +2575,10 @@ var themedButtonValues                      = nil,
 
      [@"content-inset",      CGInsetMake(1.0, 0.0, 0.0, 0.0)],                           // For labels
      [@"content-inset",      CGInsetMake(0.0, 1.0, 1.0, -1.0),                           CPThemeStateEditing], // For labels
-     [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            CPThemeStateBezeled],
-     [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            [CPThemeStateBezeled, CPThemeStateEditing]],
-     [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            CPThemeStateBordered],
-     [@"content-inset",      CGInsetMake(3.5, 5.0, 3.0, 3.0),                            [CPThemeStateBordered, CPThemeStateEditing]],
+     [@"content-inset",      CGInsetMake(1.0, 5.0, 3.0, 3.0),                            CPThemeStateBezeled],
+     [@"content-inset",      CGInsetMake(1.0, 5.0, 3.0, 3.0),                            [CPThemeStateBezeled, CPThemeStateEditing]],
+     [@"content-inset",      CGInsetMake(1.0, 5.0, 3.0, 3.0),                            CPThemeStateBordered],
+     [@"content-inset",      CGInsetMake(1.5, 5.0, 3.0, 3.0),                            [CPThemeStateBordered, CPThemeStateEditing]],
 
      [@"bezel-inset",        CGInsetMake(2.0, 5.0, 4.0, 4.0),                            CPThemeStateBezeled],
      [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),                            [CPThemeStateBezeled, CPThemeStateEditing]],
@@ -4302,8 +4311,8 @@ var themedButtonValues                      = nil,
         [@"bezel-color",                hudDisabledButtonCssColor,                 [CPThemeStateHUD, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
         
         // Regular Layout
-        [@"content-inset",              CGInsetMake(0.0, 19.0, 1.0, 9.0),          [CPComboBoxStateButtonBordered]],
-        [@"content-inset",              CGInsetMake(0.0, 17.0, 0.0, 5.0),          [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+        [@"content-inset",              CGInsetMake(-2.0, 19.0, 1.0, 9.0),          [CPComboBoxStateButtonBordered]],
+        [@"content-inset",              CGInsetMake(-2.0, 17.0, 0.0, 5.0),          [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
         [@"min-size",                   CGSizeMake(32.0, 22.0)],
         [@"max-size",                   CGSizeMake(-1.0, 22.0)],
 
@@ -9015,11 +9024,13 @@ var themedButtonValues                      = nil,
 
      [@"right-columns-margin",                                      30.0],
 
-     // HUD
+     // HUD Overrides
+     // Use a semi-transparent white for selection instead of Blue
+     [@"menu-item-selection-color",                                 [CPColor colorWithWhite:1.0 alpha:0.3], CPThemeStateHUD],
      [@"menu-item-text-color",                                      A3CPColorActiveTextHighlighted, CPThemeStateHUD],
-     [@"menu-item-default-on-state-image",    menuItemHUDOnStateImage, CPThemeStateHUD],
-     [@"menu-item-default-mixed-state-image", menuItemHUDMixedStateImage, CPThemeStateHUD],
-     [@"submenu-indicator-color",             A3CPColorActiveTextHighlighted, CPThemeStateHUD],
+     [@"menu-item-default-on-state-image",                          menuItemHUDOnStateImage, CPThemeStateHUD],
+     [@"menu-item-default-mixed-state-image",                       menuItemHUDMixedStateImage, CPThemeStateHUD],
+     [@"submenu-indicator-color",                                   A3CPColorActiveTextHighlighted, CPThemeStateHUD],
     ];
 
     [self registerThemeValues:themeValues forView:menuItemStandardView];
