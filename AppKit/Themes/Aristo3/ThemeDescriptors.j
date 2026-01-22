@@ -1456,7 +1456,7 @@ var themedButtonValues                      = nil,
      
      [@"content-inset",              CGInsetMake(1.0, 17.0, 1.00, 8.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
      
-     // FIX: We must include CPThemeStateBordered here to override CPButton's definition
+     // We must include CPThemeStateBordered here to override CPButton's definition
      [@"min-size",                   CGSizeMake(38.0, 19.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
      [@"max-size",                   CGSizeMake(-1.0, 19.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
      [@"nib2cib-adjustment-frame",   CGRectMake(3.0, -7.0, -6.0, -4.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
@@ -1469,7 +1469,7 @@ var themedButtonValues                      = nil,
      
      [@"content-inset",              CGInsetMake(1.0, 15.0, 1.0, 10.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered]],
      
-     // FIX: We must include CPThemeStateBordered here to override CPButton's definition
+     // We must include CPThemeStateBordered here to override CPButton's definition
      [@"min-size",                   CGSizeMake(32.0, 15.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered]],
      [@"max-size",                   CGSizeMake(-1.0, 15.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered]],
      [@"nib2cib-adjustment-frame",   CGRectMake(1.0, -0.0, -3.0, -0.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered]],
@@ -3244,17 +3244,14 @@ var themedButtonValues                      = nil,
      [@"stepper-margin",                2.0,                                        CPThemeStateControlSizeSmall],
      [@"stepper-margin",                2.0,                                        [CPThemeStateControlSizeSmall, CPThemeStateEditing]],
 
-     // min/max size is different for textfield+stepper (CPThemeStateComposedControl) and no stepper (CPThemeStateNormal)
-     [@"min-size",                      CGSizeMake(0, 20.0),                        [CPThemeStateControlSizeSmall, CPThemeStateComposedControl]],
-     [@"max-size",                      CGSizeMake(-1.0, 20.0),                     [CPThemeStateControlSizeSmall, CPThemeStateComposedControl]],
+     [@"min-size",                      CGSizeMake(0, 19.0),                        [CPThemeStateControlSizeSmall, CPThemeStateComposedControl]],
+     [@"max-size",                      CGSizeMake(-1.0, 19.0),                     [CPThemeStateControlSizeSmall, CPThemeStateComposedControl]],
 
      [@"min-size",                      CGSizeMake(0, 19.0),                        CPThemeStateControlSizeSmall],
      [@"max-size",                      CGSizeMake(-1.0, 19.0),                     CPThemeStateControlSizeSmall],
 
      // nib2cib-adjustment-frame is different for textfield+stepper (CPThemeStateComposedControl) and no stepper (CPThemeStateNormal)
-//     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -2.0, -2.0, -2.0),          [CPThemeStateControlSizeSmall, CPThemeStateComposedControl]],
      [@"nib2cib-adjustment-frame",      CGRectMake(0.0, 0.0, -2.0, 0.0),            [CPThemeStateControlSizeSmall, CPThemeStateComposedControl]],
-//     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, 1.0, 2.0, 0.0),             CPThemeStateControlSizeSmall],
      [@"nib2cib-adjustment-frame",      CGRectMake(0.0, 0.0, 0.0, 0.0),             CPThemeStateControlSizeSmall],
 
      // CPThemeStateControlSizeMini
@@ -3262,6 +3259,16 @@ var themedButtonValues                      = nil,
      [@"content-inset",                 CGInsetMake(2.0, 0.0, 2.0, 2.0),            [CPThemeStateControlSizeMini, CPThemeStateComposedControl]],
      [@"content-inset",                 CGInsetMake(2.0, 0.0, 2.0, 2.0),            [CPThemeStateControlSizeMini, CPThemeStateComposedControl, CPThemeStateEditing]],
 
+     [@"date-hour-margin",              0.0,                                        CPThemeStateControlSizeMini],
+     [@"hour-ampm-margin",              1.0,                                        CPThemeStateControlSizeMini],
+     [@"stepper-margin",                2.0,                                        CPThemeStateControlSizeMini],
+     [@"stepper-margin",                2.0,                                        [CPThemeStateControlSizeMini, CPThemeStateEditing]],
+
+     [@"min-size",                      CGSizeMake(0, 15.0),                        [CPThemeStateControlSizeMini, CPThemeStateComposedControl]],
+     [@"max-size",                      CGSizeMake(-1.0, 15.0),                     [CPThemeStateControlSizeMini, CPThemeStateComposedControl]],
+
+     [@"min-size",                      CGSizeMake(0, 15.0),                        CPThemeStateControlSizeMini],
+     [@"max-size",                      CGSizeMake(-1.0, 15.0),                     CPThemeStateControlSizeMini],
      [@"date-hour-margin",              0.0,                                        CPThemeStateControlSizeMini],
      [@"hour-ampm-margin",              1.0,                                        CPThemeStateControlSizeMini],
      [@"stepper-margin",                2.0,                                        CPThemeStateControlSizeMini],
@@ -4722,7 +4729,123 @@ var themedButtonValues                      = nil,
                                                             @"position": @"absolute",
                                                             @"z-index": @"300"
                                                         } size:CGSizeMake(16,16)],
+    // --- HUD Small Images (14x14) ---
+    smallHudImageNormal = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"rgba(255,255,255,0.5)",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"50%",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.3)",
+                                @"transition-duration": @"0.2s",
+                                @"transition-property": @"border-color, background-color"
+                            } size:CGSizeMake(14,14)],
 
+    smallHudImageSelected = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"#ffffff",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"50%",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.3)"
+                            } beforeDictionary:nil afterDictionary:@{
+                                @"background-color": @"#ffffff",
+                                @"width": @"5px",
+                                @"height": @"5px",
+                                @"border-radius": @"50%",
+                                @"content": @"''",
+                                @"left": @"3.5px", // (14 - 2 - 5) / 2
+                                @"top": @"3.5px",
+                                @"position": @"absolute",
+                                @"z-index": @"300"
+                            } size:CGSizeMake(14,14)],
+
+    smallHudImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"rgba(255,255,255,0.3)",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"50%",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.1)"
+                            } size:CGSizeMake(14,14)],
+
+    smallHudImageSelectedDisabled = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"rgba(255,255,255,0.3)",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"50%",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.1)"
+                            } beforeDictionary:nil afterDictionary:@{
+                                @"background-color": @"rgba(255,255,255,0.5)",
+                                @"width": @"5px",
+                                @"height": @"5px",
+                                @"border-radius": @"50%",
+                                @"content": @"''",
+                                @"left": @"3.5px",
+                                @"top": @"3.5px",
+                                @"position": @"absolute",
+                                @"z-index": @"300"
+                            } size:CGSizeMake(14,14)],
+
+    // --- HUD Mini Images (12x12) ---
+    miniHudImageNormal = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"rgba(255,255,255,0.5)",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"50%",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.3)",
+                                @"transition-duration": @"0.2s",
+                                @"transition-property": @"border-color, background-color"
+                            } size:CGSizeMake(12,12)],
+
+    miniHudImageSelected = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"#ffffff",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"50%",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.3)"
+                            } beforeDictionary:nil afterDictionary:@{
+                                @"background-color": @"#ffffff",
+                                @"width": @"4px",
+                                @"height": @"4px",
+                                @"border-radius": @"50%",
+                                @"content": @"''",
+                                @"left": @"3px", // (12 - 2 - 4) / 2
+                                @"top": @"3px",
+                                @"position": @"absolute",
+                                @"z-index": @"300"
+                            } size:CGSizeMake(12,12)],
+
+    miniHudImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"rgba(255,255,255,0.3)",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"50%",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.1)"
+                            } size:CGSizeMake(12,12)],
+
+    miniHudImageSelectedDisabled = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"rgba(255,255,255,0.3)",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"50%",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.1)"
+                            } beforeDictionary:nil afterDictionary:@{
+                                @"background-color": @"rgba(255,255,255,0.5)",
+                                @"width": @"4px",
+                                @"height": @"4px",
+                                @"border-radius": @"50%",
+                                @"content": @"''",
+                                @"left": @"3px",
+                                @"top": @"3px",
+                                @"position": @"absolute",
+                                @"z-index": @"300"
+                            } size:CGSizeMake(12,12)],
     // Global
     themedRadioButtonValues =
     [
@@ -4793,8 +4916,24 @@ var themedButtonValues                      = nil,
      [@"image",                      hudImageSelected,                                   [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateSelected]], // Overrides Standard [Mini, Selected]
      
      [@"image",                      hudImageDisabled,                                   [CPThemeStateHUD, CPThemeStateDisabled]],
-     
-     // FIX: Use the specific "Selected+Disabled" image for HUD, beating the standard rules
+
+          // --- HUD Small ---
+     [@"image", smallHudImageNormal,           [CPThemeStateHUD, CPThemeStateControlSizeSmall]],
+     [@"image", smallHudImageSelected,         [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateSelected]],
+     [@"image", smallHudImageSelected,         [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"image", smallHudImageDisabled,         [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     [@"image", smallHudImageSelectedDisabled, [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateDisabled]],
+     [@"image", smallHudImageSelectedDisabled, [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]],
+
+     // --- HUD Mini ---
+     [@"image", miniHudImageNormal,            [CPThemeStateHUD, CPThemeStateControlSizeMini]],
+     [@"image", miniHudImageSelected,          [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateSelected]],
+     [@"image", miniHudImageSelected,          [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateKeyWindow]],
+     [@"image", miniHudImageDisabled,          [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     [@"image", miniHudImageSelectedDisabled,  [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateDisabled]],
+     [@"image", miniHudImageSelectedDisabled,  [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]],
+
+     // Use the specific "Selected+Disabled" image for HUD, beating the standard rules
      [@"image",                      hudImageSelectedDisabled,                           [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateDisabled]], 
      [@"image",                      hudImageSelectedDisabled,                           [CPThemeStateHUD, CPThemeStateSelected, CPThemeStateDisabled, CPThemeStateKeyWindow]], 
      
@@ -5243,8 +5382,78 @@ var themedButtonValues                      = nil,
                                                              @"position": @"absolute",
                                                              @"z-index": @"300"
                                                         } size:CGSizeMake(14,14)],
+    // --- HUD Mini Images (12x12) ---
+    miniHudImageNormal = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"rgba(255,255,255,0.5)",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"2px",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.3)",
+                                @"transition-duration": @"0.2s",
+                                @"transition-property": @"border-color, background-color"
+                            } size:CGSizeMake(12,12)],
 
+    miniHudImageSelected = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"rgba(255,255,255,0.8)",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"2px",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.3)"
+                            } beforeDictionary:nil afterDictionary:@{
+                                "-webkit-mask-image": svgCheckmark,
+                                "mask-image": svgCheckmark,
+                                "-webkit-mask-size": "contain",
+                                "mask-size": "contain",
+                                "-webkit-mask-repeat": "no-repeat",
+                                "mask-repeat": "no-repeat",
+                                "-webkit-mask-position": "center",
+                                "mask-position": "center",
+                                @"background-color": @"#ffffff",
+                                @"width": @"7px",
+                                @"height": @"7px",
+                                @"content": @"''",
+                                @"left": @"1.5px", // (12 - 2 - 7) / 2
+                                @"top": @"1.5px",
+                                @"position": @"absolute",
+                                @"z-index": @"300"
+                            } size:CGSizeMake(12,12)],
 
+    miniHudImageDisabled = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"rgba(255,255,255,0.3)",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"2px",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.1)"
+                            } size:CGSizeMake(12,12)],
+
+    miniHudImageSelectedDisabled = [CPImage imageWithCSSDictionary:@{
+                                @"border-color": @"rgba(255,255,255,0.3)",
+                                @"border-style": @"solid",
+                                @"border-width": @"1px",
+                                @"border-radius": @"2px",
+                                @"box-sizing": @"border-box",
+                                @"background-color": @"rgba(0,0,0,0.1)"
+                            } beforeDictionary:nil afterDictionary:@{
+                                "-webkit-mask-image": svgCheckmark,
+                                "mask-image": svgCheckmark,
+                                "-webkit-mask-size": "contain",
+                                "mask-size": "contain",
+                                "-webkit-mask-repeat": "no-repeat",
+                                "mask-repeat": "no-repeat",
+                                "-webkit-mask-position": "center",
+                                "mask-position": "center",
+                                @"background-color": @"rgba(255,255,255,0.5)",
+                                @"width": @"7px",
+                                @"height": @"7px",
+                                @"content": @"''",
+                                @"left": @"1.5px",
+                                @"top": @"1.5px",
+                                @"position": @"absolute",
+                                @"z-index": @"300"
+                            } size:CGSizeMake(12,12)],
     // Global
     themedCheckBoxValues =
     [
@@ -5309,7 +5518,19 @@ var themedButtonValues                      = nil,
      // --- HUD MAPPINGS ---
      [@"text-color",    [CPColor whiteColor],                   CPThemeStateHUD],
      [@"text-color",    [CPColor colorWithWhite:1 alpha:0.4],   [CPThemeStateHUD, CPThemeStateDisabled]],
-     
+
+          // --- HUD Small (Reuse regular 14x14 HUD images as they fit) ---
+     [@"image", hudImageNormal,           [CPThemeStateHUD, CPThemeStateControlSizeSmall]],
+     [@"image", hudImageSelected,         [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateSelected]],
+     [@"image", hudImageDisabled,         [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+     [@"image", hudImageSelectedDisabled, [CPThemeStateHUD, CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateDisabled]],
+
+     // --- HUD Mini (Use new 12x12 images) ---
+     [@"image", miniHudImageNormal,           [CPThemeStateHUD, CPThemeStateControlSizeMini]],
+     [@"image", miniHudImageSelected,         [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateSelected]],
+     [@"image", miniHudImageDisabled,         [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+     [@"image", miniHudImageSelectedDisabled, [CPThemeStateHUD, CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateDisabled]],
+
      [@"image",         hudImageNormal,                         CPThemeStateHUD],
      [@"image",         hudImageSelected,                       [CPThemeStateHUD, CPThemeStateSelected]],
      [@"image",         hudImageDisabled,                       [CPThemeStateHUD, CPThemeStateDisabled]],

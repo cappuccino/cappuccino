@@ -438,13 +438,16 @@
     y += rowHeight;
 
     // 5. Date Picker
-    var dpWidth = width + (aSize == CPRegularControlSize ? 30 : 20);
+    var dpWidth = width + (aSize == CPRegularControlSize ? 20 : 15);
+
     var dp = [[CPDatePicker alloc] initWithFrame:CGRectMake(xPos, y, dpWidth, 28)];
     [dp setControlSize:aSize];
     [dp setDatePickerStyle:CPTextFieldAndStepperDatePickerStyle];
+    // --- Show ONLY Year, Month, and Day (No Time) ---
+    [dp setDatePickerElements:CPYearMonthDayDatePickerElementFlag];
+    
     [dp setDateValue:[CPDate date]];
     [parentView addSubview:dp];
-
     y += rowHeight;
 
     // 6. Checkbox
