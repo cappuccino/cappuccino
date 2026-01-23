@@ -357,7 +357,24 @@ var CPTableHeaderViewResizeZone = 3.0,
 
 - (CPInteger)columnAtPoint:(CGPoint)aPoint
 {
-    return [_tableView columnAtPoint:aPoint];
+    var tableView = [self tableView],
+        tableColumns = [tableView tableColumns],
+        count = [tableColumns count],
+        bounds = [self bounds],
+        // Create a point that keeps the X position but forces Y to be safely 
+        // in the middle of the header view.
+        constrainedPoint = CGPointMake(aPoint.x, CGRectGetMidY(bounds));
+
+    // Iterate through columns to find which one contains the constrained X coordinate
+    for (var i = 0; i < count; i++)
+    {
+        // headerRectOfColumn: is a utility method defined in CPTableHeaderView
+        // that handles the coordinate conversion from the table view relative to the header.
+        if (CGRectContainsPoint([self headerRectOfColumn:i], constrainedPoint))
+            return i;
+    }
+
+    return -1;
 }
 
 - (CGRect)headerRectOfColumn:(CPInteger)aColumnIndex
