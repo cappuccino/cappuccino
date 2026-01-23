@@ -7092,6 +7092,7 @@ var themedButtonValues                      = nil,
      // HUD Mapping
      [@"background-color",      hudBackground,      CPThemeStateHUD],
      [@"text-color",            [CPColor whiteColor], CPThemeStateHUD],
+     [@"text-color",            [CPColor whiteColor], [CPThemeStateHUD, CPThemeStateSelected]],
 
      [@"dont-draw-separator",   YES],
 
@@ -7296,7 +7297,26 @@ var themedButtonValues                      = nil,
             "-webkit-mask-position": "center", "mask-position": "center"
         } size:CGSizeMake(18, 16)],
 
-        imageGenericFile = nil, 
+        // HUD Images (White)
+        sortImageHUD = [CPImage imageWithCSSDictionary:@{
+            "-webkit-mask-image": svgArrowUp,
+            "mask-image": svgArrowUp,
+            "background-color": @"#FFFFFF", // Force White
+            "-webkit-mask-size": "contain", "mask-size": "contain",
+            "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+            "-webkit-mask-position": "center", "mask-position": "center"
+        } size:CGSizeMake(18, 16)],
+
+        sortImageReversedHUD = [CPImage imageWithCSSDictionary:@{
+            "-webkit-mask-image": svgArrowDown,
+            "mask-image": svgArrowDown,
+            "background-color": @"#FFFFFF", // Force White
+            "-webkit-mask-size": "contain", "mask-size": "contain",
+            "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
+            "-webkit-mask-position": "center", "mask-position": "center"
+        } size:CGSizeMake(18, 16)],
+
+        imageGenericFile = nil,
         
         alternatingRowColors = [A3CPColorTableRow, A3CPColorTableAlternateRow],
         gridColor = [CPColor colorWithHexString:@"dce0e2"],
@@ -7327,6 +7347,10 @@ var themedButtonValues                      = nil,
      [@"header-view-height",                     22],
      [@"background-color",                       [CPColor whiteColor]],
 
+     // HUD Images mapping
+     [@"sort-image",                             sortImageHUD,           CPThemeStateHUD],
+     [@"sort-image-reversed",                    sortImageReversedHUD,   CPThemeStateHUD],
+     
      // --- HUD OVERRIDES ---
      [@"header-view-height",                     22.0,                                   CPThemeStateHUD],
      [@"background-color",                       [CPColor clearColor],                   CPThemeStateHUD], // CSS colors do not work here

@@ -3,8 +3,7 @@
  * KitchenSink in Code
  *
  * Created by Daniel Böhringer 2026.
- * Modified for TabView, SplitView, Control Sizes, Grouped Boxes, Rules & Menus.
- * Update: Added Edit and Format Menus (Cut/Copy/Paste/Font Panel).
+ * Refactored: Progress Stepper aligned right, layout optimized.
  */
 
 @import <Foundation/Foundation.j>
@@ -122,128 +121,132 @@
 
     for (var i = 0; i < count; i++)
         [self _applyHUDStateToView:subviews[i]];
-
 }
 
 - (void)_buildControlsTab:(CPView)containerView isHUD:(BOOL)isHUD
 {
     // Layout Constants
-    var boxMargin = 15.0,
-        boxWidth = 190.0,
+    var margin = 15.0,
+        availableWidth = CGRectGetWidth([containerView bounds]),
+        boxWidth = (availableWidth - (margin * 3)) / 2.0, 
         innerX = 15.0,     
-        startY = 10.0,     
-        gapY = 35.0,
-        controlWidth = 150.0;
+        startY = 15.0,     
+        gapY = 32.0,   
+        controlWidth = boxWidth - (innerX * 2),
+        fieldHeight = 22.0, 
+        boxTopY = 20.0;
 
     // ------------------------------------------------------
-    // LEFT BOX: Standard Controls
+    // LEFT BOX: Input, Buttons & Sliders
     // ------------------------------------------------------
-    var leftBox = [[CPBox alloc] initWithFrame:CGRectMake(boxMargin, 15.0, boxWidth, 100)];
-    [leftBox setTitle:@"Standard Controls"];
+    var leftBox = [[CPBox alloc] initWithFrame:CGRectMake(margin, boxTopY, boxWidth, 100)];
+    [leftBox setTitle:@"Input & Controls"];
     [leftBox setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin];
     [containerView addSubview:leftBox];
     
     var leftContent = [leftBox contentView];
     var currentY = startY;
 
-    // 1. Push Button
-    var pushButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 24)];
+    // 1. Buttons
+    var pushButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [pushButton setTitle:@"Push Button"];
     [pushButton setBezelStyle:CPRoundedBezelStyle];
     [leftContent addSubview:pushButton];
     currentY += gapY;
 
-    // 2. Gradient Button
-    var gradientButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 24)];
+    var gradientButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [gradientButton setTitle:@"Gradient Button"];
     [gradientButton setBezelStyle:CPSmallSquareBezelStyle];
     [leftContent addSubview:gradientButton];
     currentY += gapY;
 
-    // 3. Round Rect Button
-    var roundRectButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 24)];
+    var roundRectButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [roundRectButton setTitle:@"Round Rect Button"];
     [roundRectButton setBezelStyle:CPRoundRectBezelStyle];
     [leftContent addSubview:roundRectButton];
-    currentY += gapY;
+    currentY += gapY + 5.0; 
 
-    // 4. Placeholder
-    var placeholderField = [[CPTextField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 24)];
+    // 2. Text Inputs
+    var placeholderField = [[CPTextField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [placeholderField setEditable:YES];
     [placeholderField setBezeled:YES];
     [placeholderField setPlaceholderString:@"Placeholder"];
     [leftContent addSubview:placeholderField];
     currentY += gapY;
 
-    // 5. Text Field
-    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 25)];
+    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [textField setEditable:YES];
     [textField setBezeled:YES];
     [textField setStringValue:@"Text Field"];
     [leftContent addSubview:textField];
     currentY += gapY;
 
-    // 6. Search Field
-    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 25)];
+    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [searchField setPlaceholderString:@"Search..."];
     [leftContent addSubview:searchField];
     currentY += gapY;
 
-    // 7. Token Field
-    var tokenField = [[CPTokenField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 25)];
+    var tokenField = [[CPTokenField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [tokenField setObjectValue:["Token", "Field"]];
     [leftContent addSubview:tokenField];
-    currentY += gapY;
+    currentY += gapY + 10.0;
 
-    // 8. Combo Box
-    var comboBox = [[CPComboBox alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 25)];
-    [comboBox setPlaceholderString:@"Combo Box"];
-    [comboBox addItemsWithObjectValues:["Alpha", "Beta", "Gamma"]];
-    [leftContent addSubview:comboBox];
-    currentY += gapY;
+    // 3. Sliders 
+    var tickSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth - 40, 24)];
+    [leftContent addSubview:tickSlider];
 
-    // 9. Pull Down Menu
-    var pullDown = [[CPPopUpButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 25) pullsDown:YES];
-    [pullDown addItemWithTitle:@"Pull Down Menu"]; 
-    [pullDown addItemWithTitle:@"Action A"];
-    [pullDown addItemWithTitle:@"Action B"];
-    [pullDown addItemWithTitle:@"Action C"];
-    [leftContent addSubview:pullDown];
-    currentY += gapY;
+    var vSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX + controlWidth - 30, currentY - 20, 24, 60)];
+    [leftContent addSubview:vSlider];
+    
+    var knob = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, currentY + 25, 32, 32)];
+    [knob setSliderType:CPCircularSlider];
+    [leftContent addSubview:knob];
+    
+    currentY += 60.0;
 
-    // 10. Standard PopUp Button
-    var popUp = [[CPPopUpButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 24) pullsDown:NO];
-    [popUp addItemWithTitle:@"PopUp Item 1"];
-    [popUp addItemWithTitle:@"PopUp Item 2"];
-    [leftContent addSubview:popUp];
-    currentY += gapY;
-
-    // Resize Left Box to fit
     [leftBox setFrameSize:CGSizeMake(boxWidth, currentY + 15.0)];
 
 
     // ------------------------------------------------------
-    // RIGHT BOX: Advanced Controls
+    // RIGHT BOX: Menus, Toggles & Progress
     // ------------------------------------------------------
-    var rightBoxX = boxMargin + boxWidth + 15.0;
-    var rightBoxWidth = 205.0; 
+    var rightBoxX = margin + boxWidth + margin;
     
-    var rightBox = [[CPBox alloc] initWithFrame:CGRectMake(rightBoxX, 15.0, rightBoxWidth, 100)];
-    [rightBox setTitle:@"Advanced Controls"];
+    var rightBox = [[CPBox alloc] initWithFrame:CGRectMake(rightBoxX, boxTopY, boxWidth, 100)];
+    [rightBox setTitle:@"Selection & Status"];
     [rightBox setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
     [containerView addSubview:rightBox];
 
     var rightContent = [rightBox contentView];
-    currentY = startY; // Reset Y
+    currentY = startY; 
 
     // 1. Date Picker
-    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(innerX, currentY, 175, 28)];
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [datePicker setDatePickerStyle:CPTextFieldAndStepperDatePickerStyle];
     [datePicker setDateValue:[CPDate date]];
     [rightContent addSubview:datePicker];
     currentY += gapY;
 
-    // 2. Checkboxes
+    // 2. Menus
+    var comboBox = [[CPComboBox alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
+    [comboBox setPlaceholderString:@"Combo Box"];
+    [comboBox addItemsWithObjectValues:["Alpha", "Beta", "Gamma"]];
+    [rightContent addSubview:comboBox];
+    currentY += gapY;
+
+    var pullDown = [[CPPopUpButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight) pullsDown:YES];
+    [pullDown addItemWithTitle:@"Pull Down Menu"]; 
+    [pullDown addItemWithTitle:@"Action A"]; [pullDown addItemWithTitle:@"Action B"];
+    [rightContent addSubview:pullDown];
+    currentY += gapY;
+
+    var popUp = [[CPPopUpButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight) pullsDown:NO];
+    [popUp addItemWithTitle:@"PopUp Item 1"];
+    [popUp addItemWithTitle:@"PopUp Item 2"];
+    [rightContent addSubview:popUp];
+    currentY += gapY + 5.0;
+
+    // 3. Toggles
     var cbOn = [CPCheckBox checkBoxWithTitle:@"On"];
     [cbOn setFrameOrigin:CGPointMake(innerX, currentY)];
     [cbOn setState:CPOnState];
@@ -260,15 +263,50 @@
     [rightContent addSubview:cbBoth];
     currentY += gapY;
 
-    // 3. Spinners
-    var spinner = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX + 50, currentY - 4, 32, 32)];
+    var radio1 = [CPRadio radioWithTitle:@"Radio A"];
+    [radio1 setFrameOrigin:CGPointMake(innerX, currentY)];
+    [radio1 setState:CPOnState];
+    [rightContent addSubview:radio1];
+
+    var radio2 = [CPRadio radioWithTitle:@"Radio B"];
+    [radio2 setFrameOrigin:CGPointMake(innerX + 80, currentY)];
+    [rightContent addSubview:radio2];
+    [radio1 setTarget:self]; [radio1 setAction:@selector(dummyAction:)];
+    [radio2 setTarget:self]; [radio2 setAction:@selector(dummyAction:)];
+    currentY += gapY + 15.0; 
+
+    // 4. Progress & Level Group
+    
+    // Calculate right-side alignment x-coordinate for steppers
+    var stepperWidth = 19.0;
+    var alignRightX = innerX + controlWidth - stepperWidth;
+
+    // -- Level Indicator --
+    var levelWidth = alignRightX - innerX - 5.0; // Fill space up to stepper
+    var levelInd = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(innerX, currentY + 2, levelWidth, 18)];
+    [levelInd setMaxValue:5];
+    [levelInd setDoubleValue:3];
+    [levelInd setLevelIndicatorStyle:CPDiscreteCapacityLevelIndicatorStyle];
+    [rightContent addSubview:levelInd];
+
+    var levelStepper = [[CPStepper alloc] initWithFrame:CGRectMake(alignRightX, currentY, stepperWidth, fieldHeight)];
+    [levelStepper setMinValue:0]; [levelStepper setMaxValue:5]; [levelStepper setDoubleValue:3];
+    [levelStepper setValueWraps:NO];
+    [rightContent addSubview:levelStepper];
+    [levelInd bind:CPValueBinding toObject:levelStepper withKeyPath:@"doubleValue" options:nil];
+    currentY += gapY;
+
+    // -- Progress Row --
+    // Regular Spinner (Left)
+    var spinner = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX, currentY, 24, 24)];
     [spinner setStyle:CPProgressIndicatorSpinningStyle];
     [spinner setIndeterminate:YES];
     [spinner setControlSize:CPRegularControlSize];
     [spinner startAnimation:self];
     [rightContent addSubview:spinner];
 
-    var circProg = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX + 90, currentY - 4, 32, 32)];
+    // Circular Determinate (Middle-Left)
+    var circProg = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX + 40, currentY, 24, 24)];
     [circProg setStyle:CPProgressIndicatorSpinningStyle];
     [circProg setIndeterminate:NO];
     [circProg setControlSize:CPRegularControlSize];
@@ -276,72 +314,28 @@
     [circProg setMaxValue:100.0];
     [rightContent addSubview:circProg];
 
-    currentY += gapY;
-
-    // 4. Stepper & Progress Bar
-    var stepper = [[CPStepper alloc] initWithFrame:CGRectMake(innerX, currentY + 3, 19, 27)];
-    [stepper setValueWraps:NO];
-    [stepper setAutorepeat:YES];
-    [stepper setMinValue:0];
-    [stepper setMaxValue:100];
-    [stepper setDoubleValue:65];
+    // Stepper (Right Aligned)
+    var stepper = [[CPStepper alloc] initWithFrame:CGRectMake(alignRightX, currentY, stepperWidth, 27)];
+    [stepper setValueWraps:NO]; [stepper setAutorepeat:YES];
+    [stepper setMinValue:0]; [stepper setMaxValue:100]; [stepper setDoubleValue:65];
     [rightContent addSubview:stepper];
     
+    // Binding
     [circProg bind:CPValueBinding toObject:stepper withKeyPath:@"doubleValue" options:nil];
+    currentY += 35.0;
 
-    var detProgress = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX + 25, currentY + 5.5, 125, 16)];
+    // -- Bar Determinate --
+    var detProgress = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 16)];
     [detProgress setStyle:CPProgressIndicatorBarStyle];
     [detProgress setIndeterminate:NO];
     [detProgress setMinValue:0];
     [detProgress setMaxValue:100];
     [detProgress bind:CPValueBinding toObject:stepper withKeyPath:@"doubleValue" options:nil];
     [rightContent addSubview:detProgress];
-    currentY += gapY;
+    currentY += 20.0;
 
-    // 5. Radio Buttons
-    var radio1 = [CPRadio radioWithTitle:@"Radio A"];
-    [radio1 setFrameOrigin:CGPointMake(innerX, currentY)];
-    [radio1 setState:CPOnState];
-    [rightContent addSubview:radio1];
-
-    var radio2 = [CPRadio radioWithTitle:@"Radio B"];
-    [radio2 setFrameOrigin:CGPointMake(innerX, currentY + 22)];
-    [rightContent addSubview:radio2];
-    [radio1 setTarget:self]; [radio1 setAction:@selector(dummyAction:)];
-    [radio2 setTarget:self]; [radio2 setAction:@selector(dummyAction:)];
-    currentY += gapY * 1.5;
-
-    // 6. Level Indicator
-    var levelInd = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(innerX, currentY, 130, 18)];
-    [levelInd setMaxValue:5];
-    [levelInd setDoubleValue:3];
-    [levelInd setLevelIndicatorStyle:CPDiscreteCapacityLevelIndicatorStyle];
-    [rightContent addSubview:levelInd];
-
-    var levelStepper = [[CPStepper alloc] initWithFrame:CGRectMake(innerX + 135, currentY - 2, 19, 24)];
-    [levelStepper setMinValue:0];
-    [levelStepper setMaxValue:5];
-    [levelStepper setDoubleValue:3];
-    [levelStepper setValueWraps:NO];
-    [rightContent addSubview:levelStepper];
-    
-    [levelInd bind:CPValueBinding toObject:levelStepper withKeyPath:@"doubleValue" options:nil];
-    currentY += gapY;
-
-    // 7. Sliders
-    var tickSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, currentY, 110, 24)];
-    [rightContent addSubview:tickSlider];
-
-    var vSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX + 130, currentY, 24, 70)];
-    [rightContent addSubview:vSlider];
-    currentY += gapY;
-
-    // 8. Knob & Indeterminate Bar
-    var knob = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, currentY, 32, 32)];
-    [knob setSliderType:CPCircularSlider];
-    [rightContent addSubview:knob];
-
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX + 40, currentY + 8, 80, 16)];
+    // -- Bar Indeterminate --
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 16)];
     [progressBar setStyle:CPProgressIndicatorBarStyle];
     [progressBar setIndeterminate:YES];
     [progressBar startAnimation:self];
@@ -349,8 +343,10 @@
     
     currentY += gapY;
 
-    // Resize Right Box to fit
-    [rightBox setFrameSize:CGSizeMake(rightBoxWidth, currentY + 15.0)];
+    // Sync box heights
+    var maxHeight = MAX(CGRectGetHeight([leftBox frame]), currentY + 15.0);
+    [leftBox setFrameSize:CGSizeMake(boxWidth, maxHeight)];
+    [rightBox setFrameSize:CGSizeMake(boxWidth, maxHeight)];
 
     if (isHUD)
     {
@@ -729,8 +725,9 @@
 {
     windows = [];
 
-    var winWidth = 430.0,
-        winHeight = 550.0,
+    // REDUCED height to fix aesthetic "too high" issue and increased width slightly for balance
+    var winWidth = 480.0,
+        winHeight = 450.0,
         padding = 20.0;
 
     var wc1 = [[KitchenSinkWindowController alloc] initWithContentRect:CGRectMake(50, 50, winWidth, winHeight) isHUD:NO enabled:YES];
