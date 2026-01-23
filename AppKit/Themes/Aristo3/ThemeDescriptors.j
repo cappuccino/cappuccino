@@ -8588,9 +8588,16 @@ var themedButtonValues                      = nil,
 
     var themeValues =
     [
+     // --- Standard Theme ---
      [@"circular-border-color", [CPColor colorWithHexString:@"A0A0A0"]],
      [@"circular-border-size", 1],
-     [@"circular-color", [CPColor colorWithHexString:@"5982DA"]]
+     [@"circular-color",        [CPColor colorWithHexString:@"5982DA"]],
+
+     // --- HUD Theme ---
+     // The border acts as the "track". We make it semi-transparent white.
+     [@"circular-border-color", [CPColor colorWithWhite:1.0 alpha:0.2], CPThemeStateHUD],
+     // The fill color becomes solid white.
+     [@"circular-color",        [CPColor whiteColor],                   CPThemeStateHUD]
      ];
 
     [self registerThemeValues:themeValues forView:progressBar];
