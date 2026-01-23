@@ -111,6 +111,20 @@
     [contentView addSubview:tabView];
 }
 
+// Helper to recursively apply HUD state
+- (void)_applyHUDStateToView:(CPView)aView
+{
+    if ([aView respondsToSelector:@selector(setThemeState:)])
+        [aView setThemeState:CPThemeStateHUD];
+
+    var subviews = [aView subviews],
+        count = [subviews count];
+
+    for (var i = 0; i < count; i++)
+        [self _applyHUDStateToView:subviews[i]];
+
+}
+
 - (void)_buildControlsTab:(CPView)containerView isHUD:(BOOL)isHUD
 {
     // Layout Constants
@@ -337,6 +351,11 @@
 
     // Resize Right Box to fit
     [rightBox setFrameSize:CGSizeMake(rightBoxWidth, currentY + 15.0)];
+
+    if (isHUD)
+    {
+        [self _applyHUDStateToView:containerView];
+    }
 }
 
 - (void)_buildTableTab:(CPView)containerView isHUD:(BOOL)isHUD
@@ -430,26 +449,10 @@
     [textView setString:@"Select text here and use the 'Format' or 'Edit' menus.\n\n(This is a Rich Text enabled CPTextView)"];
     [textView setFont:[CPFont fontWithName:@"Courier" size:13.0]];
 
-    if (isHUD)
-    {
-        [textView setBackgroundColor:[CPColor blackColor]];
-        [textView setTextColor:[CPColor whiteColor]];
-    }
     [textScroll setDocumentView:textView];
     
     [splitView addSubview:tableScroll];
     [splitView addSubview:textScroll];
-
-    if (isHUD)
-    {
-        [splitView setThemeState:CPThemeStateHUD];
-        [tableScroll setThemeState:CPThemeStateHUD];
-        [textScroll setThemeState:CPThemeStateHUD];
-        [tableView setThemeState:CPThemeStateHUD];
-        [ruleContainer setThemeState:CPThemeStateHUD];
-    }
-
-    [containerView addSubview:splitView];
 
     // Button Bar
     var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(bounds) - bottomBarHeight, CGRectGetWidth(bounds), bottomBarHeight)];
@@ -473,6 +476,20 @@
     [buttonBar setButtons:[plusBtn, minusBtn]];
 
     [containerView addSubview:buttonBar];
+    [containerView addSubview:splitView];
+
+    if (isHUD)
+    {
+        // Apply HUD state to everything in the view hierarchy (Buttons, RuleEditor, Table, ScrollViews)
+        [self _applyHUDStateToView:containerView];
+
+        // Specific overrides
+        [textView setBackgroundColor:[CPColor blackColor]];
+        [textView setTextColor:[CPColor whiteColor]];
+        [_predicateField setTextColor:[CPColor whiteColor]];
+
+        [self _applyHUDStateToView:_ruleEditor];
+    }
 }
 
 - (void)ruleEditorRowsDidChange:(CPNotification)note
@@ -490,6 +507,11 @@
     [self _addSizeColumnTo:containerView atX:20.0 controlSize:CPRegularControlSize title:@"Regular size"];
     [self _addSizeColumnTo:containerView atX:160.0 controlSize:CPSmallControlSize title:@"Small size"];
     [self _addSizeColumnTo:containerView atX:280.0 controlSize:CPMiniControlSize title:@"Mini size"];
+
+    if (isHUD)
+    {
+        [self _applyHUDStateToView:containerView];
+    }
 }
 
 - (void)_addSizeColumnTo:(CPView)parentView atX:(float)xPos controlSize:(CPControlSize)aSize title:(CPString)title

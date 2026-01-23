@@ -175,7 +175,21 @@
     [super setFrame:frame];
 }
 
-/*! @ignore */
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    
+    // Force a layout update because the internal buttons (_buttonUp and _buttonDown)
+    // rely on layoutSubviews to receive the new theme attributes (like HUD colors).
+    [self setNeedsLayout];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    [self setNeedsLayout];
+}
+
 /*! @ignore */
 - (void)layoutSubviews
 {

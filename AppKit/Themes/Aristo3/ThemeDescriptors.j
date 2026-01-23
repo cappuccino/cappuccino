@@ -2648,6 +2648,7 @@ var themedButtonValues                      = nil,
      [@"text-color",            [CPColor whiteColor],                 CPThemeStateHUD],
      [@"text-color",            [CPColor colorWithWhite:1 alpha:0.5], [CPThemeStateHUD, CPThemeStateDisabled]],
      [@"text-color",            [CPColor whiteColor],               [CPThemeStateHUD, CPThemeStateEditing]],
+     [@"text-color",            [CPColor whiteColor],               [CPThemeStateHUD, CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateEditing, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
      // Change the background color of selected text in HUD mode to improve contrast
      // [@"field-selection-color", hudSelectionColor,                  CPThemeStateHUD],
 
@@ -8392,7 +8393,7 @@ var themedButtonValues                      = nil,
      [@"border-radius",      2.0],
      [@"background-color",   [CPColor colorWithHexString:@"FFFFCA"]],
      [@"color",              [CPColor blackColor]]
-     ];
+    ];
 
     [self registerThemeValues:themeValues forView:toolTipView];
 
