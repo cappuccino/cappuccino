@@ -133,7 +133,7 @@
         startY = 15.0,     
         gapY = 32.0,   
         controlWidth = boxWidth - (innerX * 2),
-        fieldHeight = 22.0, 
+        fieldHeight = 25.0,
         boxTopY = 20.0;
 
     // ------------------------------------------------------
@@ -189,13 +189,13 @@
     var tokenField = [[CPTokenField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [tokenField setObjectValue:["Token", "Field"]];
     [leftContent addSubview:tokenField];
-    currentY += gapY + 10.0;
+    currentY += gapY + 20.0;
 
     // 3. Sliders 
     var tickSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth - 40, 24)];
     [leftContent addSubview:tickSlider];
 
-    var vSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX + controlWidth - 30, currentY - 20, 24, 60)];
+    var vSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX + controlWidth - 30, currentY - 5, 24, 60)];
     [leftContent addSubview:vSlider];
     
     var knob = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, currentY + 25, 32, 32)];

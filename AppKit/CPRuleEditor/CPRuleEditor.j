@@ -1864,57 +1864,63 @@ TODO: implement
 
 - (CPArray)_backgroundColors
 {
-    return [self valueForThemeAttribute:@"alternating-row-colors"];
+    return [self currentValueForThemeAttribute:@"alternating-row-colors"];
 }
 
 - (CPColor)_selectedRowColor
 {
-    return [self valueForThemeAttribute:@"selected-color"];
+    return [self currentValueForThemeAttribute:@"selected-color"];
 }
 
 - (CPColor)_sliceTopBorderColor
 {
-    return [self valueForThemeAttribute:@"slice-top-border-color"];
+    return [self currentValueForThemeAttribute:@"slice-top-border-color"];
 }
 
 - (CPColor)_sliceBottomBorderColor
 {
-    return [self valueForThemeAttribute:@"slice-bottom-border-color"];
+    return [self currentValueForThemeAttribute:@"slice-bottom-border-color"];
 }
 
 - (CPColor)_sliceLastBottomBorderColor
 {
-    return [self valueForThemeAttribute:@"slice-last-bottom-border-color"];
+    return [self currentValueForThemeAttribute:@"slice-last-bottom-border-color"];
 }
 
 - (CPFont)font
 {
-    return [self valueForThemeAttribute:@"font"];
+    return [self currentValueForThemeAttribute:@"font"];
 }
 
 - (CPColor)_fontColor
 {
-    return [self valueForThemeAttribute:@"font-color"];
+    return [self currentValueForThemeAttribute:@"font-color"];
+}
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    [_slices makeObjectsPerformSelector:@selector(setThemeState:) withObject:aState];
 }
 
 - (CPImage)_imageAdd
 {
-    return [self valueForThemeAttribute:@"add-image" inState:CPThemeStateNormal];
+    return [self valueForThemeAttribute:@"add-image" inState:CPThemeStateNormal.and([self themeState])];
 }
 
 - (CPImage)_imageAddHighlighted
 {
-    return [self valueForThemeAttribute:@"add-image" inState:CPThemeStateHighlighted];
+    return [self valueForThemeAttribute:@"add-image" inState:CPThemeStateHighlighted.and([self themeState])];
 }
 
 - (CPImage)_imageRemove
 {
-    return [self valueForThemeAttribute:@"remove-image" inState:CPThemeStateNormal];
+    return [self valueForThemeAttribute:@"remove-image" inState:CPThemeStateNormal.and([self themeState])];
 }
 
 - (CPImage)_imageRemoveHighlighted
 {
-    return [self valueForThemeAttribute:@"remove-image" inState:CPThemeStateHighlighted];
+    return [self valueForThemeAttribute:@"remove-image" inState:CPThemeStateHighlighted.and([self themeState])];
 }
 
 - (CPVerticalTextAlignment)_verticalAlignment
