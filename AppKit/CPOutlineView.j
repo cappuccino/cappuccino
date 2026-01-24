@@ -307,6 +307,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
         _retargedChildIndex = nil;
         _shouldRetargetChildIndex = NO;
+        [self setSelectionHighlightStyle:CPTableViewSelectionHighlightStyleRegular];
 
         [self setIndentationPerLevel:16.0];
         [self setIndentationMarkerFollowsDataView:YES];

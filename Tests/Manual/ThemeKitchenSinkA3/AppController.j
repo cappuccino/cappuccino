@@ -4,6 +4,7 @@
  *
  * Created by Daniel Böhringer 2026.
  * Refactored: Fixed RuleEditor action handling.
+ * Refactored: Added OutlineView and reordered tabs.
  */
 
 @import <Foundation/Foundation.j>
@@ -23,6 +24,9 @@
     CPRuleEditor        _ruleEditor;
     RuleDelegate        _ruleDelegate;
     CPTextField         _predicateField;
+    
+    // Outline Data
+    CPArray             _outlineData;
 }
 
 - (id)initWithContentRect:(CGRect)aRect isHUD:(BOOL)isHUD enabled:(BOOL)isEnabled
@@ -49,8 +53,8 @@
         [toolbar setVisible:YES];
         [theWindow setToolbar:toolbar];
 
+        // --- Table Data Init ---
         _arrayController = [[CPArrayController alloc] init];
-        
         var contentData = [
             [CPDictionary dictionaryWithObjectsAndKeys:@"Cat", @"animal", 4, @"legs"],
             [CPDictionary dictionaryWithObjectsAndKeys:@"Duck", @"animal", 2, @"legs"],
@@ -58,9 +62,32 @@
             [CPDictionary dictionaryWithObjectsAndKeys:@"Spider", @"animal", 8, @"legs"],
             [CPDictionary dictionaryWithObjectsAndKeys:@"Snake", @"animal", 0, @"legs"]
         ];
-        
         [_arrayController setContent:contentData];
         [_arrayController setEditable:YES];
+
+        // --- Outline Data Init ---
+        _outlineData = [
+            [CPDictionary dictionaryWithObjectsAndKeys:
+                @"Filesystem Root", @"name",
+                [
+                    [CPDictionary dictionaryWithObjectsAndKeys:@"Applications", @"name", [], @"children"],
+                    [CPDictionary dictionaryWithObjectsAndKeys:@"Library", @"name", 
+                        [
+                            [CPDictionary dictionaryWithObjectsAndKeys:@"Fonts", @"name", [], @"children"],
+                            [CPDictionary dictionaryWithObjectsAndKeys:@"Frameworks", @"name", [], @"children"]
+                        ], @"children"],
+                    [CPDictionary dictionaryWithObjectsAndKeys:@"Users", @"name", 
+                        [
+                            [CPDictionary dictionaryWithObjectsAndKeys:@"Guest", @"name", [], @"children"],
+                            [CPDictionary dictionaryWithObjectsAndKeys:@"Admin", @"name", 
+                                [
+                                    [CPDictionary dictionaryWithObjectsAndKeys:@"Documents", @"name", [], @"children"],
+                                    [CPDictionary dictionaryWithObjectsAndKeys:@"Pictures", @"name", [], @"children"]
+                                ], @"children"]
+                        ], @"children"]
+                ], @"children"
+            ]
+        ];
 
         [self _buildInterfaceIsHUD:isHUD];
 
@@ -80,7 +107,9 @@
     var tabView = [[CPTabView alloc] initWithFrame:bounds];
     [tabView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    // --- TAB 1: Controls (Grouped in Boxes) ---
+    // Requested Order: "Controls", "Sizes", "Data & Rules", "Outline"
+
+    // --- TAB 1: Controls ---
     var item1 = [[CPTabViewItem alloc] initWithIdentifier:@"Controls"];
     [item1 setLabel:@"Controls"];
     
@@ -89,23 +118,32 @@
     [item1 setView:controlsView];
     [tabView addTabViewItem:item1];
 
-    // --- TAB 2: Table & Text Split (Rules & Editable Text) ---
-    var item2 = [[CPTabViewItem alloc] initWithIdentifier:@"Table"];
-    [item2 setLabel:@"Data & Rules"];
-
-    var tableViewWrapper = [[CPView alloc] initWithFrame:[tabView bounds]];
-    [self _buildTableTab:tableViewWrapper isHUD:isHUD];
-    [item2 setView:tableViewWrapper];
-    [tabView addTabViewItem:item2];
-
-    // --- TAB 3: Control Sizes ---
-    var item3 = [[CPTabViewItem alloc] initWithIdentifier:@"Sizes"];
-    [item3 setLabel:@"Sizes"];
+    // --- TAB 2: Sizes ---
+    var item2 = [[CPTabViewItem alloc] initWithIdentifier:@"Sizes"];
+    [item2 setLabel:@"Sizes"];
 
     var sizesView = [[CPView alloc] initWithFrame:[tabView bounds]];
     [self _buildSizesTab:sizesView isHUD:isHUD];
-    [item3 setView:sizesView];
+    [item2 setView:sizesView];
+    [tabView addTabViewItem:item2];
+
+    // --- TAB 3: Table & Text Split (Rules) ---
+    var item3 = [[CPTabViewItem alloc] initWithIdentifier:@"Table"];
+    [item3 setLabel:@"Data & Rules"];
+
+    var tableViewWrapper = [[CPView alloc] initWithFrame:[tabView bounds]];
+    [self _buildTableTab:tableViewWrapper isHUD:isHUD];
+    [item3 setView:tableViewWrapper];
     [tabView addTabViewItem:item3];
+
+    // --- TAB 4: Outline View ---
+    var item4 = [[CPTabViewItem alloc] initWithIdentifier:@"Outline"];
+    [item4 setLabel:@"Outline"];
+    
+    var outlineWrapper = [[CPView alloc] initWithFrame:[tabView bounds]];
+    [self _buildOutlineTab:outlineWrapper isHUD:isHUD];
+    [item4 setView:outlineWrapper];
+    [tabView addTabViewItem:item4];
 
     [contentView addSubview:tabView];
 }
@@ -121,6 +159,10 @@
     for (var i = 0; i < count; i++)
         [self _applyHUDStateToView:subviews[i]];
 }
+
+// --------------------------------------------------------------------------------
+// Tab Builders
+// --------------------------------------------------------------------------------
 
 - (void)_buildControlsTab:(CPView)containerView isHUD:(BOOL)isHUD
 {
@@ -480,7 +522,6 @@
 {
     var predicate = [_ruleEditor predicate];
 
-    // Update the debug text
     if (predicate)
         [_predicateField setStringValue:[predicate predicateFormat]];
     else
@@ -589,6 +630,77 @@
     [popUp2 setControlSize:aSize];
     [parentView addSubview:popUp2];
 }
+
+// --- OUTLINE TAB BUILDER ---
+- (void)_buildOutlineTab:(CPView)containerView isHUD:(BOOL)isHUD
+{
+    var bounds = [containerView bounds];
+    var scrollView = [[CPScrollView alloc] initWithFrame:bounds];
+    [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [scrollView setAutohidesScrollers:YES];
+
+    var outlineView = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
+    [outlineView setUsesAlternatingRowBackgroundColors:YES];
+    [outlineView setCornerView:nil];
+    
+    // Add a single column
+    var col = [[CPTableColumn alloc] initWithIdentifier:@"name"];
+    [[col headerView] setStringValue:@"File Structure"];
+    [col setWidth:CGRectGetWidth(bounds) - 5];
+    [col setEditable:NO];
+    [outlineView addTableColumn:col];
+    
+    [outlineView setOutlineTableColumn:col];
+    
+    [outlineView setDataSource:self];
+    [outlineView setDelegate:self];
+    
+    [scrollView setDocumentView:outlineView];
+    [containerView addSubview:scrollView];
+
+    // Important: Expand the root item initially to show data
+    var rootItem = [_outlineData objectAtIndex:0];
+    [outlineView expandItem:rootItem];
+
+    if (isHUD)
+    {
+        [self _applyHUDStateToView:containerView];
+    }
+}
+
+// --- OUTLINE VIEW DATASOURCE ---
+
+- (int)outlineView:(CPOutlineView)outlineView numberOfChildrenOfItem:(id)item
+{
+    if (item === nil)
+        return [_outlineData count];
+        
+    return [[item objectForKey:@"children"] count];
+}
+
+- (id)outlineView:(CPOutlineView)outlineView child:(int)index ofItem:(id)item
+{
+    if (item === nil)
+        return [_outlineData objectAtIndex:index];
+        
+    return [[item objectForKey:@"children"] objectAtIndex:index];
+}
+
+- (BOOL)outlineView:(CPOutlineView)outlineView isItemExpandable:(id)item
+{
+    if (item === nil)
+        return YES;
+        
+    return [[item objectForKey:@"children"] count] > 0;
+}
+
+- (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item
+{
+    // We only have one column identifier "name"
+    return [item objectForKey:@"name"];
+}
+
+// --- GENERIC HELPERS ---
 
 - (void)_disableControlsInView:(id)aView
 {
@@ -786,7 +898,6 @@
     }
     else if (criterion == @"_value_")
     {
-debugger
         if ([value respondsToSelector:@selector(validateEditing)])
             [value validateEditing];
 
