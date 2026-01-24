@@ -390,10 +390,13 @@
     _ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0,0, CGRectGetWidth(bounds), ruleEditorHeight)];
     [_ruleEditor setRowHeight:25.0];
     [_ruleEditor setCanRemoveAllRows:YES];
-    
+
+    [ruleContainer setAutoresizingMask:CPViewWidthSizable];
+
     _ruleDelegate = [[RuleDelegate alloc] init];
     [_ruleEditor setDelegate:_ruleDelegate];
-    
+    [_ruleEditor setAutoresizingMask:CPViewWidthSizable];
+
     [_ruleEditor setTarget:self];
     [_ruleEditor setAction:@selector(ruleEditorAction:)];
     
@@ -489,6 +492,7 @@
     [textScroll setAutohidesScrollers:YES];
     
     var textView = [[CPTextView alloc] initWithFrame:[textScroll bounds]];
+    [textView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [textView setEditable:YES];
     [textView setRichText:YES]; 
     [textView setString:@"Select text here and use the 'Format' or 'Edit' menus.\n\n(This is a Rich Text enabled CPTextView)"];
