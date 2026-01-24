@@ -1269,6 +1269,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [super textDidChange:note];
 }
 
+- (void)validateEditing
+{
+#if PLATFORM(DOM)
+    var element = [self _inputElement];
+    
+    if (element)
+        [self _setStringValue:element.value isNewValue:YES errorDescription:nil];
+#endif
+}
+
 - (void)textDidBeginEditing:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects

@@ -3,7 +3,7 @@
  * KitchenSink in Code
  *
  * Created by Daniel Böhringer 2026.
- * Refactored: Progress Stepper aligned right, layout optimized.
+ * Refactored: Fixed RuleEditor action handling.
  */
 
 @import <Foundation/Foundation.j>
@@ -110,7 +110,6 @@
     [contentView addSubview:tabView];
 }
 
-// Helper to recursively apply HUD state
 - (void)_applyHUDStateToView:(CPView)aView
 {
     if ([aView respondsToSelector:@selector(setThemeState:)])
@@ -136,9 +135,7 @@
         fieldHeight = 25.0,
         boxTopY = 20.0;
 
-    // ------------------------------------------------------
-    // LEFT BOX: Input, Buttons & Sliders
-    // ------------------------------------------------------
+    // --- LEFT BOX ---
     var leftBox = [[CPBox alloc] initWithFrame:CGRectMake(margin, boxTopY, boxWidth, 100)];
     [leftBox setTitle:@"Input & Controls"];
     [leftBox setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin];
@@ -147,7 +144,7 @@
     var leftContent = [leftBox contentView];
     var currentY = startY;
 
-    // 1. Buttons
+    // Buttons
     var pushButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [pushButton setTitle:@"Push Button"];
     [pushButton setBezelStyle:CPRoundedBezelStyle];
@@ -166,7 +163,7 @@
     [leftContent addSubview:roundRectButton];
     currentY += gapY + 5.0; 
 
-    // 2. Text Inputs
+    // Text Inputs
     var placeholderField = [[CPTextField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [placeholderField setEditable:YES];
     [placeholderField setBezeled:YES];
@@ -191,7 +188,7 @@
     [leftContent addSubview:tokenField];
     currentY += gapY + 20.0;
 
-    // 3. Sliders 
+    // Sliders 
     var tickSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth - 40, 24)];
     [leftContent addSubview:tickSlider];
 
@@ -207,11 +204,8 @@
     [leftBox setFrameSize:CGSizeMake(boxWidth, currentY + 15.0)];
 
 
-    // ------------------------------------------------------
-    // RIGHT BOX: Menus, Toggles & Progress
-    // ------------------------------------------------------
+    // --- RIGHT BOX ---
     var rightBoxX = margin + boxWidth + margin;
-    
     var rightBox = [[CPBox alloc] initWithFrame:CGRectMake(rightBoxX, boxTopY, boxWidth, 100)];
     [rightBox setTitle:@"Selection & Status"];
     [rightBox setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
@@ -220,14 +214,14 @@
     var rightContent = [rightBox contentView];
     currentY = startY; 
 
-    // 1. Date Picker
+    // Date Picker
     var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [datePicker setDatePickerStyle:CPTextFieldAndStepperDatePickerStyle];
     [datePicker setDateValue:[CPDate date]];
     [rightContent addSubview:datePicker];
     currentY += gapY;
 
-    // 2. Menus
+    // Menus
     var comboBox = [[CPComboBox alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [comboBox setPlaceholderString:@"Combo Box"];
     [comboBox addItemsWithObjectValues:["Alpha", "Beta", "Gamma"]];
@@ -246,7 +240,7 @@
     [rightContent addSubview:popUp];
     currentY += gapY + 5.0;
 
-    // 3. Toggles
+    // Toggles
     var cbOn = [CPCheckBox checkBoxWithTitle:@"On"];
     [cbOn setFrameOrigin:CGPointMake(innerX, currentY)];
     [cbOn setState:CPOnState];
@@ -275,14 +269,11 @@
     [radio2 setTarget:self]; [radio2 setAction:@selector(dummyAction:)];
     currentY += gapY + 15.0; 
 
-    // 4. Progress & Level Group
-    
-    // Calculate right-side alignment x-coordinate for steppers
+    // Progress
     var stepperWidth = 19.0;
     var alignRightX = innerX + controlWidth - stepperWidth;
-
-    // -- Level Indicator --
-    var levelWidth = alignRightX - innerX - 5.0; // Fill space up to stepper
+    var levelWidth = alignRightX - innerX - 5.0; 
+    
     var levelInd = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(innerX, currentY + 2, levelWidth, 18)];
     [levelInd setMaxValue:5];
     [levelInd setDoubleValue:3];
@@ -296,8 +287,6 @@
     [levelInd bind:CPValueBinding toObject:levelStepper withKeyPath:@"doubleValue" options:nil];
     currentY += gapY;
 
-    // -- Progress Row --
-    // Regular Spinner (Left)
     var spinner = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX, currentY, 24, 24)];
     [spinner setStyle:CPProgressIndicatorSpinningStyle];
     [spinner setIndeterminate:YES];
@@ -305,7 +294,6 @@
     [spinner startAnimation:self];
     [rightContent addSubview:spinner];
 
-    // Circular Determinate (Middle-Left)
     var circProg = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX + 40, currentY, 24, 24)];
     [circProg setStyle:CPProgressIndicatorSpinningStyle];
     [circProg setIndeterminate:NO];
@@ -314,17 +302,14 @@
     [circProg setMaxValue:100.0];
     [rightContent addSubview:circProg];
 
-    // Stepper (Right Aligned)
     var stepper = [[CPStepper alloc] initWithFrame:CGRectMake(alignRightX, currentY, stepperWidth, 27)];
     [stepper setValueWraps:NO]; [stepper setAutorepeat:YES];
     [stepper setMinValue:0]; [stepper setMaxValue:100]; [stepper setDoubleValue:65];
     [rightContent addSubview:stepper];
     
-    // Binding
     [circProg bind:CPValueBinding toObject:stepper withKeyPath:@"doubleValue" options:nil];
     currentY += 35.0;
 
-    // -- Bar Determinate --
     var detProgress = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 16)];
     [detProgress setStyle:CPProgressIndicatorBarStyle];
     [detProgress setIndeterminate:NO];
@@ -334,7 +319,6 @@
     [rightContent addSubview:detProgress];
     currentY += 20.0;
 
-    // -- Bar Indeterminate --
     var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, 16)];
     [progressBar setStyle:CPProgressIndicatorBarStyle];
     [progressBar setIndeterminate:YES];
@@ -343,21 +327,17 @@
     
     currentY += gapY;
 
-    // Sync box heights
     var maxHeight = MAX(CGRectGetHeight([leftBox frame]), currentY + 15.0);
     [leftBox setFrameSize:CGSizeMake(boxWidth, maxHeight)];
     [rightBox setFrameSize:CGSizeMake(boxWidth, maxHeight)];
 
     if (isHUD)
-    {
         [self _applyHUDStateToView:containerView];
-    }
 }
 
 - (void)_buildTableTab:(CPView)containerView isHUD:(BOOL)isHUD
 {
     var bounds = [containerView bounds];
-    var bottomBarHeight = 32.0;
     var ruleEditorHeight = 140.0;
     
     // --- RULE EDITOR SECTION (Top) ---
@@ -367,13 +347,17 @@
     
     _ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0,0, CGRectGetWidth(bounds), ruleEditorHeight)];
     [_ruleEditor setRowHeight:25.0];
-    [_ruleEditor setFormattingStringsFilename:@"Rules"]; 
     [_ruleEditor setCanRemoveAllRows:YES];
     
     _ruleDelegate = [[RuleDelegate alloc] init];
     [_ruleEditor setDelegate:_ruleDelegate];
-    [_ruleEditor addRow:self];
     
+    [_ruleEditor setTarget:self];
+    [_ruleEditor setAction:@selector(ruleEditorAction:)];
+    
+    // 1. Add the initial row structure
+    [_ruleEditor addRow:self];
+
     [ruleContainer setDocumentView:_ruleEditor];
     [containerView addSubview:ruleContainer];
     
@@ -386,17 +370,22 @@
     
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(ruleEditorRowsDidChange:) name:CPRuleEditorRowsDidChangeNotification object:_ruleEditor];
 
-
     // --- SPLIT VIEW SECTION (Bottom) ---
     var splitY = ruleEditorHeight + 30.0;
-    var splitHeight = CGRectGetHeight(bounds) - splitY - bottomBarHeight;
+    var splitHeight = CGRectGetHeight(bounds) - splitY;
     
     var splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0, splitY, CGRectGetWidth(bounds), splitHeight)];
     [splitView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [splitView setVertical:NO]; 
     
-    // Top Pane: Table
-    var tableScroll = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), splitHeight / 2.0)];
+    // --- TOP PANE: Table + ButtonBar ---
+    var topPaneWrapper = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), splitHeight / 2.0)];
+    [topPaneWrapper setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    
+    var buttonBarHeight = 32.0;
+    
+    // Table ScrollView
+    var tableScroll = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), CGRectGetHeight([topPaneWrapper bounds]) - buttonBarHeight)];
     [tableScroll setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [tableScroll setAutohidesScrollers:YES];
 
@@ -407,24 +396,20 @@
     [tableView bind:CPSelectionIndexesBinding toObject:_arrayController withKeyPath:@"selectionIndexes" options:nil];
     [tableView bind:@"sortDescriptors" toObject:_arrayController withKeyPath:@"sortDescriptors" options:nil];
 
-    // Column 1: Animal
     var colAnimal = [[CPTableColumn alloc] initWithIdentifier:@"animal"];
     [[colAnimal headerView] setStringValue:@"Animal"];
     [colAnimal setWidth:150];
     [colAnimal setEditable:YES];
-    
     var animalCell = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     [animalCell setEditable:YES];
     [colAnimal setDataView:animalCell];
     [tableView addTableColumn:colAnimal];
     [colAnimal bind:CPValueBinding toObject:_arrayController withKeyPath:@"arrangedObjects.animal" options:nil];
 
-    // Column 2: Legs
     var colLegs = [[CPTableColumn alloc] initWithIdentifier:@"legs"];
     [[colLegs headerView] setStringValue:@"Legs"];
     [colLegs setWidth:100];
     [colLegs setEditable:YES];
-    
     var legsCell = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     [legsCell setEditable:YES];
     [colLegs setDataView:legsCell];
@@ -432,26 +417,10 @@
     [colLegs bind:CPValueBinding toObject:_arrayController withKeyPath:@"arrangedObjects.legs" options:nil];
 
     [tableScroll setDocumentView:tableView];
+    [topPaneWrapper addSubview:tableScroll];
     
-    // Bottom Pane: Text (Updated for Menu support)
-    var textScroll = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), splitHeight / 2.0)];
-    [textScroll setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    [textScroll setAutohidesScrollers:YES];
-    
-    var textView = [[CPTextView alloc] initWithFrame:[textScroll bounds]];
-    [textView setEditable:YES];
-    // --- ENABLE RICH TEXT TO SUPPORT FONTS/UNDERLINE ---
-    [textView setRichText:YES]; 
-    [textView setString:@"Select text here and use the 'Format' or 'Edit' menus.\n\n(This is a Rich Text enabled CPTextView)"];
-    [textView setFont:[CPFont fontWithName:@"Courier" size:13.0]];
-
-    [textScroll setDocumentView:textView];
-    
-    [splitView addSubview:tableScroll];
-    [splitView addSubview:textScroll];
-
     // Button Bar
-    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(bounds) - bottomBarHeight, CGRectGetWidth(bounds), bottomBarHeight)];
+    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight([topPaneWrapper bounds]) - buttonBarHeight, CGRectGetWidth(bounds), buttonBarHeight)];
     [buttonBar setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
     
     if ([buttonBar respondsToSelector:@selector(setHasResizeControl:)])
@@ -470,31 +439,55 @@
     [minusBtn bind:CPEnabledBinding toObject:_arrayController withKeyPath:@"canRemove" options:nil];
 
     [buttonBar setButtons:[plusBtn, minusBtn]];
+    [topPaneWrapper addSubview:buttonBar];
 
-    [containerView addSubview:buttonBar];
+    // --- BOTTOM PANE: Text View ---
+    var textScroll = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), splitHeight / 2.0)];
+    [textScroll setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [textScroll setAutohidesScrollers:YES];
+    
+    var textView = [[CPTextView alloc] initWithFrame:[textScroll bounds]];
+    [textView setEditable:YES];
+    [textView setRichText:YES]; 
+    [textView setString:@"Select text here and use the 'Format' or 'Edit' menus.\n\n(This is a Rich Text enabled CPTextView)"];
+    [textView setFont:[CPFont fontWithName:@"Courier" size:13.0]];
+
+    [textScroll setDocumentView:textView];
+    
+    [splitView addSubview:topPaneWrapper];
+    [splitView addSubview:textScroll];
+
     [containerView addSubview:splitView];
 
     if (isHUD)
     {
-        // Apply HUD state to everything in the view hierarchy (Buttons, RuleEditor, Table, ScrollViews)
         [self _applyHUDStateToView:containerView];
-
-        // Specific overrides
         [textView setBackgroundColor:[CPColor blackColor]];
         [textView setTextColor:[CPColor whiteColor]];
         [_predicateField setTextColor:[CPColor whiteColor]];
-
         [self _applyHUDStateToView:_ruleEditor];
     }
+}
+
+// This method catches the action sent by the RuleEditor when the text field (or other control) changes.
+- (void)ruleEditorAction:(id)sender
+{
+    // Simply delegate to the update logic
+    [self ruleEditorRowsDidChange:nil];
 }
 
 - (void)ruleEditorRowsDidChange:(CPNotification)note
 {
     var predicate = [_ruleEditor predicate];
+
+    // Update the debug text
     if (predicate)
         [_predicateField setStringValue:[predicate predicateFormat]];
     else
         [_predicateField setStringValue:@"(Incomplete Predicate)"];
+        
+    // Apply the filter to the table's data source
+    [_arrayController setFilterPredicate:predicate];
 }
 
 // --- SIZES TAB BUILDER ---
@@ -505,9 +498,7 @@
     [self _addSizeColumnTo:containerView atX:280.0 controlSize:CPMiniControlSize title:@"Mini size"];
 
     if (isHUD)
-    {
         [self _applyHUDStateToView:containerView];
-    }
 }
 
 - (void)_addSizeColumnTo:(CPView)parentView atX:(float)xPos controlSize:(CPControlSize)aSize title:(CPString)title
@@ -516,14 +507,12 @@
     var rowHeight = 40.0;
     var width = (aSize == CPRegularControlSize) ? 100.0 : ((aSize == CPSmallControlSize) ? 90.0 : 80.0);
     
-    // 1. Title Label
     var label = [CPTextField labelWithTitle:title];
     [label setFrameOrigin:CGPointMake(xPos, y)];
     [label setFont:[CPFont systemFontOfSize:13.0]];
     [parentView addSubview:label];
     y += 35.0;
 
-    // 2. PopUp Button
     var popUp = [[CPPopUpButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
     [popUp addItemWithTitle:@"Item 1"];
     [popUp addItemWithTitle:@"Item 2"];
@@ -531,7 +520,6 @@
     [parentView addSubview:popUp];
     y += rowHeight;
 
-    // 3. Text Field
     var tf = [[CPTextField alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
     [tf setStringValue:@"Input"];
     [tf setBezeled:YES];
@@ -540,13 +528,11 @@
     [parentView addSubview:tf];
     y += rowHeight;
 
-    // 4. Stepper
     var stepper = [[CPStepper alloc] initWithFrame:CGRectMake(xPos, y, 13, 23)];
     [stepper setControlSize:aSize];
     [parentView addSubview:stepper];
     y += rowHeight;
 
-    // 5. Date Picker
     var dpWidth = width + (aSize == CPRegularControlSize ? 20 : 15);
     var dp = [[CPDatePicker alloc] initWithFrame:CGRectMake(xPos, y, dpWidth, 28)];
     [dp setControlSize:aSize];
@@ -556,7 +542,6 @@
     [parentView addSubview:dp];
     y += rowHeight;
 
-    // 6. Checkbox
     var cb = [CPCheckBox checkBoxWithTitle:@"Check"];
     [cb setFrameOrigin:CGPointMake(xPos, y)];
     [cb setControlSize:aSize];
@@ -564,14 +549,12 @@
     [parentView addSubview:cb];
     y += rowHeight;
 
-    // 7. Standard Button
     var btn = [[CPButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
     [btn setTitle:@"Button"];
     [btn setControlSize:aSize];
     [parentView addSubview:btn];
     y += rowHeight;
 
-    // 8. Textured Button
     var texBtn = [[CPButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
     [texBtn setTitle:@"Textured"];
     [texBtn setBezelStyle:CPTexturedSquareBezelStyle];
@@ -579,7 +562,6 @@
     [parentView addSubview:texBtn];
     y += rowHeight;
 
-    // 9. Round Textured Button
     var roundTexBtn = [[CPButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
     [roundTexBtn setTitle:@"Round"];
     [roundTexBtn setBezelStyle:CPTexturedRoundedBezelStyle];
@@ -587,7 +569,6 @@
     [parentView addSubview:roundTexBtn];
     y += rowHeight;
 
-    // 10. Radio Buttons
     var rad1 = [CPRadio radioWithTitle:@"Radio"];
     [rad1 setFrameOrigin:CGPointMake(xPos, y)];
     [rad1 setControlSize:aSize];
@@ -603,7 +584,6 @@
     [parentView addSubview:rad2];
     y += rowHeight;
     
-    // 11. Small Bottom PopUp
     var popUp2 = [[CPPopUpButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
     [popUp2 setPullsDown:YES];
     [popUp2 setControlSize:aSize];
@@ -666,16 +646,51 @@
 {
 }
 
+// 1. Determine how many items are in the popup for a specific row type
 - (int)ruleEditor:(CPRuleEditor)editor numberOfChildrenForCriterion:(id)criterion withRowType:(CPRuleEditorRowType)rowType
 {
-    if (criterion == nil) return 2;
-    if (criterion == @"animal") return 2;
-    if (criterion == @"legs") return 3;
-    return 0;
+    // --- COMPOUND ROW (The container: "Any/All of the following...") ---
+    if (rowType === CPRuleEditorRowTypeCompound)
+    {
+        // Root: The dropdown options ("Any", "All")
+        if (criterion == nil) return 2;
+        
+        // Children of Any/All: The static text ("of the following are true")
+        if (criterion == CPOrPredicateType || criterion == CPAndPredicateType) return 1;
+        
+        return 0;
+    }
+
+    // --- SIMPLE ROW (The actual rules: "Animal", "Legs"...) ---
+    if (rowType === CPRuleEditorRowTypeSimple)
+    {
+        if (criterion == nil) return 2; // animal, legs
+        if (criterion == @"animal") return 2; // contains, is
+        if (criterion == @"legs") return 3; // >, <, ==
+        
+        // Operator's child is the value placeholder
+        if ([self isOperator:criterion]) return 1;
+    }
+    
+    return 0; 
 }
 
+// 2. Return the actual item for the popup
 - (id)ruleEditor:(CPRuleEditor)editor child:(int)index forCriterion:(id)criterion withRowType:(CPRuleEditorRowType)rowType
 {
+    // --- COMPOUND ROW ---
+    if (rowType === CPRuleEditorRowTypeCompound)
+    {
+        // Root: Return the predicate constants
+        if (criterion == nil) {
+            return (index == 0) ? CPOrPredicateType : CPAndPredicateType;
+        }
+        
+        // Return a marker for the static text
+        return @"_static_text_";
+    }
+
+    // --- SIMPLE ROW ---
     if (criterion == nil) {
         if (index == 0) return @"animal";
         return @"legs";
@@ -689,11 +704,33 @@
         if (index == 1) return @"<";
         return @"==";
     }
+    if ([self isOperator:criterion]) {
+        return @"_value_";
+    }
     return nil;
 }
 
+// 3. What the user sees on screen
 - (id)ruleEditor:(CPRuleEditor)editor displayValueForCriterion:(id)criterion inRow:(int)row
 {
+    // --- COMPOUND DISPLAY ---
+    if (criterion === CPOrPredicateType) return @"Any";
+    if (criterion === CPAndPredicateType) return @"All";
+    // This creates the static text label next to the dropdown
+    if (criterion === @"_static_text_") return @"of the following are true";
+
+    // --- SIMPLE DISPLAY ---
+    if (criterion == @"_value_") 
+    {
+        var field = [[CPTextField alloc] initWithFrame:CGRectMake(0, 0, 100, 24)];
+        [field setEditable:YES];
+        [field setBezeled:YES];
+        [field setBackgroundColor:[CPColor whiteColor]];
+        [field setPlaceholderString:@"Value"];
+        [field setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+        return field;
+    }
+
     if (criterion == @"animal") return @"Animal Name";
     if (criterion == @"legs") return @"Leg Count";
     if (criterion == @"contains") return @"contains";
@@ -701,7 +738,73 @@
     if (criterion == @">") return @"is greater than";
     if (criterion == @"<") return @"is less than";
     if (criterion == @"==") return @"is equal to";
+    
     return criterion;
+}
+
+- (BOOL)isOperator:(id)criterion
+{
+    return (criterion == @"contains" || criterion == @"is" || 
+            criterion == @">" || criterion == @"<" || criterion == @"==");
+}
+
+// 4. Convert UI to Predicate
+- (CPDictionary)ruleEditor:(CPRuleEditor)editor predicatePartsForCriterion:(id)criterion withDisplayValue:(id)value inRow:(int)row
+{
+    var result = [CPMutableDictionary dictionary];
+
+    // Handle Compound Type (Any vs All)
+    if (criterion === CPOrPredicateType || criterion === CPAndPredicateType)
+    {
+        [result setObject:criterion forKey:CPRuleEditorPredicateCompoundType];
+        return result;
+    }
+    
+    // Ignore the static text part
+    if (criterion === @"_static_text_") return nil;
+
+    // --- SIMPLE ROW LOGIC ---
+    [result setObject:CPDirectPredicateModifier forKey:CPRuleEditorPredicateComparisonModifier];
+    [result setObject:CPCaseInsensitivePredicateOption forKey:CPRuleEditorPredicateOptions];
+
+    if (criterion == @"animal" || criterion == @"legs")
+    {
+        [result setObject:[CPExpression expressionForKeyPath:criterion] 
+                   forKey:CPRuleEditorPredicateLeftExpression];
+    }
+    else if ([self isOperator:criterion])
+    {
+        var operatorType = CPEqualToPredicateOperatorType;
+        
+        if (criterion == @"contains") operatorType = CPContainsPredicateOperatorType;
+        else if (criterion == @"is")  operatorType = CPEqualToPredicateOperatorType;
+        else if (criterion == @"==")  operatorType = CPEqualToPredicateOperatorType;
+        else if (criterion == @">")   operatorType = CPGreaterThanPredicateOperatorType;
+        else if (criterion == @"<")   operatorType = CPLessThanPredicateOperatorType;
+        
+        [result setObject:operatorType forKey:CPRuleEditorPredicateOperatorType];
+    }
+    else if (criterion == @"_value_")
+    {
+debugger
+        if ([value respondsToSelector:@selector(validateEditing)])
+            [value validateEditing];
+
+        var stringValue = [value stringValue];
+        var typedValue = stringValue;
+
+        // Type Coercion for Legs
+        var criteria = [editor criteriaForRow:row];
+        if ([criteria count] > 0 && [criteria objectAtIndex:0] == @"legs")
+        {
+             typedValue = [value intValue];
+        }
+
+        [result setObject:[CPExpression expressionForConstantValue:typedValue] 
+                   forKey:CPRuleEditorPredicateRightExpression];
+    }
+
+    return result;
 }
 
 @end
@@ -725,7 +828,6 @@
 {
     windows = [];
 
-    // REDUCED height to fix aesthetic "too high" issue and increased width slightly for balance
     var winWidth = 480.0,
         winHeight = 450.0,
         padding = 20.0;
@@ -746,7 +848,6 @@
     [wc4 showWindow:self];
     [windows addObject:wc4];
 
-    // --- BUILD MENU FROM EXAMPLE ---
     var mainMenu = [CPApp mainMenu];
 
     while ([mainMenu numberOfItems] > 0)
