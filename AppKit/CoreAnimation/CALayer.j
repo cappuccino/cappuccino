@@ -989,19 +989,54 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 {
     if (!anim) return;
 
-    // 1. Remove existing animation for this key
-    [self removeAnimationForKey:key];
+    // --- 1. Handle Animation Groups ---
+    // If it's a group, we simply schedule its children individually.
+    if ([anim respondsToSelector:@selector(animations)] && [anim animations])
+    {
+        var animations = [anim animations],
+            count = [animations count],
+            i = 0;
 
-    // 2. Determine Properties
+        for (; i < count; i++)
+        {
+            var child = [animations objectAtIndex:i];
+            
+            // Recurse: Add the child animation. 
+            // We pass 'nil' for the key so the child's own 'keyPath' 
+            // is used as the storage identifier in the dictionary.
+            [self addAnimation:child forKey:nil];
+        }
+        return; 
+    }
+
+    // --- 2. Determine KeyPath ---
     var keyPath = key;
+    
+    // If the animation object has an explicit keyPath (like CABasicAnimation), use it.
     if ([anim respondsToSelector:@selector(keyPath)] && [anim keyPath])
         keyPath = [anim keyPath];
 
+    // If we can't determine a property to animate, we must abort.
+    if (!keyPath) return;
+
+    // --- 3. Determine Values ---
     var startValue = ([anim respondsToSelector:@selector(fromValue)]) ? [anim fromValue] : nil;
+
+    // If startValue is missing, try to read it from the layer.
+    // We wrap this in a try-catch to prevent crashes if 'keyPath' is invalid.
     if (startValue == nil)
-        startValue = [self valueForKey:keyPath];
+    {
+        try {
+            startValue = [self valueForKey:keyPath];
+        }
+        catch (e) {
+            // The keyPath was likely invalid (not KVC compliant), abort.
+            return;
+        }
+    }
 
     var endValue = ([anim respondsToSelector:@selector(toValue)]) ? [anim toValue] : nil;
+
     if (endValue == nil)
         return;
 
@@ -1010,7 +1045,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     // Default to EaseInEaseOut if not specified
     var timingFunction = ([anim respondsToSelector:@selector(timingFunction)]) ? [anim timingFunction] : [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
 
-    // 3. Create Context
+    // --- 4. Prepare Context ---
     var context = {
         "animation": anim,
         "keyPath": keyPath,
@@ -1022,7 +1057,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         "requestId": null
     };
 
-    // 4. Define the Render Loop
+    // --- 5. Render Loop ---
     var _self = self; 
 
     var renderLoop = function(timestamp) {
@@ -1032,9 +1067,15 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
             context.requestId = null;
     };
 
-    // 5. Kick off
+    // --- 6. Storage & Kickoff ---
+    // Use the keyPath as the identifier if no specific key was provided
+    var storageKey = (key && key.length > 0) ? key : keyPath;
+
+    // Remove any conflicting animation on this specific property/key
+    [self removeAnimationForKey:storageKey];
+
     context.requestId = window.requestAnimationFrame(renderLoop);
-    [_activeAnimations setObject:context forKey:key];
+    [_activeAnimations setObject:context forKey:storageKey];
 }
 
 - (void)removeAnimationForKey:(CPString)key
