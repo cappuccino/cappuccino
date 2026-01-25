@@ -9,6 +9,7 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 @import <AppKit/CAKeyframeAnimation.j>
+@import <AppKit/CAAnimationGroup.j>
 
 #define UIAssert(a) [self markTest:_cmd didPass:a];
 
@@ -401,6 +402,252 @@
 
     [[sender animator] setFrame:[sender frame]];
     [CPAnimationContext endGrouping];
+}
+
+- (void)testGroupAnimation:(id)sender
+{
+    // Reset state
+    [_testView setFrame:_initialTestViewFrame];
+    [_testView setAlphaValue:1.0];
+    [_pathView setPath:nil]; // Clear the path view as we aren't using it here
+
+    // FIX: Ensure the view is layer-backed. 
+    // Without this, [_testView layer] returns nil.
+    [_testView setWantsLayer:YES];
+
+    var layer = [_testView layer];
+
+    // 1. Define the start and end positions
+    // CALayer 'position' corresponds to the center of the view (anchorPoint 0.5,0.5)
+    var startPos = [layer position];
+    
+    // Safety check in case layer creation failed (though setWantsLayer:YES should ensure it)
+    if (!startPos) startPos = CGPointMake(0,0);
+
+    var endPos = CGPointMake(startPos.x + 150, startPos.y + 50);
+
+    // 2. Create a Position Animation
+    var moveAnim = [CABasicAnimation animationWithKeyPath:@"position"];
+    [moveAnim setFromValue:startPos];
+    [moveAnim setToValue:endPos];
+    [moveAnim setDuration:1.0];
+
+    // 3. Create an Opacity Animation
+    var fadeAnim = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    [fadeAnim setFromValue:1.0];
+    [fadeAnim setToValue:0.25];
+    [fadeAnim setDuration:1.0];
+
+    // 4. Group them
+    // This tests the recursive logic in CAAnimationGroup and the timer logic in CALayer
+    var group = [CAAnimationGroup group];
+    [group setAnimations:[moveAnim, fadeAnim]];
+    [group setDuration:1.0];
+
+    // 5. Run the animation on the layer
+    [layer addAnimation:group forKey:@"groupTest"];
+
+    // 6. Verify results after the animation completes (1.0s duration + 0.1s buffer)
+    [self performSelector:@selector(_verifyGroupAnimation:) withObject:endPos afterDelay:1.1];
+}
+
+- (void)_verifyGroupAnimation:(CGPoint)expectedPos
+{
+    var layer = [_testView layer],
+        currentPos = [layer position],
+        currentOpacity = [layer opacity];
+
+    // Allow for small floating point differences
+    var posPassed = (Math.abs(currentPos.x - expectedPos.x) < 1.0 && Math.abs(currentPos.y - expectedPos.y) < 1.0);
+    var opacityPassed = (Math.abs(currentOpacity - 0.25) < 0.05);
+
+    [self markTest:@selector(testGroupAnimation:) didPass:(posPassed && opacityPassed)];
+    
+    // Reset for next test
+    [self performSelector:@selector(cleanupAfterAnimation) withObject:nil afterDelay:0.5];
+}
+
+- (void)testManualRotation:(id)sender
+{
+    // 1. Cleanup previous test view
+    if (_testView)
+        [_testView removeFromSuperview];
+
+    // 2. Setup the RotatableView
+    // View is 100x100, but the blue box drawn inside is 70x70 to allow room to spin.
+    var frame = CGRectMake(390, 450, 100, 100);
+    _testView = [[RotatableView alloc] initWithFrame:frame];
+    [[theWindow contentView] addSubview:_testView];
+    
+    // Ensure layer-backed so we have a layer to animate
+    [_testView setWantsLayer:YES];
+    
+    var layer = [_testView layer];
+    [layer setDelegate:_testView];
+
+    // 3. Define the Animation
+    var rotationAnim = [CABasicAnimation animationWithKeyPath:@"angle"];
+    
+    // Rotate 360 degrees (2 * PI)
+    [rotationAnim setFromValue:0.0];
+    [rotationAnim setToValue:2 * PI];
+    [rotationAnim setDuration:2.0];
+    
+    // Use an easing function for smooth start/stop
+    [rotationAnim setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+    
+    // 4. Add to Layer
+    [layer addAnimation:rotationAnim forKey:@"rotateTest"];
+    
+    // 5. Verify results after animation
+    [self performSelector:@selector(_verifyRotation:) withObject:nil afterDelay:2.1];
+}
+
+- (void)_verifyRotation:(id)sender
+{
+    var layer = [_testView layer];
+    var endAngle = [layer angle];
+    
+    // Check if we reached approx 2*PI (6.28)
+    var passed = (Math.abs(endAngle - (2 * PI)) < 0.1);
+    
+    [self markTest:@selector(testManualRotation:) didPass:passed];
+    
+    // Reset view
+    [self performSelector:@selector(cleanupAfterAnimation) withObject:nil afterDelay:0.5];
+}
+
+@end
+
+/* 
+   A custom view that draws a box with a line in it.
+   We draw the box smaller than the view bounds to prevent clipping during rotation.
+*/
+@implementation RotatableView : CPView
+{
+    float _angle;
+}
+
+- (void)initWithFrame:(CGRect)aFrame
+{
+    self = [super initWithFrame:aFrame];
+    _angle = 0;
+
+    return self;
+}
+
+- (void)setAngle:(float)anAngle
+{
+    _angle = anAngle;
+    [self display];
+}
+
+- (float)angle
+{
+    return _angle;
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        bounds = [self bounds],
+        cx = CGRectGetWidth(bounds) / 2.0,
+        cy = CGRectGetHeight(bounds) / 2.0;
+
+    // 1. Clear Context
+    CGContextClearRect(context, bounds);
+
+    // 2. Precompute Trig
+    var cosA = Math.cos(_angle),
+        sinA = Math.sin(_angle);
+
+    /* 
+       Helper closure to transform a local point (x,y) relative to center 
+       into global view coordinates.
+    */
+    var getPoint = function(localX, localY)
+    {
+        // Rotation Matrix:
+        // x' = x*cos - y*sin
+        // y' = x*sin + y*cos
+        var rotX = localX * cosA - localY * sinA;
+        var rotY = localX * sinA + localY * cosA;
+
+        // Translate back to view center
+        return CGPointMake(cx + rotX, cy + rotY);
+    };
+
+    // --- DRAW BLUE SQUARE (70x70) ---
+    var s = 35.0; // half size
+    
+    // Calculate the 4 corners manually
+    var p1 = getPoint(-s, -s); // Top-Left
+    var p2 = getPoint( s, -s); // Top-Right
+    var p3 = getPoint( s,  s); // Bottom-Right
+    var p4 = getPoint(-s,  s); // Bottom-Left
+
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, p1.x, p1.y);
+    CGContextAddLineToPoint(context, p2.x, p2.y);
+    CGContextAddLineToPoint(context, p3.x, p3.y);
+    CGContextAddLineToPoint(context, p4.x, p4.y);
+    CGContextClosePath(context);
+    
+    [[CPColor greenColor] setFill];
+    CGContextFillPath(context);
+
+    // --- DRAW RED MARKER (Top-Left Corner) ---
+    // A 20x20 square in the top-left of the blue box
+    // Local coords relative to center: x from -35 to -15, y from -35 to -15
+    var r1 = getPoint(-35, -35);
+    var r2 = getPoint(-15, -35);
+    var r3 = getPoint(-15, -15);
+    var r4 = getPoint(-35, -15);
+
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, r1.x, r1.y);
+    CGContextAddLineToPoint(context, r2.x, r2.y);
+    CGContextAddLineToPoint(context, r3.x, r3.y);
+    CGContextAddLineToPoint(context, r4.x, r4.y);
+    CGContextClosePath(context);
+
+    [[CPColor redColor] setFill];
+    CGContextFillPath(context);
+
+    // --- DRAW WHITE POINTER LINE ---
+    // Line from Center (0,0) to Right Edge (35, 0)
+    var lineStart = getPoint(0, 0);
+    var lineEnd   = getPoint(35, 0);
+
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, lineStart.x, lineStart.y);
+    CGContextAddLineToPoint(context, lineEnd.x, lineEnd.y);
+    
+    [[CPColor whiteColor] setStroke];
+    CGContextSetLineWidth(context, 3.0);
+    CGContextStrokePath(context);
+}
+
+@end
+
+/*
+    Category to allow CALayer to drive the 'angle' property on the view.
+*/
+@implementation CALayer (RotationTest)
+
+- (void)setAngle:(float)anAngle
+{
+    // Store it so [self valueForKey:@"angle"] works for animation start values
+    self._angle = anAngle;
+
+    // Forward the value to the View (the layer's delegate) to trigger drawRect
+    if (_delegate && [_delegate respondsToSelector:@selector(setAngle:)])
+        [_delegate setAngle:anAngle];
+}
+
+- (float)angle
+{
+    return self._angle || 0.0;
 }
 
 @end

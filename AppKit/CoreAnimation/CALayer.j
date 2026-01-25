@@ -118,6 +118,8 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
     CGAffineTransform   _transformToLayer;
     CGAffineTransform   _transformFromLayer;
+
+    CPMutableDictionary _activeAnimations;
 }
 
 @global document
@@ -159,6 +161,8 @@ var CALayerRegisteredRunLoopUpdates             = nil;
         _masksToBounds = NO;
 
         _sublayers = [];
+
+        _activeAnimations = [CPMutableDictionary dictionary];
 
 #if PLATFORM(DOM)
         _DOMElement = document.createElement("div");
@@ -975,6 +979,242 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 - (id)delegate
 {
     return _delegate;
+}
+
+/*
+    Adds an animation to the layer.
+    Supports CABasicAnimation for Numbers (opacity) and Points (position/anchorPoint).
+*/
+- (void)addAnimation:(CAAnimation)anim forKey:(CPString)key
+{
+    if (!anim) return;
+
+    // --- 1. Handle Animation Groups ---
+    // If it's a group, we simply schedule its children individually.
+    if ([anim respondsToSelector:@selector(animations)] && [anim animations])
+    {
+        var animations = [anim animations],
+            count = [animations count],
+            i = 0;
+
+        for (; i < count; i++)
+        {
+            var child = [animations objectAtIndex:i];
+            
+            // Recurse: Add the child animation. 
+            // We pass 'nil' for the key so the child's own 'keyPath' 
+            // is used as the storage identifier in the dictionary.
+            [self addAnimation:child forKey:nil];
+        }
+        return; 
+    }
+
+    // --- 2. Determine KeyPath ---
+    var keyPath = key;
+    
+    // If the animation object has an explicit keyPath (like CABasicAnimation), use it.
+    if ([anim respondsToSelector:@selector(keyPath)] && [anim keyPath])
+        keyPath = [anim keyPath];
+
+    // If we can't determine a property to animate, we must abort.
+    if (!keyPath) return;
+
+    // --- 3. Determine Values ---
+    var startValue = ([anim respondsToSelector:@selector(fromValue)]) ? [anim fromValue] : nil;
+
+    // If startValue is missing, try to read it from the layer.
+    // We wrap this in a try-catch to prevent crashes if 'keyPath' is invalid.
+    if (startValue == nil)
+    {
+        try {
+            startValue = [self valueForKey:keyPath];
+        }
+        catch (e) {
+            // The keyPath was likely invalid (not KVC compliant), abort.
+            return;
+        }
+    }
+
+    var endValue = ([anim respondsToSelector:@selector(toValue)]) ? [anim toValue] : nil;
+
+    if (endValue == nil)
+        return;
+
+    var duration = ([anim respondsToSelector:@selector(duration)]) ? [anim duration] : 0.25;
+    
+    // Default to EaseInEaseOut if not specified
+    var timingFunction = ([anim respondsToSelector:@selector(timingFunction)]) ? [anim timingFunction] : [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+
+    // --- 4. Prepare Context ---
+    var context = {
+        "animation": anim,
+        "keyPath": keyPath,
+        "startValue": startValue,
+        "endValue": endValue,
+        "duration": duration * 1000.0, // ms
+        "timingFunction": timingFunction,
+        "startTime": null,
+        "requestId": null
+    };
+
+    // --- 5. Render Loop ---
+    var _self = self; 
+
+    var renderLoop = function(timestamp) {
+        if ([_self _renderAnimationStep:context timestamp:timestamp])
+            context.requestId = window.requestAnimationFrame(renderLoop);
+        else
+            context.requestId = null;
+    };
+
+    // --- 6. Storage & Kickoff ---
+    // Use the keyPath as the identifier if no specific key was provided
+    var storageKey = (key && key.length > 0) ? key : keyPath;
+
+    // Remove any conflicting animation on this specific property/key
+    [self removeAnimationForKey:storageKey];
+
+    context.requestId = window.requestAnimationFrame(renderLoop);
+    [_activeAnimations setObject:context forKey:storageKey];
+}
+
+- (void)removeAnimationForKey:(CPString)key
+{
+    var context = [_activeAnimations objectForKey:key];
+    if (context)
+    {
+        if (context.requestId !== null)
+            window.cancelAnimationFrame(context.requestId);
+        [_activeAnimations removeObjectForKey:key];
+    }
+}
+
+- (void)removeAllAnimations
+{
+    var keys = [_activeAnimations allKeys],
+        count = [keys count];
+    while (count--)
+        [self removeAnimationForKey:[keys objectAtIndex:count]];
+}
+
+/*
+    Solves Cubic Bezier for t.
+    p1, p2 are the control points (x,y). p0 is 0,0, p3 is 1,1.
+    This is a simplified solver for standard Core Animation timing functions.
+*/
+- (float)_solveBezier:(float)t forTimingFunction:(CAMediaTimingFunction)tf
+{
+    if (!tf) return t;
+    
+    // Linear optimization
+    if (tf === [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]) 
+        return t;
+
+    var points = [tf controlPoints]; // [c1x, c1y, c2x, c2y]
+    var p1x = points[0], p1y = points[1], 
+        p2x = points[2], p2y = points[3];
+
+    // Simple polynomial evaluation (De Casteljau's algorithm/Cubic formula subset)
+    // Since we are usually dealing with standard easing, we can approximate 1D easing on the Y axis 
+    // based on linear time X, or do a full solve.
+    // For brevity/speed in JS, we often approximate basic easing:
+    
+    // 3t^2 * (1-t) + t^3  ... standard bezier blending functions
+    var cx = 3.0 * p1x;
+    var bx = 3.0 * (p2x - p1x) - cx;
+    var ax = 1.0 - cx - bx;
+
+    var cy = 3.0 * p1y;
+    var by = 3.0 * (p2y - p1y) - cy;
+    var ay = 1.0 - cy - by;
+
+    // Solve for X given t (time) using Newton-Raphson
+    var sampleT = t;
+    for (var i = 0; i < 5; i++) {
+        var x = ((ax * sampleT + bx) * sampleT + cx) * sampleT - t;
+        if (Math.abs(x) < 1e-3) break;
+        var d = (3.0 * ax * sampleT + 2.0 * bx) * sampleT + cx;
+        if (Math.abs(d) < 1e-6) break;
+        sampleT = sampleT - x / d;
+    }
+
+    // Solve for Y given derived T
+    return ((ay * sampleT + by) * sampleT + cy) * sampleT;
+}
+
+- (BOOL)_renderAnimationStep:(JSObject)context timestamp:(double)timestamp
+{
+    if (context.startTime === null)
+        context.startTime = timestamp;
+
+    var elapsed = timestamp - context.startTime,
+        linearProgress = elapsed / context.duration;
+
+    if (linearProgress > 1.0) linearProgress = 1.0;
+
+    // Apply Timing Function
+    var progress = [self _solveBezier:linearProgress forTimingFunction:context.timingFunction];
+
+    var start = context.startValue,
+        end = context.endValue,
+        current = nil;
+
+    // Number
+    if (typeof start === "number")
+    {
+        current = start + (end - start) * progress;
+    }
+    // Point / Size / Rect
+    else if (start && start.x !== undefined && start.y !== undefined) // CGPoint
+    {
+        current = CGPointMake(start.x + (end.x - start.x) * progress,
+                              start.y + (end.y - start.y) * progress);
+    }
+    else if (start && start.width !== undefined && start.height !== undefined) // CGSize
+    {
+        current = CGSizeMake(start.width + (end.width - start.width) * progress,
+                             start.height + (end.height - start.height) * progress);
+    }
+    else if (start && start.origin !== undefined && start.size !== undefined) // CGRect
+    {
+        current = CGRectMake(
+            start.origin.x + (end.origin.x - start.origin.x) * progress,
+            start.origin.y + (end.origin.y - start.origin.y) * progress,
+            start.size.width + (end.size.width - start.size.width) * progress,
+            start.size.height + (end.size.height - start.size.height) * progress
+        );
+    }
+
+    if (current !== nil)
+        [self setValue:current forKey:context.keyPath];
+
+    if (linearProgress >= 1.0)
+    {
+        var anim = context.animation;
+        
+        // Cleanup
+        var shouldRemove = [anim respondsToSelector:@selector(isRemovedOnCompletion)] ? [anim isRemovedOnCompletion] : YES;
+        
+        if (shouldRemove) {
+            // Find key by context identity to handle groups correctly
+            var keys = [_activeAnimations allKeys];
+            for (var i = 0; i < keys.length; i++) {
+                if ([_activeAnimations objectForKey:keys[i]] === context) {
+                    [_activeAnimations removeObjectForKey:keys[i]];
+                    break;
+                }
+            }
+        }
+
+        // Delegate
+        var delegate = [anim delegate];
+        if (delegate && [delegate respondsToSelector:@selector(animationDidStop:finished:)])
+            [delegate animationDidStop:anim finished:YES];
+
+        return NO;
+    }
+
+    return YES;
 }
 
 /* @ignore */
