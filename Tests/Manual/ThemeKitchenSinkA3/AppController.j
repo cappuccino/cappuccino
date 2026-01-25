@@ -5,6 +5,7 @@
  * Created by Daniel Böhringer 2026.
  * Refactored: Fixed RuleEditor action handling.
  * Refactored: Added OutlineView and reordered tabs.
+ * Refactored: Fixed control disabling logic for all tabs.
  */
 
 @import <Foundation/Foundation.j>
@@ -90,9 +91,6 @@
         ];
 
         [self _buildInterfaceIsHUD:isHUD];
-
-        if (!isEnabled)
-            [self _disableControlsInView:[theWindow contentView]];
     }
 
     return self;
@@ -146,6 +144,16 @@
     [tabView addTabViewItem:item4];
 
     [contentView addSubview:tabView];
+
+    // If the window is supposed to be disabled, we must disable the controls 
+    // in ALL tabs now, while we have references to their views.
+    if (!_areControlsEnabled)
+    {
+        [self _disableControlsInView:controlsView];
+        [self _disableControlsInView:sizesView];
+        [self _disableControlsInView:tableViewWrapper];
+        [self _disableControlsInView:outlineWrapper];
+    }
 }
 
 - (void)_applyHUDStateToView:(CPView)aView

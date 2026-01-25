@@ -2224,15 +2224,51 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     return self;
 }
 
++ (BOOL)needsPeriodicFrameUpdatesForKey:(CPString)aKey
+{
+    if (aKey === @"angle")
+        return YES;
+
+    return [super needsPeriodicFrameUpdatesForKey:aKey];
+}
+
+// 1. Expose angle as a property so the animator proxy can interpolate it.
+- (void)setAngle:(float)anAngle
+{
+    _angle = anAngle;
+    [self setNeedsDisplay:YES];
+}
+
+- (float)angle
+{
+    return _angle;
+}
+
 - (void)setState:(CPInteger)aState
 {
     [super setState:aState];
 
-    if ([self state] === CPOnState)
-        _angle = 0.0;
+    var targetAngle = ([self state] === CPOnState) ? 0.0 : -PI_2;
 
+    // 2. Only animate if the view is currently in a window (visible).
+    // This prevents rows from spinning into place during initial load or scrolling.
+    if ([self window])
+    {
+        [CPAnimationContext beginGrouping];
+        
+        // Duration of the rotation (0.2s is standard for macOS-like toggles)
+        [[CPAnimationContext currentContext] setDuration:0.2];
+        
+        // Use the animator proxy to smoothly interpolate the 'angle' property
+        [[self animator] setAngle:targetAngle];
+        debugger
+        [CPAnimationContext endGrouping];
+    }
     else
-        _angle = -PI_2;
+    {
+        // If not visible/loading, set immediately
+        [self setAngle:targetAngle];
+    }
 }
 
 - (void)drawRect:(CGRect)aRect
@@ -2244,6 +2280,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     CGContextBeginPath(context);
 
+    // 3. The drawing logic uses _angle, which is now being interpolated by the animator
     if (_angle)
     {
         var centre = CGPointMake(FLOOR(width / 2.0), FLOOR(height / 2.0));
@@ -2272,7 +2309,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if (_angle === 0.0)
         CGContextAddLineToPoint(context, 9.0, 0.0);
 
-    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.7]);
+    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha:0.7]);
     CGContextStrokePath(context);
 }
 
