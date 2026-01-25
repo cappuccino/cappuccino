@@ -2219,20 +2219,22 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     {
         [self setBordered:NO];
         [self setBezelStyle:CPDisclosureBezelStyle];
+        _angle = 0.0;
     }
 
     return self;
 }
 
+// 1. Tell the animation system that 'angle' must be animated via a Timer loop
+//    (Software animation) because it affects drawRect, not CSS.
 + (BOOL)needsPeriodicFrameUpdatesForKey:(CPString)aKey
 {
     if (aKey === @"angle")
         return YES;
-
     return [super needsPeriodicFrameUpdatesForKey:aKey];
 }
 
-// 1. Expose angle as a property so the animator proxy can interpolate it.
+// 2. Accessor for the animator to set the value
 - (void)setAngle:(float)anAngle
 {
     _angle = anAngle;
@@ -2246,27 +2248,29 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 - (void)setState:(CPInteger)aState
 {
+    // If the state isn't changing, do nothing
+    if ([self state] === aState)
+        return;
+        
     [super setState:aState];
 
+    // Calculate target angle: 0.0 for Expanded (Down), -PI_2 for Collapsed (Right)
     var targetAngle = ([self state] === CPOnState) ? 0.0 : -PI_2;
 
-    // 2. Only animate if the view is currently in a window (visible).
-    // This prevents rows from spinning into place during initial load or scrolling.
+    // Only animate if the view is visible in a window
     if ([self window])
     {
         [CPAnimationContext beginGrouping];
-        
-        // Duration of the rotation (0.2s is standard for macOS-like toggles)
         [[CPAnimationContext currentContext] setDuration:0.2];
         
-        // Use the animator proxy to smoothly interpolate the 'angle' property
+        // Because we implemented +needsPeriodicFrameUpdatesForKey:, 
+        // calling this on the animator automatically starts the timer loop.
         [[self animator] setAngle:targetAngle];
-        debugger
+        
         [CPAnimationContext endGrouping];
     }
     else
     {
-        // If not visible/loading, set immediately
         [self setAngle:targetAngle];
     }
 }
@@ -2279,38 +2283,95 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         height = CGRectGetHeight(bounds);
 
     CGContextBeginPath(context);
+    CGContextSaveGState(context);
 
-    // 3. The drawing logic uses _angle, which is now being interpolated by the animator
-    if (_angle)
+    // 3. Apply rotation centered on the view
+    if (_angle !== 0.0)
     {
-        var centre = CGPointMake(FLOOR(width / 2.0), FLOOR(height / 2.0));
-        CGContextTranslateCTM(context, centre.x, centre.y);
+        var centreX = FLOOR(width / 2.0),
+            centreY = FLOOR(height / 2.0);
+
+        CGContextTranslateCTM(context, centreX, centreY);
         CGContextRotateCTM(context, _angle);
-        CGContextTranslateCTM(context, -centre.x, -centre.y);
+        CGContextTranslateCTM(context, -centreX, -centreY);
     }
 
-    // Center, but crisp.
+    // Center the triangle visually
     CGContextTranslateCTM(context, FLOOR((width - 9.0) / 2.0), FLOOR((height - 8.0) / 2.0));
 
+    // Draw the triangle
     CGContextMoveToPoint(context, 0.0, 0.0);
     CGContextAddLineToPoint(context, 9.0, 0.0);
     CGContextAddLineToPoint(context, 4.5, 8.0);
     CGContextClosePath(context);
 
-    CGContextSetFillColor(context,
-        colorForDisclosureTriangle([self hasThemeState:CPThemeStateSelected],
-            [self hasThemeState:CPThemeStateHighlighted]));
+    // Calculate Color based on HUD and KeyWindow states ---
+    var isSelected = [self hasThemeState:CPThemeStateSelected],
+        isHighlighted = [self hasThemeState:CPThemeStateHighlighted],
+        isKeyWindow = [self hasThemeState:CPThemeStateKeyWindow],
+        // Detect HUD style mask on the window
+        isHUD = [self window] && ([[self window] styleMask] & CPHUDBackgroundWindowMask), 
+        triangleColor = nil;
+
+    if (isHUD)
+    {
+        // 2. HUD Logic
+        if (isSelected)
+            triangleColor = [CPColor blackColor]; // Selected HUD row = White BG -> Black Triangle
+        else
+            triangleColor = [CPColor whiteColor]; // Normal HUD row = Dark BG -> White Triangle
+            
+        // Handle click highlight in HUD (dim it)
+        if (isHighlighted)
+            triangleColor = [triangleColor colorWithAlphaComponent:0.5];
+    }
+    else
+    {
+        // Standard Logic
+        if (isSelected)
+        {
+            if (isKeyWindow)
+                triangleColor = [CPColor whiteColor]; // Key Window + Selected = Blue BG -> White Triangle
+            else
+                triangleColor = [CPColor blackColor]; // 1. Non-Key Window + Selected = Gray BG -> Black Triangle
+        }
+        else
+        {
+            // Standard Unselected
+            triangleColor = [CPColor colorWithCalibratedWhite:0.45 alpha: 1.0];
+        }
+        
+        // Handle click highlight in Standard
+        if (isHighlighted)
+        {
+             if (isSelected && isKeyWindow)
+                triangleColor = [CPColor colorWithCalibratedWhite:0.9 alpha: 1.0];
+             else if (isSelected && !isKeyWindow)
+                triangleColor = [CPColor colorWithCalibratedWhite:0.2 alpha: 1.0];
+             else 
+                triangleColor = [CPColor colorWithCalibratedWhite:0.25 alpha: 1.0];
+        }
+    }
+
+    CGContextSetFillColor(context, triangleColor);
+
     CGContextFillPath(context);
 
+    // Draw the outline
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, 0.0, 0.0);
     CGContextAddLineToPoint(context, 4.5, 8.0);
 
+    // Only draw the top line (completing the triangle) if not rotated (standard Cocoa look)
     if (_angle === 0.0)
         CGContextAddLineToPoint(context, 9.0, 0.0);
 
-    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha:0.7]);
+    // Adjust stroke opacity for HUD/Non-Key to avoid "ghostly" white borders on light backgrounds
+    var strokeAlpha = (isHUD || (isSelected && !isKeyWindow)) ? 0.3 : 0.7;
+    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha:strokeAlpha]);
     CGContextStrokePath(context);
+
+    CGContextRestoreGState(context);
 }
 
 @end

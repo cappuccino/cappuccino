@@ -6,6 +6,7 @@
  * Refactored: Fixed RuleEditor action handling.
  * Refactored: Added OutlineView and reordered tabs.
  * Refactored: Fixed control disabling logic for all tabs.
+ * Added: CPAlert demonstrations wired to control buttons.
  */
 
 @import <Foundation/Foundation.j>
@@ -196,20 +197,35 @@
 
     // Buttons
     var pushButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
-    [pushButton setTitle:@"Push Button"];
+    [pushButton setTitle:@"Push Button (Info Alert)"];
     [pushButton setBezelStyle:CPRoundedBezelStyle];
+    
+    // ACTION: Standard Informational Alert
+    [pushButton setTarget:self];
+    [pushButton setAction:@selector(showStandardAlert:)];
+    
     [leftContent addSubview:pushButton];
     currentY += gapY;
 
     var gradientButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
-    [gradientButton setTitle:@"Gradient Button"];
+    [gradientButton setTitle:@"Gradient (HUD Alert)"];
     [gradientButton setBezelStyle:CPSmallSquareBezelStyle];
+    
+    // ACTION: Critical / HUD Alert
+    [gradientButton setTarget:self];
+    [gradientButton setAction:@selector(showHUDAlert:)];
+    
     [leftContent addSubview:gradientButton];
     currentY += gapY;
 
     var roundRectButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
-    [roundRectButton setTitle:@"Round Rect Button"];
+    [roundRectButton setTitle:@"Round (Sheet Alert)"];
     [roundRectButton setBezelStyle:CPRoundRectBezelStyle];
+    
+    // ACTION: Warning Sheet
+    [roundRectButton setTarget:self];
+    [roundRectButton setAction:@selector(showSheetAlert:)];
+    
     [leftContent addSubview:roundRectButton];
     currentY += gapY + 5.0; 
 
@@ -385,6 +401,68 @@
         [self _applyHUDStateToView:containerView];
 }
 
+// --------------------------------------------------------------------------------
+// ALERT ACTIONS
+// --------------------------------------------------------------------------------
+
+- (void)showStandardAlert:(id)sender
+{
+    var alert = [[CPAlert alloc] init];
+    [alert setTitle:@"Standard Alert"];
+    [alert setMessageText:@"Informational Alert"];
+    [alert setInformativeText:@"This is a standard CPAlert with the CPInformationalAlertStyle. It behaves like a standard modal dialog."];
+    [alert setAlertStyle:CPInformationalAlertStyle];
+    
+    [alert addButtonWithTitle:@"OK"];
+    [alert runModal];
+}
+
+- (void)showHUDAlert:(id)sender
+{
+    var alert = [[CPAlert alloc] init];
+    [alert setTitle:@"HUD Alert"];
+    [alert setMessageText:@"Critical HUD Alert"];
+    [alert setInformativeText:@"This alert uses the CPCriticalAlertStyle and explicitly sets the HUD theme."];
+    [alert setAlertStyle:CPCriticalAlertStyle];
+    
+    // Explicitly set the HUD theme like in the example
+    [alert setTheme:[CPTheme defaultHudTheme]];
+    
+    [alert addButtonWithTitle:@"Destroy"];
+    [alert addButtonWithTitle:@"Cancel"];
+    
+    // We can use a block for the return handler if desired, or standard modal
+    [alert runModal];
+}
+
+- (void)showSheetAlert:(id)sender
+{
+    var alert = [[CPAlert alloc] init];
+    [alert setMessageText:@"Document Warning"];
+    [alert setInformativeText:@"This is a Sheet (CPDocModalWindowMask). It is attached to the parent window."];
+    [alert setAlertStyle:CPWarningAlertStyle];
+    
+    [alert addButtonWithTitle:@"Save"];
+    [alert addButtonWithTitle:@"Cancel"];
+    
+    // If the parent window is HUD, make the sheet match
+    if (_isHUD)
+        [alert setTheme:[CPTheme defaultHudTheme]];
+
+    // Using the delegate method pattern
+    [alert beginSheetModalForWindow:[self window] 
+                      modalDelegate:self 
+                     didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) 
+                        contextInfo:@"SheetContext"];
+}
+
+- (void)alertDidEnd:(CPAlert)anAlert returnCode:(CPInteger)returnCode contextInfo:(id)context
+{
+    CPLog.info(@"Alert ended. Return Code: %d. Context: %@", returnCode, context);
+}
+
+// --------------------------------------------------------------------------------
+
 - (void)_buildTableTab:(CPView)containerView isHUD:(BOOL)isHUD
 {
     var bounds = [containerView bounds];
@@ -503,7 +581,7 @@
     [textView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [textView setEditable:YES];
     [textView setRichText:YES]; 
-    [textView setString:@"Select text here and use the 'Format' or 'Edit' menus.\n\n(This is a Rich Text enabled CPTextView)"];
+    [textView setString:@"Enter an animal name such as 'Duck' in the Textfield above in order to filter the table dynamically.\nMove the columns around!\n\nBTW: this is a Rich Text enabled CPTextView"];
     [textView setFont:[CPFont fontWithName:@"Courier" size:13.0]];
 
     [textScroll setDocumentView:textView];
