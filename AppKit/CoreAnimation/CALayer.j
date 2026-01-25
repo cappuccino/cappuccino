@@ -998,18 +998,17 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         keyPath = [anim keyPath];
 
     var startValue = ([anim respondsToSelector:@selector(fromValue)]) ? [anim fromValue] : nil;
-
     if (startValue == nil)
         startValue = [self valueForKey:keyPath];
 
     var endValue = ([anim respondsToSelector:@selector(toValue)]) ? [anim toValue] : nil;
-
     if (endValue == nil)
         return;
 
     var duration = ([anim respondsToSelector:@selector(duration)]) ? [anim duration] : 0.25;
-    // Convert seconds to milliseconds for rAF math
-    var durationMS = duration * 1000.0;
+    
+    // Default to EaseInEaseOut if not specified
+    var timingFunction = ([anim respondsToSelector:@selector(timingFunction)]) ? [anim timingFunction] : [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
 
     // 3. Create Context
     var context = {
@@ -1017,46 +1016,34 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         "keyPath": keyPath,
         "startValue": startValue,
         "endValue": endValue,
-        "duration": durationMS,
-        "startTime": null,     // Will be set on first frame
-        "requestId": null      // To cancel if needed
+        "duration": duration * 1000.0, // ms
+        "timingFunction": timingFunction,
+        "startTime": null,
+        "requestId": null
     };
 
     // 4. Define the Render Loop
-    // We use a JavaScript closure to capture 'self' and 'context'
     var _self = self; 
-    
-    var renderLoop = function(timestamp) {
-        // Pass control back to Objective-J to handle the logic
-        // Returns YES if animation should continue, NO if finished.
-        var shouldContinue = [_self _renderAnimationStep:context timestamp:timestamp];
 
-        if (shouldContinue)
+    var renderLoop = function(timestamp) {
+        if ([_self _renderAnimationStep:context timestamp:timestamp])
             context.requestId = window.requestAnimationFrame(renderLoop);
         else
             context.requestId = null;
-            // Cleanup is handled inside _renderAnimationStep: when it returns NO
     };
 
-    // 5. Kick off the loop
+    // 5. Kick off
     context.requestId = window.requestAnimationFrame(renderLoop);
-    
-    // 6. Store context
     [_activeAnimations setObject:context forKey:key];
 }
 
-/*
-    Cancels the specific animation frame and removes it from the dictionary.
-*/
 - (void)removeAnimationForKey:(CPString)key
 {
     var context = [_activeAnimations objectForKey:key];
-
     if (context)
     {
         if (context.requestId !== null)
             window.cancelAnimationFrame(context.requestId);
-            
         [_activeAnimations removeObjectForKey:key];
     }
 }
@@ -1065,91 +1052,128 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 {
     var keys = [_activeAnimations allKeys],
         count = [keys count];
-        
     while (count--)
         [self removeAnimationForKey:[keys objectAtIndex:count]];
 }
 
 /*
-    Internal method called every frame by requestAnimationFrame.
-    Returns YES to continue, NO to stop.
+    Solves Cubic Bezier for t.
+    p1, p2 are the control points (x,y). p0 is 0,0, p3 is 1,1.
+    This is a simplified solver for standard Core Animation timing functions.
 */
+- (float)_solveBezier:(float)t forTimingFunction:(CAMediaTimingFunction)tf
+{
+    if (!tf) return t;
+    
+    // Linear optimization
+    if (tf === [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]) 
+        return t;
+
+    var points = [tf controlPoints]; // [c1x, c1y, c2x, c2y]
+    var p1x = points[0], p1y = points[1], 
+        p2x = points[2], p2y = points[3];
+
+    // Simple polynomial evaluation (De Casteljau's algorithm/Cubic formula subset)
+    // Since we are usually dealing with standard easing, we can approximate 1D easing on the Y axis 
+    // based on linear time X, or do a full solve.
+    // For brevity/speed in JS, we often approximate basic easing:
+    
+    // 3t^2 * (1-t) + t^3  ... standard bezier blending functions
+    var cx = 3.0 * p1x;
+    var bx = 3.0 * (p2x - p1x) - cx;
+    var ax = 1.0 - cx - bx;
+
+    var cy = 3.0 * p1y;
+    var by = 3.0 * (p2y - p1y) - cy;
+    var ay = 1.0 - cy - by;
+
+    // Solve for X given t (time) using Newton-Raphson
+    var sampleT = t;
+    for (var i = 0; i < 5; i++) {
+        var x = ((ax * sampleT + bx) * sampleT + cx) * sampleT - t;
+        if (Math.abs(x) < 1e-3) break;
+        var d = (3.0 * ax * sampleT + 2.0 * bx) * sampleT + cx;
+        if (Math.abs(d) < 1e-6) break;
+        sampleT = sampleT - x / d;
+    }
+
+    // Solve for Y given derived T
+    return ((ay * sampleT + by) * sampleT + cy) * sampleT;
+}
+
 - (BOOL)_renderAnimationStep:(JSObject)context timestamp:(double)timestamp
 {
-    // 1. Initialize Start Time on first frame
     if (context.startTime === null)
         context.startTime = timestamp;
 
-    // 2. Calculate Progress
     var elapsed = timestamp - context.startTime,
-        progress = elapsed / context.duration;
+        linearProgress = elapsed / context.duration;
 
-    // Clamp to 1.0
-    if (progress > 1.0) progress = 1.0;
+    if (linearProgress > 1.0) linearProgress = 1.0;
 
-    // 3. Interpolate Values
+    // Apply Timing Function
+    var progress = [self _solveBezier:linearProgress forTimingFunction:context.timingFunction];
+
     var start = context.startValue,
         end = context.endValue,
         current = nil;
 
+    // Number
     if (typeof start === "number")
     {
         current = start + (end - start) * progress;
     }
+    // Point / Size / Rect
     else if (start && start.x !== undefined && start.y !== undefined) // CGPoint
     {
-        var x = start.x + (end.x - start.x) * progress,
-            y = start.y + (end.y - start.y) * progress;
-        current = CGPointMake(x, y);
+        current = CGPointMake(start.x + (end.x - start.x) * progress,
+                              start.y + (end.y - start.y) * progress);
     }
     else if (start && start.width !== undefined && start.height !== undefined) // CGSize
     {
-        var w = start.width + (end.width - start.width) * progress,
-            h = start.height + (end.height - start.height) * progress;
-        current = CGSizeMake(w, h);
+        current = CGSizeMake(start.width + (end.width - start.width) * progress,
+                             start.height + (end.height - start.height) * progress);
     }
     else if (start && start.origin !== undefined && start.size !== undefined) // CGRect
     {
-        var x = start.origin.x + (end.origin.x - start.origin.x) * progress,
-            y = start.origin.y + (end.origin.y - start.origin.y) * progress,
-            w = start.size.width + (end.size.width - start.size.width) * progress,
-            h = start.size.height + (end.size.height - start.size.height) * progress;
-        current = CGRectMake(x, y, w, h);
+        current = CGRectMake(
+            start.origin.x + (end.origin.x - start.origin.x) * progress,
+            start.origin.y + (end.origin.y - start.origin.y) * progress,
+            start.size.width + (end.size.width - start.size.width) * progress,
+            start.size.height + (end.size.height - start.size.height) * progress
+        );
     }
 
-    // 4. Apply Value
     if (current !== nil)
         [self setValue:current forKey:context.keyPath];
 
-    // 5. Check for Completion
-    if (progress >= 1.0)
+    if (linearProgress >= 1.0)
     {
         var anim = context.animation;
-
-        // Handle removedOnCompletion
-        var shouldRemove = YES;
-        if ([anim respondsToSelector:@selector(isRemovedOnCompletion)])
-            shouldRemove = [anim isRemovedOnCompletion];
-
-        if (shouldRemove)
-        {
-            // Remove from _activeAnimations
-            // We search by object equality to ensure we delete the right key
-            var allKeys = [_activeAnimations allKeysForObject:context];
-            if ([allKeys count] > 0)
-                [_activeAnimations removeObjectForKey:[allKeys objectAtIndex:0]];
+        
+        // Cleanup
+        var shouldRemove = [anim respondsToSelector:@selector(isRemovedOnCompletion)] ? [anim isRemovedOnCompletion] : YES;
+        
+        if (shouldRemove) {
+            // Find key by context identity to handle groups correctly
+            var keys = [_activeAnimations allKeys];
+            for (var i = 0; i < keys.length; i++) {
+                if ([_activeAnimations objectForKey:keys[i]] === context) {
+                    [_activeAnimations removeObjectForKey:keys[i]];
+                    break;
+                }
+            }
         }
 
-        // Notify Delegate
+        // Delegate
         var delegate = [anim delegate];
-
         if (delegate && [delegate respondsToSelector:@selector(animationDidStop:finished:)])
             [delegate animationDidStop:anim finished:YES];
 
-        return NO; // Stop the loop
+        return NO;
     }
 
-    return YES; // Continue the loop
+    return YES;
 }
 
 /* @ignore */
