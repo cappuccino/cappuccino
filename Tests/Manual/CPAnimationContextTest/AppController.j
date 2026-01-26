@@ -411,7 +411,7 @@
     [_testView setAlphaValue:1.0];
     [_pathView setPath:nil]; // Clear the path view as we aren't using it here
 
-    // FIX: Ensure the view is layer-backed. 
+    // Ensure the view is layer-backed.
     // Without this, [_testView layer] returns nil.
     [_testView setWantsLayer:YES];
 
@@ -483,9 +483,10 @@
     [_testView setWantsLayer:YES];
     
     var layer = [_testView layer];
-    [layer setDelegate:_testView];
 
     // 3. Define the Animation
+    // Animation is performed on _testView
+    [layer setDelegate:_testView];
     var rotationAnim = [CABasicAnimation animationWithKeyPath:@"angle"];
     
     // Rotate 360 degrees (2 * PI)
@@ -626,28 +627,6 @@
     [[CPColor whiteColor] setStroke];
     CGContextSetLineWidth(context, 3.0);
     CGContextStrokePath(context);
-}
-
-@end
-
-/*
-    Category to allow CALayer to drive the 'angle' property on the view.
-*/
-@implementation CALayer (RotationTest)
-
-- (void)setAngle:(float)anAngle
-{
-    // Store it so [self valueForKey:@"angle"] works for animation start values
-    self._angle = anAngle;
-
-    // Forward the value to the View (the layer's delegate) to trigger drawRect
-    if (_delegate && [_delegate respondsToSelector:@selector(setAngle:)])
-        [_delegate setAngle:anAngle];
-}
-
-- (float)angle
-{
-    return self._angle || 0.0;
 }
 
 @end
