@@ -2256,9 +2256,56 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     CGContextAddLineToPoint(context, 4.5, 8.0);
     CGContextClosePath(context);
 
-    CGContextSetFillColor(context,
-        colorForDisclosureTriangle([self hasThemeState:CPThemeStateSelected],
-            [self hasThemeState:CPThemeStateHighlighted]));
+    // Calculate Color based on HUD and KeyWindow states ---
+    var isSelected = [self hasThemeState:CPThemeStateSelected],
+        isHighlighted = [self hasThemeState:CPThemeStateHighlighted],
+        isKeyWindow = [self hasThemeState:CPThemeStateKeyWindow],
+        // Detect HUD style mask on the window
+        isHUD = [self window] && ([[self window] styleMask] & CPHUDBackgroundWindowMask), 
+        triangleColor = nil;
+
+    if (isHUD)
+    {
+        // 2. HUD Logic
+        if (isSelected)
+            triangleColor = [CPColor blackColor]; // Selected HUD row = White BG -> Black Triangle
+        else
+            triangleColor = [CPColor whiteColor]; // Normal HUD row = Dark BG -> White Triangle
+            
+        // Handle click highlight in HUD (dim it)
+        if (isHighlighted)
+            triangleColor = [triangleColor colorWithAlphaComponent:0.5];
+    }
+    else
+    {
+        // Standard Logic
+        if (isSelected)
+        {
+            if (isKeyWindow)
+                triangleColor = [CPColor whiteColor]; // Key Window + Selected = Blue BG -> White Triangle
+            else
+                triangleColor = [CPColor blackColor]; // 1. Non-Key Window + Selected = Gray BG -> Black Triangle
+        }
+        else
+        {
+            // Standard Unselected
+            triangleColor = [CPColor colorWithCalibratedWhite:0.45 alpha: 1.0];
+        }
+        
+        // Handle click highlight in Standard
+        if (isHighlighted)
+        {
+             if (isSelected && isKeyWindow)
+                triangleColor = [CPColor colorWithCalibratedWhite:0.9 alpha: 1.0];
+             else if (isSelected && !isKeyWindow)
+                triangleColor = [CPColor colorWithCalibratedWhite:0.2 alpha: 1.0];
+             else 
+                triangleColor = [CPColor colorWithCalibratedWhite:0.25 alpha: 1.0];
+        }
+    }
+
+    CGContextSetFillColor(context, triangleColor);
+
     CGContextFillPath(context);
 
     CGContextBeginPath(context);
@@ -2268,7 +2315,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if (_angle === 0.0)
         CGContextAddLineToPoint(context, 9.0, 0.0);
 
-    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.7]);
+    // Adjust stroke opacity for HUD/Non-Key to avoid "ghostly" white borders on light backgrounds
+    var strokeAlpha = (isHUD || (isSelected && !isKeyWindow)) ? 0.3 : 0.7;
+    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha:strokeAlpha]);
     CGContextStrokePath(context);
 }
 
