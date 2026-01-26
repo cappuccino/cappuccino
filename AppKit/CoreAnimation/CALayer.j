@@ -29,6 +29,8 @@
 @import "CGGeometry.j"
 @import "CPColor.j"
 @import "CPView.j"
+@import "CAMediaTimingFunction.j"
+
 
 #define DOM(aLayer) aLayer._DOMElement
 
@@ -984,6 +986,8 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 /*
     Adds an animation to the layer.
     Supports CABasicAnimation for Numbers (opacity) and Points (position/anchorPoint).
+    The animation is exerted by means of periodically applying the keypath on the delegate
+    Only works if the delegate is set!
 */
 - (void)addAnimation:(CAAnimation)anim forKey:(CPString)key
 {
@@ -1027,7 +1031,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     if (startValue == nil)
     {
         try {
-            startValue = [self valueForKey:keyPath];
+            startValue = [[self delegate] valueForKey:keyPath];
         }
         catch (e) {
             // The keyPath was likely invalid (not KVC compliant), abort.
@@ -1186,7 +1190,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     }
 
     if (current !== nil)
-        [self setValue:current forKey:context.keyPath];
+        [[self delegate] setValue:current forKey:context.keyPath];
 
     if (linearProgress >= 1.0)
     {
