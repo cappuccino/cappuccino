@@ -730,6 +730,8 @@
     [scrollView setAutohidesScrollers:YES];
 
     var outlineView = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
+    [outlineView setSelectionHighlightStyle:CPTableViewSelectionHighlightStyleRegular];
+
     [outlineView setUsesAlternatingRowBackgroundColors:YES];
     [outlineView setCornerView:nil];
     
