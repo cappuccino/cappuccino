@@ -588,9 +588,9 @@ var bottomHeight = 71;
     }
 
     // 3. Calculate Content Height
-    // We add buttonMarginY to the height requirement to compensate for the downward shift it causes.
     var lastViewMaxY = CGRectGetMaxY([lastView frame]);
-    var requiredContentHeight = lastViewMaxY + buttonOffset + maxButtonHeight + buttonMarginY + inset.bottom;
+    // Use bottomHeight (71) to reserve space for the footer
+    var requiredContentHeight = lastViewMaxY + bottomHeight;
     
     var finalContentSize = CGSizeMake(
         [[_window contentView] frame].size.width,
@@ -598,11 +598,12 @@ var bottomHeight = 71;
     );
 
     // 4. Position Buttons
-    // We subtract buttonMarginY from the origin base. Since setFrame adds it back later, 
-    // the net result is that the visual bottom of the button is exactly 'inset.bottom' from the window edge.
-    buttonsOriginY = finalContentSize.height - inset.bottom - maxButtonHeight - buttonMarginY;
+    // Calculate the top Y coordinate to vertically center the button row within the bottomHeight area
+    // Center Y of footer = Height - (bottomHeight / 2.0)
+    // Top Y of button = Center Y - (maxButtonHeight / 2.0)
+    buttonsOriginY = finalContentSize.height - ((bottomHeight + maxButtonHeight) / 2.0) - buttonMarginY;
+    
     offsetX = finalContentSize.width - inset.right;
-
     // Loop and set frames
     for (var i = [_buttons count] - 1; i >= 0 ; i--)
     {
