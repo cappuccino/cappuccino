@@ -2246,10 +2246,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         _angle = -PI_2;
 }
 
-- (void)mouseDown:(CPEvent)anEvent
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)point mouseIsUp:(BOOL)mouseIsUp
 {
-    var bounds = [self bounds],
-        point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+    var bounds = [self bounds];
 
     // Only animate if the user released the mouse INSIDE the button (valid click)
     if (CGRectContainsPoint(bounds, point))
@@ -2299,7 +2298,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         [clone setAngle:targetAngle];
     }
 
-    [super mouseDown:anEvent];
+    [super stopTracking:lastPoint at:point mouseIsUp:mouseIsUp];
 }
 
 // This method is called on the CLONE instance when its animation finishes
