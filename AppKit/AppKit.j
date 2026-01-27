@@ -115,3 +115,4 @@
 @import "CPWindow.j"
 @import "CPWindowController.j"
 @import "CPWorkspace.j"
+@import "CPFontPanel.j"
