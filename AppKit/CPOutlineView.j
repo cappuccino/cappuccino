@@ -2218,6 +2218,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     {
         [self setBordered:NO];
         [self setWantsLayer:YES];
+        [self setHighlightsBy:0];
     }
     return self;
 }
@@ -2245,7 +2246,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         _angle = -PI_2;
 }
 
-// We interpret mouseUp as the "Click" that triggers the toggle.
 - (void)mouseDown:(CPEvent)anEvent
 {
     var bounds = [self bounds],
@@ -2299,10 +2299,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         [clone setAngle:targetAngle];
     }
 
-    // 6. Call super. 
-    // This triggers the OutlineView action, which reloads the data, recycles 'self', 
-    // and snaps 'self' (or its replacement) to the new angle immediately.
-    // The clone covers this instant change with the smooth animation.
     [super mouseDown:anEvent];
 }
 
@@ -2344,11 +2340,14 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if (isHUD)
     {
         triangleColor = isSelected ? [CPColor blackColor] : [CPColor whiteColor];
-        if (isHighlighted) triangleColor = [triangleColor colorWithAlphaComponent:0.5];
+
+        if (isHighlighted)
+            triangleColor = [triangleColor colorWithAlphaComponent:0.5];
     }
     else
     {
-        if (isSelected) triangleColor = isKeyWindow ? [CPColor whiteColor] : [CPColor blackColor];
+        if (isSelected)
+            triangleColor = isKeyWindow ? [CPColor whiteColor] : [CPColor blackColor];
         else triangleColor = [CPColor colorWithCalibratedWhite:0.45 alpha: 1.0];
         
         if (isHighlighted)
@@ -2369,6 +2368,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, 0.0, 0.0);
     CGContextAddLineToPoint(context, 4.5, 8.0);
+
     if (_angle === 0.0)
         CGContextAddLineToPoint(context, 9.0, 0.0);
 
