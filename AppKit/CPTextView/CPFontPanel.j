@@ -197,6 +197,9 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     if (![self isVisible])
         return;
 
+    if (![textView respondsToSelector:@selector(_attributesForFontPanel)])
+        return;
+
     var attribs = [textView _attributesForFontPanel],
         font = [attribs objectForKey:CPFontAttributeName] || [[textView textStorage] font] || [CPFont systemFontOfSize:12.0],
         color = [attribs objectForKey:CPForegroundColorAttributeName];
