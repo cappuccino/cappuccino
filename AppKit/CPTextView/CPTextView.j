@@ -1924,6 +1924,87 @@ Sets the selection to a range of characters in response to user action.
     [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(range) changeInLength:0 invalidatedRange:CPMakeRangeCopy(range)];
 }
 
+#pragma mark -
+#pragma mark Style & Alignment methods
+
+- (void)bold:(id)sender
+{
+    // This will trigger changeFont: via the FontManager
+    [[CPFontManager sharedFontManager] addFontTrait:CPBoldFontMask];
+}
+
+- (void)italic:(id)sender
+{
+    // This will trigger changeFont: via the FontManager
+    [[CPFontManager sharedFontManager] addFontTrait:CPItalicFontMask];
+}
+
+- (void)alignLeft:(id)sender
+{
+    [self _setAlignment:CPLeftTextAlignment];
+}
+
+- (void)alignCenter:(id)sender
+{
+    [self _setAlignment:CPCenterTextAlignment];
+}
+
+- (void)alignRight:(id)sender
+{
+    [self _setAlignment:CPRightTextAlignment];
+}
+
+- (void)alignJustified:(id)sender
+{
+    [self _setAlignment:CPJustifiedTextAlignment];
+}
+
+- (void)_setAlignment:(CPTextAlignment)anAlignment
+{
+    if (![self _didBeginEditing] || ![self shouldChangeTextInRange:_selectionRange replacementString:nil])
+        return;
+
+    var style = [CPParagraphStyle defaultParagraphStyle],
+        currentAttributes = _typingAttributes;
+
+    // Attempt to grab existing style from selection to preserve other paragraph settings
+    if (_selectionRange.length > 0)
+        currentAttributes = [_textStorage attributesAtIndex:_selectionRange.location effectiveRange:nil];
+    
+    if ([currentAttributes objectForKey:CPParagraphStyleAttributeName])
+        style = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
+
+    // Create new style with modified alignment
+    var newStyle = [style mutableCopy];
+    [newStyle setAlignment:anAlignment];
+
+    if (_selectionRange.length > 0)
+    {
+        // Add rudimentary undo support
+        var undoManager = [[self window] undoManager];
+        if (undoManager)
+        {
+             [[undoManager prepareWithInvocationTarget:self]
+                 _setAlignment:[style alignment]];
+        }
+
+        [_textStorage addAttribute:CPParagraphStyleAttributeName value:newStyle range:CPMakeRangeCopy(_selectionRange)];
+        
+        // Notify layout manager of changes
+        [_layoutManager textStorage:_textStorage 
+                             edited:0 
+                              range:CPMakeRangeCopy(_selectionRange) 
+                     changeInLength:0 
+                   invalidatedRange:CPMakeRangeCopy(_selectionRange)];
+    }
+    else
+    {
+        // Update typing attributes for next character
+        [_typingAttributes setObject:newStyle forKey:CPParagraphStyleAttributeName];
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+    }
+}
+
 - (void)underline:(id)sender
 {
     if (![self _didBeginEditing] || ![self shouldChangeTextInRange:_selectionRange replacementString:nil])
