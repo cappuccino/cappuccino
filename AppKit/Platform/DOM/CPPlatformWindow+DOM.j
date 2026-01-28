@@ -1271,6 +1271,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 newEvent.type = CPDOMEventMouseUp;
                 break;
         }
+        newEvent._isFromTouch = true; // Identify the event as touch-originated for tolerant click counting
         [self mouseEvent:newEvent];
         return;
     }
@@ -1385,7 +1386,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             if (aDOMEvent.button !== _firstMouseDownButton)
                 return;
 
-            event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0, nil);
+            var clickCount = CPDOMEventGetClickCount(_lastMouseUp, timestamp, location, aDOMEvent._isFromTouch);
+            event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, clickCount, 0, nil);
 
             _mouseIsDown = NO;
             _lastMouseUp = event;
@@ -1431,15 +1433,17 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             _DOMEventMode = YES;
             _mouseIsDown = YES;
+            
+            var clickCount = CPDOMEventGetClickCount(_lastMouseDown, timestamp, location, aDOMEvent._isFromTouch);
 
             // Fake a down and up event so that event tracking mode will work correctly
             [CPApp sendEvent:[CPEvent mouseEventWithType:_mouseDownIsRightClick ? CPRightMouseDown : CPLeftMouseDown location:location modifierFlags:modifierFlags
                     timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1
-                    clickCount:CPDOMEventGetClickCount(_lastMouseDown, timestamp, location) pressure:0]];
+                    clickCount:clickCount pressure:0]];
 
             [CPApp sendEvent:[CPEvent mouseEventWithType:_mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp location:location modifierFlags:modifierFlags
                     timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1
-                    clickCount:CPDOMEventGetClickCount(_lastMouseDown, timestamp, location) pressure:0]];
+                    clickCount:clickCount pressure:0]];
 
             return;
         }
@@ -1451,7 +1455,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
         StopContextMenuDOMEventPropagation = YES;
 
-        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseDown : CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseDown, timestamp, location), 0, nil);
+        var clickCount = CPDOMEventGetClickCount(_lastMouseDown, timestamp, location, aDOMEvent._isFromTouch);
+        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseDown : CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, clickCount, 0, nil);
 
         _mouseIsDown = YES;
         _lastMouseDown = event;
@@ -1951,19 +1956,25 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
     return aNativeEvent;
 };
 
-var CLICK_SPACE_DELTA   = 5.0,
-    CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 0.55 : 1.0;
+var CLICK_SPACE_DELTA       = 5.0,
+    CLICK_TIME_DELTA        = (typeof document != "undefined" && document.addEventListener) ? 0.55 : 1.0,
+    // Define a more generous time delta for touch events to make double-tapping easier.
+    TOUCH_CLICK_TIME_DELTA  = 0.80; // Increased from 0.55s to 0.80s
 
-CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
+CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation, isFromTouch)
 {
     if (!aComparisonEvent)
         return 1;
 
+    // For touch events, allow a larger pixel delta to accommodate "fat fingers"
+    // and a longer time delta to accommodate less precise tapping.
+    var spaceDelta = isFromTouch ? 25.0 : CLICK_SPACE_DELTA;
+    var timeDelta = isFromTouch ? TOUCH_CLICK_TIME_DELTA : CLICK_TIME_DELTA;
     var comparisonLocation = [aComparisonEvent locationInWindow];
 
-    return (aTimestamp - [aComparisonEvent timestamp] < CLICK_TIME_DELTA &&
-        ABS(comparisonLocation.x - aLocation.x) < CLICK_SPACE_DELTA &&
-        ABS(comparisonLocation.y - aLocation.y) < CLICK_SPACE_DELTA) ? [aComparisonEvent clickCount] + 1 : 1;
+    return (aTimestamp - [aComparisonEvent timestamp] < timeDelta &&
+        ABS(comparisonLocation.x - aLocation.x) < spaceDelta &&
+        ABS(comparisonLocation.y - aLocation.y) < spaceDelta) ? [aComparisonEvent clickCount] + 1 : 1;
 };
 
 // Global.
