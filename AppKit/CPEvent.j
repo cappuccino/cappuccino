@@ -70,6 +70,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     BOOL                _isARepeat;
     unsigned            _keyCode;
     DOMEvent            _DOMEvent;
+    BOOL                _isActionKey;
     int                 _data1;
     int                 _data2;
     short               _subtype;
@@ -110,17 +111,28 @@ var _CPEventPeriodicEventPeriod         = 0,
     @param unmodCharacters the string of keys pressed without the presence of any modifiers other than Shift
     @param repeatKey \c YES if this is caused by the system repeat as opposed to the user pressing the key again
     @param code a number associated with the keyboard key of this event
+    @param isAnActionKey a BOOL indicating whether this key is an action key (e.g. a function key)
     @throws CPInternalInconsistencyException if \c anEventType is not a CPKeyDown,
     CPKeyUp or CPFlagsChanged
     @return the keyboard event
 */
 + (CPEvent)keyEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned int)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
-    characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)repeatKey keyCode:(unsigned short)code
+    characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)repeatKey keyCode:(unsigned short)code isActionKey:(BOOL)isAnActionKey
 {
     return [[self alloc] _initKeyEventWithType:anEventType location:aPoint modifierFlags:modifierFlags
         timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext
-        characters:characters charactersIgnoringModifiers:unmodCharacters isARepeat:repeatKey keyCode:code];
+        characters:characters charactersIgnoringModifiers:unmodCharacters isARepeat:repeatKey keyCode:code isActionKey:isAnActionKey];
+}
+
+// for backwards compatibility only
++ (CPEvent)keyEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned int)modifierFlags
+                  timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
+                 characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)repeatKey
+{
+    return [[self alloc] _initKeyEventWithType:anEventType location:aPoint modifierFlags:modifierFlags
+                                     timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext
+                                    characters:characters charactersIgnoringModifiers:unmodCharacters isARepeat:repeatKey keyCode:code isActionKey:NO];
 }
 
 /*!
@@ -252,7 +264,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 /* @ignore */
 - (id)_initKeyEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned int)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
-    characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)isARepeat keyCode:(unsigned short)code
+    characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)isARepeat keyCode:(unsigned short)code isActionKey:(BOOL)isAnActionKey
 {
     if (self = [self _initWithType:anEventType])
     {
@@ -264,6 +276,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _charactersIgnoringModifiers = unmodCharacters;
         _isARepeat = isARepeat;
         _keyCode = code;
+        _isActionKey = isAnActionKey;
         _windowNumber = aWindowNumber;
     }
 
@@ -571,6 +584,21 @@ var _CPEventPeriodicEventPeriod         = 0,
     return !firstResponderIsText;
 }
 
+- (BOOL)_isActionOrCommandEvent
+{
+    // This method is now platform-agnostic. It checks for abstract properties
+    // of the event, including the _isActionKey flag that was set at creation time.
+    return (
+            // Is it a command shortcut?
+            (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask | CPAlternateKeyMask)) ||
+
+            // Is it a key that doesn't produce a character?
+            ([_characters length] === 0) ||
+
+            // Was it identified as an action key by the platform-specific layer?
+            _isActionKey
+            );
+}
 /*!
     Return YES if this event is a part of processing a browser controlled cut or paste event
     where the browser will go ahead and do the work of cutting or pasting within the input

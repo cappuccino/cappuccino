@@ -45,7 +45,7 @@
 
         var keyEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:0
             timestamp:0 windowNumber:0 context:nil
-            characters:character charactersIgnoringModifiers:character isARepeat:NO keyCode:keyCode];
+            characters:character charactersIgnoringModifiers:character isARepeat:NO keyCode:keyCode isActionKey:YES];
         [responder interpretKeyEvents:[keyEvent]];
         [self assert:[selector] equals:responder.doCommandCalls];
     }
@@ -57,7 +57,7 @@
 
     var keyEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPShiftKeyMask
         timestamp:0 windowNumber:0 context:nil
-        characters:CPLeftArrowFunctionKey charactersIgnoringModifiers:CPLeftArrowFunctionKey isARepeat:NO keyCode:CPKeyCodes.LEFT];
+        characters:CPLeftArrowFunctionKey charactersIgnoringModifiers:CPLeftArrowFunctionKey isARepeat:NO keyCode:CPKeyCodes.LEFT isActionKey:YES];
     [responder interpretKeyEvents:[keyEvent]];
     [self assert:[@selector(moveLeftAndModifySelection:)] equals:responder.doCommandCalls];
 }
