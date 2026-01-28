@@ -524,6 +524,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return [self isSelectable]; // editable textviews are automatically selectable
 }
 
+- (BOOL)acceptsFirstMouse:(CPEvent)anEvent
+{
+    return YES;
+}
+
 - (void)_becomeFirstResponder
 {
     [self updateInsertionPointStateAndRestartTimer:YES];
