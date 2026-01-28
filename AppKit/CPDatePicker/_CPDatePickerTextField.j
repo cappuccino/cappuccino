@@ -223,22 +223,28 @@ var CPZeroKeyCode = 48,
 
     if (!_currentTextField)
     {
+        var targetField = nil;
+
         if (flags & CPShiftKeyMask)
         {
-            // If _lastTextField is hidden, find the one before it that is visible
+            // Try last field; if hidden, find previous visible
             if ([_lastTextField isHidden])
-                [self _selectTextField:[self _previousVisibleTextFieldFrom:_lastTextField]];
+                targetField = [self _previousVisibleTextFieldFrom:_lastTextField];
             else
-                [self _selectTextField:_lastTextField];
+                targetField = _lastTextField;
         }
         else
         {
-            // If _firstTextField is hidden, find the one after it that is visible
+            // Try first field; if hidden, find next visible
             if ([_firstTextField isHidden])
-                [self _selectTextField:[self _nextVisibleTextFieldFrom:_firstTextField]];
+                targetField = [self _nextVisibleTextFieldFrom:_firstTextField];
             else
-                [self _selectTextField:_firstTextField];
+                targetField = _firstTextField;
         }
+
+        // Only select if we actually found a valid visible field
+        if (targetField)
+            [self _selectTextField:targetField];
     }
 }
 
@@ -347,22 +353,52 @@ var CPZeroKeyCode = 48,
 
 - (_CPDatePickerElementTextField)_nextVisibleTextFieldFrom:(_CPDatePickerElementTextField)aTextField
 {
-    var next = [aTextField nextTextField];
-    // Keep looking while next exists AND it is hidden
-    while (next && [next isHidden])
-        next = [next nextTextField];
-    
-    return next;
+    var runner = [aTextField nextTextField];
+
+    // If we wrapped back to the start immediately, or runner is nil, we are done.
+    if (!runner || runner == _firstTextField)
+        return nil;
+
+    // Traverse hidden fields
+    while (runner && [runner isHidden])
+    {
+        // If we hit the absolute last field and it is hidden, we've reached the end.
+        if (runner == _lastTextField)
+            return nil;
+
+        runner = [runner nextTextField];
+
+        // Safety: if we wrapped back to the start inside the loop
+        if (runner == _firstTextField)
+            return nil;
+    }
+
+    return runner;
 }
 
 - (_CPDatePickerElementTextField)_previousVisibleTextFieldFrom:(_CPDatePickerElementTextField)aTextField
 {
-    var prev = [aTextField previousTextField];
-    // Keep looking while prev exists AND it is hidden
-    while (prev && [prev isHidden])
-        prev = [prev previousTextField];
-        
-    return prev;
+    var runner = [aTextField previousTextField];
+
+    // If we wrapped back to the end immediately, or runner is nil, we are done.
+    if (!runner || runner == _lastTextField)
+        return nil;
+
+    // Traverse hidden fields
+    while (runner && [runner isHidden])
+    {
+        // If we hit the absolute first field and it is hidden, we've reached the start.
+        if (runner == _firstTextField)
+            return nil;
+
+        runner = [runner previousTextField];
+
+        // Safety: if we wrapped back to the end inside the loop
+        if (runner == _lastTextField)
+            return nil;
+    }
+
+    return runner;
 }
 
 - (void)insertTab:(id)sender
@@ -370,21 +406,79 @@ var CPZeroKeyCode = 48,
     if (!_currentTextField)
         return;
 
-    // Determine what the actual next field is
+    // Ensure boundaries are up to date
+    [_datePickerElementView _updateResponderTextField];
+
     var nextField = [self _nextVisibleTextFieldFrom:_currentTextField];
 
-    // If there is a visible field to go to, go there.
     if (nextField)
+    {
         [self _selectTextField:nextField];
+    }
     else
-        // Otherwise, leave the DatePicker control
-        [[self window] selectNextKeyView:self];
+    {
+        // We reached the visual end. Manually find the next external view.
+        // We cannot rely on [[self window] selectNextKeyView:self] because it might 
+        // loop back into our own internal fields or select 'self' which refuses focus.
+        var nextView = [_currentTextField nextValidKeyView];
+
+        // Skip any view that is part of this control (descendant)
+        while (nextView && [nextView isDescendantOf:self])
+        {
+            // If we looped back to the current field, we are trapped in a closed loop with no exit.
+            if (nextView == _currentTextField)
+            {
+                nextView = nil;
+                break;
+            }
+            nextView = [nextView nextValidKeyView];
+        }
+
+        if (nextView)
+            [[self window] makeFirstResponder:nextView];
+    }
+}
+
+- (void)insertBacktab:(id)sender
+{
+    if (!_currentTextField)
+        return;
+
+    [_datePickerElementView _updateResponderTextField];
+
+    var prevField = [self _previousVisibleTextFieldFrom:_currentTextField];
+
+    if (prevField)
+    {
+        [self _selectTextField:prevField];
+    }
+    else
+    {
+        // We reached the visual start. Manually find the previous external view.
+        var prevView = [_currentTextField previousValidKeyView];
+
+        // Skip any view that is part of this control
+        while (prevView && [prevView isDescendantOf:self])
+        {
+            if (prevView == _currentTextField)
+            {
+                prevView = nil;
+                break;
+            }
+            prevView = [prevView previousValidKeyView];
+        }
+
+        if (prevView)
+            [[self window] makeFirstResponder:prevView];
+    }
 }
 
 - (void)moveRight:(id)sender
 {
     if (!_currentTextField)
         return;
+
+    [_datePickerElementView _updateResponderTextField];
 
     // Use the helper to skip hidden fields
     var nextField = [self _nextVisibleTextFieldFrom:_currentTextField];
@@ -393,21 +487,12 @@ var CPZeroKeyCode = 48,
         [self _selectTextField:nextField];
 }
 
-- (void)insertBacktab:(id)sender
-{
-    if (!_currentTextField)
-        return;
-
-    if (_currentTextField == _firstTextField)
-        [[self window] selectPreviousKeyView:self];
-    else
-        [self moveLeft:sender];
-}
-
 - (void)moveLeft:(id)sender
 {
     if (!_currentTextField)
         return;
+
+    [_datePickerElementView _updateResponderTextField];
 
     [self _selectTextField:[_currentTextField previousTextField]];
 }
