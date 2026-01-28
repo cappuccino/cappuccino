@@ -2215,20 +2215,96 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     self = [super initWithFrame:aFrame];
 
     if (self)
+    {
         [self setBordered:NO];
-
+        [self setWantsLayer:YES];
+        [self setHighlightsBy:0];
+    }
     return self;
 }
 
+- (void)setAngle:(float)anAngle
+{
+    _angle = anAngle;
+    [self display];
+}
+
+- (float)angle
+{
+    return _angle;
+}
+
+// Standard setState behavior: ALWAYS snap to the correct angle immediately.
+// The animation clone will hide this snap from the user.
 - (void)setState:(CPInteger)aState
 {
     [super setState:aState];
 
     if ([self state] === CPOnState)
         _angle = 0.0;
-
     else
         _angle = -PI_2;
+}
+
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)point mouseIsUp:(BOOL)mouseIsUp
+{
+    var bounds = [self bounds];
+
+    // Only animate if the user released the mouse INSIDE the button (valid click)
+    if (CGRectContainsPoint(bounds, point))
+    {
+        // 1. Create a "Ghost" clone of this button
+        var clone = [[CPDisclosureButton alloc] initWithFrame:[self frame]];
+        
+        // 2. Copy the visual appearance to the clone
+        [clone setWantsLayer:YES];
+        [clone setThemeState:[self themeState]];
+        
+        // Ensure the clone is NOT highlighted (since the click is finishing), 
+        // so it looks like the resting state of the button.
+        [clone unsetThemeState:CPThemeStateHighlighted];
+        [clone setHighlighted:NO];
+        
+        // Set the clone's initial angle to match the current button's angle
+        [clone setAngle:_angle];
+        
+        // Make the clone ignore mouse events (transparency)
+        [clone setHitTests:NO];
+        
+        // 3. Add the clone to the OutlineView (superview) directly.
+        // We place it visually above 'self'.
+        [[self superview] addSubview:clone positioned:CPWindowAbove relativeTo:self];
+
+        // 4. Calculate the target angle based on what the state WILL be.
+        // Current state is On -> going to Off (-PI_2). Current is Off -> going to On (0.0).
+        var isCurrentlyExpanded = ([self state] === CPOnState),
+            targetAngle = isCurrentlyExpanded ? -PI_2 : 0.0;
+
+        // 5. Animate the CLONE
+        var anim = [CABasicAnimation animationWithKeyPath:@"angle"];
+        [anim setFromValue:_angle];
+        [anim setToValue:targetAngle];
+        [anim setDuration:0.25];
+        [anim setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+        
+        // Set the clone as the layer-delegate so the angle-property can be animated on it
+        [[clone layer] setDelegate:clone];
+        // Set the clone as the delegate so it can remove itself when done
+        [anim setDelegate:clone];
+        
+        [[clone layer] addAnimation:anim forKey:@"angle"];
+
+        // Set final angle on clone so it doesn't flicker back at the end of the frame
+        [clone setAngle:targetAngle];
+    }
+
+    [super stopTracking:lastPoint at:point mouseIsUp:mouseIsUp];
+}
+
+// This method is called on the CLONE instance when its animation finishes
+- (void)animationDidStop:(CAAnimation)anim finished:(BOOL)flag
+{
+    [self removeFromSuperview];
 }
 
 - (void)drawRect:(CGRect)aRect
@@ -2247,18 +2323,45 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         CGContextRotateCTM(context, _angle);
         CGContextTranslateCTM(context, -centre.x, -centre.y);
     }
-
-    // Center, but crisp.
+    
     CGContextTranslateCTM(context, FLOOR((width - 9.0) / 2.0), FLOOR((height - 8.0) / 2.0));
-
     CGContextMoveToPoint(context, 0.0, 0.0);
     CGContextAddLineToPoint(context, 9.0, 0.0);
     CGContextAddLineToPoint(context, 4.5, 8.0);
     CGContextClosePath(context);
+    
+    var isSelected = [self hasThemeState:CPThemeStateSelected],
+        isHighlighted = [self hasThemeState:CPThemeStateHighlighted],
+        isKeyWindow = [self hasThemeState:CPThemeStateKeyWindow],
+        isHUD = [self window] && ([[self window] styleMask] & CPHUDBackgroundWindowMask), 
+        triangleColor = nil;
 
-    CGContextSetFillColor(context,
-        colorForDisclosureTriangle([self hasThemeState:CPThemeStateSelected],
-            [self hasThemeState:CPThemeStateHighlighted]));
+    if (isHUD)
+    {
+        triangleColor = isSelected ? [CPColor blackColor] : [CPColor whiteColor];
+
+        if (isHighlighted)
+            triangleColor = [triangleColor colorWithAlphaComponent:0.5];
+    }
+    else
+    {
+        if (isSelected)
+            triangleColor = isKeyWindow ? [CPColor whiteColor] : [CPColor blackColor];
+        else triangleColor = [CPColor colorWithCalibratedWhite:0.45 alpha: 1.0];
+        
+        if (isHighlighted)
+        {
+             if (isSelected && isKeyWindow)
+                triangleColor = [CPColor colorWithCalibratedWhite:0.9 alpha: 1.0];
+
+             else if (isSelected && !isKeyWindow)
+                triangleColor = [CPColor colorWithCalibratedWhite:0.2 alpha: 1.0];
+             else
+                triangleColor = [CPColor colorWithCalibratedWhite:0.25 alpha: 1.0];
+        }
+    }
+
+    CGContextSetFillColor(context, triangleColor);
     CGContextFillPath(context);
 
     CGContextBeginPath(context);
@@ -2268,12 +2371,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if (_angle === 0.0)
         CGContextAddLineToPoint(context, 9.0, 0.0);
 
-    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.7]);
+    var strokeAlpha = (isHUD || (isSelected && !isKeyWindow)) ? 0.3 : 0.7;
+    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha:strokeAlpha]);
     CGContextStrokePath(context);
 }
 
 @end
-
 
 var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey",
     CPOutlineViewOutlineTableColumnKey = @"CPOutlineViewOutlineTableColumnKey",

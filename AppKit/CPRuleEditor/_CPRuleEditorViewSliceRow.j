@@ -67,6 +67,17 @@
     [self setAutoresizingMask:CPViewWidthSizable];
 }
 
+- (void)_updateButtonImages
+{
+    // Re-fetch images from RuleEditor. This ensures we get the HUD images
+    // if the RuleEditor is in HUD state.
+    [_addButton setValue:[_ruleEditor _imageAdd] forThemeAttribute:@"image" inState:CPThemeStateNormal];
+    [_addButton setValue:[_ruleEditor _imageAddHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+
+    [_subtractButton setValue:[_ruleEditor _imageRemove] forThemeAttribute:@"image" inState:CPThemeStateNormal];
+    [_subtractButton setValue:[_ruleEditor _imageRemoveHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+}
+
 - (CPButton)_createRowButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
@@ -492,7 +503,21 @@
 
 - (void)viewDidMoveToWindow
 {
+    [super viewDidMoveToWindow];
+    [self _updateButtonImages];
     [self layoutSubviews];
+}
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    [self _updateButtonImages];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    [self _updateButtonImages];
 }
 
 - (void)_addObservers

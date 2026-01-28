@@ -790,10 +790,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             break;
     }
 
-    if ([self hasThemeState:CPTextFieldStatePlaceholder])
-        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder] cssString];
-    else
-        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPThemeStateEditing] cssString];
+    // Use currentValueForThemeAttribute to respect all current states (HUD, Placeholder, Editing, etc.)
+    element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
 
     switch ([self alignment])
     {
@@ -1270,6 +1268,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [_delegate controlTextDidChange:note];
 
     [super textDidChange:note];
+}
+
+- (void)validateEditing
+{
+#if PLATFORM(DOM)
+    var element = [self _inputElement];
+    
+    if (element)
+        [self _setStringValue:element.value isNewValue:YES errorDescription:nil];
+#endif
 }
 
 - (void)textDidBeginEditing:(CPNotification)note
