@@ -8784,7 +8784,7 @@ var themedButtonValues                      = nil,
 {
     var browser = [[CPBrowser alloc] initWithFrame:CGRectMake(0.0, 0.0, 100, 100.0)],
 
-    // SVGs for browser
+    // --- STANDARD IMAGES (Dark) ---
     imageResize = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": svgDoubleArrow, 
         "mask-image": svgDoubleArrow,
@@ -8799,17 +8799,51 @@ var themedButtonValues                      = nil,
     } size:CGSizeMake(15, 14)],
     
     imageLeaf = [CPImage imageWithCSSDictionary:@{
-        "-webkit-mask-image": svgRadioDot, // Placeholder leaf
+        "-webkit-mask-image": svgRadioDot,
         "mask-image": svgRadioDot,
         "background-color": A3ColorActiveText
     } size:CGSizeMake(9, 9)],
 
+    // --- HUD IMAGES (White) ---
+    imageResizeHUD = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgDoubleArrow, 
+        "mask-image": svgDoubleArrow,
+        "background-color": @"#FFFFFF",
+        "-webkit-mask-size": "contain",
+        "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat",
+        "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center",
+        "mask-position": "center",
+        "transform": "rotate(90deg)"
+    } size:CGSizeMake(15, 14)],
+    
+    imageLeafHUD = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgRadioDot,
+        "mask-image": svgRadioDot,
+        "background-color": @"#FFFFFF"
+    } size:CGSizeMake(9, 9)],
+
     themedBrowser =
     [
-     ["image-control-resize", imageResize],
-     ["image-control-leaf", imageLeaf],
-     ["image-control-leaf-pressed", imageLeaf]
-     ];
+     // ==========================================================
+     // STANDARD THEME
+     // ==========================================================
+     
+     // Images
+     ["image-control-resize",        imageResize],
+     ["image-control-leaf",          imageLeaf],
+     ["image-control-leaf-pressed",  imageLeaf],
+
+     // ==========================================================
+     // HUD THEME
+     // ==========================================================
+
+     // Images
+     ["image-control-resize",        imageResizeHUD,             CPThemeStateHUD],
+     ["image-control-leaf",          imageLeafHUD,               CPThemeStateHUD],
+     ["image-control-leaf-pressed",  imageLeafHUD,               CPThemeStateHUD],
+    ];
 
     [self registerThemeValues:themedBrowser forView:browser];
 

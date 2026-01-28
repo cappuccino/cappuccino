@@ -108,6 +108,10 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     return _sharedFontPanel;
 }
 
+- (BOOL)acceptsFirstResponder
+{
+    return NO;
+}
 
 #pragma mark -
 #pragma mark Init methods
