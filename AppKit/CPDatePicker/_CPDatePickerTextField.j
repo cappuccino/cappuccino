@@ -48,13 +48,6 @@
 @global CPYearMonthDayDatePickerElementFlag
 @global CPEraDatePickerElementFlag
 
-var CPZeroKeyCode = 48,
-    CPNineKeyCode = 57,
-    CPMajAKeyCode = 65,
-    CPMajPKeyCode = 80,
-    CPAKeyCode = 97,
-    CPPKeyCode = 112;
-
 // This class is used to represente the datePicker with the CPTextFieldAndStepperDatePickerStyle/CPTextFieldDatePickerStyle mode
 @implementation _CPDatePickerTextField : CPControl
 {
@@ -131,7 +124,7 @@ var CPZeroKeyCode = 48,
     // Don't forget to unbind, otherwise several steppers will increase or decrease
     [_currentTextField unbind:@"objectValue"];
     [_currentTextField makeDeselectable];
-    _currentTextField = nil
+    _currentTextField = nil;
 
     // This is usefull when clicking on the stepper when the datePicker is not selected
     [_stepper setObjectValue:0];
@@ -494,7 +487,11 @@ var CPZeroKeyCode = 48,
 
     [_datePickerElementView _updateResponderTextField];
 
-    [self _selectTextField:[_currentTextField previousTextField]];
+    // Use the helper to skip hidden fields to be safe
+    var prevField = [self _previousVisibleTextFieldFrom:_currentTextField];
+
+    if (prevField)
+        [self _selectTextField:prevField];
 }
 
 - (void)moveDown:(id)sender
@@ -526,7 +523,7 @@ var CPZeroKeyCode = 48,
 }
 
 /*! KeyDown event
-    We just care care about the event A/P and every numbers
+    We just care about the event A/P and every numbers
 */
 - (void)keyDown:(CPEvent)anEvent
 {
@@ -535,18 +532,27 @@ var CPZeroKeyCode = 48,
 
     [self interpretKeyEvents:[anEvent]];
 
-    if ([_datePicker _isAmericanFormat] && [_currentTextField dateType] == CPAMPMDateType && ([anEvent keyCode] == CPAKeyCode || [anEvent keyCode] == CPPKeyCode || [anEvent keyCode] == CPMajAKeyCode || [anEvent keyCode] == CPMajPKeyCode))
+    var characters = [anEvent characters];
+
+    if ([_datePicker _isAmericanFormat] && [_currentTextField dateType] == CPAMPMDateType && [characters length] > 0)
     {
-        if ([anEvent keyCode] == CPAKeyCode || [anEvent keyCode] == CPMajAKeyCode)
+        var charUpper = [characters uppercaseString];
+
+        if (charUpper === "A")
+        {
             [_currentTextField setStringValue:@"AM"];
-        else
+            [[CPNotificationCenter defaultCenter] postNotificationName:CPDatePickerElementTextFieldAMPMChangedNotification object:_currentTextField userInfo:nil];
+            return;
+        }
+        else if (charUpper === "P")
+        {
             [_currentTextField setStringValue:@"PM"];
-
-        [[CPNotificationCenter defaultCenter] postNotificationName:CPDatePickerElementTextFieldAMPMChangedNotification object:_currentTextField userInfo:nil];
-
-        return;
+            [[CPNotificationCenter defaultCenter] postNotificationName:CPDatePickerElementTextFieldAMPMChangedNotification object:_currentTextField userInfo:nil];
+            return;
+        }
     }
 
+    // Pass the event down to the specific field (which handles numeric input validation via regex)
     [_currentTextField setValueForKeyEvent:anEvent];
 }
 
