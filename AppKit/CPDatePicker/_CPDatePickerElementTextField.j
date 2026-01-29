@@ -27,12 +27,7 @@
 CPDatePickerElementTextFieldBecomeFirstResponder = @"CPDatePickerElementTextFieldBecomeFirstResponder";
 CPDatePickerElementTextFieldAMPMChangedNotification = @"CPDatePickerElementTextFieldAMPMChangedNotification";
 
-var CPZeroKeyCode = 48,
-    CPNineKeyCode = 57,
-    CPMajAKeyCode = 65,
-    CPMajPKeyCode = 80,
-    CPAKeyCode = 97,
-    CPPKeyCode = 112;
+// Removed hardcoded KeyCodes (CPZeroKeyCode, etc) as they are unreliable across browsers/layouts.
 
 CPMonthDateType = 0;
 CPDayDateType = 1;
@@ -190,23 +185,38 @@ CPAMPMDateType = 6;
 */
 - (void)setValueForKeyEvent:(CPEvent)anEvent
 {
-    var keyCode = [anEvent keyCode];
+    var keyCode = [anEvent keyCode],
+        characters = [anEvent characters];
 
-    if (keyCode != CPDeleteKeyCode && keyCode != CPDeleteForwardKeyCode  && keyCode < CPZeroKeyCode || keyCode > CPNineKeyCode)
+    // Check if the event is a deletion
+    var isDelete = (keyCode === CPDeleteKeyCode || keyCode === CPDeleteForwardKeyCode);
+
+    // Check if the event is a numeric input.
+    // By testing the character string against a regex, we support num-pads and
+    // international keyboards correctly, rather than relying on keyCode ranges.
+    var isNumeric = (characters && [characters length] > 0 && /^[0-9]$/.test(characters));
+
+    // If it is neither a delete command nor a digit, we ignore it.
+    if (!isDelete && !isNumeric)
         return;
 
     var newValue = [self stringValue].replace(/\s/g, ''),
-        length = [newValue length],
-        eventKeyValue = parseInt([anEvent characters]).toString();
+        length = [newValue length];
 
-    if (keyCode == CPDeleteKeyCode || keyCode == CPDeleteForwardKeyCode)
+    if (isDelete)
     {
         [_timerEdition invalidate];
         _timerEdition = nil;
-        newValue = [newValue substringToIndex:(length - 1)];
+        
+        // Ensure we don't substring if length is 0
+        if (length > 0)
+            newValue = [newValue substringToIndex:(length - 1)];
     }
     else
     {
+        // Since isNumeric is true, characters is a valid digit string
+        var eventKeyValue = characters;
+
         if (!_timerEdition)
         {
             _timerEdition = [CPTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(_timerKeyEvent:) userInfo:nil repeats:NO];
@@ -227,7 +237,12 @@ CPAMPMDateType = 6;
         }
     }
 
-    if (parseInt(newValue) > [self _maxNumberWithMaxDate] || ([_datePicker _isAmericanFormat] && _dateType == CPHourDateType && parseInt(newValue) > 12))
+    // Safety check for NaN before comparison
+    var numericValue = parseInt(newValue);
+    if (isNaN(numericValue))
+        numericValue = 0;
+
+    if (numericValue > [self _maxNumberWithMaxDate] || ([_datePicker _isAmericanFormat] && _dateType == CPHourDateType && numericValue > 12))
         return;
 
     _firstEvent = NO;
