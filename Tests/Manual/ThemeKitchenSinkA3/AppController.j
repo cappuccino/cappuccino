@@ -106,8 +106,6 @@
     var tabView = [[CPTabView alloc] initWithFrame:bounds];
     [tabView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    // Requested Order: "Controls", "Sizes", "Data & Rules", "Outline"
-
     // --- TAB 1: Controls ---
     var item1 = [[CPTabViewItem alloc] initWithIdentifier:@"Controls"];
     [item1 setLabel:@"Controls"];
@@ -644,14 +642,14 @@
     [parentView addSubview:label];
     y += 35.0;
 
-    var popUp = [[CPPopUpButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
+    var popUp = [[CPPopUpButton alloc] initWithFrame:CGRectMake(xPos, y, width, 0)];
     [popUp addItemWithTitle:@"Item 1"];
     [popUp addItemWithTitle:@"Item 2"];
     [popUp setControlSize:aSize];
     [parentView addSubview:popUp];
     y += rowHeight;
 
-    var tf = [[CPTextField alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
+    var tf = [[CPTextField alloc] initWithFrame:CGRectMake(xPos, y, width, 0)];
     [tf setStringValue:@"Input"];
     [tf setBezeled:YES];
     [tf setEditable:YES];

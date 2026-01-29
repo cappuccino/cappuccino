@@ -2623,22 +2623,21 @@ var themedButtonValues                      = nil,
      [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],           [CPThemeStateTableDataView, CPThemeStateGroupRow, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
      [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize],      [CPThemeStateTableDataView, CPThemeStateGroupRow]],
 
-     [@"min-size",                   CGSizeMake(-1.0, 22.0)], // was 29
+     [@"min-size",                   CGSizeMake(-1.0, 22.0)],
      [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0)],      // For labels
      [@"nib2cib-adjustment-frame",   CGRectMake(0.0, 0.0, 0.0, 0.0),                     CPThemeStateBezeled],  // for bordered fields, frame = alignment
 
      // CPThemeStateControlSizeSmall
-     [@"content-inset",              CGInsetMake(7.0, 7.0, 5.0, 8.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
-     [@"content-inset",              CGInsetMake(7.0, 7.0, 5.0, 8.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateEditing]],
-
-     [@"min-size",                   CGSizeMake(-1.0, 25.0),                             CPThemeStateControlSizeSmall],
+     [@"content-inset",              CGInsetMake(2.0, 4.0, 2.0, 4.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
+     [@"content-inset",              CGInsetMake(2.0, 4.0, 2.0, 4.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateEditing]],
+     [@"min-size",                   CGSizeMake(-1.0, 19.0),                             CPThemeStateControlSizeSmall],
      [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0),                    CPThemeStateControlSizeSmall],
      [@"nib2cib-adjustment-frame",   CGRectMake(-3.0, 4.0, 7.0, 7.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
 
      // CPThemeStateControlSizeMini
-     [@"content-inset",              CGInsetMake(6.0, 7.0, 5.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
-     [@"content-inset",              CGInsetMake(6.0, 7.0, 5.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
-     [@"min-size",                   CGSizeMake(-1.0, 22.0),                             CPThemeStateControlSizeMini],
+     [@"content-inset",              CGInsetMake(1.0, 3.0, 1.0, 3.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
+     [@"content-inset",              CGInsetMake(1.0, 3.0, 1.0, 3.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
+     [@"min-size",                   CGSizeMake(-1.0, 17.0),                             CPThemeStateControlSizeMini],
      [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0),                    CPThemeStateControlSizeMini],
      [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 4.0, 8.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
 
