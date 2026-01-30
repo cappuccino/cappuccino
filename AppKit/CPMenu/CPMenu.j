@@ -1075,6 +1075,7 @@ var _CPMenuBarVisible               = NO,
                 if (self === [CPApp mainMenu])
                     [self _flashItemAtIndex:index];
 
+                anEvent._isKeyEquivalent = YES; // prevent the menu keystroke from beeing inserted into textview
                 [self performActionForItemAtIndex:index];
             }
             else

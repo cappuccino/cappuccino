@@ -1867,7 +1867,7 @@ Sets the selection to a range of characters in response to user action.
         }
         else
         {
-            [_typingAttributes setObject:[sender selectedFont] forKey:CPFontAttributeName];
+            [_typingAttributes setObject:[sender convertFont:oldFont] forKey:CPFontAttributeName];
         }
     }
     else
@@ -2754,12 +2754,14 @@ var _CPCopyPlaceholder = '-';
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
         if (currentFirstResponder && [currentFirstResponder respondsToSelector:@selector(insertText:)])
-            // setTimeout to prevent flickering
-            setTimeout(function(){
-                [currentFirstResponder insertText:textToInsert]
-            }, 20);
+            var event = [CPApp currentEvent];
 
-        // CRUCIAL: Clear the field immediately after grabbing its content.
+            if (!event._isKeyEquivalent)
+                setTimeout(function(){
+                    [currentFirstResponder insertText:textToInsert]
+                }, 20);
+
+        // Clear the field immediately after grabbing its content.
         _CPNativeInputField.innerHTML = '';
     };
 
