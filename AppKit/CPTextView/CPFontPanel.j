@@ -2,11 +2,6 @@
  * CPFontPanel.j
  * AppKit
  *
- * TODOs:
- *  1. make browser-width for size smaller and fix columns
- *  2. add all the missing features from the MacOS X counterpart (sampleview)
- *
- *
  * Created by Daniel Boehringer on 2/JAN/2014.
  * All modifications copyright Daniel Boehringer 2013.
  * Extensive code formatting and review by Andrew Hankinson
@@ -29,7 +24,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 @import "CPPanel.j"
 @import "CPColorWell.j"
 @import "CPColorPanel.j"
@@ -51,6 +45,7 @@ var kTypefaceIndex_Normal = 0,
     kTypefaceIndex_Bold = 2,
     kTypefaceIndex_BoldItalic = 3,
     kToolbarHeight = 32,
+    kPreviewHeight = 70,
     kBorderSpacing = 6,
     kInnerSpacing = 2,
     kNothingChanged = 0,
@@ -65,7 +60,7 @@ var kTypefaceIndex_Normal = 0,
 
 // FIXME<!> Locale support
 var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
-    _availableSizes = [@"9", @"10", @"11", @"12", @"13", @"14", @"18", @"24", @"36", @"48", @"72", @"96"];
+    _availableSizes = [@"9", @"10", @"11", @"12", @"13", @"14", @"18", @"24", @"36", @"48", @"64", @"72", @"96", @"144", @"288"];
 
 
 /*!
@@ -77,6 +72,10 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     id      _fontBrowser;
     id      _traitBrowser;
     id      _sizeBrowser;
+    
+    // Preview
+    _CPFontPanelPreviewView _previewView;
+    
     CPArray _availableFonts;
     id      _textColorWell;
     CPColor _textColor;
@@ -108,6 +107,10 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     return _sharedFontPanel;
 }
 
+- (BOOL)acceptsFirstResponder
+{
+    return NO;
+}
 
 #pragma mark -
 #pragma mark Init methods
@@ -115,7 +118,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 /*! @ignore */
 - (id)init
 {
-    if (self = [super initWithContentRect:CGRectMake(100, 90, 450, 394) styleMask:(CPTitledWindowMask | CPClosableWindowMask /*| CPResizableWindowMask*/ )])
+    if (self = [super initWithContentRect:CGRectMake(100, 90, 450, 420) styleMask:(CPTitledWindowMask | CPClosableWindowMask /*| CPResizableWindowMask*/ )])
     {
         [[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
         [self setTitle:@"Font Panel"];
@@ -166,15 +169,36 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     [self _setupToolbarView];
 
     var contentView = [self contentView],
-        label = [CPTextField labelWithTitle:@"Font name"],
-        contentBounds = [contentView bounds],
-        upperView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(contentBounds), CGRectGetHeight(contentBounds) - (kBorderSpacing + kToolbarHeight + kInnerSpacing))];
+        contentBounds = [contentView bounds];
 
     [contentView addSubview:_toolbarView];
 
-    _fontBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(10,  35, 150, 350)];
-    _traitBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(155, 35, 150, 350)];
-    _sizeBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(300, 35, 140, 350)];
+    // Preview View
+    var previewY = kBorderSpacing + kToolbarHeight + kInnerSpacing;
+    _previewView = [[_CPFontPanelPreviewView alloc] initWithFrame:CGRectMake(10, previewY, CGRectGetWidth(contentBounds) - 20, kPreviewHeight)];
+    [_previewView setAutoresizingMask:CPViewWidthSizable];
+    [contentView addSubview:_previewView];
+
+    // Browser Layout Calculations
+    var browserY = previewY + kPreviewHeight + 10,
+        browserHeight = CGRectGetHeight(contentBounds) - browserY - 10,
+        availableWidth = CGRectGetWidth(contentBounds) - 20, // 10px padding L/R
+        
+        // Define Column Widths
+        sizeWidth = 50,
+        spacing = 5,
+        remainingWidth = availableWidth - sizeWidth - (spacing * 2),
+        // Split remaining roughly 60% font name, 40% trait
+        fontWidth = Math.floor(remainingWidth * 0.60),
+        traitWidth = remainingWidth - fontWidth;
+
+    _fontBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(10, browserY, fontWidth, browserHeight)];
+    _traitBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(10 + fontWidth + spacing, browserY, traitWidth, browserHeight)];
+    _sizeBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(10 + fontWidth + traitWidth + (spacing * 2), browserY, sizeWidth, browserHeight)];
+    
+    [_sizeBrowser setAutoresizingMask:CPViewHeightSizable | CPViewMinXMargin];
+    [_traitBrowser setAutoresizingMask:CPViewHeightSizable | CPViewWidthSizable];
+    [_fontBrowser setAutoresizingMask:CPViewHeightSizable | CPViewWidthSizable];
 
     [self _setupBrowser:_fontBrowser];
     [self _setupBrowser:_traitBrowser];
@@ -189,7 +213,6 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 - (void)textViewDidChangeSelection:(CPNotification)notification
 {
    [self _refreshWithTextView:[notification object]];
-
 }
 
 - (void)_refreshWithTextView:(CPTextView)textView
@@ -219,6 +242,9 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     [self setCurrentFont:font];
     [self setCurrentTrait:trait];
     [self setCurrentSize:[font size] + ""];  //cast to string
+    
+    // Update Preview
+    [_previewView setPreviewFont:font];
 
     if (!color)
         return;
@@ -372,6 +398,8 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
     if ([self currentTrait] != typefaceIndex)
         [self setCurrentTrait:typefaceIndex ];
+    
+    [_previewView setPreviewFont:font];
 
     _fontChanges = kNothingChanged;
 }
@@ -390,18 +418,24 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     if (aBrowser === _fontBrowser)
     {
         _fontChanges = kFontNameChanged;
-        [[CPFontManager sharedFontManager] modifyFontViaPanel:self];
     }
     else if (aBrowser === _traitBrowser)
     {
         _fontChanges = kTypefaceChanged;
-        [[CPFontManager sharedFontManager] modifyFontViaPanel:self];
     }
     else if (aBrowser === _sizeBrowser)
     {
         _fontChanges = kSizeChanged;
-        [[CPFontManager sharedFontManager] modifyFontViaPanel:self];
     }
+    
+    // Apply change immediately to manager (standard behavior)
+    [[CPFontManager sharedFontManager] modifyFontViaPanel:self];
+    
+    // Update our preview manually because convertFont: calls rely on selected rows
+    // We construct a temporary font to update the preview view immediately
+    var updatedFont = [self panelConvertFont:[_previewView font]];
+    if (updatedFont)
+         [_previewView setPreviewFont:updatedFont];
 }
 
 - (void)dblClicked:(id)sender
@@ -442,5 +476,117 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 }
 
 @end
+
+// -----------------------------------------------------------------------------
+//  _CPFontPanelPreviewView
+//  A helper class to display a font sample with metrics grid
+// -----------------------------------------------------------------------------
+@implementation _CPFontPanelPreviewView : CPView
+{
+    CPTextField _sampleText;
+    CPColor     _gridColor;
+    float       _gridSize;
+}
+
+- (id)initWithFrame:(CGRect)aRect
+{
+    self = [super initWithFrame:aRect];
+    if (self)
+    {
+        [self setBackgroundColor:[CPColor whiteColor]];
+        
+        _gridColor = [CPColor colorWithHexString:@"e4f4ff"];
+        _gridSize = 10.0;
+        
+        _sampleText = [[CPTextField alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(aRect), CGRectGetHeight(aRect))];
+        [_sampleText setStringValue:@"Aa"];
+        [_sampleText setAlignment:CPCenterTextAlignment];
+        [_sampleText setVerticalAlignment:CPCenterVerticalTextAlignment];
+        [_sampleText setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+        [_sampleText setTextColor:[CPColor blackColor]];
+        
+        [self addSubview:_sampleText];
+    }
+    return self;
+}
+
+- (void)setPreviewFont:(CPFont)aFont
+{
+    [_sampleText setFont:aFont];
+    [self setNeedsDisplay:YES];
+}
+
+- (CPFont)font
+{
+    return [_sampleText font];
+}
+
+- (void)drawRect:(CGRect)dirtyRect
+{
+    // Draw Grid (from MetricsView inspiration)
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        bounds = [self bounds],
+        maxX = CGRectGetMaxX(bounds),
+        maxY = CGRectGetMaxY(bounds);
+
+    CGContextSetLineWidth(context, 1.0);
+    CGContextSetStrokeColor(context, _gridColor);
+    CGContextBeginPath(context);
+
+    for (var y = 0.5; y <= maxY; y += _gridSize)
+    {
+        CGContextMoveToPoint(context, 0.0, y);
+        CGContextAddLineToPoint(context, maxX, y);
+    }
+
+    for (var x = 0.5; x <= maxX; x += _gridSize)
+    {
+        CGContextMoveToPoint(context, x, 0.0);
+        CGContextAddLineToPoint(context, x, maxY);
+    }
+    CGContextStrokePath(context);
+
+    // Draw Baseline/Ascender/Descender (from BaselineView inspiration)
+    var font = [_sampleText font];
+    if (!font) return;
+    
+    var ascender = [font ascender],
+        descender = [font descender],
+        lineHeight = [font defaultLineHeightForFont];
+        
+    // Calculate the baseline.
+    // CPTextField with CPCenterVerticalTextAlignment usually centers the line height.
+    // Top of line = midY - (lineHeight / 2.0)
+    // Baseline = Top of line + ascender
+    var midY = maxY / 2.0,
+        baselineY = midY - (lineHeight / 2.0) + ascender; 
+
+    CGContextSetStrokeColor(context, [CPColor redColor]);
+    CGContextBeginPath(context);
+    
+    // Baseline
+    CGContextMoveToPoint(context, 0, baselineY);
+    CGContextAddLineToPoint(context, maxX, baselineY);
+    
+    // Ascender Line
+    CGContextMoveToPoint(context, 0, baselineY - ascender);
+    CGContextAddLineToPoint(context, maxX, baselineY - ascender);
+    
+    // Descender Line
+    CGContextMoveToPoint(context, 0, baselineY - descender);
+    CGContextAddLineToPoint(context, maxX, baselineY - descender);
+
+    CGContextStrokePath(context);
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    var text = prompt("Enter sample text:", [_sampleText stringValue]);
+    if (text)
+        [_sampleText setStringValue:text];
+}
+
+@end
+
 
 [CPFontManager setFontPanelFactory:[CPFontPanel class]];
