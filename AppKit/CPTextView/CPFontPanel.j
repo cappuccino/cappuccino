@@ -1,28 +1,29 @@
 /*
- * CPFontPanel.j
- * AppKit
- *
- * Created by Daniel Boehringer on 2/JAN/2014.
- * All modifications copyright Daniel Boehringer 2013.
- * Extensive code formatting and review by Andrew Hankinson
- * Based on original work by
- * Created by Emmanuel Maillard on 06/03/2010.
- * Copyright Emmanuel Maillard 2010.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+    CPFontPanel.j
+    AppKit
+
+    Created by Daniel Boehringer on 2/JAN/2014.
+    All modifications copyright Daniel Boehringer 2013.
+    Extensive code formatting and review by Andrew Hankinson
+
+    Based on original work by
+    Created by Emmanuel Maillard on 06/03/2010.
+    Copyright Emmanuel Maillard 2010.
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+*/
 
 @import "CPPanel.j"
 @import "CPColorWell.j"
@@ -30,7 +31,6 @@
 @import "CPBrowser.j"
 @import "CPText.j"
 @import "CPFontManager.j"
-
 
 @class CPTextStorage
 @class CPLayoutManager
@@ -40,28 +40,30 @@
 /*
     Collection indexes
 */
-var kTypefaceIndex_Normal = 0,
-    kTypefaceIndex_Italic = 1,
-    kTypefaceIndex_Bold = 2,
+var kTypefaceIndex_Normal     = 0,
+    kTypefaceIndex_Italic     = 1,
+    kTypefaceIndex_Bold       = 2,
     kTypefaceIndex_BoldItalic = 3,
-    kToolbarHeight = 32,
-    kPreviewHeight = 70,
-    kBorderSpacing = 6,
-    kInnerSpacing = 2,
-    kNothingChanged = 0,
-    kFontNameChanged = 1,
-    kTypefaceChanged = 2,
-    kSizeChanged = 3,
-    kTextColorChanged = 4,
-    kBackgroundColorChanged = 5,
-    kUnderlineChanged = 6,
-    kWeightChanged = 7,
+
+    kToolbarHeight            = 32,
+    kPreviewHeight            = 70,
+    kBorderSpacing            = 6,
+    kInnerSpacing             = 2,
+
+    kNothingChanged           = 0,
+    kFontNameChanged          = 1,
+    kTypefaceChanged          = 2,
+    kSizeChanged              = 3,
+    kTextColorChanged         = 4,
+    kBackgroundColorChanged   = 5,
+    kUnderlineChanged         = 6,
+    kWeightChanged            = 7,
+
     _sharedFontPanel;
 
 // FIXME<!> Locale support
-var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
-    _availableSizes = [@"9", @"10", @"11", @"12", @"13", @"14", @"18", @"24", @"36", @"48", @"64", @"72", @"96", @"144", @"288"];
-
+var _availableTraits = [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
+    _availableSizes  = [@"9", @"10", @"11", @"12", @"13", @"14", @"18", @"24", @"36", @"48", @"64", @"72", @"96", @"144", @"288"];
 
 /*!
     @ingroup appkit
@@ -72,10 +74,10 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     id      _fontBrowser;
     id      _traitBrowser;
     id      _sizeBrowser;
-    
+
     // Preview
     _CPFontPanelPreviewView _previewView;
-    
+
     CPArray _availableFonts;
     id      _textColorWell;
     CPColor _textColor;
@@ -83,7 +85,6 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     BOOL    _setupDone;
     int     _fontChanges;
 }
-
 
 #pragma mark -
 #pragma mark Class methods
@@ -118,7 +119,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 /*! @ignore */
 - (id)init
 {
-    if (self = [super initWithContentRect:CGRectMake(100, 90, 450, 420) styleMask:(CPTitledWindowMask | CPClosableWindowMask /*| CPResizableWindowMask*/ )])
+    if (self = [super initWithContentRect:CGRectMake(100, 90, 450, 420) styleMask:(CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask)])
     {
         [[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
         [self setTitle:@"Font Panel"];
@@ -155,8 +156,47 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     [aBrowser setDoubleAction:@selector(dblClicked:)];
     [aBrowser setAllowsEmptySelection:NO];
     [aBrowser setAllowsMultipleSelection:NO];
+    
+    // Config Scrollers
+    //[aBrowser setHasHorizontalScroller:NO];
+    //[aBrowser setHasVerticalScroller:YES];
+    //[aBrowser setAutohidesScrollers:YES];
+    //[aBrowser setMaxVisibleColumns:1];
+
     [aBrowser setDelegate:self];
     [[self contentView] addSubview:aBrowser];
+}
+
+- (void)_layoutBrowsers
+{
+    var contentView = [self contentView],
+        contentBounds = [contentView bounds],
+        previewY = kBorderSpacing + kToolbarHeight + kInnerSpacing,
+        browserY = previewY + kPreviewHeight + 10,
+        browserHeight = CGRectGetHeight(contentBounds) - browserY - 10,
+        availableWidth = CGRectGetWidth(contentBounds) - 20; // 10px padding L/R
+
+    // Layout Calculations
+    // Increase sizeWidth slightly to 60 to allow space for the vertical scrollbar without clipping text
+    var sizeWidth = 90,
+        spacing = 5,
+        remainingWidth = availableWidth - sizeWidth - (spacing * 2),
+        // Split remaining roughly 60% font name, 40% trait
+        fontWidth = FLOOR(remainingWidth * 0.60),
+        traitWidth = remainingWidth - fontWidth;
+
+    // Apply frames and column constraints
+    [_fontBrowser setFrame:CGRectMake(10, browserY, fontWidth, browserHeight)];
+    [_fontBrowser setDefaultColumnWidth:fontWidth];
+    [_fontBrowser setLastColumn:0];
+
+    [_traitBrowser setFrame:CGRectMake(10 + fontWidth + spacing, browserY, traitWidth, browserHeight)];
+    [_traitBrowser setDefaultColumnWidth:traitWidth];
+    [_traitBrowser setLastColumn:0];
+
+    [_sizeBrowser setFrame:CGRectMake(10 + fontWidth + traitWidth + (spacing * 2), browserY, sizeWidth, browserHeight)];
+    [_sizeBrowser setDefaultColumnWidth:sizeWidth];
+    [_sizeBrowser setLastColumn:0];
 }
 
 - (void)_setupContents
@@ -165,6 +205,9 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
         return;
 
     _setupDone = YES;
+
+    // We set ourselves as delegate to handle resizing layout manually
+    [self setDelegate:self];
 
     [self _setupToolbarView];
 
@@ -179,30 +222,22 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     [_previewView setAutoresizingMask:CPViewWidthSizable];
     [contentView addSubview:_previewView];
 
-    // Browser Layout Calculations
-    var browserY = previewY + kPreviewHeight + 10,
-        browserHeight = CGRectGetHeight(contentBounds) - browserY - 10,
-        availableWidth = CGRectGetWidth(contentBounds) - 20, // 10px padding L/R
-        
-        // Define Column Widths
-        sizeWidth = 50,
-        spacing = 5,
-        remainingWidth = availableWidth - sizeWidth - (spacing * 2),
-        // Split remaining roughly 60% font name, 40% trait
-        fontWidth = Math.floor(remainingWidth * 0.60),
-        traitWidth = remainingWidth - fontWidth;
+    // Initialize Browsers with zero rect, _layoutBrowsers will size them
+    _fontBrowser = [[CPBrowser alloc] initWithFrame:CGRectMakeZero()];
+    _traitBrowser = [[CPBrowser alloc] initWithFrame:CGRectMakeZero()];
+    _sizeBrowser = [[CPBrowser alloc] initWithFrame:CGRectMakeZero()];
 
-    _fontBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(10, browserY, fontWidth, browserHeight)];
-    _traitBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(10 + fontWidth + spacing, browserY, traitWidth, browserHeight)];
-    _sizeBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(10 + fontWidth + traitWidth + (spacing * 2), browserY, sizeWidth, browserHeight)];
-    
-    [_sizeBrowser setAutoresizingMask:CPViewHeightSizable | CPViewMinXMargin];
-    [_traitBrowser setAutoresizingMask:CPViewHeightSizable | CPViewWidthSizable];
-    [_fontBrowser setAutoresizingMask:CPViewHeightSizable | CPViewWidthSizable];
+    // Disable autoresizing masks because we are laying out manually in windowDidResize
+    [_fontBrowser setAutoresizingMask:CPViewNotSizable];
+    [_traitBrowser setAutoresizingMask:CPViewNotSizable];
+    [_sizeBrowser setAutoresizingMask:CPViewNotSizable];
 
     [self _setupBrowser:_fontBrowser];
     [self _setupBrowser:_traitBrowser];
     [self _setupBrowser:_sizeBrowser];
+
+    // Perform initial layout
+    [self _layoutBrowsers];
 
     [[CPNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(textViewDidChangeSelection:)
@@ -210,9 +245,14 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
                                                object:nil];
 }
 
+- (void)windowDidResize:(CPNotification)aNotification
+{
+    [self _layoutBrowsers];
+}
+
 - (void)textViewDidChangeSelection:(CPNotification)notification
 {
-   [self _refreshWithTextView:[notification object]];
+    [self _refreshWithTextView:[notification object]];
 }
 
 - (void)_refreshWithTextView:(CPTextView)textView
@@ -242,7 +282,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     [self setCurrentFont:font];
     [self setCurrentTrait:trait];
     [self setCurrentSize:[font size] + ""];  //cast to string
-    
+
     // Update Preview
     [_previewView setPreviewFont:font];
 
@@ -282,7 +322,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     {
         case kFontNameChanged:
             newFont = [CPFont fontWithDescriptor:[[aFont fontDescriptor] fontDescriptorByAddingAttributes:
-                      [CPDictionary dictionaryWithObject:[self currentFont] forKey:CPFontNameAttribute]] size:0.0];
+            [CPDictionary dictionaryWithObject:[self currentFont] forKey:CPFontNameAttribute]] size:0.0];
             break;
 
         case kTypefaceChanged:
@@ -301,12 +341,13 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
             newFont = [[CPFontManager sharedFontManager] convertFont:aFont toSize:[self currentSize]];
             break;
 
-         case kNothingChanged:
+        case kNothingChanged:
             break;
 
         default:
             CPLog.trace(@"FIXME: -[" + [self className] + " " + _cmd + "] unhandled _fontChanges: " + _fontChanges);
             break;
+
     }
 
     return newFont;
@@ -314,7 +355,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
 - (void)setCurrentSize:(CGSize)aSize
 {
-    [_sizeBrowser selectRow:[_availableSizes indexOfObject:aSize]  inColumn:0];
+    [_sizeBrowser selectRow:[_availableSizes indexOfObject:aSize] inColumn:0];
 }
 
 - (CPString)currentSize
@@ -324,7 +365,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
 - (void)setCurrentFont:(CPFont)aFont
 {
-    [_fontBrowser selectRow:[_availableFonts indexOfObject:[aFont familyName]]  inColumn:0];
+    [_fontBrowser selectRow:[_availableFonts indexOfObject:[aFont familyName]] inColumn:0];
 }
 
 - (CPString)currentFont
@@ -349,9 +390,10 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
         case kTypefaceIndex_BoldItalic:
             row = 3;
             break;
+
     }
 
-    [_traitBrowser selectRow:row  inColumn:0];
+    [_traitBrowser selectRow:row inColumn:0];
 }
 
 // FIXME<!> Locale support
@@ -398,7 +440,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
     if ([self currentTrait] != typefaceIndex)
         [self setCurrentTrait:typefaceIndex ];
-    
+
     [_previewView setPreviewFont:font];
 
     _fontChanges = kNothingChanged;
@@ -413,6 +455,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
 ////////////////////////////////////////////////////////////////////
 // TODO: ask CPFontManager for traits //
+
 - (void)browserClicked:(id)aBrowser
 {
     if (aBrowser === _fontBrowser)
@@ -427,15 +470,15 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     {
         _fontChanges = kSizeChanged;
     }
-    
+
     // Apply change immediately to manager (standard behavior)
     [[CPFontManager sharedFontManager] modifyFontViaPanel:self];
-    
+
     // Update our preview manually because convertFont: calls rely on selected rows
     // We construct a temporary font to update the preview view immediately
     var updatedFont = [self panelConvertFont:[_previewView font]];
     if (updatedFont)
-         [_previewView setPreviewFont:updatedFont];
+        [_previewView setPreviewFont:updatedFont];
 }
 
 - (void)dblClicked:(id)sender
@@ -451,7 +494,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     if (aBrowser === _traitBrowser)
         return [_availableTraits count];
 
-    return [_availableSizes count]
+    return [_availableSizes count];
 }
 
 - (id)browser:(id)aBrowser child:(int)index ofItem:(id)anItem
@@ -491,20 +534,21 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 - (id)initWithFrame:(CGRect)aRect
 {
     self = [super initWithFrame:aRect];
+
     if (self)
     {
         [self setBackgroundColor:[CPColor whiteColor]];
-        
+
         _gridColor = [CPColor colorWithHexString:@"e4f4ff"];
         _gridSize = 10.0;
-        
+
         _sampleText = [[CPTextField alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(aRect), CGRectGetHeight(aRect))];
-        [_sampleText setStringValue:@"Aa"];
+        [_sampleText setStringValue:@"AaYy-0123"];
         [_sampleText setAlignment:CPCenterTextAlignment];
         [_sampleText setVerticalAlignment:CPCenterVerticalTextAlignment];
         [_sampleText setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [_sampleText setTextColor:[CPColor blackColor]];
-        
+
         [self addSubview:_sampleText];
     }
     return self;
@@ -549,29 +593,29 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     // Draw Baseline/Ascender/Descender (from BaselineView inspiration)
     var font = [_sampleText font];
     if (!font) return;
-    
+
     var ascender = [font ascender],
         descender = [font descender],
         lineHeight = [font defaultLineHeightForFont];
-        
+
     // Calculate the baseline.
     // CPTextField with CPCenterVerticalTextAlignment usually centers the line height.
     // Top of line = midY - (lineHeight / 2.0)
     // Baseline = Top of line + ascender
     var midY = maxY / 2.0,
-        baselineY = midY - (lineHeight / 2.0) + ascender; 
+        baselineY = midY - (lineHeight / 2.0) + ascender;
 
     CGContextSetStrokeColor(context, [CPColor redColor]);
     CGContextBeginPath(context);
-    
+
     // Baseline
     CGContextMoveToPoint(context, 0, baselineY);
     CGContextAddLineToPoint(context, maxX, baselineY);
-    
+
     // Ascender Line
     CGContextMoveToPoint(context, 0, baselineY - ascender);
     CGContextAddLineToPoint(context, maxX, baselineY - ascender);
-    
+
     // Descender Line
     CGContextMoveToPoint(context, 0, baselineY - descender);
     CGContextAddLineToPoint(context, maxX, baselineY - descender);
@@ -587,6 +631,5 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 }
 
 @end
-
 
 [CPFontManager setFontPanelFactory:[CPFontPanel class]];
