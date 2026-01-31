@@ -6,6 +6,11 @@
  * Refactored: Fixed RuleEditor action handling.
  * Refactored: Added OutlineView and reordered tabs.
  * Refactored: Fixed control disabling logic for all tabs.
+ * Refactored: Added DatePicker Demo Tab.
+ * Refactored: Fixed addSubview:at: crash.
+ * Refactored: Fixed DatePicker layout (stacked vertically) to fix clipping and overlap.
+ * Refactored: Dates Tab now uses a ScrollView and full-width vertical layout to fit small windows.
+ * Refactored: Integrated TimeZone and Style selectors into the main Target box.
  * Added: CPAlert demonstrations wired to control buttons.
  */
 
@@ -29,6 +34,14 @@
     
     // Outline Data
     CPArray             _outlineData;
+
+    // Date Picker Tab References
+    CPDatePicker        _targetDatePicker;
+    CPDatePicker        _minDatePicker;
+    CPDatePicker        _maxDatePicker;
+    CPPopUpButton       _dateElementsBtn;
+    CPPopUpButton       _timeElementsBtn;
+    CPPopUpButton       _tzPopUpButton;
 }
 
 - (id)initWithContentRect:(CGRect)aRect isHUD:(BOOL)isHUD enabled:(BOOL)isEnabled
@@ -109,7 +122,6 @@
     // --- TAB 1: Controls ---
     var item1 = [[CPTabViewItem alloc] initWithIdentifier:@"Controls"];
     [item1 setLabel:@"Controls"];
-    
     var controlsView = [[CPView alloc] initWithFrame:[tabView bounds]];
     [self _buildControlsTab:controlsView isHUD:isHUD];
     [item1 setView:controlsView];
@@ -118,7 +130,6 @@
     // --- TAB 2: Sizes ---
     var item2 = [[CPTabViewItem alloc] initWithIdentifier:@"Sizes"];
     [item2 setLabel:@"Sizes"];
-
     var sizesView = [[CPView alloc] initWithFrame:[tabView bounds]];
     [self _buildSizesTab:sizesView isHUD:isHUD];
     [item2 setView:sizesView];
@@ -127,7 +138,6 @@
     // --- TAB 3: Table & Text Split (Rules) ---
     var item3 = [[CPTabViewItem alloc] initWithIdentifier:@"Table"];
     [item3 setLabel:@"Data & Rules"];
-
     var tableViewWrapper = [[CPView alloc] initWithFrame:[tabView bounds]];
     [self _buildTableTab:tableViewWrapper isHUD:isHUD];
     [item3 setView:tableViewWrapper];
@@ -136,11 +146,18 @@
     // --- TAB 4: Outline View ---
     var item4 = [[CPTabViewItem alloc] initWithIdentifier:@"Outline"];
     [item4 setLabel:@"Outline"];
-    
     var outlineWrapper = [[CPView alloc] initWithFrame:[tabView bounds]];
     [self _buildOutlineTab:outlineWrapper isHUD:isHUD];
     [item4 setView:outlineWrapper];
     [tabView addTabViewItem:item4];
+
+    // --- TAB 5: Date Picker Demo ---
+    var item5 = [[CPTabViewItem alloc] initWithIdentifier:@"Dates"];
+    [item5 setLabel:@"Dates"];
+    var dateWrapper = [[CPView alloc] initWithFrame:[tabView bounds]];
+    [self _buildDatesTab:dateWrapper isHUD:isHUD];
+    [item5 setView:dateWrapper];
+    [tabView addTabViewItem:item5];
 
     [contentView addSubview:tabView];
 
@@ -152,6 +169,7 @@
         [self _disableControlsInView:sizesView];
         [self _disableControlsInView:tableViewWrapper];
         [self _disableControlsInView:outlineWrapper];
+        [self _disableControlsInView:dateWrapper];
     }
 }
 
@@ -789,6 +807,267 @@
     // We only have one column identifier "name"
     return [item objectForKey:@"name"];
 }
+
+// --------------------------------------------------------------------------------
+// DatePicker Tab Builder & Actions
+// --------------------------------------------------------------------------------
+
+- (void)_buildDatesTab:(CPView)containerView isHUD:(BOOL)isHUD
+{
+    // 1. Setup ScrollView to handle overflow since we are stacking vertically
+    var bounds = [containerView bounds];
+    var scrollView = [[CPScrollView alloc] initWithFrame:bounds];
+    [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [scrollView setAutohidesScrollers:YES];
+
+    var contentWidth = CGRectGetWidth(bounds);
+    var margin = 20.0;
+    var innerWidth = contentWidth - (2 * margin);
+
+    // 2. Document View container
+    var docView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, contentWidth, 600.0)];
+    [docView setAutoresizingMask:CPViewWidthSizable];
+
+    var currentY = margin;
+
+    // --- TARGET BOX (Top: Style + Zone + Picker) ---
+    // Make this tall enough (300px) to hold the controls + Clock & Calendar style
+    var targetBoxHeight = 300.0;
+    var targetBox = [[CPBox alloc] initWithFrame:CGRectMake(margin, currentY, innerWidth, targetBoxHeight)];
+    [targetBox setTitle:@"Date Picker & Settings"];
+    [targetBox setAutoresizingMask:CPViewWidthSizable];
+    [docView addSubview:targetBox];
+    
+    var tContent = [targetBox contentView];
+    
+    // Top Row: Style (Left) and TimeZone (Right)
+    var topRowY = 15.0;
+    
+    // Style
+    var lblStyle = [CPTextField labelWithTitle:@"Style:"];
+    [lblStyle setFrameOrigin:CGPointMake(margin, topRowY + 3)];
+    [tContent addSubview:lblStyle];
+    
+    var stylePop = [[CPPopUpButton alloc] initWithFrame:CGRectMake(margin + 45, topRowY, 140, 24)];
+    [stylePop addItemWithTitle:@"Text Field"];
+    [stylePop addItemWithTitle:@"Stepper & Field"];
+    [stylePop addItemWithTitle:@"Clock & Calendar"];
+    [stylePop selectItemAtIndex:1]; // Default
+    [stylePop setTarget:self];
+    [stylePop setAction:@selector(changePickerStyle:)];
+    [tContent addSubview:stylePop];
+    
+    // Time Zone
+    var lblZone = [CPTextField labelWithTitle:@"Zone:"];
+    [lblZone setFrameOrigin:CGPointMake(margin + 210, topRowY + 3)];
+    [tContent addSubview:lblZone];
+    
+    _tzPopUpButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(margin + 250, topRowY, 160, 24)];
+    [_tzPopUpButton addItemsWithTitles:[CPTimeZone knownTimeZoneNames]];
+    
+    // Select first valid TZ
+    var knownZones = [CPTimeZone knownTimeZoneNames];
+    if ([knownZones count] > 0)
+        [_tzPopUpButton selectItemAtIndex:0];
+        
+    [_tzPopUpButton setTarget:self];
+    [_tzPopUpButton setAction:@selector(changeTimeZone:)];
+    [tContent addSubview:_tzPopUpButton];
+    
+    
+    // Main Picker (Below controls)
+    var pickerY = topRowY + 40.0;
+    _targetDatePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(margin, pickerY, 200, 28)];
+    [_targetDatePicker setDatePickerStyle:CPTextFieldAndStepperDatePickerStyle];
+    [_targetDatePicker setDateValue:[CPDate date]];
+    [_targetDatePicker setBordered:YES];
+    [_targetDatePicker setBezeled:YES];
+    [_targetDatePicker setDrawsBackground:YES];
+    
+    // Init TZ
+    if ([knownZones count] > 0)
+        [_targetDatePicker setTimeZone:[CPTimeZone timeZoneWithName:[knownZones objectAtIndex:0]]];
+        
+    [tContent addSubview:_targetDatePicker];
+
+    // Selected Value Labels (Bottom of box)
+    var lblY = targetBoxHeight - 45.0;
+    var valLabel = [CPTextField labelWithTitle:@"Selected Value:"];
+    [valLabel setFrameOrigin:CGPointMake(margin, lblY + 3)];
+    [tContent addSubview:valLabel];
+    
+    var valDisplay = [[CPTextField alloc] initWithFrame:CGRectMake(margin + 110, lblY, 200, 24)];
+    [valDisplay setEditable:NO];
+    [valDisplay bind:CPValueBinding toObject:_targetDatePicker withKeyPath:@"dateValue" options:nil];
+    [tContent addSubview:valDisplay];
+
+    currentY += targetBoxHeight + margin;
+
+    // --- CONFIGURATION BOX (Constraints) ---
+    var configHeight = 220.0;
+    var configBox = [[CPBox alloc] initWithFrame:CGRectMake(margin, currentY, innerWidth, configHeight)];
+    [configBox setTitle:@"Constraints & Layout"];
+    [configBox setAutoresizingMask:CPViewWidthSizable];
+    [docView addSubview:configBox];
+    
+    var cContent = [configBox contentView];
+    var cY = 15.0;
+    var cX = margin;
+    
+    // Elements Selectors
+    var lblElem = [CPTextField labelWithTitle:@"Elements:"];
+    [lblElem setFrameOrigin:CGPointMake(cX, cY + 3)];
+    [cContent addSubview:lblElem];
+    
+    _dateElementsBtn = [[CPPopUpButton alloc] initWithFrame:CGRectMake(cX + 70, cY, 100, 24)];
+    [_dateElementsBtn addItemWithTitle:@"No Date"];   [[_dateElementsBtn lastItem] setTag:0];
+    [_dateElementsBtn addItemWithTitle:@"Yr/Mo"];     [[_dateElementsBtn lastItem] setTag:1];
+    [_dateElementsBtn addItemWithTitle:@"Yr/Mo/Day"]; [[_dateElementsBtn lastItem] setTag:2];
+    [_dateElementsBtn selectItemAtIndex:2]; // Default YMD
+    [_dateElementsBtn setTarget:self];
+    [_dateElementsBtn setAction:@selector(updateElements:)];
+    [cContent addSubview:_dateElementsBtn];
+
+    _timeElementsBtn = [[CPPopUpButton alloc] initWithFrame:CGRectMake(cX + 180, cY, 110, 24)];
+    [_timeElementsBtn addItemWithTitle:@"No Time"];   [[_timeElementsBtn lastItem] setTag:0];
+    [_timeElementsBtn addItemWithTitle:@"Hr/Min"];    [[_timeElementsBtn lastItem] setTag:1];
+    [_timeElementsBtn addItemWithTitle:@"Hr/Min/Sec"];[[_timeElementsBtn lastItem] setTag:2];
+    [_timeElementsBtn selectItemAtIndex:0]; // Default No Time
+    [_timeElementsBtn setTarget:self];
+    [_timeElementsBtn setAction:@selector(updateElements:)];
+    [cContent addSubview:_timeElementsBtn];
+    cY += 40.0;
+
+    // Separator
+    var sep = [[CPBox alloc] initWithFrame:CGRectMake(cX, cY, innerWidth - (2*cX), 1)];
+    [sep setBorderType:CPLineBorder];
+    [cContent addSubview:sep];
+    cY += 15.0;
+
+    // Min Date
+    var cbMin = [CPCheckBox checkBoxWithTitle:@"Min Date Constraint"];
+    [cbMin setFrameOrigin:CGPointMake(cX, cY)];
+    [cbMin setTarget:self];
+    [cbMin setAction:@selector(toggleMinDate:)];
+    [cContent addSubview:cbMin];
+    cY += 25.0;
+
+    _minDatePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(cX + 20, cY, 200, 27)];
+    [_minDatePicker setDateValue:[CPDate dateWithTimeIntervalSinceNow:-86400*7]]; 
+    [_minDatePicker setEnabled:NO];
+    [_minDatePicker setTarget:self];
+    [_minDatePicker setAction:@selector(updateMinDate:)];
+    [cContent addSubview:_minDatePicker];
+    cY += 40.0;
+
+    // Max Date
+    var cbMax = [CPCheckBox checkBoxWithTitle:@"Max Date Constraint"];
+    [cbMax setFrameOrigin:CGPointMake(cX, cY)];
+    [cbMax setTarget:self];
+    [cbMax setAction:@selector(toggleMaxDate:)];
+    [cContent addSubview:cbMax];
+    cY += 25.0;
+
+    _maxDatePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(cX + 20, cY, 200, 27)];
+    [_maxDatePicker setDateValue:[CPDate dateWithTimeIntervalSinceNow:86400*7]];
+    [_maxDatePicker setEnabled:NO];
+    [_maxDatePicker setTarget:self];
+    [_maxDatePicker setAction:@selector(updateMaxDate:)];
+    [cContent addSubview:_maxDatePicker];
+    cY += 40.0;
+
+    currentY += configHeight + margin;
+
+    // Resize docView to actual height needed
+    [docView setFrameSize:CGSizeMake(contentWidth, currentY)];
+
+    [scrollView setDocumentView:docView];
+    [containerView addSubview:scrollView];
+    
+    if (isHUD)
+        [self _applyHUDStateToView:containerView];
+}
+
+- (void)changeTimeZone:(id)sender
+{
+    var idx = [sender indexOfSelectedItem];
+    var zones = [CPTimeZone knownTimeZoneNames];
+    
+    if (idx >= 0 && idx < [zones count])
+    {
+        var zoneName = [zones objectAtIndex:idx];
+        [_targetDatePicker setTimeZone:[CPTimeZone timeZoneWithName:zoneName]];
+    }
+}
+
+- (void)changePickerStyle:(id)sender
+{
+    var idx = [sender indexOfSelectedItem];
+    var style = CPTextFieldDatePickerStyle;
+    
+    if (idx === 1) style = CPTextFieldAndStepperDatePickerStyle;
+    else if (idx === 2) style = CPClockAndCalendarDatePickerStyle;
+    
+    [_targetDatePicker setDatePickerStyle:style];
+    
+    // Adjust size based on style.
+    // Note: We allocated a tall Target Box (300px), so expanding the frame here is safe.
+    if (style === CPClockAndCalendarDatePickerStyle)
+        [_targetDatePicker setFrameSize:CGSizeMake(420.0, 160.0)];
+    else
+        [_targetDatePicker setFrameSize:CGSizeMake(200.0, 28.0)];
+}
+
+- (void)updateElements:(id)sender
+{
+    var elemDate = [[_dateElementsBtn selectedItem] tag],
+        elemTime = [[_timeElementsBtn selectedItem] tag],
+        mask = 0;
+
+    if (elemDate == 1) mask |= CPYearMonthDatePickerElementFlag;
+    if (elemDate == 2) mask |= CPYearMonthDayDatePickerElementFlag;
+
+    if (elemTime == 1) mask |= CPHourMinuteDatePickerElementFlag;
+    if (elemTime == 2) mask |= CPHourMinuteSecondDatePickerElementFlag;
+
+    [_targetDatePicker setDatePickerElements:mask];
+}
+
+- (void)toggleMinDate:(id)sender
+{
+    var isOn = ([sender state] === CPOnState);
+    [_minDatePicker setEnabled:isOn];
+    
+    if (isOn)
+        [_targetDatePicker setMinDate:[_minDatePicker dateValue]];
+    else
+        [_targetDatePicker setMinDate:nil];
+}
+
+- (void)updateMinDate:(id)sender
+{
+    // Only update if the checkbox is effectively enabling it
+    if ([_minDatePicker isEnabled])
+        [_targetDatePicker setMinDate:[_minDatePicker dateValue]];
+}
+
+- (void)toggleMaxDate:(id)sender
+{
+    var isOn = ([sender state] === CPOnState);
+    [_maxDatePicker setEnabled:isOn];
+    
+    if (isOn)
+        [_targetDatePicker setMaxDate:[_maxDatePicker dateValue]];
+    else
+        [_targetDatePicker setMaxDate:nil];
+}
+
+- (void)updateMaxDate:(id)sender
+{
+    if ([_maxDatePicker isEnabled])
+        [_targetDatePicker setMaxDate:[_maxDatePicker dateValue]];
+}
+
 
 // --- GENERIC HELPERS ---
 
