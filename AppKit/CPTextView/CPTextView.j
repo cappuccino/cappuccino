@@ -1867,6 +1867,10 @@ Sets the selection to a range of characters in response to user action.
         }
         else
         {
+            attributes = [_textStorage attributesAtIndex:_selectionRange.location
+                                       longestEffectiveRange:_selectionRange
+                                                     inRange:_selectionRange];
+            oldFont = [attributes objectForKey:CPFontAttributeName] || [self font];
             [_typingAttributes setObject:[sender convertFont:oldFont] forKey:CPFontAttributeName];
         }
     }
