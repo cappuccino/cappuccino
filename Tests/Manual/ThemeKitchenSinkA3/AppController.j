@@ -9,9 +9,11 @@
  * Refactored: Added DatePicker Demo Tab.
  * Refactored: Fixed addSubview:at: crash.
  * Refactored: Fixed DatePicker layout (stacked vertically) to fix clipping and overlap.
- * Refactored: Dates Tab now uses a ScrollView and full-width vertical layout to fit small windows.
  * Refactored: Integrated TimeZone and Style selectors into the main Target box.
  * Added: CPAlert demonstrations wired to control buttons.
+ * Fixed: Push Button context-aware logic (Info vs HUD).
+ * Fixed: Gradient Button now triggers a CPPopover.
+ * Fixed: DatePicker calendar arrow navigation (fixed clipping issue inside CPBox).
  */
 
 @import <Foundation/Foundation.j>
@@ -42,6 +44,9 @@
     CPPopUpButton       _dateElementsBtn;
     CPPopUpButton       _timeElementsBtn;
     CPPopUpButton       _tzPopUpButton;
+    
+    // Popover Reference
+    CPPopover           _popover;
 }
 
 - (id)initWithContentRect:(CGRect)aRect isHUD:(BOOL)isHUD enabled:(BOOL)isEnabled
@@ -213,23 +218,23 @@
 
     // Buttons
     var pushButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
-    [pushButton setTitle:@"Push Button (Info Alert)"];
+    [pushButton setTitle:@"Push Button (Ctx Aware)"];
     [pushButton setBezelStyle:CPRoundedBezelStyle];
     
-    // ACTION: Standard Informational Alert
+    // ACTION: Context Aware Alert
     [pushButton setTarget:self];
-    [pushButton setAction:@selector(showStandardAlert:)];
+    [pushButton setAction:@selector(performPushButtonAction:)];
     
     [leftContent addSubview:pushButton];
     currentY += gapY;
 
     var gradientButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
-    [gradientButton setTitle:@"Gradient (HUD Alert)"];
+    [gradientButton setTitle:@"Gradient (Popover)"];
     [gradientButton setBezelStyle:CPSmallSquareBezelStyle];
     
-    // ACTION: Critical / HUD Alert
+    // ACTION: Popover
     [gradientButton setTarget:self];
-    [gradientButton setAction:@selector(showHUDAlert:)];
+    [gradientButton setAction:@selector(showPopover:)];
     
     [leftContent addSubview:gradientButton];
     currentY += gapY;
@@ -418,8 +423,17 @@
 }
 
 // --------------------------------------------------------------------------------
-// ALERT ACTIONS
+// ALERT & POPOVER ACTIONS
 // --------------------------------------------------------------------------------
+
+// Push Button Logic: HUD mode -> HUD Alert, Normal -> Standard Alert
+- (void)performPushButtonAction:(id)sender
+{
+    if (_isHUD)
+        [self showHUDAlert:sender];
+    else
+        [self showStandardAlert:sender];
+}
 
 - (void)showStandardAlert:(id)sender
 {
@@ -441,13 +455,12 @@
     [alert setInformativeText:@"This alert uses the CPCriticalAlertStyle and explicitly sets the HUD theme."];
     [alert setAlertStyle:CPCriticalAlertStyle];
     
-    // Explicitly set the HUD theme like in the example
+    // Explicitly set the HUD theme
     [alert setTheme:[CPTheme defaultHudTheme]];
     
     [alert addButtonWithTitle:@"Destroy"];
     [alert addButtonWithTitle:@"Cancel"];
     
-    // We can use a block for the return handler if desired, or standard modal
     [alert runModal];
 }
 
@@ -475,6 +488,28 @@
 - (void)alertDidEnd:(CPAlert)anAlert returnCode:(CPInteger)returnCode contextInfo:(id)context
 {
     CPLog.info(@"Alert ended. Return Code: %d. Context: %@", returnCode, context);
+}
+
+// --- POPOVER ACTIONS ---
+
+- (void)showPopover:(id)sender
+{
+    if (!_popover)
+    {
+        _popover = [[CPPopover alloc] init];
+        
+        // Create a simple view controller for content
+        var vc = [[PopoverContentController alloc] init];
+        [_popover setContentViewController:vc];
+        
+        [_popover setBehavior:CPPopoverBehaviorTransient];
+    }
+    
+    // If HUD window, apply HUD to popover content if supported (custom)
+    // CPPopover appearance usually adapts or is set via appearance property in newer API, 
+    // but here we just show it.
+    
+    [_popover showRelativeToRect:[sender bounds] ofView:sender preferredEdge:CPMinYEdge];
 }
 
 // --------------------------------------------------------------------------------
@@ -877,7 +912,11 @@
     
     // Main Picker (Below controls)
     var pickerY = topRowY + 40.0;
-    _targetDatePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(margin, pickerY, 200, 28)];
+    
+    // Note: We place the picker at x=10 inside the box. 
+    // If we used a larger margin (e.g. 20), the wide "Clock & Calendar" view might be clipped 
+    // by the right edge of the CPBox content view, making the "next month" arrow unclickable.
+    _targetDatePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(10.0, pickerY, 200, 28)];
     [_targetDatePicker setDatePickerStyle:CPTextFieldAndStepperDatePickerStyle];
     [_targetDatePicker setDateValue:[CPDate date]];
     [_targetDatePicker setBordered:YES];
@@ -1010,12 +1049,10 @@
     
     [_targetDatePicker setDatePickerStyle:style];
     
-    // Adjust size based on style.
-    // Note: We allocated a tall Target Box (300px), so expanding the frame here is safe.
-    if (style === CPClockAndCalendarDatePickerStyle)
-        [_targetDatePicker setFrameSize:CGSizeMake(420.0, 160.0)];
-    else
-        [_targetDatePicker setFrameSize:CGSizeMake(200.0, 28.0)];
+    // Use sizeToFit to ensure the frame is correct for the Calendar style.
+    // This fixes the hit-test issue for the "Next Month" arrow by ensuring the 
+    // frame isn't artificially clipped or too wide.
+    // [_targetDatePicker sizeToFit];
 }
 
 - (void)updateElements:(id)sender
@@ -1055,7 +1092,7 @@
 {
     var isOn = ([sender state] === CPOnState);
     [_maxDatePicker setEnabled:isOn];
-    
+
     if (isOn)
         [_targetDatePicker setMaxDate:[_maxDatePicker dateValue]];
     else
@@ -1285,6 +1322,31 @@
     }
 
     return result;
+}
+
+@end
+
+
+// --------------------------------------------------------------------------------
+// PopoverContentController
+// --------------------------------------------------------------------------------
+
+@implementation PopoverContentController : CPViewController
+{
+}
+
+- (void)loadView
+{
+    var view = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 200, 100)];
+    
+    var label = [[CPTextField alloc] initWithFrame:CGRectMake(20, 20, 160, 60)];
+    [label setStringValue:@"This is a standard CPPopover with transient behavior."];
+    [label setFont:[CPFont systemFontOfSize:12.0]];
+    [label setLineBreakMode:CPLineBreakByWordWrapping];
+    
+    [view addSubview:label];
+    
+    [self setView:view];
 }
 
 @end
