@@ -14,6 +14,8 @@
  * Fixed: Push Button context-aware logic (Info vs HUD).
  * Fixed: Gradient Button now triggers a CPPopover.
  * Fixed: DatePicker calendar arrow navigation (fixed clipping issue inside CPBox).
+ * Fixed: "Controls" tab boxes now pin to top (fixed clipping on resize).
+ * Added: Tooltips to various controls.
  */
 
 @import <Foundation/Foundation.j>
@@ -57,7 +59,9 @@
         styleMask |= CPHUDBackgroundWindowMask;
 
     var theWindow = [[CPWindow alloc] initWithContentRect:aRect styleMask:styleMask];
-    
+
+    [theWindow setMinSize:CGSizeMake(520, 420)]
+
     self = [super initWithWindow:theWindow];
     
     if (self)
@@ -210,7 +214,8 @@
     // --- LEFT BOX ---
     var leftBox = [[CPBox alloc] initWithFrame:CGRectMake(margin, boxTopY, boxWidth, 100)];
     [leftBox setTitle:@"Input & Controls"];
-    [leftBox setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin];
+    //  CPViewMaxYMargin to pin to top.
+    [leftBox setAutoresizingMask:CPViewMaxXMargin | CPViewMaxYMargin]; 
     [containerView addSubview:leftBox];
     
     var leftContent = [leftBox contentView];
@@ -220,6 +225,7 @@
     var pushButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [pushButton setTitle:@"Push Button (Ctx Aware)"];
     [pushButton setBezelStyle:CPRoundedBezelStyle];
+    [pushButton setToolTip:@"This button opens a standard CPAlert, or a HUD alert if the window is in HUD mode."];
     
     // ACTION: Context Aware Alert
     [pushButton setTarget:self];
@@ -231,6 +237,7 @@
     var gradientButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [gradientButton setTitle:@"Gradient (Popover)"];
     [gradientButton setBezelStyle:CPSmallSquareBezelStyle];
+    [gradientButton setToolTip:@"Click to show a transient CPPopover anchored to this button."];
     
     // ACTION: Popover
     [gradientButton setTarget:self];
@@ -242,6 +249,7 @@
     var roundRectButton = [[CPButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [roundRectButton setTitle:@"Round (Sheet Alert)"];
     [roundRectButton setBezelStyle:CPRoundRectBezelStyle];
+    [roundRectButton setToolTip:@"Demonstrates a document-modal sheet alert attached to the window."];
     
     // ACTION: Warning Sheet
     [roundRectButton setTarget:self];
@@ -255,6 +263,7 @@
     [placeholderField setEditable:YES];
     [placeholderField setBezeled:YES];
     [placeholderField setPlaceholderString:@"Placeholder"];
+    [placeholderField setToolTip:@"Type something here. It has a placeholder."];
     [leftContent addSubview:placeholderField];
     currentY += gapY;
 
@@ -262,28 +271,34 @@
     [textField setEditable:YES];
     [textField setBezeled:YES];
     [textField setStringValue:@"Text Field"];
+    [textField setToolTip:@"A standard editable text field."];
     [leftContent addSubview:textField];
     currentY += gapY;
 
     var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [searchField setPlaceholderString:@"Search..."];
+    [searchField setToolTip:@"CPSearchField automatically includes a search icon and clear button."];
     [leftContent addSubview:searchField];
     currentY += gapY;
 
     var tokenField = [[CPTokenField alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [tokenField setObjectValue:["Token", "Field"]];
+    [tokenField setToolTip:@"CPTokenField tokenizes inputs separated by commas."];
     [leftContent addSubview:tokenField];
     currentY += gapY + 20.0;
 
     // Sliders 
     var tickSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth - 40, 24)];
+    [tickSlider setToolTip:@"A horizontal slider."];
     [leftContent addSubview:tickSlider];
 
     var vSlider = [[CPSlider alloc] initWithFrame:CGRectMake(innerX + controlWidth - 30, currentY - 5, 24, 60)];
+    [vSlider setToolTip:@"A vertical slider."];
     [leftContent addSubview:vSlider];
     
     var knob = [[CPSlider alloc] initWithFrame:CGRectMake(innerX, currentY + 25, 32, 32)];
     [knob setSliderType:CPCircularSlider];
+    [knob setToolTip:@"CPCircularSlider (Knob)."];
     [leftContent addSubview:knob];
     
     currentY += 60.0;
@@ -295,7 +310,8 @@
     var rightBoxX = margin + boxWidth + margin;
     var rightBox = [[CPBox alloc] initWithFrame:CGRectMake(rightBoxX, boxTopY, boxWidth, 100)];
     [rightBox setTitle:@"Selection & Status"];
-    [rightBox setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
+    // FIX: Changed CPViewMinYMargin to CPViewMaxYMargin to pin to top.
+    [rightBox setAutoresizingMask:CPViewWidthSizable | CPViewMaxYMargin];
     [containerView addSubview:rightBox];
 
     var rightContent = [rightBox contentView];
@@ -305,6 +321,7 @@
     var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [datePicker setDatePickerStyle:CPTextFieldAndStepperDatePickerStyle];
     [datePicker setDateValue:[CPDate date]];
+    [datePicker setToolTip:@"Pick a date using the stepper or type it in."];
     [rightContent addSubview:datePicker];
     currentY += gapY;
 
@@ -312,18 +329,21 @@
     var comboBox = [[CPComboBox alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight)];
     [comboBox setPlaceholderString:@"Combo Box"];
     [comboBox addItemsWithObjectValues:["Alpha", "Beta", "Gamma"]];
+    [comboBox setToolTip:@"Type a new value or select one from the dropdown."];
     [rightContent addSubview:comboBox];
     currentY += gapY;
 
     var pullDown = [[CPPopUpButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight) pullsDown:YES];
     [pullDown addItemWithTitle:@"Pull Down Menu"]; 
     [pullDown addItemWithTitle:@"Action A"]; [pullDown addItemWithTitle:@"Action B"];
+    [pullDown setToolTip:@"A Pull Down menu executes actions."];
     [rightContent addSubview:pullDown];
     currentY += gapY;
 
     var popUp = [[CPPopUpButton alloc] initWithFrame:CGRectMake(innerX, currentY, controlWidth, fieldHeight) pullsDown:NO];
     [popUp addItemWithTitle:@"PopUp Item 1"];
     [popUp addItemWithTitle:@"PopUp Item 2"];
+    [popUp setToolTip:@"A Pop Up Button is for selection."];
     [rightContent addSubview:popUp];
     currentY += gapY + 5.0;
 
@@ -331,26 +351,31 @@
     var cbOn = [CPCheckBox checkBoxWithTitle:@"On"];
     [cbOn setFrameOrigin:CGPointMake(innerX, currentY)];
     [cbOn setState:CPOnState];
+    [cbOn setToolTip:@"This checkbox is currently checked."];
     [rightContent addSubview:cbOn];
 
     var cbOff = [CPCheckBox checkBoxWithTitle:@"Off"];
     [cbOff setFrameOrigin:CGPointMake(innerX + 50, currentY)];
     [cbOff setState:CPOffState];
+    [cbOff setToolTip:@"This checkbox is unchecked."];
     [rightContent addSubview:cbOff];
 
     var cbBoth = [CPCheckBox checkBoxWithTitle:@"Mixed"];
     [cbBoth setFrameOrigin:CGPointMake(innerX + 100, currentY)];
     [cbBoth setState:CPMixedState];
+    [cbBoth setToolTip:@"This checkbox is in a mixed state."];
     [rightContent addSubview:cbBoth];
     currentY += gapY;
 
     var radio1 = [CPRadio radioWithTitle:@"Radio A"];
     [radio1 setFrameOrigin:CGPointMake(innerX, currentY)];
     [radio1 setState:CPOnState];
+    [radio1 setToolTip:@"Radio Group Option A."];
     [rightContent addSubview:radio1];
 
     var radio2 = [CPRadio radioWithTitle:@"Radio B"];
     [radio2 setFrameOrigin:CGPointMake(innerX + 80, currentY)];
+    [radio2 setToolTip:@"Radio Group Option B."];
     [rightContent addSubview:radio2];
     [radio1 setTarget:self]; [radio1 setAction:@selector(dummyAction:)];
     [radio2 setTarget:self]; [radio2 setAction:@selector(dummyAction:)];
@@ -365,11 +390,13 @@
     [levelInd setMaxValue:5];
     [levelInd setDoubleValue:3];
     [levelInd setLevelIndicatorStyle:CPDiscreteCapacityLevelIndicatorStyle];
+    [levelInd setToolTip:@"Visualizes a discrete level (3 out of 5)."];
     [rightContent addSubview:levelInd];
 
     var levelStepper = [[CPStepper alloc] initWithFrame:CGRectMake(alignRightX, currentY, stepperWidth, fieldHeight)];
     [levelStepper setMinValue:0]; [levelStepper setMaxValue:5]; [levelStepper setDoubleValue:3];
     [levelStepper setValueWraps:NO];
+    [levelStepper setToolTip:@"Adjust the level indicator."];
     [rightContent addSubview:levelStepper];
     [levelInd bind:CPValueBinding toObject:levelStepper withKeyPath:@"doubleValue" options:nil];
     currentY += gapY;
@@ -379,6 +406,7 @@
     [spinner setIndeterminate:YES];
     [spinner setControlSize:CPRegularControlSize];
     [spinner startAnimation:self];
+    [spinner setToolTip:@"Indeterminate spinning indicator."];
     [rightContent addSubview:spinner];
 
     var circProg = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(innerX + 40, currentY, 24, 24)];
@@ -387,6 +415,7 @@
     [circProg setControlSize:CPRegularControlSize];
     [circProg setDoubleValue:65.0];
     [circProg setMaxValue:100.0];
+    [circProg setToolTip:@"Determinate circular progress."];
     [rightContent addSubview:circProg];
 
     var stepper = [[CPStepper alloc] initWithFrame:CGRectMake(alignRightX, currentY, stepperWidth, 27)];
@@ -403,6 +432,7 @@
     [detProgress setMinValue:0];
     [detProgress setMaxValue:100];
     [detProgress bind:CPValueBinding toObject:stepper withKeyPath:@"doubleValue" options:nil];
+    [detProgress setToolTip:@"Determinate progress bar."];
     [rightContent addSubview:detProgress];
     currentY += 20.0;
 
@@ -410,6 +440,7 @@
     [progressBar setStyle:CPProgressIndicatorBarStyle];
     [progressBar setIndeterminate:YES];
     [progressBar startAnimation:self];
+    [progressBar setToolTip:@"Indeterminate progress bar."];
     [rightContent addSubview:progressBar];
     
     currentY += gapY;
@@ -614,11 +645,13 @@
     [plusBtn setTarget:_arrayController];
     [plusBtn setAction:@selector(add:)];
     [plusBtn setEnabled:YES];
+    [plusBtn setToolTip:@"Add a new animal row."];
 
     var minusBtn = [CPButtonBar minusButton];
     [minusBtn setTarget:_arrayController];
     [minusBtn setAction:@selector(remove:)];
     [minusBtn bind:CPEnabledBinding toObject:_arrayController withKeyPath:@"canRemove" options:nil];
+    [minusBtn setToolTip:@"Remove selected animal."];
 
     [buttonBar setButtons:[plusBtn, minusBtn]];
     [topPaneWrapper addSubview:buttonBar];
@@ -707,6 +740,7 @@
     [tf setBezeled:YES];
     [tf setEditable:YES];
     [tf setControlSize:aSize];
+    [tf setToolTip:@"Resized text field."];
     [parentView addSubview:tf];
     y += rowHeight;
 
@@ -734,6 +768,7 @@
     var btn = [[CPButton alloc] initWithFrame:CGRectMake(xPos, y, width, 24)];
     [btn setTitle:@"Button"];
     [btn setControlSize:aSize];
+    [btn setToolTip:@"Standard button in " + title];
     [parentView addSubview:btn];
     y += rowHeight;
 
@@ -890,6 +925,7 @@
     [stylePop selectItemAtIndex:1]; // Default
     [stylePop setTarget:self];
     [stylePop setAction:@selector(changePickerStyle:)];
+    [stylePop setToolTip:@"Change the visual style of the main picker below."];
     [tContent addSubview:stylePop];
     
     // Time Zone
@@ -907,6 +943,7 @@
         
     [_tzPopUpButton setTarget:self];
     [_tzPopUpButton setAction:@selector(changeTimeZone:)];
+    [_tzPopUpButton setToolTip:@"Select the time zone for the picker."];
     [tContent addSubview:_tzPopUpButton];
     
     
@@ -922,6 +959,7 @@
     [_targetDatePicker setBordered:YES];
     [_targetDatePicker setBezeled:YES];
     [_targetDatePicker setDrawsBackground:YES];
+    [_targetDatePicker setToolTip:@"The main Date Picker instance."];
     
     // Init TZ
     if ([knownZones count] > 0)
@@ -965,6 +1003,7 @@
     [_dateElementsBtn selectItemAtIndex:2]; // Default YMD
     [_dateElementsBtn setTarget:self];
     [_dateElementsBtn setAction:@selector(updateElements:)];
+    [_dateElementsBtn setToolTip:@"Choose which date components are visible."];
     [cContent addSubview:_dateElementsBtn];
 
     _timeElementsBtn = [[CPPopUpButton alloc] initWithFrame:CGRectMake(cX + 180, cY, 110, 24)];
@@ -974,6 +1013,7 @@
     [_timeElementsBtn selectItemAtIndex:0]; // Default No Time
     [_timeElementsBtn setTarget:self];
     [_timeElementsBtn setAction:@selector(updateElements:)];
+    [_timeElementsBtn setToolTip:@"Choose which time components are visible."];
     [cContent addSubview:_timeElementsBtn];
     cY += 40.0;
 
@@ -988,6 +1028,7 @@
     [cbMin setFrameOrigin:CGPointMake(cX, cY)];
     [cbMin setTarget:self];
     [cbMin setAction:@selector(toggleMinDate:)];
+    [cbMin setToolTip:@"Enable minimum date constraint."];
     [cContent addSubview:cbMin];
     cY += 25.0;
 
@@ -996,6 +1037,7 @@
     [_minDatePicker setEnabled:NO];
     [_minDatePicker setTarget:self];
     [_minDatePicker setAction:@selector(updateMinDate:)];
+    [_minDatePicker setToolTip:@"Set the minimum allowed date."];
     [cContent addSubview:_minDatePicker];
     cY += 40.0;
 
@@ -1004,6 +1046,7 @@
     [cbMax setFrameOrigin:CGPointMake(cX, cY)];
     [cbMax setTarget:self];
     [cbMax setAction:@selector(toggleMaxDate:)];
+    [cbMax setToolTip:@"Enable maximum date constraint."];
     [cContent addSubview:cbMax];
     cY += 25.0;
 
@@ -1012,6 +1055,7 @@
     [_maxDatePicker setEnabled:NO];
     [_maxDatePicker setTarget:self];
     [_maxDatePicker setAction:@selector(updateMaxDate:)];
+    [_maxDatePicker setToolTip:@"Set the maximum allowed date."];
     [cContent addSubview:_maxDatePicker];
     cY += 40.0;
 
@@ -1149,6 +1193,7 @@
         [item setAlternateImage:[CPImage imageNamed:CPImageNameColorPanelHighlighted]];
         [item setTarget:CPApp];
         [item setAction:@selector(orderFrontColorPanel:)];
+        [item setToolTip:@"Open the standard system Color Panel."];
     }
     return item;
 }
