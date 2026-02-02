@@ -3378,22 +3378,20 @@ var themedButtonValues                      = nil,
                                                                }
                                                         size:CGSizeMake(12, 12)],
 
-// --- CLOCK HANDS ---
+    // --- CLOCK HANDS ---
     // The SVGs below are designed with a 1:3 aspect ratio (viewBox="0 0 1 3").
-    // The visual hand (rect) occupies the top 2/3 (height="2"), leaving the bottom 1/3 transparent.
-    // When centered by the clock code, the pivot point ends up 1/4 from the bottom of the visual hand,
-    // creating a 3:1 Tip-to-Tail ratio (e.g., 45px Tip, 15px Tail).
+    // We add preserveAspectRatio="none" so Firefox stretches them to fill the 4x96px container.
 
-    // Red Hand (3:1 Ratio)
-    svgHandRed      = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjMiIHZpZXdCb3g9IjAgMCAxIDMiPgo8cmVjdCB4PSIwLjI1IiB3aWR0aD0iMC41IiBoZWlnaHQ9IjIiIGZpbGw9IiNGRjNCMzAiLz4KPC9zdmc+",
+    // Red Hand
+    svgHandRed      = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDMiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxyZWN0IHg9IjAuMjUiIHdpZHRoPSIwLjUiIGhlaWdodD0iMiIgZmlsbD0iI0ZGM0IzMCIvPjwvc3ZnPg==",
     // Red Hand Dim (Disabled)
-    svgHandRedDim   = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjMiIHZpZXdCb3g9IjAgMCAxIDMiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjIiIGZpbGw9IiNGRjNCMzAiIGZpbGwtb3BhY2l0eT0iMC41Ii8+PC9zdmc+",
+    svgHandRedDim   = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDMiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxyZWN0IHg9IjAuMjUiIHdpZHRoPSIwLjUiIGhlaWdodD0iMiIgZmlsbD0iI0ZGM0IzMCIgZmlsbC1vcGFjaXR5PSIwLjUiLz48L3N2Zz4=",
     
-    // Black Hand (3:1 Ratio)
-    svgHandBlack    = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjMiIHZpZXdCb3g9IjAgMCAxIDMiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjIiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=",
+    // Black Hand
+    svgHandBlack    = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDMiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxyZWN0IHg9IjAuMjUiIHdpZHRoPSIwLjUiIGhlaWdodD0iMiIgZmlsbD0iIzAwMDAwMCIvPjwvc3ZnPg==",
     // Black Hand Dim (Disabled)
-    svgHandBlackDim = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjMiIHZpZXdCb3g9IjAgMCAxIDMiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjIiIGZpbGw9IiMwMDAwMDAiIGZpbGwtb3BhY2l0eT0iMC4zIi8+PC9zdmc+",
-    
+    svgHandBlackDim = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDMiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxyZWN0IHg9IjAuMjUiIHdpZHRoPSIwLjUiIGhlaWdodD0iMiIgZmlsbD0iIzAwMDAwMCIgZmlsbC1vcGFjaXR5PSIwLjMiLz48L3N2Zz4=",
+
     // Dot (Centered)
     svgHandDot      = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjUiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=",
     svgHandDotDim   = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjUiIGZpbGw9IiMwMDAwMDAiIGZpbGwtb3BhY2l0eT0iMC4zIi8+PC9zdmc=",
