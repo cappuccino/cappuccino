@@ -172,33 +172,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 @end
 
-@implementation _CPTableDrawView : CPView
-{
-    id _tableView;
-}
-
-- (id)initWithTableView:(CPTableView)aTableView
-{
-    self = [super init];
-
-    if (self)
-        _tableView = aTableView;
-
-    return self;
-}
-
-- (void)drawRect:(CGRect)aRect
-{
-    var frame = [self frame],
-        context = [[CPGraphicsContext currentContext] graphicsPort];
-
-    CGContextTranslateCTM(context, -CGRectGetMinX(frame), -CGRectGetMinY(frame));
-
-    [_tableView _drawRect:aRect];
-}
-
-@end
-
 /*!
     @ingroup appkit
     @class CPTableView
@@ -464,9 +437,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     _groupRows = [CPIndexSet indexSet];
 
-    _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
-    [_tableDrawView setBackgroundColor:[CPColor clearColor]];
-    [self addSubview:_tableDrawView];
+    // REMOVED: _tableDrawView initialization and addSubview
+    // _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
+    // [_tableDrawView setBackgroundColor:[CPColor clearColor]];
+    // [self addSubview:_tableDrawView];
 
     _draggedColumnIndex = -1;
     _draggedColumnIsSelected = NO;
@@ -474,11 +448,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _editingRow = CPNotFound;
     _editingColumn = CPNotFound;
 
-/*      //gradients for the source list when CPTableView is NOT first responder or the window is NOT key
-    // FIX ME: we need to actually implement this.
-    _sourceListInactiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [168.0/255.0,183.0/255.0,205.0/255.0,1.0,157.0/255.0,174.0/255.0,199.0/255.0,1.0], [0,1], 2);
-    _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
-    _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
     _differedColumnDataToRemove = [];
     _needsDifferedTableColumnRemove = NO;
     _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
@@ -489,19 +458,66 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self _initSubclass];
 }
 
+- (void)_updateRowStyleForView:(CPView)aView row:(CPInteger)aRow isSelected:(BOOL)isSelected
+{
+    var backgroundColor = nil,
+        domStyle = aView._DOMElement.style;
+
+    // 1. Determine Background Color (Selection or Alternating)
+    if (isSelected)
+    {
+        var isFocused = [self _isFocused];
+        // Use the highlight color directly
+        backgroundColor = isFocused ? [self selectionHighlightColor] : [self unfocusedSelectionHighlightColor];
+    }
+    else if (_usesAlternatingRowBackgroundColors && [_alternatingRowBackgroundColors count] > 0)
+    {
+        // Calculate alternating color
+        var colorIndex = aRow % [_alternatingRowBackgroundColors count];
+        backgroundColor = [_alternatingRowBackgroundColors objectAtIndex:colorIndex];
+    }
+    else
+    {
+        // Fallback to table background or clear
+        backgroundColor = nil; 
+    }
+
+    // Apply Background
+    if (backgroundColor)
+        [aView setBackgroundColor:backgroundColor];
+    else
+        [aView setBackgroundColor:[CPColor clearColor]];
+
+    // 2. Handle Grid Lines via CSS Borders (High Performance)
+    // Horizontal Grid
+    if (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask)
+        domStyle.borderBottom = "1px solid " + [[self gridColor] cssString];
+    else
+        domStyle.borderBottom = "none";
+
+    // Vertical Grid
+    if (_gridStyleMask & CPTableViewSolidVerticalGridLineMask)
+        domStyle.borderRight = "1px solid " + [[self gridColor] cssString];
+    else
+        domStyle.borderRight = "none";
+}
+
 - (void)_initSubclass
 {
     _BlockDeselectView = function(view, row, column)
     {
         [view unsetThemeState:CPThemeStateSelectedDataView];
+        // Update CSS background/border
+        [self _updateRowStyleForView:view row:row isSelected:NO];
     };
 
     _BlockSelectView = function(view, row, column)
     {
         [view setThemeState:CPThemeStateSelectedDataView];
+        // Update CSS background/border
+        [self _updateRowStyleForView:view row:row isSelected:YES];
     };
 }
-
 /*!
 @anchor setdatasource
     Sets the receiver's data source to a given object.
@@ -3465,10 +3481,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     _exposedRows = exposedRows;
     _exposedColumns = exposedColumns;
 
-    [_tableDrawView setFrame:exposedRect];
-
-    [self setNeedsDisplay:YES];
-
     // if we have any columns to remove do that here
 
     if (_needsDifferedTableColumnRemove)
@@ -3590,12 +3602,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
 
-    if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone && (isRowSelected || [self isColumnSelected:column]))
-        _BlockSelectView(dataView, row, column);
-    else
-        _BlockDeselectView(dataView, row, column);
+    // Apply the CSS styles immediately
+    [self _updateRowStyleForView:dataView row:row isSelected:isRowSelected || [self isColumnSelected:column]];
 
-            // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
+    if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone && (isRowSelected || [self isColumnSelected:column]))
+        [dataView setThemeState:CPThemeStateSelectedDataView];
+    else
+        [dataView unsetThemeState:CPThemeStateSelectedDataView];
+
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_)
     {
         if ([_delegate tableView:self isGroupRow:row])
@@ -3608,8 +3622,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
             [dataView unsetThemeState:CPThemeStateGroupRow];
         }
-
-        [self setNeedsDisplay:YES];
     }
 
     if (!_isViewBased)
@@ -3990,8 +4002,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)setNeedsDisplay:(BOOL)aFlag
 {
     [super setNeedsDisplay:aFlag];
-    [_tableDrawView setNeedsDisplay:aFlag];
-
     [[self headerView] setNeedsDisplay:YES];
 }
 
@@ -4017,17 +4027,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)_drawRect:(CGRect)aRect
 {
-    // FIX ME: All three of these methods will likely need to be rewritten for 1.0
-    // We've got grid drawing in highlightSelection and crap everywhere.
-
-    var exposedRect = [self exposedRect];
-
-    [self drawBackgroundInClipRect:exposedRect];
-    [self highlightSelectionInClipRect:exposedRect];
-    [self drawGridInClipRect:exposedRect];
-
+    // Implementation removed to prevent Canvas errors.
+    // CSS handles background, selection, and grid.
     if (_implementsCustomDrawRow)
-        [self _drawRows:_exposedRows clipRect:exposedRect];
+        [self _drawRows:_exposedRows clipRect:aRect];
 }
 
 /*!
@@ -4037,54 +4040,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)drawBackgroundInClipRect:(CGRect)aRect
 {
-    if (!_usesAlternatingRowBackgroundColors)
-        return;
-
-    var rowColors = [self alternatingRowBackgroundColors],
-        colorCount = [rowColors count];
-
-    if (colorCount === 0)
-        return;
-
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
-
-    if (colorCount === 1)
-    {
-        CGContextSetFillColor(context, rowColors[0]);
-        CGContextFillRect(context, aRect);
-
-        return;
-    }
-
-    var exposedRows = [self _exposedRowsInRect:aRect],
-        firstRow = FLOOR(exposedRows.location / colorCount) * colorCount,
-        lastRow = CPMaxRange(exposedRows) - 1,
-        colorIndex = 0,
-        groupRowRects = [];
-
-    //loop through each color so we only draw once for each color
-    while (colorIndex < colorCount)
-    {
-        CGContextBeginPath(context);
-
-        for (var row = firstRow + colorIndex; row <= lastRow; row += colorCount)
-        {
-            // if it's not a group row draw it otherwise we draw it later
-            if (![_groupRows containsIndex:row])
-                CGContextAddRect(context, CGRectIntersection(aRect, [self _rectOfRow:row checkRange:NO]));
-            else
-                groupRowRects.push(CGRectIntersection(aRect, [self _rectOfRow:row checkRange:NO]));
-        }
-
-        CGContextClosePath(context);
-
-        CGContextSetFillColor(context, rowColors[colorIndex]);
-        CGContextFillPath(context);
-
-        colorIndex++;
-    }
-
-    [self _drawGroupRowsForRects:groupRowRects];
+    // Empty implementation
 }
 
 /*!
@@ -4093,75 +4049,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)drawGridInClipRect:(CGRect)aRect
 {
-    var context = [[CPGraphicsContext currentContext] graphicsPort],
-        gridStyleMask = [self gridStyleMask],
-        lineThickness = [self currentValueForThemeAttribute:@"grid-line-thickness"];
-
-    if (!(gridStyleMask & (CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask)))
-        return;
-
-    CGContextBeginPath(context);
-
-    if (gridStyleMask & CPTableViewSolidHorizontalGridLineMask)
-    {
-        var exposedRows = [self _exposedRowsInRect:aRect],
-            row = exposedRows.location,
-            lastRow = CPMaxRange(exposedRows) - 1,
-            rowY = -lineThickness / 2,
-            minX = CGRectGetMinX(aRect),
-            maxX = CGRectGetMaxX(aRect);
-
-        for (; row <= lastRow; ++row)
-        {
-            // grab each row rect and add the top and bottom lines
-            var rowRect = [self _rectOfRow:row checkRange:NO],
-                rowY = CGRectGetMaxY(rowRect) - lineThickness / 2;
-
-            CGContextMoveToPoint(context, minX, rowY);
-            CGContextAddLineToPoint(context, maxX, rowY);
-        }
-
-        if (_rowHeight > 0.0)
-        {
-            var rowHeight = FULL_ROW_HEIGHT(),
-                totalHeight = CGRectGetMaxY(aRect) - lineThickness / 2;
-
-            while (rowY < totalHeight)
-            {
-                rowY += rowHeight;
-
-                CGContextMoveToPoint(context, minX, rowY);
-                CGContextAddLineToPoint(context, maxX, rowY);
-            }
-        }
-    }
-
-    if (gridStyleMask & CPTableViewSolidVerticalGridLineMask)
-    {
-        var exposedColumnIndexes = [self columnIndexesInRect:aRect],
-            columnsArray = [];
-
-        [exposedColumnIndexes getIndexes:columnsArray maxCount:-1 inIndexRange:nil];
-
-        var columnArrayIndex = 0,
-            columnArrayCount = columnsArray.length,
-            minY = CGRectGetMinY(aRect),
-            maxY = CGRectGetMaxY(aRect);
-
-        for (; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
-        {
-            var columnRect = [self rectOfColumn:columnsArray[columnArrayIndex]],
-                columnX = CGRectGetMaxX(columnRect) - lineThickness / 2;
-
-            CGContextMoveToPoint(context, columnX, minY);
-            CGContextAddLineToPoint(context, columnX, maxY);
-        }
-    }
-
-    CGContextClosePath(context);
-    CGContextSetStrokeColor(context, [self gridColor]);
-    CGContextSetLineWidth(context, lineThickness);
-    CGContextStrokePath(context);
+    // Empty implementation
 }
 
 /*!
@@ -4171,177 +4059,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
-    if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleNone)
-        return;
-
-    var context = [[CPGraphicsContext currentContext] graphicsPort],
-        indexes = [],
-        rectSelector = @selector(rectOfRow:);
-
-    if ([_selectedRowIndexes count] >= 1)
-    {
-        var exposedRows = [CPIndexSet indexSetWithIndexesInRange:[self rowsInRect:aRect]],
-            firstRow = [exposedRows firstIndex],
-            exposedRange = CPMakeRange(firstRow, [exposedRows lastIndex] - firstRow + 1);
-
-        [_selectedRowIndexes getIndexes:indexes maxCount:-1 inIndexRange:exposedRange];
-    }
-    else if ([_selectedColumnIndexes count] >= 1)
-    {
-        rectSelector = @selector(rectOfColumn:);
-
-        var exposedColumns = [self columnIndexesInRect:aRect],
-            firstColumn = [exposedColumns firstIndex],
-            exposedRange = CPMakeRange(firstColumn, [exposedColumns lastIndex] - firstColumn + 1);
-
-        [_selectedColumnIndexes getIndexes:indexes maxCount:-1 inIndexRange:exposedRange];
-    }
-
-    var count,
-        count2 = count = [indexes count];
-
-    if (!count)
-        return;
-
-    var drawGradient = (CPFeatureIsCompatible(CPHTMLCanvasFeature) && _selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList && [_selectedRowIndexes count] >= 1),
-        deltaHeight = 0.5 * (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask),
-        focused = [self _isFocused];
-
-    CGContextBeginPath(context);
-
-    if (drawGradient)
-    {
-        var gradientCache = focused ? [self selectionGradientColors] : [self unfocusedSelectionGradientColors],
-            topLineColor = [gradientCache objectForKey:CPSourceListTopLineColor],
-            bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
-            gradientColor = [gradientCache objectForKey:CPSourceListGradient];
-    }
-
-    var normalSelectionHighlightColor = focused ? [self selectionHighlightColor] : [self unfocusedSelectionHighlightColor];
-
-    // don't do these lookups if there are no group rows
-    if ([_groupRows count])
-    {
-        var topGroupLineColor = [CPColor colorWithCalibratedWhite:212.0 / 255.0 alpha:1.0],
-            bottomGroupLineColor = [CPColor colorWithCalibratedWhite:185.0 / 255.0 alpha:1.0],
-            gradientGroupColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [212.0 / 255.0, 212.0 / 255.0, 212.0 / 255.0, 1.0, 197.0 / 255.0, 197.0 / 255.0, 197.0 / 255.0, 1.0], [0, 1], 2);
-    }
-
-    while (count--)
-    {
-        var currentIndex = indexes[count],
-            rowRect = CGRectIntersection(self.isa.objj_msgSend1(self, rectSelector, currentIndex), aRect);
-
-        // group rows get the same highlight style as other rows if they're source list...
-        if (!drawGradient)
-            var shouldUseGroupGradient = [_groupRows containsIndex:currentIndex];
-
-        if (drawGradient || shouldUseGroupGradient)
-        {
-            var minX = CGRectGetMinX(rowRect),
-                minY = CGRectGetMinY(rowRect),
-                maxX = CGRectGetMaxX(rowRect),
-                maxY = CGRectGetMaxY(rowRect) - deltaHeight;
-
-            if (!drawGradient)
-            {
-                //If there is no source list gradient we need to close the selection path and fill it now
-                [normalSelectionHighlightColor setFill];
-                CGContextClosePath(context);
-                CGContextFillPath(context);
-                CGContextBeginPath(context);
-            }
-
-            CGContextAddRect(context, rowRect);
-
-            CGContextDrawLinearGradient(context, (shouldUseGroupGradient) ? gradientGroupColor : gradientColor, rowRect.origin, CGPointMake(minX, maxY), 0);
-
-            CGContextBeginPath(context);
-            CGContextMoveToPoint(context, minX, minY + .5);
-            CGContextAddLineToPoint(context, maxX, minY + .5);
-            CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? topGroupLineColor : topLineColor);
-            CGContextStrokePath(context);
-
-            CGContextBeginPath(context);
-            CGContextMoveToPoint(context, minX, maxY - .5);
-            CGContextAddLineToPoint(context, maxX, maxY - .5);
-            CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? bottomGroupLineColor : bottomLineColor);
-            CGContextStrokePath(context);
-        }
-        else
-        {
-            var radius = [self currentValueForThemeAttribute:@"selection-radius"];
-
-            if (radius > 0)
-            {
-                var minX = CGRectGetMinX(rowRect),
-                    maxX = CGRectGetMaxX(rowRect),
-                    minY = CGRectGetMinY(rowRect),
-                    maxY = CGRectGetMaxY(rowRect);
-
-                CGContextMoveToPoint(context, minX + radius, minY);
-                CGContextAddArcToPoint(context, maxX, minY, maxX, minY + radius, radius);
-                CGContextAddArcToPoint(context, maxX, maxY, maxX - radius, maxY, radius);
-                CGContextAddArcToPoint(context, minX, maxY, minX, maxY - radius, radius);
-                CGContextAddArcToPoint(context, minX, minY, minX + radius, minY, radius);
-            }
-            else
-                CGContextAddRect(context, rowRect);
-        }
-    }
-
-    CGContextClosePath(context);
-
-    if (!drawGradient)
-    {
-        [normalSelectionHighlightColor setFill];
-        CGContextFillPath(context);
-    }
-
-    CGContextBeginPath(context);
-
-    var gridStyleMask = [self gridStyleMask];
-
-    for (var i = 0; i < count2; i++)
-    {
-         var rect = self.isa.objj_msgSend1(self, rectSelector, indexes[i]),
-             minX = CGRectGetMinX(rect) - 0.5,
-             maxX = CGRectGetMaxX(rect) - 0.5,
-             minY = CGRectGetMinY(rect) - 0.5,
-             maxY = CGRectGetMaxY(rect) - 0.5;
-
-        if ([_selectedRowIndexes count] >= 1 && gridStyleMask & CPTableViewSolidVerticalGridLineMask)
-        {
-            var exposedColumns = [self columnIndexesInRect:aRect],
-                exposedColumnIndexes = [],
-                firstExposedColumn = [exposedColumns firstIndex],
-                exposedRange = CPMakeRange(firstExposedColumn, [exposedColumns lastIndex] - firstExposedColumn + 1);
-
-            [exposedColumns getIndexes:exposedColumnIndexes maxCount:-1 inIndexRange:exposedRange];
-
-            var exposedColumnCount = [exposedColumnIndexes count];
-
-            for (var c = firstExposedColumn; c < exposedColumnCount; c++)
-            {
-                var colRect = [self rectOfColumn:exposedColumnIndexes[c]],
-                    colX = CGRectGetMaxX(colRect) + 0.5;
-
-                CGContextMoveToPoint(context, colX, minY);
-                CGContextAddLineToPoint(context, colX, maxY);
-            }
-        }
-
-        //if the row after the current row is not selected then there is no need to draw the bottom grid line white.
-        if ([indexes containsObject:indexes[i] + 1])
-        {
-            CGContextMoveToPoint(context, minX, maxY);
-            CGContextAddLineToPoint(context, maxX, maxY);
-        }
-    }
-
-    CGContextClosePath(context);
-    CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"highlighted-grid-color"]);
-    CGContextStrokePath(context);
+    // Empty implementation
 }
 
 /*!
