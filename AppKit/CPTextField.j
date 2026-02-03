@@ -767,10 +767,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"],
         left          = CGRectGetMinX(contentRect);
 
-    // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
-    //if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
-    // left -= 1;
-
     switch (verticalAlign)
     {
         case CPTopVerticalTextAlignment:
