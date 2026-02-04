@@ -622,7 +622,6 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 	var bounds = CGRectMake(0, 0, 15, 15);
 
-	// TODO:
 	// FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
 	var dragView = [[CPView alloc] initWithFrame:bounds],
 	dragFillView = [[CPView alloc] initWithFrame:CGRectInset(bounds, 1.0, 1.0)];
