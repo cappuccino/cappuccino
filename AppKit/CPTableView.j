@@ -3247,7 +3247,19 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     return dragView;
 }
 
+// CPTableView.j
+
+- (CPView)_animationViewForColumn:(CPInteger)columnIndex
+{
+    return [self _makeGhostViewForColumn:columnIndex forDragging:NO];
+}
+
 - (CPView)_dragViewForColumn:(CPInteger)columnIndex
+{
+    return [self _makeGhostViewForColumn:columnIndex forDragging:YES];
+}
+
+- (CPView)_makeGhostViewForColumn:(CPInteger)columnIndex forDragging:(BOOL)isForDragging
 {
     var headerFrame = [_headerView frame],
         visibleRect = [self visibleRect],
@@ -3257,7 +3269,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         tableColumnUID = [tableColumn UID],
         columnHeaderView = [tableColumn headerView],
         columnHeaderFrame = [columnHeaderView frame],
-        frame = CGRectMake(MAX(CGRectGetMinX(columnRect) - CGRectGetMinX(visibleRect), 0.0),
+        frame = CGRectMake(MAX(CGRectGetMinX(columnRect)/* - CGRectGetMinX(visibleRect)*/, 0.0),
                             0.0,
                             CGRectGetWidth(columnHeaderFrame),
                             CGRectGetHeight(visibleRect) + CGRectGetHeight(headerFrame));
@@ -3268,7 +3280,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [dragView setTableView:self];
     [dragView setColumnIndex:columnIndex];
     [dragView setBackgroundColor:[CPColor clearColor]];
-    [dragView setAlphaValue:0.6];
+    [dragView setAlphaValue:(isForDragging ? 0.6 : 1.0)];
+    [dragView setShouldDrawBorders:isForDragging];
+    [dragView setIsSelected:[self isColumnSelected:columnIndex]];
 
     // Now a view that clips the column data views, which itself is clipped to the content view
     var columnVisRect = CGRectIntersection(columnRect, visibleRect);
@@ -3279,14 +3293,26 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [dragView addSubview:columnClipView];
     [dragView setColumnClipView:columnClipView];
-    _draggedColumnIsSelected = [self isColumnSelected:columnIndex];
+
+    if (isForDragging)
+        _draggedColumnIsSelected = [self isColumnSelected:columnIndex];
 
     var columnLeft = CGRectGetMinX(columnRect),
-        offset = CGPointMake(columnLeft, CGRectGetMinY(visibleRect));
+        offset = CGPointMake(columnLeft, CGRectGetMinY(visibleRect)),
+        // FIX: Check if we should force the "white text" look (Selected + Focused)
+        shouldForceActiveState = [self isColumnSelected:columnIndex] && [self _isFocused];
 
     [self _enumerateViewsInRows:_exposedRows columns:[CPIndexSet indexSetWithIndex:columnIndex] usingBlock:function(dataView, row, column, stop)
     {
         [self _addDraggedDataView:dataView toView:columnClipView forColumn:column row:row offset:offset];
+
+        // FIX: Force theme states because these views are about to lose their context
+        // (either by moving to a non-key DragWindow or by being removed from _dataViewsForRows tracking)
+        if (shouldForceActiveState)
+        {
+            [dataView setThemeState:CPThemeStateFirstResponder];
+            [dataView setThemeState:CPThemeStateKeyWindow];
+        }
 
         delete (_dataViewsForRows[row][tableColumnUID]);
     }];
@@ -3301,8 +3327,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [dragColumnHeaderView setThemeState:[columnHeaderView themeState]];
     [dragColumnHeaderView _setIndicatorImage:image];
 
-    // Give it a tag so it can be found later
-    [dragColumnHeaderView setTag:1];
+    if (isForDragging)
+        // Give it a tag so it can be found later
+        [dragColumnHeaderView setTag:1];
 
     [dragView addSubview:dragColumnHeaderView];
 
@@ -6243,6 +6270,8 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     CPTableView tableView       @accessors;
     int         columnIndex     @accessors;
     CPView      columnClipView  @accessors;
+    BOOL        shouldDrawBorders @accessors;
+    BOOL        isSelected      @accessors;
 }
 
 - (void)drawRect:(CGRect)dirtyRect
@@ -6269,7 +6298,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     //[tableView drawBackgroundInClipRect:bounds];
 
-    if (tableView._draggedColumnIsSelected)
+    if (isSelected)
     {
         CGContextSetFillColor(context, [tableView _isFocused] ? [tableView selectionHighlightColor] : [tableView unfocusedSelectionHighlightColor]);
         CGContextFillRect(context, bounds);
@@ -6279,22 +6308,25 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     //[tableView _drawHorizontalGridInClipRect:bounds];
 
-    var minX = CGRectGetMinX(bounds) + 0.5,
-        maxX = CGRectGetMaxX(bounds) - 0.5;
+    if (shouldDrawBorders)
+    {
+        var minX = CGRectGetMinX(bounds) + 0.5,
+            maxX = CGRectGetMaxX(bounds) - 0.5;
 
-    CGContextSetLineWidth(context, 1.0);
-    CGContextSetAlpha(context, 1.0);
-    CGContextSetStrokeColor(context, [tableView gridColor]);
+        CGContextSetLineWidth(context, 1.0);
+        CGContextSetAlpha(context, 1.0);
+        CGContextSetStrokeColor(context, [tableView gridColor]);
 
-    CGContextBeginPath(context);
+        CGContextBeginPath(context);
 
-    CGContextMoveToPoint(context, minX, CGRectGetMinY(bounds));
-    CGContextAddLineToPoint(context, minX, CGRectGetMaxY(bounds));
+        CGContextMoveToPoint(context, minX, CGRectGetMinY(bounds));
+        CGContextAddLineToPoint(context, minX, CGRectGetMaxY(bounds));
 
-    CGContextMoveToPoint(context, maxX, CGRectGetMinY(bounds));
-    CGContextAddLineToPoint(context, maxX, CGRectGetMaxY(bounds));
+        CGContextMoveToPoint(context, maxX, CGRectGetMinY(bounds));
+        CGContextAddLineToPoint(context, maxX, CGRectGetMaxY(bounds));
 
-    CGContextStrokePath(context);
+        CGContextStrokePath(context);
+    }
 }
 
 @end
