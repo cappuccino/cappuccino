@@ -172,6 +172,110 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 @end
 
+// Internal class to handle row background, selection and grid lines via DOM/CSS
+// This replaces the Canvas-based _CPTableDrawView to avoid coordinate limits.
+@implementation _CPTableRowView : CPView
+{
+    CPInteger   _rowIndex;
+    CPTableView _tableView;
+    CPView      _gridLineView;
+    BOOL        _selected;
+    BOOL        _focused;
+}
+
+- (id)initWithTableView:(CPTableView)aTableView
+{
+    self = [super initWithFrame:CGRectMakeZero()];
+    if (self)
+    {
+        _tableView = aTableView;
+        _selected = NO;
+        _focused = NO;
+
+        // Optimization: Turn off hit testing for the background row
+        // The CPTableView handles clicks, or the data views on top handle them.
+        [self setHitTests:NO];
+    }
+    return self;
+}
+
+- (void)setRowIndex:(CPInteger)anIndex
+{
+    _rowIndex = anIndex;
+    [self updateState];
+}
+
+- (void)setSelected:(BOOL)isSelected focused:(BOOL)isFocused
+{
+    if (_selected === isSelected && _focused === isFocused)
+        return;
+
+    _selected = isSelected;
+    _focused = isFocused;
+    [self updateState];
+}
+
+- (void)updateState
+{
+    var backgroundColor = nil;
+
+    if (_selected && [_tableView selectionHighlightStyle] != CPTableViewSelectionHighlightStyleNone)
+    {
+        if (_focused)
+            backgroundColor = [_tableView selectionHighlightColor];
+        else
+            backgroundColor = [_tableView unfocusedSelectionHighlightColor];
+    }
+    else if ([_tableView usesAlternatingRowBackgroundColors])
+    {
+        var colors = [_tableView alternatingRowBackgroundColors];
+        if ([colors count] > 0)
+            backgroundColor = colors[_rowIndex % [colors count]];
+    }
+
+    // Fallback if no color decided (transparent/white)
+    if (!backgroundColor)
+        backgroundColor = [CPColor clearColor];
+
+    [self setBackgroundColor:backgroundColor];
+    [self _updateGridLine];
+}
+
+- (void)_updateGridLine
+{
+    var mask = [_tableView gridStyleMask];
+
+    if (mask & CPTableViewSolidHorizontalGridLineMask)
+    {
+        if (!_gridLineView)
+        {
+            _gridLineView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+            [_gridLineView setBackgroundColor:[_tableView gridColor]];
+            // Ensure grid line is at the bottom of the row view
+            [_gridLineView setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
+            [self addSubview:_gridLineView];
+        }
+
+        var thickness = [_tableView valueForThemeAttribute:@"grid-line-thickness"] || 1.0;
+        [_gridLineView setFrame:CGRectMake(0, CGRectGetHeight([self bounds]) - thickness, CGRectGetWidth([self bounds]), thickness)];
+        [_gridLineView setHidden:NO];
+    }
+    else
+    {
+        [_gridLineView setHidden:YES];
+    }
+}
+
+- (void)resizeWithOldSuperviewSize:(CGSize)oldSize
+{
+    [super resizeWithOldSuperviewSize:oldSize];
+    if (_gridLineView && ![_gridLineView isHidden])
+        [self _updateGridLine];
+}
+
+@end
+
+
 /*!
     @ingroup appkit
     @class CPTableView
@@ -221,6 +325,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPDictionary                _archivedDataViews;
     Object                      _unavailable_custom_cibs;
 
+    // Row View Management (DOM Composition)
+    Object                      _visibleRowViews;
+    CPArray                     _cachedRowViews;
+
     //Configuring Behavior
     BOOL                        _allowsColumnReordering;
     BOOL                        _allowsColumnResizing;
@@ -266,8 +374,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPInteger                   _editingRow;
     CPInteger                   _editingColumn;
 
-    _CPTableDrawView            _tableDrawView;
-
     SEL                         _doubleAction;
     CPInteger                   _clickedRow;
     CPInteger                   _clickedColumn;
@@ -303,9 +409,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     Function                    _BlockSelectView;
 
     CPView                      _observedClipView;
-
-    Object                      _rowViews;
-    CPArray                     _reusableRowViews;
 }
 
 /*!
@@ -322,11 +425,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"alternating-row-colors": @[[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
-            @"grid-color": [CPColor colorWithHexString:@"dce0e2"],
+            @"alternating-row-colors": [CPNull null],
+            @"grid-color": [CPNull null],
             @"grid-line-thickness": 1.0,
             @"highlighted-grid-color": [CPNull null],
             @"selection-color": [CPNull null],
+            @"unfocused-selection-color": [CPNull null],
             @"sourcelist-selection-color": [CPNull null],
             @"sort-image": [CPNull null],
             @"sort-image-reversed": [CPNull null],
@@ -345,7 +449,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"dropview-above-border-width": [CPNull null],
             @"dropview-above-selected-border-color": [CPNull null],
             @"dropview-above-selected-border-width": [CPNull null],
-            @"header-view-height": 25.0
+            @"background-color": [CPNull null],
+            @"header-view-height": 25
         };
 }
 
@@ -394,7 +499,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
         _contentBindingExplicitlySet = NO;
 
-        [self setBackgroundColor:[CPColor whiteColor]];
+        // [self setBackgroundColor:[CPColor whiteColor]];
         [self _init];
     }
 
@@ -440,10 +545,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     _groupRows = [CPIndexSet indexSet];
 
-    // REMOVED: _tableDrawView initialization and addSubview
-    // _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
-    // [_tableDrawView setBackgroundColor:[CPColor clearColor]];
-    // [self addSubview:_tableDrawView];
+    // Row View Initialization for DOM rendering
+    _visibleRowViews = { };
+    _cachedRowViews = [];
 
     _draggedColumnIndex = -1;
     _draggedColumnIsSelected = NO;
@@ -451,6 +555,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _editingRow = CPNotFound;
     _editingColumn = CPNotFound;
 
+/*      //gradients for the source list when CPTableView is NOT first responder or the window is NOT key
+    // FIX ME: we need to actually implement this.
+    _sourceListInactiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [168.0/255.0,183.0/255.0,205.0/255.0,1.0,157.0/255.0,174.0/255.0,199.0/255.0,1.0], [0,1], 2);
+    _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
+    _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
     _differedColumnDataToRemove = [];
     _needsDifferedTableColumnRemove = NO;
     _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
@@ -458,104 +567,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (!_sortDescriptors)
         _sortDescriptors = [];
 
-    _rowViews = {};
-    _reusableRowViews = [];
-
     [self _initSubclass];
-}
-
-- (_CPTableRowView)_dequeueRowView
-{
-    if ([_reusableRowViews count] > 0)
-        return _reusableRowViews.pop();
-
-    var view = [[_CPTableRowView alloc] initWithFrame:CGRectMakeZero()];
-    // Ensure the row view doesn't block mouse events to the cells
-    [view setHitTests:NO]; 
-    return view;
-}
-
-- (void)_enqueueRowView:(_CPTableRowView)aView
-{
-    [aView setHidden:YES];
-    [_reusableRowViews addObject:aView];
-}
-
-- (void)_updateRowViewStyle:(_CPTableRowView)rowView rowIndex:(CPInteger)rowIndex
-{
-    var domStyle = rowView._DOMElement.style,
-        isSelected = [_selectedRowIndexes containsIndex:rowIndex],
-        backgroundColor = nil;
-
-    // 1. Background Color (Selection or Alternating)
-    if (isSelected)
-    {
-        var isFocused = [self _isFocused];
-        backgroundColor = isFocused ? [self selectionHighlightColor] : [self unfocusedSelectionHighlightColor];
-    }
-    else if (_usesAlternatingRowBackgroundColors && [_alternatingRowBackgroundColors count] > 0)
-    {
-        var colorIndex = rowIndex % [_alternatingRowBackgroundColors count];
-        backgroundColor = [_alternatingRowBackgroundColors objectAtIndex:colorIndex];
-    }
-
-    if (backgroundColor)
-        domStyle.backgroundColor = [backgroundColor cssString];
-    else
-        domStyle.backgroundColor = "transparent";
-
-    // 2. Grid Lines (CSS Borders)
-    // Note: We use border-bottom on the row view for horizontal lines.
-    // Vertical lines are usually handled by the columns or cells, 
-    // but typically strictly horizontal grids are the performance bottleneck.
-    if (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask)
-        domStyle.borderBottom = "1px solid " + [[self gridColor] cssString];
-    else
-        domStyle.borderBottom = "none";
-}
-
-- (void)_updateRowStyleForView:(CPView)aView row:(CPInteger)aRow isSelected:(BOOL)isSelected
-{
-    var backgroundColor = nil,
-        domStyle = aView._DOMElement.style;
-
-    // 1. Determine Background Color (Selection or Alternating)
-    if (isSelected)
-    {
-        var isFocused = [self _isFocused];
-        // Use the highlight color directly
-        backgroundColor = isFocused ? [self selectionHighlightColor] : [self unfocusedSelectionHighlightColor];
-    }
-    else if (_usesAlternatingRowBackgroundColors && [_alternatingRowBackgroundColors count] > 0)
-    {
-        // Calculate alternating color
-        var colorIndex = aRow % [_alternatingRowBackgroundColors count];
-        backgroundColor = [_alternatingRowBackgroundColors objectAtIndex:colorIndex];
-    }
-    else
-    {
-        // Fallback to table background or clear
-        backgroundColor = nil; 
-    }
-
-    // Apply Background
-    if (backgroundColor)
-        [aView setBackgroundColor:backgroundColor];
-    else
-        [aView setBackgroundColor:[CPColor clearColor]];
-
-    // 2. Handle Grid Lines via CSS Borders (High Performance)
-    // Horizontal Grid
-    if (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask)
-        domStyle.borderBottom = "1px solid " + [[self gridColor] cssString];
-    else
-        domStyle.borderBottom = "none";
-
-    // Vertical Grid
-    if (_gridStyleMask & CPTableViewSolidVerticalGridLineMask)
-        domStyle.borderRight = "1px solid " + [[self gridColor] cssString];
-    else
-        domStyle.borderRight = "none";
 }
 
 - (void)_initSubclass
@@ -563,17 +575,22 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _BlockDeselectView = function(view, row, column)
     {
         [view unsetThemeState:CPThemeStateSelectedDataView];
-        // Update CSS background/border
-        [self _updateRowStyleForView:view row:row isSelected:NO];
+        // Ensure we clear the focus state so the text goes back to normal color
+        [view unsetThemeState:CPThemeStateFirstResponder];
     };
 
     _BlockSelectView = function(view, row, column)
     {
         [view setThemeState:CPThemeStateSelectedDataView];
-        // Update CSS background/border
-        [self _updateRowStyleForView:view row:row isSelected:YES];
+        
+        // If the table is focused, apply the state that turns text white immediately
+        if ([self _isFocused])
+            [view setThemeState:CPThemeStateFirstResponder];
+        else
+            [view unsetThemeState:CPThemeStateFirstResponder];
     };
 }
+
 /*!
 @anchor setdatasource
     Sets the receiver's data source to a given object.
@@ -736,7 +753,8 @@ NOT YET IMPLEMENTED
 {
     [self _setupReload];
     [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+    // No more manual draw rect
+    // [self setNeedsDisplay:YES];
 }
 
 // Reloads the views AND the data
@@ -939,6 +957,7 @@ NOT YET IMPLEMENTED
 - (void)setUsesAlternatingRowBackgroundColors:(BOOL)shouldUseAlternatingRowBackgroundColors
 {
     _usesAlternatingRowBackgroundColors = shouldUseAlternatingRowBackgroundColors;
+    [self _updateAllVisibleRowViews];
 }
 
 /*!
@@ -957,8 +976,7 @@ NOT YET IMPLEMENTED
 - (void)setAlternatingRowBackgroundColors:(CPArray)alternatingRowBackgroundColors
 {
     [self setValue:alternatingRowBackgroundColors forThemeAttribute:@"alternating-row-colors"];
-
-    [self setNeedsDisplay:YES];
+    [self _updateAllVisibleRowViews];
 }
 
 /*!
@@ -1007,7 +1025,7 @@ NOT YET IMPLEMENTED
 
     [self _updateHighlightWithOldRows:[CPIndexSet indexSet] newRows:_selectedRowIndexes];
     [self _updateHighlightWithOldColumns:[CPIndexSet indexSet] newColumns:_selectedColumnIndexes];
-    [self setNeedsDisplay:YES];
+    [self _updateAllVisibleRowViews];
 }
 
 /*!
@@ -1021,7 +1039,7 @@ NOT YET IMPLEMENTED
         return;
 
     [self setValue:aColor forThemeAttribute:@"selection-color"];
-    [self setNeedsDisplay:YES];
+    [self _updateAllVisibleRowViews];
 }
 
 /*!
@@ -1038,7 +1056,14 @@ NOT YET IMPLEMENTED
 - (CPColor)unfocusedSelectionHighlightColor
 {
     if (!_unfocusedSelectionHighlightColor)
-        _unfocusedSelectionHighlightColor = [self _unfocusedSelectionColorFromColor:[self selectionHighlightColor] saturation:0];
+    {
+        // Check theme attributes first.
+        // This ensures 'unfocused-selection-color' from ThemeDescriptors.j is used.
+        _unfocusedSelectionHighlightColor = [self currentValueForThemeAttribute:@"unfocused-selection-color"];
+
+        if (!_unfocusedSelectionHighlightColor)
+            _unfocusedSelectionHighlightColor = [self _unfocusedSelectionColorFromColor:[self selectionHighlightColor] saturation:0];
+    }
 
     return _unfocusedSelectionHighlightColor;
 }
@@ -1128,8 +1153,7 @@ NOT YET IMPLEMENTED
 - (void)setGridColor:(CPColor)aColor
 {
     [self setValue:aColor forThemeAttribute:@"grid-color"];
-
-    [self setNeedsDisplay:YES];
+    [self _updateAllVisibleRowViews];
 }
 
 /*!
@@ -1151,8 +1175,7 @@ NOT YET IMPLEMENTED
         return;
 
     _gridStyleMask = aGrideStyleMask;
-
-    [self setNeedsDisplay:YES];
+    [self _updateAllVisibleRowViews];
 }
 
 /*!
@@ -1420,8 +1443,9 @@ NOT YET IMPLEMENTED
         _selectedColumnIndexes = [columns copy];
 
     [self _updateHighlightWithOldColumns:previousSelectedIndexes newColumns:_selectedColumnIndexes];
-    [self setNeedsDisplay:YES]; // FIXME: should be setNeedsDisplayInRect:enclosing rect of new (de)selected columns
-                              // but currently -drawRect: is not implemented here
+    // No more setNeedsDisplay for drawing
+    // [self setNeedsDisplay:YES];
+
     if (_headerView)
         [_headerView setNeedsDisplay:YES];
 
@@ -1442,8 +1466,6 @@ NOT YET IMPLEMENTED
     _selectedRowIndexes = [rows copy];
 
     [self _updateHighlightWithOldRows:previousSelectedIndexes newRows:_selectedRowIndexes];
-    [self setNeedsDisplay:YES]; // FIXME: should be setNeedsDisplayInRect:enclosing rect of new (de)selected rows
-                              // but currently -drawRect: is not implemented here
 
     var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
     [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectedRowIndexes"];
@@ -1522,30 +1544,22 @@ NOT YET IMPLEMENTED
 */
 - (void)_updateHighlightWithOldRows:(CPIndexSet)oldRows newRows:(CPIndexSet)newRows
 {
-    // Update the visual state of the Row Views
-    var allChangedRows = [oldRows copy];
-    [allChangedRows addIndexes:newRows];
-
-    [allChangedRows enumerateIndexesUsingBlock:function(rowIndex, stop)
-    {
-        var rowView = _rowViews[rowIndex];
-        if (rowView)
-        {
-            [self _updateRowViewStyle:rowView rowIndex:rowIndex];
-        }
-    }];
-
-    // Update the Text Color of the Data Views (Theme State)
-    [self _enumerateViewsInRows:oldRows columns:_exposedColumns usingBlock:function(view, row, column)
-    {
-        [view unsetThemeState:CPThemeStateSelectedDataView];
-    }];
+    [self _enumerateViewsInRows:oldRows columns:_exposedColumns usingBlock:_BlockDeselectView];
 
     if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone)
-        [self _enumerateViewsInRows:newRows columns:_exposedColumns usingBlock:function(view, row, column)
-        {
-            [view setThemeState:CPThemeStateSelectedDataView];
-        }];
+        [self _enumerateViewsInRows:newRows columns:_exposedColumns usingBlock:_BlockSelectView];
+
+    // Update Row Views (DOM Backgrounds)
+    var focused = [self _isFocused];
+    [oldRows enumerateIndexesUsingBlock:function(idx, stop) {
+        var rowView = _visibleRowViews[idx];
+        if (rowView) [rowView setSelected:NO focused:focused];
+    }];
+
+    [newRows enumerateIndexesUsingBlock:function(idx, stop) {
+        var rowView = _visibleRowViews[idx];
+        if (rowView) [rowView setSelected:YES focused:focused];
+    }];
 }
 
 /*!
@@ -2273,6 +2287,9 @@ NOT YET IMPLEMENTED
 {
     [super resizeWithOldSuperviewSize:aSize];
 
+    // Ensure all row views stretch to fill the new width
+    [self _updateAllVisibleRowViewsFrames];
+
     if (_disableAutomaticResizing)
         return;
 
@@ -2412,13 +2429,22 @@ NOT YET IMPLEMENTED
     // so we should size the last resized to fit
 
     // find the last visisble column
-    while (count-- && [_tableColumns[count] isHidden]);
+    while (count--)
+    {
+        var hidden = [_tableColumns[count] isHidden];
+        if (!hidden)
+            break;
+    }
 
     // find the max x, but subtract a single pixel since the spacing isn't applicable here.
-    var delta = superviewWidth - CGRectGetMaxX([self rectOfColumn:count]) - ([self intercellSpacing].width || 1),
-        newSize = [item width] + delta;
+    if (count >= 0)
+    {
+        var item = _tableColumns[count],
+            delta = superviewWidth - CGRectGetMaxX([self rectOfColumn:count]) - ([self intercellSpacing].width || 1),
+            newSize = [item width] + delta;
 
-    [item _tryToResizeToWidth:newSize];
+        [item _tryToResizeToWidth:newSize];
+    }
 }
 
 /*!
@@ -2600,7 +2626,8 @@ NOT YET IMPLEMENTED
     [self setFrameSize:CGSizeMake(width, height)];
 
     [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+    // No more display needed for layout
+    // [self setNeedsDisplay:YES];
 }
 
 
@@ -3557,6 +3584,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     _exposedRows = exposedRows;
     _exposedColumns = exposedColumns;
 
+    // Remove old draw view call
+    // [_tableDrawView setFrame:exposedRect];
+
+    // [self setNeedsDisplay:YES]; // Not needed for structure changes
+
     // if we have any columns to remove do that here
 
     if (_needsDifferedTableColumnRemove)
@@ -3603,10 +3635,21 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)_unloadDataViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes
 {
+    // Recycle Row Views
+    [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stop) {
+        var rowView = _visibleRowViews[rowIndex];
+        if (rowView)
+        {
+             [rowView removeFromSuperview];
+             _cachedRowViews.push(rowView);
+             delete _visibleRowViews[rowIndex];
+        }
+    }];
+
     if (![rowIndexes count] || ![columnIndexes count] || [columnIndexes lastIndex] >=  [_tableColumns count])
         return;
 
-    // If an edited view is about to be unloaded, cleanup its state before enqueuing.
+    // If and edited view is about to be unloaded, cleanup its state before enqueuing.
     if ([columnIndexes containsIndex:_editingColumn] && [rowIndexes containsIndex:_editingRow])
         [self _resignEditedView];
 
@@ -3622,22 +3665,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self _sendDelegateWillRemoveView:dataView forTableColumn:tableColumn row:row];
         [self _enqueueReusableDataView:dataView];
     }];
-
-    // --- START ROW VIEW CLEANUP ---
-    // If we are unloading rows, we should recycle the corresponding RowViews
-    var currentIndex = [rowIndexes firstIndex];
-    while (currentIndex !== CPNotFound)
-    {
-        var rowView = _rowViews[currentIndex];
-        if (rowView)
-        {
-            [rowView removeFromSuperview];
-            [self _enqueueRowView:rowView];
-            delete _rowViews[currentIndex];
-        }
-        currentIndex = [rowIndexes indexGreaterThanIndex:currentIndex];
-    }
-    // --- END ROW VIEW CLEANUP ---
 }
 
 /*!
@@ -3645,6 +3672,33 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)_loadDataViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes
 {
+    // Load Row Views
+    var focused = [self _isFocused],
+        visibleWidth = MAX([self bounds].size.width, CGRectGetWidth([self exposedRect]));
+
+    [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stop) {
+        if (!_visibleRowViews[rowIndex])
+        {
+            var rowView = [self _dequeueRowView];
+            if (!rowView)
+                rowView = [[_CPTableRowView alloc] initWithTableView:self];
+
+            [rowView setRowIndex:rowIndex];
+            [rowView setSelected:[self isRowSelected:rowIndex] focused:focused];
+
+            // Set frame to span the entire width
+            var rowRect = [self _rectOfRow:rowIndex checkRange:NO];
+            rowRect.size.width = visibleWidth;
+            rowRect.origin.x = 0;
+
+            [rowView setFrame:rowRect];
+
+            // Add behind data views
+            [self addSubview:rowView positioned:CPWindowBelow relativeTo:nil];
+            _visibleRowViews[rowIndex] = rowView;
+        }
+    }];
+
     if (![rowIndexes count] || ![columnIndexes count])
         return;
 
@@ -3656,42 +3710,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             return ![_tableColumns[idx] isHidden];
         }];
 
-    // --- WIDTH CALCULATION FIX ---
-    // 1. Calculate the width of the actual columns (Content Width)
-    var totalContentWidth = 0.0;
-    if (_tableColumnRanges.length > 0)
-        totalContentWidth = CPMaxRange([_tableColumnRanges lastObject]);
-    
-    // 2. Calculate the width of the visible viewport (ClipView Width)
-    var superview = [self superview],
-        visibleWidth = superview ? CGRectGetWidth([superview bounds]) : 0.0;
-
-    // 3. The row background should stretch to whichever is larger
-    var rowDisplayWidth = MAX(totalContentWidth, visibleWidth);
-    // -----------------------------
-
     [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stopRow)
     {
-        var rowView = _rowViews[rowIndex];
-        
-        if (!rowView)
-        {
-            rowView = [self _dequeueRowView];
-            [self addSubview:rowView positioned:CPWindowBelow relativeTo:nil]; 
-            _rowViews[rowIndex] = rowView;
-        }
-
-        // --- FRAME UPDATE ---
-        var rowRect = [self _rectOfRow:rowIndex checkRange:NO];
-        rowRect.size.width = rowDisplayWidth; // Force full width
-        
-        [rowView setFrame:rowRect];
-        [rowView setRowIndex:rowIndex];
-        [rowView setHidden:NO];
-        
-        [self _updateRowViewStyle:rowView rowIndex:rowIndex];
-        // --------------------
-
         if (!_dataViewsForRows[rowIndex])
             _dataViewsForRows[rowIndex] = {};
 
@@ -3713,15 +3733,34 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }];
 }
 
-- (void)_updateAllRowViews
+- (CPView)_dequeueRowView
 {
-    // Iterate over the keys of the _rowViews object
-    for (var rowIndex in _rowViews)
+    if (_cachedRowViews.length > 0)
+        return _cachedRowViews.pop();
+    return nil;
+}
+
+- (void)_updateAllVisibleRowViews
+{
+    var focused = [self _isFocused];
+    for (var idx in _visibleRowViews)
     {
-        if (_rowViews.hasOwnProperty(rowIndex))
+        if (_visibleRowViews.hasOwnProperty(idx))
+            [_visibleRowViews[idx] setSelected:[self isRowSelected:+idx] focused:focused];
+    }
+}
+
+- (void)_updateAllVisibleRowViewsFrames
+{
+    var visibleWidth = MAX([self bounds].size.width, CGRectGetWidth([self exposedRect]));
+    for (var idx in _visibleRowViews)
+    {
+        if (_visibleRowViews.hasOwnProperty(idx))
         {
-            var rowView = _rowViews[rowIndex];
-            [self _updateRowViewStyle:rowView rowIndex:+rowIndex];
+             var rowView = _visibleRowViews[idx],
+                 rect = [rowView frame];
+             rect.size.width = visibleWidth;
+             [rowView setFrame:rect];
         }
     }
 }
@@ -3741,22 +3780,22 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
 
-    // --- UPDATED LOGIC ---
-    // Remove the old direct CSS manipulation on the dataView for background/borders.
-    // Ensure the data view itself is transparent so the RowView shows through.
-    if ([dataView respondsToSelector:@selector(setBackgroundColor:)])
-        [dataView setBackgroundColor:nil]; 
-        
-    if ([dataView isKindOfClass:[CPTextField class]])
-        [dataView setDrawsBackground:NO];
-
-    // We still set the theme state for text color changes (e.g. white text on blue selection)
     if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone && (isRowSelected || [self isColumnSelected:column]))
-        [dataView setThemeState:CPThemeStateSelectedDataView];
-    else
-        [dataView unsetThemeState:CPThemeStateSelectedDataView];
-    // ---------------------
+    {
+        _BlockSelectView(dataView, row, column);
 
+        if ([self _isFocused])
+            [dataView setThemeState:CPThemeStateFirstResponder];
+        else
+            [dataView unsetThemeState:CPThemeStateFirstResponder];
+    }
+    else
+    {
+        _BlockDeselectView(dataView, row, column);
+        // Ensure we clear this state if a view is reused
+        [dataView unsetThemeState:CPThemeStateFirstResponder]; 
+    }
+            // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_)
     {
         if ([_delegate tableView:self isGroupRow:row])
@@ -3769,6 +3808,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
             [dataView unsetThemeState:CPThemeStateGroupRow];
         }
+
+        [self setNeedsDisplay:YES];
     }
 
     if (!_isViewBased)
@@ -3816,6 +3857,18 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:function(view, row, column, stop)
     {
         [view setFrame:[self frameOfDataViewAtColumn:column row:row]];
+    }];
+
+    // Also layout row views if needed (usually handled by resize)
+    var visibleWidth = MAX([self bounds].size.width, CGRectGetWidth([self exposedRect]));
+    [rowIndexes enumerateIndexesUsingBlock:function(row, stop) {
+        if (_visibleRowViews[row])
+        {
+             var rect = [self _rectOfRow:row checkRange:NO];
+             rect.size.width = visibleWidth;
+             rect.origin.x = 0;
+             [_visibleRowViews[row] setFrame:rect];
+        }
     }];
 }
 
@@ -4149,6 +4202,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)setNeedsDisplay:(BOOL)aFlag
 {
     [super setNeedsDisplay:aFlag];
+
     [[self headerView] setNeedsDisplay:YES];
 }
 
@@ -4174,45 +4228,33 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)_drawRect:(CGRect)aRect
 {
-    // We have moved grid lines and background drawing to the DOM via _CPTableRowView.
-    // We intentionally do NOT call _drawRows:clipRect: here to avoid CanvasRenderingContext2D.translate 
-    // errors on large tables in Firefox.
-    
-    // Only call custom draw if strictly necessary, but ideally subclasses should also migrate to DOM.
+    // NO-OP: We no longer draw on canvas. DOM composition handles background, grid and selection.
     if (_implementsCustomDrawRow)
-    {
-        // Be very careful here. If subclasses use coordinates > 32k, this will still crash.
         [self _drawRows:_exposedRows clipRect:aRect];
-    }
 }
 
 /*!
     Draws the background in a given clip rect.
-    This method should only be overridden if you want something other than a solid color or alternating row colors.
-    @note this method should not be called directly, instead use \c setNeedsDisplay:
+    Deprecated: Handled by _CPTableRowView
 */
 - (void)drawBackgroundInClipRect:(CGRect)aRect
 {
-    // Empty implementation
 }
 
 /*!
-    Draws the grid for the tableview based on the set grid mask in a given clip rect.
-    @note this method should not be called directly, instead use setNeedsDisplay:
+    Draws the grid for the tableview.
+    Deprecated: Handled by _CPTableRowView
 */
 - (void)drawGridInClipRect:(CGRect)aRect
 {
-    // Empty implementation
 }
 
 /*!
-    Draws the selection with the set selection highlight style in a given clip rect.
-    You can change the highlight style to a source list style gradient in setSelectionHighlightStyle:
-    @note this method should not be called directly, instead use \c setNeedsDisplay:
+    Draws the selection.
+    Deprecated: Handled by _CPTableRowView
 */
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
-    // Empty implementation
 }
 
 /*!
@@ -4222,49 +4264,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)_drawGroupRowsForRects:(CPArray)rects
 {
-    if ((CPFeatureIsCompatible(CPHTMLCanvasFeature) && _selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList) || !rects.length)
-        return;
-
-    var context = [[CPGraphicsContext currentContext] graphicsPort],
-        i = rects.length;
-
-    CGContextBeginPath(context);
-
-    var gradientCache = [self selectionGradientColors],
-        topLineColor = [CPColor colorWithHexString:"d3d3d3"],
-        bottomLineColor = [CPColor colorWithHexString:"bebebd"],
-        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0, 1.0,
-                                                                                            199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0, 1.0], [0, 1], 2),
-        drawGradient = YES;
-
-    while (i--)
-    {
-        var rowRect = rects[i];
-
-        CGContextAddRect(context, rowRect);
-
-        if (drawGradient)
-        {
-            var minX = CGRectGetMinX(rowRect),
-                minY = CGRectGetMinY(rowRect),
-                maxX = CGRectGetMaxX(rowRect),
-                maxY = CGRectGetMaxY(rowRect);
-
-            CGContextDrawLinearGradient(context, gradientColor, rowRect.origin, CGPointMake(minX, maxY), 0);
-
-            CGContextBeginPath(context);
-            CGContextMoveToPoint(context, minX, minY);
-            CGContextAddLineToPoint(context, maxX, minY);
-            CGContextSetStrokeColor(context, topLineColor);
-            CGContextStrokePath(context);
-
-            CGContextBeginPath(context);
-            CGContextMoveToPoint(context, minX, maxY);
-            CGContextAddLineToPoint(context, maxX, maxY - 1);
-            CGContextSetStrokeColor(context, bottomLineColor);
-            CGContextStrokePath(context);
-        }
-    }
+    // TODO: Implement Group Row styling in _CPTableRowView
 }
 
 /*!
@@ -4326,11 +4326,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     _exposedRect = nil;
 
-    [self setNeedsDisplay:YES];
+    // No need to setNeedsDisplay for canvas
+    // [self setNeedsDisplay:YES];
     [self setNeedsLayout];
-
-    // Explicitly reload visible data to resize the _CPTableRowView backgrounds
-    [self load];
 }
 
 /*!
@@ -4925,8 +4923,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)becomeKeyWindow
 {
+    [self _notifyViewDidBecomeFirstResponder];
     [self setNeedsDisplay:YES];
-    [self _updateAllRowViews];
 }
 
 /*!
@@ -4934,8 +4932,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)resignKeyWindow
 {
+    [self _notifyViewDidResignFirstResponder];
     [self setNeedsDisplay:YES];
-    [self _updateAllRowViews];
 }
 
 /*!
@@ -5402,6 +5400,39 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self scrollRowToVisible:i];
 }
 
+- (void)_updateDataViewsFocusState
+{
+    var isFocused = [self _isFocused];
+
+    [self enumerateAvailableViewsUsingBlock:function(view, row, column)
+    {
+        // Only selected rows need to toggle between White and Black text
+        if ([self isRowSelected:row] || [self isColumnSelected:column])
+        {
+            if (isFocused)
+                [view setThemeState:CPThemeStateFirstResponder];
+            else
+                [view unsetThemeState:CPThemeStateFirstResponder];
+        }
+    }];
+}
+
+- (void)_notifyViewDidBecomeFirstResponder
+{
+    // Ensure the row highlights turn "blue" (active)
+    [self _updateAllVisibleRowViews];
+    // Ensure the text turns white
+    [self _updateDataViewsFocusState];
+}
+
+- (void)_notifyViewDidResignFirstResponder
+{
+    // Ensure the row highlights turn "gray" (inactive)
+    [self _updateAllVisibleRowViews];
+    // Ensure the text turns black
+    [self _updateDataViewsFocusState];
+}
+
 @end
 
 
@@ -5742,7 +5773,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*
     @ignore
     Returns YES if the column at columnIndex can be reordered.
-    It can be possible if column reordering is allowed and if the tableview
+    It can be possible if column reordering is allowed and if the table view
     delegate also accept the reordering
 */
 - (BOOL)_sendDelegateShouldReorderColumn:(CPInteger)columnIndex toColumn:(CPInteger)newColumnIndex
@@ -6059,11 +6090,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 {
     [super encodeWithCoder:aCoder];
 
-    // We do this in order to avoid encoding the _tableDrawView, which
-    // should just automatically be created programmatically as needed.
-    if (_tableDrawView)
-        [_tableDrawView removeFromSuperview];
-
     [aCoder encodeObject:_dataSource forKey:CPTableViewDataSourceKey];
     [aCoder encodeObject:_delegate forKey:CPTableViewDelegateKey];
 
@@ -6313,29 +6339,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 - (CPString)description
 {
     return "<" + [self className] + " 0x" + [CPString stringWithHash:[self UID]] + " identifier=" + [self identifier] + ">";
-}
-
-@end
-
-@implementation _CPTableRowView : CPView
-{
-    CPInteger   _rowIndex @accessors(getter=rowIndex);
-}
-
-- (void)setRowIndex:(CPInteger)anIndex
-{
-    _rowIndex = anIndex;
-}
-
-// Optimization: Bypass standard drawing mechanisms entirely
-- (BOOL)wantsDefaultClipping
-{
-    return NO;
-}
-
-- (void)drawRect:(CGRect)aRect
-{
-    // No-op: All rendering is handled via DOM styles (background-color, border)
 }
 
 @end
