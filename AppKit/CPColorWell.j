@@ -101,6 +101,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 	BOOL    _bordered;
 
 	CPColor _color;
+
+	CGPoint _mouseDownPoint;
+	BOOL    _isDragging;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -386,14 +389,13 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 /*!
  Allows this well to serve as a drag source, providing its color to other targets.
 
- This method is called from \c -continueTracking:at: when the user drags beyond a threshold (3 pixels).
- The drag is initiated during the tracking phase rather than via \c -mouseDragged: because CPControl's
- tracking system intercepts mouse events.
+ This method is called from \c -mouseDragged: when the user drags beyond a threshold (3 pixels).
+ It uses the same drag mechanism as the working panel swatches: \c dragView:at:offset:event:pasteboard:source:slideBack:
 
  When the user drags from a well, this method:
  1. Archives the well's color to the drag pasteboard as \c CPColorDragType
- 2. Initiates a drag operation with a visual representation
- 3. Allows the color to be dropped on other wells, the panel, or custom views
+ 2. Creates a visual drag view
+ 3. Initiates a drag operation that can be dropped on other wells, the panel, or custom views
 
  This completes the drag-and-drop integration. Wells can both receive colors (via \c performDragOperation:)
  and provide colors (via this method). Combined with the responder chain mechanism, users have multiple
@@ -402,24 +404,10 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
  - Drag from panel → drop on well → direct color transfer
  - Drag from well → drop on another well → color copying
  */
-- (void)_initiateDrag
+- (void)_initiateDragWithEvent:(CPEvent)anEvent
 {
 	if (![self isEnabled])
 		return;
-
-	var contentRect = [self contentRectForBounds:[self bounds]],
-	dragImage = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[self class]] pathForResource:@"color-drag-image.png"] size:CGSizeMake(16.0, 16.0)],
-	dragPoint = CGPointMake(CGRectGetMidX(contentRect) - 8.0, CGRectGetMidY(contentRect) - 8.0);
-
-	// If we don't have a drag image resource, create a simple colored square view
-	if (!dragImage)
-	{
-		var dragView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 16.0, 16.0)];
-		[dragView setBackgroundColor:_color];
-		dragImage = [[CPImage alloc] initWithSize:CGSizeMake(16.0, 16.0)];
-		// Note: Ideally we'd render dragView to dragImage here, but for simplicity
-		// we'll rely on the resource or accept that drag preview might be missing
-	}
 
 	var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard],
 	data = [CPKeyedArchiver archivedDataWithRootObject:_color];
@@ -427,17 +415,26 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 	[pasteboard declareTypes:[CPArray arrayWithObject:CPColorDragType] owner:self];
 	[pasteboard setData:data forType:CPColorDragType];
 
-	// We need to get the current event to pass to dragImage:at:offset:event:
-	// Since we're being called from continueTracking, we should have access to it
-	var currentEvent = [CPApp currentEvent];
+	// Create a drag view matching our content area
+	var contentRect = [self contentRectForBounds:[self bounds]],
+	dragBounds = CGRectMake(0, 0, CGRectGetWidth(contentRect), CGRectGetHeight(contentRect)),
+	dragView = [[CPView alloc] initWithFrame:dragBounds],
+	dragFillView = [[CPView alloc] initWithFrame:CGRectInset(dragBounds, 1.0, 1.0)];
 
-	[self dragImage:dragImage
-				 at:dragPoint
-			 offset:CPSizeMakeZero()
-			  event:currentEvent
-		 pasteboard:pasteboard
-			 source:self
-		  slideBack:YES];
+	[dragView setBackgroundColor:[CPColor blackColor]];
+	[dragFillView setBackgroundColor:_color];
+	[dragView addSubview:dragFillView];
+
+	// Convert the event location to our coordinate space for drag origin
+	var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+
+	[self dragView:dragView
+				at:CGPointMake(point.x - dragBounds.size.width / 2.0, point.y - dragBounds.size.height / 2.0)
+			offset:CPSizeMakeZero()
+			 event:anEvent
+		pasteboard:nil
+			source:self
+		 slideBack:YES];
 }
 
 - (void)colorWellDidBecomeExclusive:(CPNotification)aNotification
@@ -451,62 +448,79 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 	[self deactivate];
 }
 
-// Tracking and drag initiation
-- (BOOL)startTracking:(CGPoint)aPoint
+// Mouse handling - bypass CPControl's tracking system to enable dragging
+- (void)mouseDown:(CPEvent)anEvent
 {
-	if ([self isEnabled])
-		[self highlight:YES];
+	if (![self isEnabled])
+		return;
 
-	return [super startTracking:aPoint];
+	// Store the initial point for drag threshold calculation
+	_mouseDownPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+	_isDragging = NO;
+
+	[self highlight:YES];
+
+	// Track the mouse ourselves without invoking CPControl's tracking system
+	// This allows mouseDragged: to be called
+	[CPApp setTarget:self selector:@selector(_trackMouse:) forMode:CPEventTrackingRunLoopMode];
 }
 
-- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
+- (void)_trackMouse:(CPEvent)anEvent
 {
-	// If the user has dragged beyond a threshold, initiate a drag operation
-	var deltaX = ABS(aPoint.x - lastPoint.x),
-	deltaY = ABS(aPoint.y - lastPoint.y);
+	var type = [anEvent type];
 
-	if (deltaX > 3 || deltaY > 3)
+	if (type === CPLeftMouseDragged)
 	{
-		[self highlight:NO];
-		[self _initiateDrag];
-		return NO; // Stop tracking, drag is now in progress
+		[self mouseDragged:anEvent];
 	}
-
-	return [super continueTracking:lastPoint at:aPoint];
+	else if (type === CPLeftMouseUp)
+	{
+		[self mouseUp:anEvent];
+		[CPApp setTarget:nil selector:nil forMode:CPEventTrackingRunLoopMode];
+	}
 }
 
-/*!
- Handles mouse-up events after tracking. This is where the well becomes active and shows the color panel.
+- (void)mouseDragged:(CPEvent)anEvent
+{
+	if (![self isEnabled])
+		return;
 
- The critical sequence here establishes the responder chain connection:
- 1. Make this well the first responder (\c makeFirstResponder:)
- 2. Activate this well exclusively (deactivating other wells)
- 3. Configure the color panel with this well's color
- 4. Order the panel front
+	var currentPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+	deltaX = ABS(currentPoint.x - _mouseDownPoint.x),
+	deltaY = ABS(currentPoint.y - _mouseDownPoint.y);
 
- By making itself first responder BEFORE activating, this well ensures it will receive subsequent
- \c -changeColor: messages from the panel. The panel sends these messages to \c nil (first responder),
- and the responder chain delivers them to this well.
+	// If we haven't started dragging yet and movement exceeds threshold, initiate drag
+	if (!_isDragging && (deltaX > 3 || deltaY > 3))
+	{
+		_isDragging = YES;
+		[self highlight:NO];
+		[self _initiateDragWithEvent:anEvent];
+		return;
+	}
+}
 
- This is the "well to panel" half of the communication. The "panel to well" half happens via
- \c -changeColor: (see above).
- */
-- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
+- (void)mouseUp:(CPEvent)anEvent
 {
 	[self highlight:NO];
 
-	if (!mouseIsUp || !CGRectContainsPoint([self bounds], aPoint) || ![self isEnabled])
+	// If this was a drag, we're done
+	if (_isDragging)
+	{
+		_isDragging = NO;
+		return;
+	}
+
+	// This was a click, not a drag - activate the well and show the panel
+	var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+
+	if (!CGRectContainsPoint([self bounds], point) || ![self isEnabled])
 		return;
 
 	[[self window] makeFirstResponder:self];
-
 	[self activate:YES];
 
 	var colorPanel = [CPColorPanel sharedColorPanel];
-
 	[colorPanel setPlatformWindow:[[self window] platformWindow]];
-
 	[colorPanel setColor:_color];
 	[colorPanel orderFront:self];
 }

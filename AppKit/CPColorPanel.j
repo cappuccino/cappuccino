@@ -559,7 +559,22 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 		[aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:aType];
 }
 
-- (void)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
+- (CPDragOperation)draggingEntered:(id /*<CPDraggingInfo>*/)aSender
+{
+	var pasteboard = [aSender draggingPasteboard];
+
+	if ([pasteboard availableTypeFromArray:[CPColorDragType]])
+		return CPDragOperationCopy;
+
+	return CPDragOperationNone;
+}
+
+- (CPDragOperation)draggingUpdated:(id /*<CPDraggingInfo>*/)aSender
+{
+	return [self draggingEntered:aSender];
+}
+
+- (BOOL)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
 {
 	var location = [self convertPoint:[aSender draggingLocation] fromView:nil],
 	pasteboard = [aSender draggingPasteboard],
@@ -569,6 +584,8 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 		return NO;
 
 	[self setColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] atIndex:FLOOR(location.x / 13)];
+
+	return YES;
 }
 
 @end
