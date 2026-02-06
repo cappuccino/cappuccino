@@ -34,7 +34,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
  @ingroup appkit
  @class CPColorWell
 
- CPColorWell is a CPControl for selecting and displaying a single color value. An example of a CPColorWell object (or simply color well) is found in CPColorPanel, which uses a color well to display the current color selection.</p>
+ CPColorWell is a CPControl for selecting and displaying a single color value. An example of a CPColorWell object (or simply color well) is found in CPColorPanel, which uses a color well to display the current color selection.
 
  <p>An application can have one or more active CPColorWells. You can activate multiple CPColorWells by invoking the \c -activate: method with \c NO as its argument. When a mouse-down event occurs on an CPColorWell's border, it becomes the only active color well. When a color well becomes active, it brings up the color panel also.
 
@@ -79,18 +79,67 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
  what we need: unambiguous, one-to-one communication.</li>
  </ul>
 
+ <h3>The Multi-Well Scenario: Why This Design Matters</h3>
+
+ <p>Consider an application with multiple color wells visible simultaneously (e.g., a color picker for text color,
+ background color, border color, and shadow color). The correct behavior is:</p>
+
+ <ol>
+ <li>User clicks Well A → Well A becomes first responder → Panel opens showing Well A's color</li>
+ <li>User adjusts color in panel → Panel sends \c -changeColor: to nil → Well A receives it (it's first responder)</li>
+ <li>User clicks Well B (panel still open) → Well B becomes first responder → Panel updates to show Well B's color</li>
+ <li>User adjusts color in panel → Panel sends \c -changeColor: to nil → Well B receives it (it's now first responder)</li>
+ </ol>
+
+ <p>This works automatically through the responder chain. No manual tracking of "which well is active" is needed.
+ The window system maintains the first responder, and the responder chain delivers messages to it.</p>
+
+ <p><strong>Common Implementation Mistakes:</strong></p>
+ <ul>
+ <li><strong>Using notifications</strong> - Forces wells to register/unregister as observers, creates timing issues,
+ and requires explicit "active well" tracking. This breaks when multiple wells exist.</li>
+ <li><strong>Using target/action on the panel</strong> - Creates tight coupling where the panel "remembers" which
+ well opened it. When the user clicks another well, the panel continues sending colors to the original well.</li>
+ <li><strong>Not making wells first responder</strong> - If wells don't participate in the responder chain,
+ the panel's \c -changeColor: messages go nowhere.</li>
+ </ul>
+
  <h3>Drag and Drop Integration</h3>
 
  <p>Color wells participate fully in drag-and-drop operations:</p>
 
  <ul>
  <li><strong>As Drop Targets:</strong> Wells register for \c CPColorDragType and can receive colors dragged from
- the panel, other wells, or any source providing color data.</li>
+ the panel, other wells, or any source providing color data. Drop targets don't need to be first responder—the
+ drag-and-drop system uses hit-testing to find the target under the cursor.</li>
 
- <li><strong>As Drag Sources:</strong> Wells can be dragged from to provide colors to other targets. During a drag,
- the standard drag-and-drop target resolution determines which object receives the color—no special notifications
- or responder chain manipulation needed.</li>
+ <li><strong>As Drag Sources:</strong> Wells can be dragged from to provide colors to other targets. This requires
+ bypassing CPControl's tracking system (see implementation notes below).</li>
  </ul>
+
+ <p>Drag-and-drop provides an alternative to the click-to-activate-panel workflow. Users can:</p>
+ <ul>
+ <li>Click well → adjust in panel → changes via responder chain</li>
+ <li>Drag from panel swatch → drop on well → direct color transfer</li>
+ <li>Drag from well → drop on another well → color copying</li>
+ </ul>
+
+ <h3>Implementation Notes: CPControl vs. CPView Mouse Handling</h3>
+
+ <p>CPColorWell inherits from CPControl, which uses a <strong>tracking system</strong> for mouse events
+ (\c -startTracking:, \c -continueTracking:, \c -stopTracking:). This system completely intercepts mouse events
+ during interaction, which prevents \c -mouseDragged: from being called.</p>
+
+ <p>This creates a problem: drag initiation requires \c -mouseDragged: to detect when the user moves beyond
+ a threshold distance. The solution is to <strong>bypass CPControl's tracking entirely</strong> by:</p>
+ <ol>
+ <li>Overriding \c -mouseDown: without calling \c [super mouseDown:]</li>
+ <li>Using \c [CPApp setTarget:selector:forMode:] to route events to our own tracking method</li>
+ <li>Handling \c -mouseDragged: and \c -mouseUp: directly</li>
+ </ol>
+
+ <p>This is why panel swatches (which inherit from CPView, not CPControl) can drag easily, while wells
+ (CPControl subclasses) require this workaround.</p>
 
  <p>This architecture mirrors NSColorWell and NSColorPanel in AppKit exactly. It's not an implementation detail—it's
  fundamental to how color selection works across the framework.</p>
@@ -448,7 +497,18 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 	[self deactivate];
 }
 
-// Mouse handling - bypass CPControl's tracking system to enable dragging
+// Mouse handling - override mouse events to enable dragging
+/*!
+ Handles the initial mouse-down event.
+
+ <strong>Critical Implementation Note:</strong> We override \c mouseDown:, \c mouseDragged:, and \c mouseUp:
+ to enable drag-and-drop from color wells. CPControl's tracking system (\c startTracking:, \c continueTracking:,
+ \c stopTracking:) is designed for click/hold interaction, but we need to detect dragging to initiate
+ drag operations.
+
+ The approach: store the mouse-down point, and if \c mouseDragged: moves beyond a threshold, initiate
+ a drag. Otherwise, treat it as a click and activate the panel.
+ */
 - (void)mouseDown:(CPEvent)anEvent
 {
 	if (![self isEnabled])
@@ -459,25 +519,6 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 	_isDragging = NO;
 
 	[self highlight:YES];
-
-	// Track the mouse ourselves without invoking CPControl's tracking system
-	// This allows mouseDragged: to be called
-	[CPApp setTarget:self selector:@selector(_trackMouse:) forMode:CPEventTrackingRunLoopMode];
-}
-
-- (void)_trackMouse:(CPEvent)anEvent
-{
-	var type = [anEvent type];
-
-	if (type === CPLeftMouseDragged)
-	{
-		[self mouseDragged:anEvent];
-	}
-	else if (type === CPLeftMouseUp)
-	{
-		[self mouseUp:anEvent];
-		[CPApp setTarget:nil selector:nil forMode:CPEventTrackingRunLoopMode];
-	}
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
@@ -499,6 +540,32 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 	}
 }
 
+/*!
+ Handles mouse-up after tracking.
+
+ This method serves two purposes:
+ <ol>
+ <li><strong>End of drag:</strong> If \c _isDragging is YES, the user was dragging and we're done.</li>
+ <li><strong>Click activation:</strong> If \c _isDragging is NO, the user clicked without dragging.
+ Make this well first responder and open the color panel.</li>
+ </ol>
+
+ The critical sequence for panel activation establishes the responder chain connection:
+ <ol>
+ <li>Make this well the first responder via \c [[window] makeFirstResponder:self]</li>
+ <li>Activate this well exclusively (deactivating other wells)</li>
+ <li>Configure the color panel with this well's color</li>
+ <li>Order the panel front</li>
+ </ol>
+
+ By making itself first responder BEFORE opening the panel, this well ensures it will receive subsequent
+ \c -changeColor: messages from the panel. The panel sends these messages to \c nil (first responder),
+ and the responder chain delivers them to this well.
+
+ When another well is clicked (with the panel still open), that well becomes first responder, and the
+ panel's color changes automatically route to it instead. This is the "well to panel" half of the
+ communication; the "panel to well" half happens via \c -changeColor: (see that method's documentation).
+ */
 - (void)mouseUp:(CPEvent)anEvent
 {
 	[self highlight:NO];
