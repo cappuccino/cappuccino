@@ -128,7 +128,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 // for backwards compatibility only
 + (CPEvent)keyEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned int)modifierFlags
                   timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
-                 characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)repeatKey
+                 characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)repeatKey keyCode:(unsigned short)code
 {
     return [[self alloc] _initKeyEventWithType:anEventType location:aPoint modifierFlags:modifierFlags
                                      timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext
