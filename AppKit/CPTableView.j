@@ -3298,22 +3298,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _draggedColumnIsSelected = [self isColumnSelected:columnIndex];
 
     var columnLeft = CGRectGetMinX(columnRect),
-        offset = CGPointMake(columnLeft, CGRectGetMinY(visibleRect)),
-        // FIX: Check if we should force the "white text" look (Selected + Focused)
-        shouldForceActiveState = [self isColumnSelected:columnIndex] && [self _isFocused];
+        offset = CGPointMake(columnLeft, CGRectGetMinY(visibleRect));
 
     [self _enumerateViewsInRows:_exposedRows columns:[CPIndexSet indexSetWithIndex:columnIndex] usingBlock:function(dataView, row, column, stop)
     {
         [self _addDraggedDataView:dataView toView:columnClipView forColumn:column row:row offset:offset];
-
-        // FIX: Force theme states because these views are about to lose their context
-        // (either by moving to a non-key DragWindow or by being removed from _dataViewsForRows tracking)
-        if (shouldForceActiveState)
-        {
-            [dataView setThemeState:CPThemeStateFirstResponder];
-            [dataView setThemeState:CPThemeStateKeyWindow];
-        }
-
         delete (_dataViewsForRows[row][tableColumnUID]);
     }];
 
