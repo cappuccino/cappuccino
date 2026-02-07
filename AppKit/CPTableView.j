@@ -3840,7 +3840,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
 
     if (!_isViewBased)
-        [self _setEditingState:NO forView:dataView];
+    {
+        // We use the 'row' and 'column' arguments here to check against the instance variables
+        var isEditing = (row === _editingRow && column === _editingColumn);
+        [self _setEditingState:isEditing forView:dataView];
+    }
 
     [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
 
@@ -5237,6 +5241,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self scrollRowToVisible:rowIndex];
     [self scrollColumnToVisible:columnIndex];
 
+    // Force layout to update exposed rows/views after scrolling
+    // This prevents the view from being unloaded/reloaded during the makeFirstResponder call
+    [self layoutIfNeeded];
+
     // TODO Do something with flag.
 
     _editingRow = rowIndex;
@@ -5431,7 +5439,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var isFocused = [self _isFocused];
 
-    [self enumerateAvailableViewsUsingBlock:function(view, row, column)
+    // enumerateAvailableViewsUsingBlock calls [self reloadData], which is destructive
+    // during a focus change (causes editing session to reset).
+    [self _enumerateViewsInRows:_exposedRows columns:_exposedColumns usingBlock:function(view, row, column, stop)
     {
         // Only selected rows need to toggle between White and Black text
         if ([self isRowSelected:row] || [self isColumnSelected:column])
