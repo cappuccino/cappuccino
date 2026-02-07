@@ -62,6 +62,9 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
         // Do this so that coordinates will be accurate.
         [menuWindow setFrameOrigin:CGPointMakeZero()];
+        // we need to reset the HUD state as this may be a recycled instance with HUD rund on non-HUD      
+        [[menuWindow _windowView] unsetThemeState:CPThemeStateHUD];
+        [[menuWindow _menuView] unsetThemeState:CPThemeStateHUD];
     }
     else
         menuWindow = [[_CPMenuWindow alloc] init];
@@ -108,21 +111,31 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
         [contentView addSubview:_menuClipView];
 
         _moreAboveView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-
-        [_moreAboveView setImage:[_menuView valueForThemeAttribute:@"menu-window-more-above-image"]];
-        [_moreAboveView setFrameSize:[[_menuView valueForThemeAttribute:@"menu-window-more-above-image"] size]];
-
         [contentView addSubview:_moreAboveView];
 
         _moreBelowView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-
-        [_moreBelowView setImage:[_menuView valueForThemeAttribute:@"menu-window-more-below-image"]];
-        [_moreBelowView setFrameSize:[[_menuView valueForThemeAttribute:@"menu-window-more-below-image"] size]];
-
         [contentView addSubview:_moreBelowView];
+
+        // Initial setup using default attributes
+        [self updateScrollArrows];
     }
 
     return self;
+}
+
+- (void)updateScrollArrows
+{
+    if (!_menuView)
+        return;
+
+    var aboveImage = [_menuView currentValueForThemeAttribute:@"menu-window-more-above-image"],
+        belowImage = [_menuView currentValueForThemeAttribute:@"menu-window-more-below-image"];
+
+    [_moreAboveView setImage:aboveImage];
+    [_moreAboveView setFrameSize:[aboveImage size]];
+
+    [_moreBelowView setImage:belowImage];
+    [_moreBelowView setFrameSize:[belowImage size]];
 }
 
 + (float)_standardLeftMargin
@@ -162,7 +175,12 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 - (void)setBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
 {
-    [self setBackgroundColor:[[self class] backgroundColorForBackgroundStyle:aBackgroundStyle]];
+    var color = [_menuView currentValueForThemeAttribute:@"menu-window-pop-up-background-style-color"];
+
+    if (!color)
+        color = [[self class] backgroundColorForBackgroundStyle:aBackgroundStyle];
+
+    [self setBackgroundColor:color];
 }
 
 - (void)setMenu:(CPMenu)aMenu
@@ -500,6 +518,21 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
             @"menu-window-submenu-delta-y": 0.0,
             @"menu-window-submenu-first-level-delta-y": 0.0
         };
+}
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    [_menuItemViews makeObjectsPerformSelector:@selector(setThemeState:) withObject:aState];
+
+    if ([[self window] respondsToSelector:@selector(updateScrollArrows)])
+        [[self window] updateScrollArrows];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    [_menuItemViews makeObjectsPerformSelector:@selector(unsetThemeState:) withObject:aState];
 }
 
 - (unsigned)numberOfUnhiddenItems
