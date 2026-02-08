@@ -181,6 +181,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPView      _gridLineView;
     BOOL        _selected;
     BOOL        _focused;
+    BOOL        _isGroupRow;
 }
 
 - (id)initWithTableView:(CPTableView)aTableView
@@ -191,9 +192,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _tableView = aTableView;
         _selected = NO;
         _focused = NO;
+        _isGroupRow = NO;
 
-        // Optimization: Turn off hit testing for the background row
-        // The CPTableView handles clicks, or the data views on top handle them.
         [self setHitTests:NO];
     }
     return self;
@@ -202,6 +202,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (void)setRowIndex:(CPInteger)anIndex
 {
     _rowIndex = anIndex;
+    [self updateState];
+}
+
+// New method to toggle group row state
+- (void)setIsGroupRow:(BOOL)isGroupRow
+{
+    if (_isGroupRow === isGroupRow)
+        return;
+        
+    _isGroupRow = isGroupRow;
     [self updateState];
 }
 
@@ -226,6 +236,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         else
             backgroundColor = [_tableView unfocusedSelectionHighlightColor];
     }
+    else if (_isGroupRow)
+    {
+        // Apply group row background
+        backgroundColor = [_tableView valueForThemeAttribute:@"group-row-background-color"];
+    }
     else if ([_tableView usesAlternatingRowBackgroundColors])
     {
         var colors = [_tableView alternatingRowBackgroundColors];
@@ -233,7 +248,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             backgroundColor = colors[_rowIndex % [colors count]];
     }
 
-    // Fallback if no color decided (transparent/white)
     if (!backgroundColor)
         backgroundColor = [CPColor clearColor];
 
@@ -243,6 +257,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)_updateGridLine
 {
+    // Don't draw grid lines on group rows
+    if (_isGroupRow)
+    {
+        [_gridLineView setHidden:YES];
+        return;
+    }
+
     var mask = [_tableView gridStyleMask];
 
     if (mask & CPTableViewSolidHorizontalGridLineMask)
@@ -251,7 +272,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         {
             _gridLineView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
             [_gridLineView setBackgroundColor:[_tableView gridColor]];
-            // Ensure grid line is at the bottom of the row view
             [_gridLineView setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
             [self addSubview:_gridLineView];
         }
@@ -274,7 +294,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 @end
-
 
 /*!
     @ingroup appkit
@@ -450,6 +469,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"dropview-above-selected-border-color": [CPNull null],
             @"dropview-above-selected-border-width": [CPNull null],
             @"background-color": [CPNull null],
+            @"group-row-background-color": [CPNull null],
             @"header-view-height": 25
         };
 }
@@ -3247,8 +3267,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     return dragView;
 }
 
-// CPTableView.j
-
 - (CPView)_animationViewForColumn:(CPInteger)columnIndex
 {
     return [self _makeGhostViewForColumn:columnIndex forDragging:NO];
@@ -3689,15 +3707,21 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     // Load Row Views
     var focused = [self _isFocused],
-        visibleWidth = MAX([self bounds].size.width, CGRectGetWidth([self exposedRect]));
+        visibleWidth = MAX([self bounds].size.width, CGRectGetWidth([self exposedRect])),
+        // Helper to check for group row support
+        delegateRespondsToGroupRow = (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_);
 
     [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stop) {
+        
+        var isGroupRow = delegateRespondsToGroupRow && [_delegate tableView:self isGroupRow:rowIndex];
+
         if (!_visibleRowViews[rowIndex])
         {
             var rowView = [self _dequeueRowView];
             if (!rowView)
                 rowView = [[_CPTableRowView alloc] initWithTableView:self];
 
+            [rowView setIsGroupRow:isGroupRow]; // Set group state
             [rowView setRowIndex:rowIndex];
             [rowView setSelected:[self isRowSelected:rowIndex] focused:focused];
 
@@ -3711,6 +3735,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             // Add behind data views
             [self addSubview:rowView positioned:CPWindowBelow relativeTo:nil];
             _visibleRowViews[rowIndex] = rowView;
+        }
+        else
+        {
+            // Update existing row view in case group state changed
+            [_visibleRowViews[rowIndex] setIsGroupRow:isGroupRow];
         }
     }];
 
@@ -3732,8 +3761,39 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
         var dataViewsForRow = _dataViewsForRows[rowIndex],
             isRowSelected = [self isRowSelected:rowIndex],
+            isGroupRow = delegateRespondsToGroupRow && [_delegate tableView:self isGroupRow:rowIndex],
             row = rowIndex;
 
+        // If it is a group row, we ignore specific column indexes and force
+        // the rendering of the first column, spread across the whole table.
+        if (isGroupRow)
+        {
+            // We use the first visible column (or just index 0) to generate the view
+            var columnIndex = 0; 
+            if ([_tableColumns count] > 0)
+            {
+                var tableColumn = _tableColumns[columnIndex],
+                    tableColumnUID = [tableColumn UID],
+                    dataView = [self _preparedViewAtColumn:columnIndex row:row isRowSelected:isRowSelected];
+
+                if ([dataView superview] !== self)
+                    [self addSubview:dataView];
+
+                // Span the width
+                var frame = [dataView frame];
+                frame.origin.x = 0;
+                frame.size.width = visibleWidth;
+                [dataView setFrame:frame];
+                
+                // Ensure it stays full width during resize
+                [dataView setAutoresizingMask:CPViewWidthSizable];
+
+                dataViewsForRow[tableColumnUID] = dataView;
+            }
+            return; // Stop processing columns for this row
+        }
+
+        // Standard Row Processing
         [columnIndexes enumerateIndexesUsingBlock:function(columnIndex, stopCol)
         {
             var tableColumn = _tableColumns[columnIndex],
