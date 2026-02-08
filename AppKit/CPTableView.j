@@ -3592,7 +3592,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
 
     var exposedRect = [self exposedRect],
-        exposedRows = [CPIndexSet indexSetWithIndexesInRange:[self rowsInRect:exposedRect]],
+        exposedRows = [CPIndexSet indexSetWithIndexesInRange:[self _exposedRowsInRect:exposedRect]],
         exposedColumns = [self columnIndexesInRect:exposedRect],
         obscuredRows = [_exposedRows copy],
         obscuredColumns = [_exposedColumns copy];
@@ -3764,6 +3764,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stopRow)
     {
+
+        if (rowIndex >= [self numberOfRows])
+            return;
+
         if (!_dataViewsForRows[rowIndex])
             _dataViewsForRows[rowIndex] = {};
 
@@ -6333,66 +6337,11 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 @implementation _CPColumnDragDrawingView : CPView
 {
-    CPTableView tableView       @accessors;
-    int         columnIndex     @accessors;
-    CPView      columnClipView  @accessors;
+    CPTableView tableView         @accessors;
+    int         columnIndex       @accessors;
+    CPView      columnClipView    @accessors;
     BOOL        shouldDrawBorders @accessors;
-    BOOL        isSelected      @accessors;
-}
-
-- (void)drawRect:(CGRect)dirtyRect
-{
-    var context = [[CPGraphicsContext currentContext] graphicsPort],
-        columnRect = [tableView rectOfColumn:columnIndex],
-        headerHeight = CGRectGetHeight([[tableView headerView] frame]),
-        bounds = [columnClipView bounds],
-        visibleRect = [tableView visibleRect],
-        xScroll = CGRectGetMinX(visibleRect),
-        yScroll = CGRectGetMinY(visibleRect);
-
-    // Because we are sharing drawing code with regular table drawing,
-    // we have to play a few tricks to fool the drawing code into thinking
-    // our drag column is in the same place as the real column.
-
-    // Shift the bounds origin to align with the column rect, and extend it vertically to ensure
-    // it reaches the bottom of the tableView when scrolled.
-    bounds.origin.x = CGRectGetMinX(columnRect) - xScroll;
-    bounds.size.height += yScroll;
-
-    // Fix up the CTM to account for the header and scroll
-    CGContextTranslateCTM(context, -bounds.origin.x, headerHeight - yScroll);
-
-    //[tableView drawBackgroundInClipRect:bounds];
-
-    if (isSelected)
-    {
-        CGContextSetFillColor(context, [tableView _isFocused] ? [tableView selectionHighlightColor] : [tableView unfocusedSelectionHighlightColor]);
-        CGContextFillRect(context, bounds);
-    }
-    else
-        [tableView highlightSelectionInClipRect:bounds];
-
-    //[tableView _drawHorizontalGridInClipRect:bounds];
-
-    if (shouldDrawBorders)
-    {
-        var minX = CGRectGetMinX(bounds) + 0.5,
-            maxX = CGRectGetMaxX(bounds) - 0.5;
-
-        CGContextSetLineWidth(context, 1.0);
-        CGContextSetAlpha(context, 1.0);
-        CGContextSetStrokeColor(context, [tableView gridColor]);
-
-        CGContextBeginPath(context);
-
-        CGContextMoveToPoint(context, minX, CGRectGetMinY(bounds));
-        CGContextAddLineToPoint(context, minX, CGRectGetMaxY(bounds));
-
-        CGContextMoveToPoint(context, maxX, CGRectGetMinY(bounds));
-        CGContextAddLineToPoint(context, maxX, CGRectGetMaxY(bounds));
-
-        CGContextStrokePath(context);
-    }
+    BOOL        isSelected        @accessors;
 }
 
 @end
