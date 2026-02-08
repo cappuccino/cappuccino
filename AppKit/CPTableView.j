@@ -227,6 +227,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)updateState
 {
+#if PLATFORM(DOM)
     var backgroundColor = nil;
 
     if (_selected && [_tableView selectionHighlightStyle] != CPTableViewSelectionHighlightStyleNone)
@@ -253,6 +254,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     [self setBackgroundColor:backgroundColor];
     [self _updateGridLine];
+#endif
 }
 
 - (void)_updateGridLine
@@ -1569,16 +1571,21 @@ NOT YET IMPLEMENTED
     if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone)
         [self _enumerateViewsInRows:newRows columns:_exposedColumns usingBlock:_BlockSelectView];
 
+
     // Update Row Views (DOM Backgrounds)
     var focused = [self _isFocused];
     [oldRows enumerateIndexesUsingBlock:function(idx, stop) {
         var rowView = _visibleRowViews[idx];
-        if (rowView) [rowView setSelected:NO focused:focused];
+
+        if (rowView)
+            [rowView setSelected:NO focused:focused];
     }];
 
     [newRows enumerateIndexesUsingBlock:function(idx, stop) {
         var rowView = _visibleRowViews[idx];
-        if (rowView) [rowView setSelected:YES focused:focused];
+
+        if (rowView)
+            [rowView setSelected:YES focused:focused];
     }];
 }
 
@@ -3671,6 +3678,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // Recycle Row Views
     [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stop) {
         var rowView = _visibleRowViews[rowIndex];
+
         if (rowView)
         {
              [rowView removeFromSuperview];
