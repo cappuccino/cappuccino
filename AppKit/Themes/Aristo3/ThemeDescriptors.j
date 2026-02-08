@@ -7332,13 +7332,17 @@ var themedButtonValues                      = nil,
     // Alternating Rows: Clear + Very Faint White
     hudAlternatingRowColors = [[CPColor clearColor], [CPColor colorWithWhite:1.0 alpha:0.05]],
 
+    groupRowBackgroundColor = [CPColor colorWithHexString:@"c0c0c0"],
+    hudGroupRowBackgroundColor = [CPColor colorWithWhite:1.0 alpha:0.1],
+
     themedTableViewValues =
     [
      [@"alternating-row-colors",                 alternatingRowColors],
      [@"grid-color",                             gridColor],
      [@"highlighted-grid-color",                 [CPColor whiteColor]],
+     [@"group-row-background-color",             groupRowBackgroundColor],
      [@"selection-color",                        @"A3CPColorBorderBlue"],
-     [@"unfocused-selection-color",              A3CPColorBorderBlueInactive], 
+     [@"unfocused-selection-color",              A3CPColorBorderBlueInactive],
      [@"sourcelist-selection-color",             sourceListSelectionColor],
      [@"sort-image",                             sortImage],
      [@"sort-image-reversed",                    sortImageReversed],
@@ -7355,6 +7359,7 @@ var themedButtonValues                      = nil,
      [@"header-view-height",                     22.0,                                   CPThemeStateHUD],
      [@"background-color",                       [CPColor clearColor],                   CPThemeStateHUD], // CSS colors do not work here
      [@"alternating-row-colors",                 hudAlternatingRowColors,                CPThemeStateHUD],
+     [@"group-row-background-color",             hudGroupRowBackgroundColor,             CPThemeStateHUD],
 
      // Key/Active Selection
      [@"selection-color",                        [CPColor whiteColor],                      CPThemeStateHUD],
