@@ -424,6 +424,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL                        _draggedColumnIsSelected;
     BOOL                        _needsDifferedTableColumnRemove;
     CPArray                     _differedColumnDataToRemove;
+    CPArray                     _selectedColumnBackgroundViews;
 
     Function                    _BlockDeselectView;
     Function                    _BlockSelectView;
@@ -593,6 +594,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)_initSubclass
 {
+    _selectedColumnBackgroundViews = [];
+
     _BlockDeselectView = function(view, row, column)
     {
         [view unsetThemeState:CPThemeStateSelectedDataView];
@@ -610,6 +613,47 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         else
             [view unsetThemeState:CPThemeStateFirstResponder];
     };
+}
+
+- (void)_updateSelectedColumnBackgrounds
+{
+    // 1. Remove existing column background views
+    [_selectedColumnBackgroundViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    [_selectedColumnBackgroundViews removeAllObjects];
+
+    // 2. If no highlighting style, stop here
+    if ([self selectionHighlightStyle] === CPTableViewSelectionHighlightStyleNone)
+        return;
+
+    var color = [self selectionHighlightColor],
+        bounds = [self bounds];
+
+    // 3. Create a view for each selected column index
+    [_selectedColumnIndexes enumerateIndexesUsingBlock:function(idx, stop)
+    {
+        var rect = [self rectOfColumn:idx];
+        
+        // Ensure the highlight spans the full height of the table
+        rect.size.height = MAX(CGRectGetHeight(bounds), [self frame].size.height);
+
+        var view = [[CPView alloc] initWithFrame:rect];
+        [view setBackgroundColor:color];
+        [view setHitTests:NO];
+
+        // Add to the table view at the bottom of the stack
+        [self addSubview:view positioned:CPWindowBelow relativeTo:nil];
+        [_selectedColumnBackgroundViews addObject:view];
+    }];
+
+    // 4. Z-Order Correction:
+    // _CPTableRowViews (alternating row colors) are also added "Below nil". 
+    // To ensure the Column selection appears ON TOP of the row alternating colors,
+    // we must push the currently visible row views to the very back.
+    for (var rowIndex in _visibleRowViews)
+    {
+        if (_visibleRowViews.hasOwnProperty(rowIndex))
+            [self addSubview:_visibleRowViews[rowIndex] positioned:CPWindowBelow relativeTo:nil];
+    }
 }
 
 /*!
@@ -1464,8 +1508,7 @@ NOT YET IMPLEMENTED
         _selectedColumnIndexes = [columns copy];
 
     [self _updateHighlightWithOldColumns:previousSelectedIndexes newColumns:_selectedColumnIndexes];
-    // No more setNeedsDisplay for drawing
-    // [self setNeedsDisplay:YES];
+    [self _updateSelectedColumnBackgrounds];
 
     if (_headerView)
         [_headerView setNeedsDisplay:YES];
@@ -2651,9 +2694,9 @@ NOT YET IMPLEMENTED
 
     [self setFrameSize:CGSizeMake(width, height)];
 
+    [self _updateSelectedColumnBackgrounds];
+
     [self setNeedsLayout];
-    // No more display needed for layout
-    // [self setNeedsDisplay:YES];
 }
 
 
