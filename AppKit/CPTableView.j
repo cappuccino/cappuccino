@@ -1370,7 +1370,7 @@ NOT YET IMPLEMENTED
             [selectedColumnIndexes addIndex:idx];
     }];
 
-    if ([_selectedColumnIndexes containsIndex:fromIndex])
+    if ([_selectedColumnIndexes containsIndex:fromIndex] || (_draggedColumnIndex === fromIndex && _draggedColumnIsSelected))
         [selectedColumnIndexes addIndex:toIndex];
 
     if (_draggedColumnIndex !== -1)
@@ -3384,6 +3384,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [dragColumnHeaderView setStringValue:[columnHeaderView stringValue]];
     [dragColumnHeaderView setThemeState:[columnHeaderView themeState]];
+    
+    // Explicitly force the selected state on the ghost header if the original column is selected
+    if ([self isColumnSelected:columnIndex])
+        [dragColumnHeaderView setThemeState:CPThemeStateSelected];
+
     [dragColumnHeaderView _setIndicatorImage:image];
 
     if (isForDragging)
