@@ -1545,7 +1545,7 @@ NOT YET IMPLEMENTED
 */
 - (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
 {
-    if ([rows isEqualToIndexSet:_selectedRowIndexes] ||
+    if (([rows isEqualToIndexSet:_selectedRowIndexes] && [_selectedColumnIndexes count] === 0) ||
         (([rows firstIndex] != CPNotFound && [rows firstIndex] < 0) || [rows lastIndex] >= [self numberOfRows]) ||
         [self numberOfColumns] <= 0)
         return;
@@ -1555,6 +1555,9 @@ NOT YET IMPLEMENTED
     {
         [self _updateHighlightWithOldColumns:_selectedColumnIndexes newColumns:[CPIndexSet indexSet]];
         _selectedColumnIndexes = [CPIndexSet indexSet];
+
+        [self _updateSelectedColumnBackgrounds];
+
         if (_headerView)
             [_headerView setNeedsDisplay:YES];
     }
@@ -4951,7 +4954,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     else
         newSelection = [CPIndexSet indexSet];
 
-    if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
+    if ([newSelection isEqualToIndexSet:_selectedRowIndexes] && [_selectedColumnIndexes count] === 0)
         return;
 
     if (![self _sendDelegateSelectionShouldChangeInTableView])

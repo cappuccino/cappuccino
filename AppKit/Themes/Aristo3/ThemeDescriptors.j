@@ -7025,8 +7025,9 @@ var themedButtonValues                      = nil,
     // Standard Background
     background = [CPColor colorWithCSSDictionary:@{
                                                    @"background-color": A3ColorBackgroundWhite,
-                                                   @"border-bottom": @"1px solid " + A3ColorTableDivider
-                                                   }
+                                                   @"border-bottom": @"1px solid " + A3ColorTableDivider,
+                                                   @"box-sizing": @"border-box"
+                                                  }
                                 beforeDictionary:nil
                                  afterDictionary:@{
                                                    @"background-color": A3ColorTableHeaderSeparator,
@@ -7063,8 +7064,9 @@ var themedButtonValues                      = nil,
     // --- HUD Background ---
     hudBackground = [CPColor colorWithCSSDictionary:@{
                                                    @"background-color": @"rgba(0, 0, 0, 0.25)",
-                                                   @"border-bottom": @"1px solid rgba(255, 255, 255, 0.2)"
-                                                   }
+                                                   @"border-bottom": @"1px solid rgba(255, 255, 255, 0.2)",
+                                                   @"box-sizing": @"border-box"
+                                                  }
                                 beforeDictionary:nil
                                  afterDictionary:@{
                                                    @"background-color": @"rgba(255, 255, 255, 0.2)",
@@ -7189,8 +7191,6 @@ var themedButtonValues                      = nil,
             [theTableView _loadDataViewsInRows:rowsIndexes columns:columnsIndexes];
             [theTableView _updateDataViewsFocusState];
             [theTableView _layoutViewsForRowIndexes:rowsIndexes columnIndexes:columnsIndexes];
-
-            [theTableView._tableDrawView displayRect:columnVisRect];
         }];
 
         [[animatedView animator] setFrameOrigin:CGPointMake(destinationX, animatedOrigin.y)];
