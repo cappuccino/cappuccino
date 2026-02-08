@@ -173,7 +173,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 @end
 
 // Internal class to handle row background, selection and grid lines via DOM/CSS
-// This replaces the Canvas-based _CPTableDrawView to avoid coordinate limits.
 @implementation _CPTableRowView : CPView
 {
     CPInteger   _rowIndex;
@@ -3716,7 +3715,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // Load Row Views
     var focused = [self _isFocused],
         visibleWidth = MAX([self bounds].size.width, CGRectGetWidth([self exposedRect])),
-        // Helper to check for group row support
         delegateRespondsToGroupRow = (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_);
 
     [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stop) {
@@ -3729,7 +3727,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             if (!rowView)
                 rowView = [[_CPTableRowView alloc] initWithTableView:self];
 
-            [rowView setIsGroupRow:isGroupRow]; // Set group state
+            [rowView setIsGroupRow:isGroupRow];
             [rowView setRowIndex:rowIndex];
             [rowView setSelected:[self isRowSelected:rowIndex] focused:focused];
 
@@ -3746,7 +3744,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         }
         else
         {
-            // Update existing row view in case group state changed
+            // Update state of existing view
             [_visibleRowViews[rowIndex] setIsGroupRow:isGroupRow];
         }
     }];
@@ -3773,39 +3771,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
         var dataViewsForRow = _dataViewsForRows[rowIndex],
             isRowSelected = [self isRowSelected:rowIndex],
-            isGroupRow = delegateRespondsToGroupRow && [_delegate tableView:self isGroupRow:rowIndex],
             row = rowIndex;
 
-        // If it is a group row, we ignore specific column indexes and force
-        // the rendering of the first column, spread across the whole table.
-        if (isGroupRow)
-        {
-            // We use the first visible column (or just index 0) to generate the view
-            var columnIndex = 0; 
-            if ([_tableColumns count] > 0)
-            {
-                var tableColumn = _tableColumns[columnIndex],
-                    tableColumnUID = [tableColumn UID],
-                    dataView = [self _preparedViewAtColumn:columnIndex row:row isRowSelected:isRowSelected];
-
-                if ([dataView superview] !== self)
-                    [self addSubview:dataView];
-
-                // Span the width
-                var frame = [dataView frame];
-                frame.origin.x = 0;
-                frame.size.width = visibleWidth;
-                [dataView setFrame:frame];
-                
-                // Ensure it stays full width during resize
-                [dataView setAutoresizingMask:CPViewWidthSizable];
-
-                dataViewsForRow[tableColumnUID] = dataView;
-            }
-            return; // Stop processing columns for this row
-        }
-
-        // Standard Row Processing
+        // Note: Even for group rows, we iterate all columns to render their data.
+        // The background styling is handled by the _CPTableRowView above.
         [columnIndexes enumerateIndexesUsingBlock:function(columnIndex, stopCol)
         {
             var tableColumn = _tableColumns[columnIndex],
