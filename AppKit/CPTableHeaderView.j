@@ -905,7 +905,7 @@ var CPTableHeaderViewResizeZone = 3.0,
 
     [_tableView _loadDataViewsInRows:rowsIndexes columns:columnsIndexes];
     [_tableView _layoutViewsForRowIndexes:rowsIndexes columnIndexes:columnsIndexes];
-
+    [_tableView _updateDataViewsFocusState];
     [_tableView._tableDrawView displayRect:columnVisRect];
 
     [[CPCursor arrowCursor] set]; // FIXME: retirer ?

@@ -7187,6 +7187,7 @@ var themedButtonValues                      = nil,
                 columnsIndexes = [CPIndexSet indexSetWithIndex:aFromIndex];
 
             [theTableView _loadDataViewsInRows:rowsIndexes columns:columnsIndexes];
+            [theTableView _updateDataViewsFocusState];
             [theTableView _layoutViewsForRowIndexes:rowsIndexes columnIndexes:columnsIndexes];
 
             [theTableView._tableDrawView displayRect:columnVisRect];
@@ -7203,6 +7204,7 @@ var themedButtonValues                      = nil,
             animatedHeader       = [animatedColumn headerView],
             animatedHeaderOrigin = [animatedHeader frameOrigin];
 
+        [[s tableView] _updateDataViewsFocusState];
         [CPAnimationContext beginGrouping];
 
         var context = [CPAnimationContext currentContext];
@@ -7212,6 +7214,7 @@ var themedButtonValues                      = nil,
         [context setCompletionHandler:function() {
 
             [s _finalize_stopDraggingTableColumn:aColumnIndex];
+            [[s tableView] _updateDataViewsFocusState];
         }];
 
         [[_columnDragView animator] setFrameOrigin:CGPointMake(animatedHeaderOrigin.x, 0)];
