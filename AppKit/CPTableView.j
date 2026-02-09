@@ -3848,6 +3848,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             if ([dataView superview] !== self)
                 [self addSubview:dataView];
 
+            if (focused && (isRowSelected || [self isColumnSelected:columnIndex]))
+                [dataView setThemeState:CPThemeStateFirstResponder];
+
             dataViewsForRow[tableColumnUID] = dataView;
         }];
     }];
