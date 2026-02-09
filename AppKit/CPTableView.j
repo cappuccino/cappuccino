@@ -5557,10 +5557,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // Ensure the text turns white
     [self _updateDataViewsFocusState];
 
+#if PLATFORM(DOM)
     // for symmetry with _notifyViewDidResignFirstResponder
     setTimeout(function() {
         [self _updateSelectedColumnBackgrounds];
     }, 0);
+#endif
 }
 
 - (void)_notifyViewDidResignFirstResponder
@@ -5570,10 +5572,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // Ensure the text turns black
     [self _updateDataViewsFocusState];
 
+#if PLATFORM(DOM)
     // needed because _isFocussed still returns true in this iteration of the run loop
     setTimeout(function() {
         [self _updateSelectedColumnBackgrounds];
     }, 0);
+#endif
 }
 
 @end
