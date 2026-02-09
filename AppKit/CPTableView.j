@@ -638,7 +638,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if ([self selectionHighlightStyle] === CPTableViewSelectionHighlightStyleNone)
         return;
 
-    var color = [self selectionHighlightColor],
+    var color = [self _isFocused] ? [self selectionHighlightColor] : [self unfocusedSelectionHighlightColor],
         bounds = [self bounds];
 
     // 3. Create a view for each selected column index
@@ -5556,6 +5556,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self _updateAllVisibleRowViews];
     // Ensure the text turns white
     [self _updateDataViewsFocusState];
+
+    // for symmetry with _notifyViewDidResignFirstResponder
+    setTimeout(function() {
+        [self _updateSelectedColumnBackgrounds];
+    }, 0);
 }
 
 - (void)_notifyViewDidResignFirstResponder
@@ -5564,6 +5569,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self _updateAllVisibleRowViews];
     // Ensure the text turns black
     [self _updateDataViewsFocusState];
+
+    // needed because _isFocussed still returns true in this iteration of the run loop
+    setTimeout(function() {
+        [self _updateSelectedColumnBackgrounds];
+    }, 0);
 }
 
 @end
