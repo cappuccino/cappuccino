@@ -521,7 +521,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
         _contentBindingExplicitlySet = NO;
 
-        // [self setBackgroundColor:[CPColor whiteColor]];
         [self _init];
     }
 
@@ -590,6 +589,20 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _sortDescriptors = [];
 
     [self _initSubclass];
+}
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    [self setBackgroundColor:[self hasThemeState:CPThemeStateHUD] ? [CPColor clearColor] : [CPColor whiteColor]];
+
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    [self setBackgroundColor:[self hasThemeState:CPThemeStateHUD] ? [CPColor clearColor] : [CPColor whiteColor]];
+
 }
 
 - (void)_initSubclass
