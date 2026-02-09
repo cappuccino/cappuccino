@@ -63,28 +63,21 @@ ColorPickerClasses = [];
  @ingroup appkit
  @class CPColorPanel
 
- CPColorPanel provides a reusable panel that can be used
- displayed on screen to prompt the user for a color selection. To
- obtain the panel, call the \c +sharedColorPanel method.
+ CPColorPanel provides a reusable panel that can be displayed on screen to
+ prompt the user for a color selection. To obtain the panel, call the
+ \c +sharedColorPanel method.
 
  <h3>Architecture: Responder Chain Communication</h3>
 
  <p>CPColorPanel communicates with color wells and other targets exclusively through the
- <strong>responder chain</strong>, not through target/action or notifications.</p>
+ <strong>responder chain</strong>. When the user selects a color in the panel, the panel
+ sends \c -changeColor: to \c nil (the first responder). This message travels up the
+ responder chain to the first object that implements it—typically the active color well
+ that has made itself first responder.</p>
 
- <p>When the user selects a color in the panel, the panel sends \c -changeColor: to \c nil
- (the first responder). This message travels up the responder chain to the first object that
- implements it—typically the active color well that has made itself first responder.</p>
-
- <p>This architecture provides:</p>
- <ul>
- <li><strong>Loose Coupling:</strong> The panel doesn't need to know what will receive its colors</li>
- <li><strong>Automatic Target Resolution:</strong> The responder chain determines the recipient</li>
- <li><strong>No Bookkeeping:</strong> No need to register/unregister observers or manage references</li>
- </ul>
-
- <p>The panel is a singleton (\c +sharedColorPanel) because only one color selection context
- should exist application-wide. See CPColorWell documentation for complete architectural details.</p>
+ <p>This architecture provides loose coupling and automatic target resolution.
+ The panel is a singleton (\c +sharedColorPanel) because only one color selection
+ context should exist application-wide.</p>
  */
 @implementation CPColorPanel : CPPanel
 {
@@ -138,13 +131,16 @@ ColorPickerClasses = [];
  */
 - (id)init
 {
+	// Enforce singleton pattern
+	if (SharedColorPanel)
+		[CPException raise:CPInternalInconsistencyException
+					reason:@"CPColorPanel is a singleton. Use +sharedColorPanel."];
+
 	self = [super initWithContentRect:CGRectMake(500.0, 50.0, 219.0, 370.0)
 							styleMask:(CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask)];
 
 	if (self)
 	{
-		//[[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
-
 		[self setTitle:@"Color Panel"];
 		[self setLevel:CPFloatingWindowLevel];
 
@@ -164,38 +160,35 @@ ColorPickerClasses = [];
  This is the primary method for color changes. When called, the panel:
  1. Updates its internal color state
  2. Updates the preview view
- 3. Sends \c -changeColor: to \c nil (first responder) via the responder chain
- 4. Updates the active picker to reflect the new color
+ 3. Updates UI components that need to track the current color (like opacity slider)
+ 4. Sends \c -changeColor: to \c nil (first responder) via the responder chain
 
- The responder chain delivers the \c -changeColor: message to the first object that implements it,
- typically the active color well. No target/action or notification mechanism is used.
+ The responder chain delivers the message to the first object that implements it,
+ typically the active color well. No direct manipulation of pickers or UI components.
 
  @param aColor the new color to display and broadcast
  */
 - (void)setColor:(CPColor)aColor
 {
+	if ([_color isEqual:aColor])
+		return;
+
 	_color = aColor;
+
+	// Update preview view
 	[_previewView setBackgroundColor:_color];
 
-	// Send color change up the responder chain to first responder
-	[CPApp sendAction:@selector(changeColor:) to:nil from:self];
+	// Update opacity slider to track current color (component tracking, not manipulation)
+	// This ensures the slider always applies alpha to the correct color
+	if (_opacitySlider)
+		[_opacitySlider setFloatValue:[_color alphaComponent]];
 
-	[_activePicker setColor:_color];
-	[_opacitySlider setFloatValue:[_color alphaComponent]];
-}
-
-/*!
- Sets the selected color of the panel and optionally updates the picker.
- @param aColor the new color
- @param bool whether or not to update the picker
- @ignore
- */
-- (void)setColor:(CPColor)aColor updatePicker:(BOOL)bool
-{
-	[self setColor:aColor];
-
-	if (bool)
+	// Update active picker so its UI reflects the new color
+	if (_activePicker)
 		[_activePicker setColor:_color];
+
+	// Primary communication mechanism: responder chain
+	[CPApp sendAction:@selector(changeColor:) to:nil from:self];
 }
 
 /*!
@@ -205,10 +198,9 @@ ColorPickerClasses = [];
 {
 	return _color;
 }
-
 - (float)opacity
 {
-	return [_opacitySlider floatValue];
+	return [_color alphaComponent];
 }
 
 /*!
@@ -220,13 +212,22 @@ ColorPickerClasses = [];
 	_mode = mode;
 }
 
+/*!
+ Returns the color panel's current display mode.
+ */
+- (CPColorPanelMode)mode
+{
+	return _mode;
+}
+
+/*!
+ Internal method to switch between color picker views.
+ Components should not receive direct color updates - they'll get them via responder chain.
+ */
 - (void)_setPicker:(id)sender
 {
 	var picker = _colorPickers[[sender tag]],
-	view = [picker provideNewView:NO];
-
-	if (!view)
-		view = [picker provideNewView:YES];
+	view = [picker provideNewView:NO] || [picker provideNewView:YES];
 
 	if (view == _currentView)
 		return;
@@ -248,15 +249,8 @@ ColorPickerClasses = [];
 	_currentView = view;
 	_activePicker = picker;
 
-	[picker setColor:[self color]];
-}
-
-/*!
- Returns the color panel's current display mode.
- */
-- (CPColorPanelMode)mode
-{
-	return _mode;
+	// Inform picker of current color so it can initialize its UI
+	[_activePicker setColor:_color];
 }
 
 - (void)orderFront:(id)aSender
@@ -265,7 +259,9 @@ ColorPickerClasses = [];
 	[super orderFront:aSender];
 }
 
-/* @ignore */
+/*!
+ Internal setup method - creates UI components but avoids direct coupling
+ */
 - (void)_loadContentsIfNecessary
 {
 	if (_toolbar)
@@ -316,94 +312,78 @@ ColorPickerClasses = [];
 			buttonForLater = button;
 	}
 
-	// FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
+	// Preview view setup
 	var previewBox = [[CPView alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + 10, CGRectGetWidth(bounds) - 86, PREVIEW_HEIGHT)];
-
 	_previewView = [[_CPColorPanelPreview alloc] initWithFrame:CGRectInset([previewBox bounds], 2.0, 2.0)];
-
-	[_previewView setColorPanel:self];
 	[_previewView setAutoresizingMask:CPViewWidthSizable];
-
 	[previewBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
 	[previewBox setAutoresizingMask:CPViewWidthSizable];
-
 	[previewBox addSubview:_previewView];
 
-	var _previewLabel = [[CPTextField alloc] initWithFrame:CGRectMake(10, TOOLBAR_HEIGHT + 10, 60, 15)];
-	[_previewLabel setStringValue:"Preview:"];
-	[_previewLabel setTextColor:[CPColor blackColor]];
-	[_previewLabel setAlignment:CPRightTextAlignment];
-
-	// FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
+	// Swatch view setup
 	var swatchBox = [[CPView alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + 10 + PREVIEW_HEIGHT + 5, CGRectGetWidth(bounds) - 86, SWATCH_HEIGHT + 2.0)];
-
 	[swatchBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
 	[swatchBox setAutoresizingMask:CPViewWidthSizable];
-
 	_swatchView = [[_CPColorPanelSwatches alloc] initWithFrame:CGRectInset([swatchBox bounds], 1.0, 1.0)];
-
-	[_swatchView setColorPanel:self];
 	[_swatchView setAutoresizingMask:CPViewWidthSizable];
-
 	[swatchBox addSubview:_swatchView];
 
-	var _swatchLabel = [[CPTextField alloc] initWithFrame:CGRectMake(10, TOOLBAR_HEIGHT + 8 + PREVIEW_HEIGHT + 6, 60, 15)];
-	[_swatchLabel setStringValue:"Swatches:"];
-	[_swatchLabel setTextColor:[CPColor blackColor]];
-	[_swatchLabel setAlignment:CPRightTextAlignment];
-
-
-	var opacityLabel = [[CPTextField alloc] initWithFrame:CGRectMake(10, TOOLBAR_HEIGHT + PREVIEW_HEIGHT + 35, 60, 20)];
-	[opacityLabel setStringValue:"Opacity:"];
-	[opacityLabel setTextColor:[CPColor blackColor]];
-	[opacityLabel setAlignment:CPRightTextAlignment];
-
-	_opacitySlider = [[CPSlider alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + PREVIEW_HEIGHT + 34, CGRectGetWidth(bounds) - 86, 20.0)];
-
+	// Opacity slider
+	_opacitySlider = [[CPSlider alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + PREVIEW_HEIGHT + 34, CGRectGetWidth(bounds) - 86, 15.0)];
 	[_opacitySlider setMinValue:0.0];
 	[_opacitySlider setMaxValue:1.0];
 	[_opacitySlider setAutoresizingMask:CPViewWidthSizable];
-
 	[_opacitySlider setTarget:self];
-	[_opacitySlider setAction:@selector(setOpacity:)];
+	[_opacitySlider setAction:@selector(_opacityChanged:)];
 
+	// Add all components to content view
 	[contentView addSubview:_toolbar];
 	[contentView addSubview:previewBox];
-	[contentView addSubview:_previewLabel];
 	[contentView addSubview:swatchBox];
-	[contentView addSubview:_swatchLabel];
-	[contentView addSubview:opacityLabel];
 	[contentView addSubview:_opacitySlider];
 
 	_activePicker = nil;
-
 	[_previewView setBackgroundColor:_color];
+	[_opacitySlider setFloatValue:[_color alphaComponent]];
 
 	if (buttonForLater)
 		[self _setPicker:buttonForLater];
 }
 
-- (void)setOpacity:(id)sender
+/*!
+ Handle opacity changes through responder chain pattern
+ */
+- (void)_opacityChanged:(id)sender
 {
-	var components = [[self color] components],
-	alpha = [sender floatValue];
+	var alpha = [sender floatValue],
+	newColor = [_color colorWithAlphaComponent:alpha];
 
-	[self setColor:[_color colorWithAlphaComponent:alpha] updatePicker:YES];
+	// Update color state directly to avoid setColor: updating the slider we're dragging
+	_color = newColor;
+	[_previewView setBackgroundColor:_color];
+	[CPApp sendAction:@selector(changeColor:) to:nil from:self];
 }
 
 @end
 
-
+/*!
+ Drag type for color data
+ */
 CPColorDragType = "CPColorDragType";
 
+/*
+ Cookie name for persistent swatch storage
+ */
 var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
-/* @ignore */
+/*!
+ @ignore
+ Swatch view implementation - handles drag/drop and click selection
+ */
 @implementation _CPColorPanelSwatches : CPView
 {
 	CPArray         _swatches;
 	CPColor         _dragColor;
-	CPColorPanel    _colorPanel;
 	CPCookie        _swatchCookie;
 }
 
@@ -412,29 +392,23 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 	self = [super initWithFrame:aFrame];
 
 	[self setBackgroundColor:[CPColor grayColor]];
-
-	[self registerForDraggedTypes:[CPArray arrayWithObjects:CPColorDragType]];
+	[self registerForDraggedTypes:[CPArray arrayWithObject:CPColorDragType]];
 
 	var whiteColor = [CPColor whiteColor];
-
 	_swatchCookie = [[CPCookie alloc] initWithName:CPColorPanelSwatchesCookie];
-	var colorList = [self startingColorList];
+	var colorList = [self _startingColorList];
 
 	_swatches = [];
 
 	for (var i = 0; i < 50; i++)
 	{
-		// FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
 		var view = [[CPView alloc] initWithFrame:CGRectMake(13 * i + 1, 1, 12, 12)],
 		fillView = [[CPView alloc] initWithFrame:CGRectInset([view bounds], 1.0, 1.0)];
 
 		[view setBackgroundColor:whiteColor];
 		[fillView setBackgroundColor:(i < colorList.length) ? colorList[i] : whiteColor];
-
 		[view addSubview:fillView];
-
 		[self addSubview:view];
-
 		_swatches.push(view);
 	}
 
@@ -446,7 +420,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 	return YES;
 }
 
-- (CPArray)startingColorList
+- (CPArray)_startingColorList
 {
 	var cookieValue = [_swatchCookie value];
 
@@ -465,35 +439,20 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 		];
 	}
 
-	var cookieValue = JSON.parse(cookieValue);
-
-	return [cookieValue arrayByApplyingBlock:function(value)
-			{
+	return [JSON.parse(cookieValue) arrayByApplyingBlock:function(value) {
 		return [CPColor colorWithHexString:value];
 	}];
 }
 
-- (CPArray)saveColorList
+- (void)_saveColorList
 {
 	var result = [];
-	// FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
 	for (var i = 0; i < _swatches.length; i++)
 		result.push([[[_swatches[i] subviews][0] backgroundColor] hexString]);
 
 	var future = new Date();
 	future.setYear(2019);
-
 	[_swatchCookie setValue:JSON.stringify(result) expires:future domain:nil];
-}
-
-- (void)setColorPanel:(CPColorPanel)panel
-{
-	_colorPanel = panel;
-}
-
-- (CPColorPanel)colorPanel
-{
-	return _colorPanel;
 }
 
 - (CPColor)colorAtIndex:(int)index
@@ -503,9 +462,8 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 - (void)setColor:(CPColor)aColor atIndex:(int)index
 {
-	// FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
 	[[_swatches[index] subviews][0] setBackgroundColor:aColor];
-	[self saveColorList];
+	[self _saveColorList];
 }
 
 - (void)mouseUp:(CPEvent)anEvent
@@ -513,39 +471,45 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 	var point = [self convertPoint:[anEvent locationInWindow] fromView:nil],
 	bounds = [self bounds];
 
-	if (!CGRectContainsPoint(bounds, point) || point.x > [self bounds].size.width - 1 || point.x < 1)
-		return NO;
+	if (!CGRectContainsPoint(bounds, point) || point.x > bounds.size.width - 1 || point.x < 1)
+		return;
 
-	[_colorPanel setColor:[self colorAtIndex:FLOOR(point.x / 13)] updatePicker:YES];
+	var index = FLOOR(point.x / 13);
+	if (index < 0 || index >= _swatches.length)
+		return;
+
+	// Send color change via responder chain, not direct manipulation
+	var colorPanel = [CPColorPanel sharedColorPanel];
+	[colorPanel setColor:[self colorAtIndex:index]];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
-	var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+	var point = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+	viewBounds = [self bounds];
 
-	if (point.x > [self bounds].size.width - 1 || point.x < 1)
-		return NO;
+	if (point.x > viewBounds.size.width - 1 || point.x < 1)
+		return;
+
+	var index = FLOOR(point.x / 13);
+	if (index < 0 || index >= _swatches.length)
+		return;
 
 	[[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:[CPArray arrayWithObject:CPColorDragType] owner:self];
 
-	var swatch = _swatches[FLOOR(point.x / 13)];
-
-	// FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
+	var swatch = _swatches[index];
 	_dragColor = [[swatch subviews][0] backgroundColor];
 
-	var bounds = CGRectMakeCopy([swatch bounds]);
-
-	// FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
-	var dragView = [[CPView alloc] initWithFrame:bounds],
-	dragFillView = [[CPView alloc] initWithFrame:CGRectInset(bounds, 1.0, 1.0)];
+	var swatchBounds = CGRectMakeCopy([swatch bounds]),
+	dragView = [[CPView alloc] initWithFrame:swatchBounds],
+	dragFillView = [[CPView alloc] initWithFrame:CGRectInset(swatchBounds, 1.0, 1.0)];
 
 	[dragView setBackgroundColor:[CPColor blackColor]];
 	[dragFillView setBackgroundColor:_dragColor];
-
 	[dragView addSubview:dragFillView];
 
 	[self dragView:dragView
-				at:CGPointMake(point.x - bounds.size.width / 2.0, point.y - bounds.size.height / 2.0)
+				at:CGPointMake(point.x - swatchBounds.size.width / 2.0, point.y - swatchBounds.size.height / 2.0)
 			offset:CGPointMake(0.0, 0.0)
 			 event:anEvent
 		pasteboard:nil
@@ -559,76 +523,78 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 		[aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:aType];
 }
 
-- (CPDragOperation)draggingEntered:(id /*<CPDraggingInfo>*/)aSender
+- (CPDragOperation)draggingEntered:(id)aSender
 {
 	var pasteboard = [aSender draggingPasteboard];
-
-	if ([pasteboard availableTypeFromArray:[CPColorDragType]])
-		return CPDragOperationCopy;
-
-	return CPDragOperationNone;
+	return [pasteboard availableTypeFromArray:[CPColorDragType]] ? CPDragOperationCopy : CPDragOperationNone;
 }
 
-- (CPDragOperation)draggingUpdated:(id /*<CPDraggingInfo>*/)aSender
+- (CPDragOperation)draggingUpdated:(id)aSender
 {
 	return [self draggingEntered:aSender];
 }
 
-- (BOOL)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
+- (BOOL)performDragOperation:(id)aSender
 {
 	var location = [self convertPoint:[aSender draggingLocation] fromView:nil],
-	pasteboard = [aSender draggingPasteboard],
-	swatch = nil;
+	pasteboard = [aSender draggingPasteboard];
 
 	if (![pasteboard availableTypeFromArray:[CPColorDragType]] || location.x > [self bounds].size.width - 1 || location.x < 1)
 		return NO;
 
-	[self setColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] atIndex:FLOOR(location.x / 13)];
+	var index = FLOOR(location.x / 13);
+	if (index < 0 || index >= _swatches.length)
+		return NO;
+
+	var color = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]];
+	if (!color)
+		return NO;
+
+	[self setColor:color atIndex:index];
+
+	// Notify via responder chain, not direct manipulation
+	var colorPanel = [CPColorPanel sharedColorPanel];
+	[colorPanel setColor:color];
 
 	return YES;
 }
 
 @end
 
-/* @ignore */
+/*!
+ @ignore
+ Preview view implementation - handles drag operations
+ */
 @implementation _CPColorPanelPreview : CPView
 {
-	CPColorPanel    _colorPanel;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
 	self = [super initWithFrame:aFrame];
-
-	[self registerForDraggedTypes:[CPArray arrayWithObjects:CPColorDragType]];
-
+	[self registerForDraggedTypes:[CPArray arrayWithObject:CPColorDragType]];
 	return self;
-}
-
-- (void)setColorPanel:(CPColorPanel)aPanel
-{
-	_colorPanel = aPanel;
-}
-
-- (CPColorPanel)colorPanel
-{
-	return _colorPanel;
-}
-
-- (void)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
-{
-	var pasteboard = [aSender draggingPasteboard];
-
-	if (![pasteboard availableTypeFromArray:[CPColorDragType]])
-		return NO;
-
-	var color = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]];
-	[_colorPanel setColor:color updatePicker:YES];
 }
 
 - (BOOL)isOpaque
 {
 	return YES;
+}
+
+- (void)performDragOperation:(id)aSender
+{
+	var pasteboard = [aSender draggingPasteboard];
+
+	if (![pasteboard availableTypeFromArray:[CPColorDragType]])
+		return;
+
+	var color = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]];
+	if (!color)
+		return;
+
+	// Use responder chain via shared panel
+	var colorPanel = [CPColorPanel sharedColorPanel];
+	[colorPanel setColor:color];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
@@ -637,15 +603,12 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 	[[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:[CPColorDragType] owner:self];
 
-	var bounds = CGRectMake(0, 0, 15, 15);
-
-	// FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
-	var dragView = [[CPView alloc] initWithFrame:bounds],
+	var bounds = CGRectMake(0, 0, 15, 15),
+	dragView = [[CPView alloc] initWithFrame:bounds],
 	dragFillView = [[CPView alloc] initWithFrame:CGRectInset(bounds, 1.0, 1.0)];
 
 	[dragView setBackgroundColor:[CPColor blackColor]];
 	[dragFillView setBackgroundColor:[self backgroundColor]];
-
 	[dragView addSubview:dragFillView];
 
 	[self dragView:dragView
@@ -665,6 +628,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 @end
 
+// Import and register default color pickers
 @import "CPColorPicker.j"
 @import "CPSliderColorPicker.j"
 
