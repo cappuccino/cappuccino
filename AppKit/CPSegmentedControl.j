@@ -546,7 +546,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         if (segment == 0)
             return 0;
 
-        return [self _leftOffsetForSegment:segment - 1] + CGRectGetWidth([self frameForSegment:segment - 1]) -1; // FIXME: -1 for collapse of borders
+        return [self _leftOffsetForSegment:segment - 1] + CGRectGetWidth([self frameForSegment:segment - 1]) - 2; // FIXME: -2 for collapse of borders
     }
     else
     {
