@@ -929,7 +929,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         contentInsetWidth += ([[self actualTheme] isCSSBased] && ((aSegment == 0) || (aSegment == [self _indexOfLastSegment])) ? [self valueForThemeAttribute:@"divider-thickness" inState:themeState] : 0);
 
         // add 1 pixel to account for possible fractional pixels at right edge
-        width = (label ? [label sizeWithFont:[self font]].width + 1: 4.0) + (image ? [image size].width : 0) + contentInsetWidth;
+        width = CEIL((label ? [label sizeWithFont:[self font]].width + 1: 4.0) + (image ? [image size].width : 0) + contentInsetWidth);
     }
 
     return CGRectMake(left, top, width, height);
