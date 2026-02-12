@@ -4179,3 +4179,27 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 
     return transform;
 };
+
+@implementation CPView (ThemingAdditions)
+
+- (void)_setThemeStateRecursively:(ThemeState)aState
+{
+    [_subviews makeObjectsPerformSelector:@selector(_setThemeStateRecursively:) withObject:aState];
+
+    [_subviews enumerateObjectsUsingBlock:function(view, idx, stop)
+    {
+        [view setThemeState:aState];
+    }];
+}
+
+- (void)_unsetThemeStateRecursively:(ThemeState)aState
+{
+    [_subviews makeObjectsPerformSelector:@selector(_unsetThemeStateRecursively:) withObject:aState];
+
+    [_subviews enumerateObjectsUsingBlock:function(view, idx, stop)
+    {
+        [view unsetThemeState:aState];
+    }];
+}
+
+@end

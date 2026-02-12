@@ -979,6 +979,11 @@ CPTexturedBackgroundWindowMask
 - (void)orderFront:(id)aSender
 {
     [self orderWindow:CPWindowAbove relativeTo:0];
+
+    if (_styleMask & CPHUDBackgroundWindowMask)
+        [_contentView _setThemeStateRecursively:CPThemeStateHUD];
+    else
+        [_contentView _unsetThemeStateRecursively:CPThemeStateHUD];
 }
 
 - (void)_orderFront
