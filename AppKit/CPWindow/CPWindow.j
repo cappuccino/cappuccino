@@ -982,8 +982,6 @@ CPTexturedBackgroundWindowMask
 
     if (_styleMask & CPHUDBackgroundWindowMask)
         [_contentView _setThemeStateRecursively:CPThemeStateHUD];
-    else
-        [_contentView _unsetThemeStateRecursively:CPThemeStateHUD];
 }
 
 - (void)_orderFront
