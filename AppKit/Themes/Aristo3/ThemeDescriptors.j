@@ -9162,18 +9162,34 @@ var themedButtonValues                      = nil,
 {
     var bordelessBridgeWindowView = [[_CPBorderlessBridgeWindowView alloc] initWithFrame:CGRectMake(0,0,0,0)],
 
+    // Standard Theme Toolbar
     toolbarBackgroundColor = [CPColor colorWithCSSDictionary:@{
-        @"background-color": A3ColorBackground
+        @"background-color": A3ColorBackground,
+        @"border-bottom": @"1px solid " + A3ColorBorderLight
     }],
+
+    // HUD Theme Window Background (Dark/Translucent)
     hudBezelColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": @"rgba(0, 0, 0, 0.85)",
-        @"border-radius": @"5px"
+        @"border-radius": @"5px",
+        @"box-shadow": @"0 5px 15px rgba(0,0,0,0.5)"
+    }],
+
+    // HUD Theme Toolbar Background
+    // Adds a subtle lighter overlay and a distinct separator line for the toolbar area
+    hudToolbarBackgroundColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(255, 255, 255, 0.05)",
+        @"border-bottom": @"1px solid rgba(255, 255, 255, 0.15)"
     }],
 
     themeValues =
     [
+     // Standard
      [@"toolbar-background-color", toolbarBackgroundColor],
-     [@"bezel-color", hudBezelColor, CPThemeStateHUD]
+
+     // HUD Overrides
+     [@"bezel-color",              hudBezelColor,             CPThemeStateHUD],
+     [@"toolbar-background-color", hudToolbarBackgroundColor, CPThemeStateHUD]
     ];
 
     [self registerThemeValues:themeValues forView:bordelessBridgeWindowView inherit:themedWindowViewValues];
@@ -9374,13 +9390,26 @@ var themedButtonValues                      = nil,
 
      [@"right-columns-margin",                                      30.0],
 
-     // HUD Overrides
-     // Use a semi-transparent white for selection instead of Blue
+     // =======================================================
+     // HUD OVERRIDES (Fixes applied here)
+     // =======================================================
+     
+     // Set margins to 0 for HUD state to let the blue bar touch the edges.
+     [@"left-margin",                                               0.0, CPThemeStateHUD],
+     [@"right-margin",                                              0.0, CPThemeStateHUD],
+
+     // Explicitly force [CPColor whiteColor] for HUD text.
+     // Do not rely on A3CPColorActiveTextHighlighted unless you are sure it is white.
+     [@"menu-item-text-color",                                      [CPColor whiteColor], CPThemeStateHUD],
+     
+     // Ensure disabled text is visible but dimmed in HUD
+     [@"menu-item-disabled-text-color",                             [CPColor colorWithWhite:1.0 alpha:0.4], CPThemeStateHUD],
+
+     // Existing HUD settings (Keep these)
      [@"menu-item-selection-color",                                 [CPColor colorWithWhite:1.0 alpha:0.3], CPThemeStateHUD],
-     [@"menu-item-text-color",                                      A3CPColorActiveTextHighlighted, CPThemeStateHUD],
      [@"menu-item-default-on-state-image",                          menuItemHUDOnStateImage, CPThemeStateHUD],
      [@"menu-item-default-mixed-state-image",                       menuItemHUDMixedStateImage, CPThemeStateHUD],
-     [@"submenu-indicator-color",                                   A3CPColorActiveTextHighlighted, CPThemeStateHUD],
+     [@"submenu-indicator-color",                                   [CPColor whiteColor], CPThemeStateHUD],
     ];
 
     [self registerThemeValues:themeValues forView:menuItemStandardView];
