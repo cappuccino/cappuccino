@@ -8438,11 +8438,23 @@ var themedButtonValues                      = nil,
 
     bezelColor = [CPColor colorWithCSSDictionary:@{
         @"border": @"1px solid " + A3ColorBorderDark,
-        @"background-color": A3ColorBackgroundWhite
+        @"background-color": A3ColorBackgroundWhite,
+        @"box-sizing": @"border-box"
+    }],
+
+    // Add Focused State
+    bezelFocusedColor = [CPColor colorWithCSSDictionary:@{
+        @"border": @"1px solid " + A3ColorBorderBlue,
+        @"background-color": A3ColorBackgroundWhite,
+        @"box-shadow": @"0 0 0 1px " + A3ColorBorderBlue + " inset",
+        @"box-sizing": @"border-box"
     }],
 
     themedColorWellValues = [
                              [@"bezel-color",            bezelColor,                         CPThemeStateBordered],
+                             // Register the focused state
+                             [@"bezel-color",            bezelFocusedColor,                  [CPThemeStateBordered, CPThemeStateFirstResponder]],
+                             
                              [@"content-inset",          CGInsetMake(5.0, 5.0, 5.0, 5.0),    CPThemeStateBordered],
                              [@"content-border-inset",   CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBordered]
                              ];
