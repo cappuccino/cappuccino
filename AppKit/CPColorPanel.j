@@ -148,10 +148,13 @@ var SharedColorPanel = nil,
 */
 - (void)setColor:(CPColor)aColor
 {
+    if ([_color isEqual:aColor])
+        return;
+
     _color = aColor;
     [_previewView setBackgroundColor:_color];
 
-    // Push color via Responder Chain
+    // Push color via Responder Chain (targets First Responder, i.e., the active CPColorWell)
     [CPApp sendAction:@selector(changeColor:) to:nil from:self];
 
     if (_target && _action)
@@ -163,7 +166,7 @@ var SharedColorPanel = nil,
 
     if (_activePicker)
         [_activePicker setColor:_color];
-        
+
     if (_opacitySlider)
         [_opacitySlider setFloatValue:[_color alphaComponent]];
 }
@@ -432,7 +435,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
     [self setBackgroundColor:[CPColor grayColor]];
 
-    [self registerForDraggedTypes:[CPArray arrayWithObjects:CPColorDragType]];
+    [self registerForDraggedTypes:[CPArray arrayWithObjects:@"CPColorDragType"]];
 
     var whiteColor = [CPColor whiteColor];
 
@@ -555,18 +558,22 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
     [dragView addSubview:dragFillView];
 
+    var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
+    [pasteboard declareTypes:[CPArray arrayWithObject:@"CPColorDragType"] owner:self];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:@"CPColorDragType"];
+
     [self dragView:dragView
                 at:CGPointMake(point.x - bounds.size.width / 2.0, point.y - bounds.size.height / 2.0)
             offset:CGPointMake(0.0, 0.0)
              event:anEvent
-        pasteboard:[CPPasteboard pasteboardWithName:CPDragPboard]
+        pasteboard:pasteboard
             source:self
          slideBack:YES];
 }
 
 - (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
 {
-    if (aType == CPColorDragType)
+    if (aType == @"CPColorDragType")
         [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:aType];
 }
 
@@ -576,10 +583,10 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
         pasteboard = [aSender draggingPasteboard],
         swatch = nil;
 
-    if (![pasteboard availableTypeFromArray:[CPColorDragType]] || location.x > [self bounds].size.width - 1 || location.x < 1)
+    if (![pasteboard availableTypeFromArray:[@"CPColorDragType"]] || location.x > [self bounds].size.width - 1 || location.x < 1)
         return NO;
 
-    [self setColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] atIndex:FLOOR(location.x / 13)];
+    [self setColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:@"CPColorDragType"]] atIndex:FLOOR(location.x / 13)];
 }
 
 @end
@@ -594,7 +601,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 {
     self = [super initWithFrame:aFrame];
 
-    [self registerForDraggedTypes:[CPArray arrayWithObjects:CPColorDragType]];
+    [self registerForDraggedTypes:[CPArray arrayWithObjects:@"CPColorDragType"]];
 
     return self;
 }
@@ -613,10 +620,10 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 {
     var pasteboard = [aSender draggingPasteboard];
 
-    if (![pasteboard availableTypeFromArray:[CPColorDragType]])
+    if (![pasteboard availableTypeFromArray:[@"CPColorDragType"]])
         return NO;
 
-    var color = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]];
+    var color = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:@"CPColorDragType"]];
     [_colorPanel setColor:color updatePicker:YES];
 }
 
@@ -639,18 +646,22 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
     [dragView addSubview:dragFillView];
 
+    var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
+    [pasteboard declareTypes:[CPArray arrayWithObject:@"CPColorDragType"] owner:self];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self backgroundColor]] forType:@"CPColorDragType"];
+
     [self dragView:dragView
                 at:CGPointMake(point.x - bounds.size.width / 2.0, point.y - bounds.size.height / 2.0)
             offset:CGPointMake(0.0, 0.0)
              event:anEvent
-        pasteboard:[CPPasteboard pasteboardWithName:CPDragPboard]
+        pasteboard:pasteboard
             source:self
          slideBack:YES];
 }
 
 - (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
 {
-    if (aType == CPColorDragType)
+    if (aType == @"CPColorDragType")
         [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self backgroundColor]] forType:aType];
 }
 

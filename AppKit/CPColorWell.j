@@ -26,6 +26,8 @@
 @import "CPColor.j"
 @import "CPColorPanel.j"
 
+var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiveNotification";
+
 /*!
     @ingroup appkit
     @class CPColorWell
@@ -38,6 +40,7 @@
 {
     BOOL    _bordered;
     CPColor _color;
+    BOOL    _isChangingColorFromPanel; // Guard flag to prevent recursion
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -72,6 +75,31 @@
     [theBinding reverseSetValueFor:@"color"];
 }
 
+- (BOOL)isFirstResponder
+{
+    return [[self window] firstResponder] === self;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
+- (void)activate:(BOOL)shouldBeExclusive
+{
+    [[self window] makeFirstResponder:self];
+    [[CPColorPanel sharedColorPanel] orderFront:self];
+}
+
+/*!
+    Deactivates the color well.
+*/
+- (void)deactivate
+{
+    if ([self isFirstResponder])
+        [[self window] makeFirstResponder:nil];
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -81,8 +109,8 @@
         _color = [CPColor whiteColor];
         [self setBordered:YES];
         
-        // Register for Drag & Drop
-        [self registerForDraggedTypes:[CPArray arrayWithObject:CPColorDragType]];
+        // Register using string literal to avoid dependency issues
+        [self registerForDraggedTypes:[CPArray arrayWithObject:@"CPColorDragType"]];
     }
 
     return self;
@@ -126,15 +154,16 @@
 */
 - (void)setColor:(CPColor)aColor
 {
-    if (_color == aColor)
+    if ([_color isEqual:aColor])
         return;
 
     _color = aColor;
 
     [self setNeedsLayout];
     
-    // If we are active, update the panel to match us
-    if ([self isFirstResponder])
+    // Only push back to the panel if we initiated the change (not if the panel pushed it to us)
+    // AND if we are the current focus.
+    if (!_isChangingColorFromPanel && [self isFirstResponder])
         [[CPColorPanel sharedColorPanel] setColor:_color];
 }
 
@@ -148,13 +177,17 @@
 }
 
 /*!
-    Standard action method sent by CPColorPanel up the responder chain.
+    Standard action method sent by CPColorPanel via the Responder Chain.
 */
 - (void)changeColor:(id)aSender
 {
     if ([aSender isKindOfClass:[CPColorPanel class]])
     {
+        _isChangingColorFromPanel = YES;
         [self setColor:[aSender color]];
+        _isChangingColorFromPanel = NO;
+        
+        // Forward the action to our target (e.g. controller)
         [self sendAction:[self action] to:[self target]];
     }
 }
@@ -167,43 +200,19 @@
     If exclusive is \c YES, deactivates any other CPColorWells. \c NO, keeps them active.
     @param shouldBeExclusive whether other color wells should be deactivated.
 */
-- (void)activate:(BOOL)shouldBeExclusive
-{
-    [[self window] makeFirstResponder:self];
-    [[CPColorPanel sharedColorPanel] orderFront:self];
-}
-
-/*!
-    Deactivates the color well.
-*/
-- (void)deactivate
-{
-    if ([self isFirstResponder])
-        [[self window] makeFirstResponder:nil];
-}
-
-/*!
-    Returns \c YES if the color well is active (is First Responder).
-*/
-- (BOOL)isActive
-{
-    return [self isFirstResponder];
-}
-
-- (BOOL)acceptsFirstResponder
-{
-    return [self isEnabled];
-}
-
 - (BOOL)becomeFirstResponder
 {
     [self setThemeState:CPThemeStateFirstResponder];
     
     var panel = [CPColorPanel sharedColorPanel];
-    [panel setColor:_color];
     
-    // Ensure panel knows who to talk to if it's already open
-    [panel setTarget:nil]; 
+    // Sync panel to our current color
+    [panel setColor:_color];
+
+    // EXPLICITLY set ourselves as the target.
+    // This ensures that when the user clicks the panel (making Panel key),
+    // the panel still knows to send messages back to us.
+    [panel setTarget:self]; 
     [panel setAction:@selector(changeColor:)];
     
     [[CPNotificationCenter defaultCenter] postNotificationName:_CPColorWellDidBecomeExclusiveNotification object:self];
@@ -214,6 +223,13 @@
 - (BOOL)resignFirstResponder
 {
     [self unsetThemeState:CPThemeStateFirstResponder];
+    
+    var panel = [CPColorPanel sharedColorPanel];
+    
+    // Clean up if we were the target
+    if ([panel target] == self)
+        [panel setTarget:nil];
+        
     return YES;
 }
 
@@ -224,7 +240,7 @@
 {
     if (![self isEnabled])
         return;
-        
+
     [self activate:YES];
 }
 
@@ -235,7 +251,7 @@
 {
     var pasteboard = [sender draggingPasteboard];
     
-    if ([[pasteboard types] containsObject:CPColorDragType])
+    if ([[pasteboard types] containsObject:@"CPColorDragType"])
     {
         [self setThemeState:CPThemeStateHighlighted];
         return CPDragOperationCopy;
@@ -253,17 +269,20 @@
 {
     var pasteboard = [sender draggingPasteboard];
     
-    if ([[pasteboard types] containsObject:CPColorDragType])
+    if ([[pasteboard types] containsObject:@"CPColorDragType"])
     {
-        var data = [pasteboard dataForType:CPColorDragType],
+        var data = [pasteboard dataForType:@"CPColorDragType"],
             newColor = [CPKeyedUnarchiver unarchiveObjectWithData:data];
             
-        if (newColor)
+        if (newColor && [newColor isKindOfClass:[CPColor class]])
         {
             [self setColor:newColor];
             [self sendAction:[self action] to:[self target]];
-            [self activate:YES]; // Become active after drop
+            
+            // Activate nicely after drop
+            [self activate:YES];
             [self unsetThemeState:CPThemeStateHighlighted];
+            
             return YES;
         }
     }
@@ -386,7 +405,7 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
     {
         _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
         [self setBordered:[aCoder decodeBoolForKey:CPColorWellBorderedKey]];
-        [self registerForDraggedTypes:[CPArray arrayWithObject:CPColorDragType]];
+        [self registerForDraggedTypes:[CPArray arrayWithObject:@"CPColorDragType"]];
     }
 
     return self;
