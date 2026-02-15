@@ -397,8 +397,6 @@ var SharedColorPanel = nil,
     [contentView addSubview:opacityLabel];
     [contentView addSubview:_opacitySlider];
 
-    _target = nil;
-    _action = nil;
     _activePicker = nil;
 
     [_previewView setBackgroundColor:_color];
