@@ -2646,6 +2646,8 @@ var themedButtonValues                      = nil,
      // Standard Label Text in HUD (White)
      [@"text-color",            [CPColor whiteColor],                 CPThemeStateHUD],
      [@"text-color",            [CPColor colorWithWhite:1 alpha:0.5], [CPThemeStateHUD, CPThemeStateDisabled]],
+     [@"text-color",            [CPColor colorWithWhite:1 alpha:0.5], [CPThemeStateHUD, CPTextFieldStatePlaceholder]],
+     [@"text-color",            [CPColor colorWithWhite:1 alpha:0.5], [CPThemeStateHUD, CPTextFieldStatePlaceholder, CPThemeStateEditing]],
      [@"text-color",            [CPColor whiteColor],               [CPThemeStateHUD, CPThemeStateEditing]],
      [@"text-color",            [CPColor whiteColor],               [CPThemeStateHUD, CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateEditing, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
      // Change the background color of selected text in HUD mode to improve contrast
@@ -4282,18 +4284,49 @@ var themedButtonValues                      = nil,
     overrides =
     [
         [@"direct-nib2cib-adjustment",  YES],
+
+        // ------------------------------------------------------
+        // STANDARD THEME
+        // ------------------------------------------------------
+
+        // 1. Active Text (Fixes original issue):
+        // Force Black text when the combo box is in its normal bordered state.
+        [@"text-color",                 A3CPColorActiveText,                       CPComboBoxStateButtonBordered],
+
+        // 2. Placeholder Text (Fixes Black Placeholder):
+        // When Bordered AND Placeholder, use Gray. This overrides rule #1.
+        [@"text-color",                 A3CPColorInactiveText,                     [CPComboBoxStateButtonBordered, CPTextFieldStatePlaceholder]],
+
+        // 3. Disabled Text:
+        // When Bordered AND Disabled, use Gray. This overrides rule #1.
+        [@"text-color",                 A3CPColorInactiveText,                     [CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+
+
+        // ------------------------------------------------------
+        // HUD THEME
+        // ------------------------------------------------------
+
+        // 4. HUD Active Text (Fixes Black Text in HUD):
+        // When HUD AND Bordered, use White. This overrides rule #1.
+        [@"text-color",                 [CPColor whiteColor],                      [CPThemeStateHUD, CPComboBoxStateButtonBordered]],
+
+        // 5. HUD Placeholder (Fixes Black Placeholder in HUD):
+        // When HUD AND Bordered AND Placeholder, use Dimmed White.
+        [@"text-color",                 [CPColor colorWithWhite:1.0 alpha:0.5],    [CPThemeStateHUD, CPComboBoxStateButtonBordered, CPTextFieldStatePlaceholder]],
+
+        // 6. HUD Disabled:
+        // When HUD AND Bordered AND Disabled, use Dimmed White.
+        [@"text-color",                 [CPColor colorWithWhite:1.0 alpha:0.5],    [CPThemeStateHUD, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+
+
+        // ------------------------------------------------------
+        // GENERAL FALLBACKS
+        // ------------------------------------------------------
+        
         [@"text-color",                 A3CPColorActiveText],
         [@"text-color",                 A3CPColorInactiveText,                     [CPThemeStateDisabled]],
 
-        [@"text-color",                 A3CPColorActiveText,                      [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
-        [@"text-color",                 A3CPColorActiveText,                      [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow, CPThemeStateEditing]],
-        [@"text-color",                 A3CPColorActiveText,                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView]],
-        [@"text-color",                 A3CPColorActiveText,                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateKeyWindow]],
-
-
-        // --- HUD TEXT COLORS ---
-        [@"text-color",                 [CPColor whiteColor],                      CPThemeStateHUD],
-        [@"text-color",                 [CPColor colorWithWhite:1.0 alpha:0.5],    [CPThemeStateHUD, CPThemeStateDisabled]],
+        [@"text-color",                 A3CPColorActiveText,                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
 
         // Ensure text is centered
         [@"vertical-alignment",         CPCenterVerticalTextAlignment],
