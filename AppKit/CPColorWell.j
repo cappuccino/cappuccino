@@ -205,16 +205,17 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [self setThemeState:CPThemeStateFirstResponder];
     
     var panel = [CPColorPanel sharedColorPanel];
-    
-    // Sync panel to our current color
-    [panel setColor:_color];
 
     // EXPLICITLY set ourselves as the target.
     // This ensures that when the user clicks the panel (making Panel key),
     // the panel still knows to send messages back to us.
-    [panel setTarget:self]; 
+    [panel setTarget:self];
     [panel setAction:@selector(changeColor:)];
-    
+
+    // Sync panel to our current color
+    [panel setColor:_color];
+
+
     [[CPNotificationCenter defaultCenter] postNotificationName:_CPColorWellDidBecomeExclusiveNotification object:self];
     
     return YES;
@@ -225,7 +226,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [self unsetThemeState:CPThemeStateFirstResponder];
     
     var panel = [CPColorPanel sharedColorPanel];
-    
+
     // Clean up if we were the target
     if ([panel target] == self)
         [panel setTarget:nil];
