@@ -570,6 +570,13 @@ var CPComboBoxTextSubview = @"text",
         _selectedStringValue = selectedStringValue;
 
     [self setStringValue:_selectedStringValue];
+
+    [self _updatePlaceholderState];
+
+#if PLATFORM(DOM)
+    [self _setCSSStyleForInputElement];
+#endif
+
     [self _reverseSetBinding];
 
     return YES;
