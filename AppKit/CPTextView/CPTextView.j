@@ -862,6 +862,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)drawInsertionPointInRect:(CGRect)aRect color:(CPColor)aColor turnedOn:(BOOL)flag
 {
     [_caret setRect:aRect];
+
+#if PLATFORM(DOM)
+    _caret._caretDOM.style.backgroundColor = [_insertionPointColor cssString] || "black";
+#endif
+
     [_caret setVisibility:flag stop:NO];
 }
 
@@ -2697,10 +2702,6 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 	if (aLoc >= [_textView._layoutManager numberOfCharacters])
 		rect.origin.x = CGRectGetMaxX(rect);
-
-#if PLATFORM(DOM)
-    _caretDOM.style.backgroundColor = [_textView._insertionPointColor cssString] || "black";
-#endif
 
     [self setRect:rect];
 }
