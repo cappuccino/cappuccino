@@ -680,6 +680,7 @@
         [self _applyHUDStateToView:containerView];
         [textView setBackgroundColor:[CPColor blackColor]];
         [textView setTextColor:[CPColor whiteColor]];
+        [textView setInsertionPointColor:[CPColor whiteColor]];
         [_predicateField setTextColor:[CPColor whiteColor]];
         [self _applyHUDStateToView:_ruleEditor];
     }
