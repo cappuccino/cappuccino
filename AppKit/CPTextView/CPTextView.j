@@ -2632,7 +2632,6 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
             style.padding = "0px";
             style.margin = "0px";
             style.whiteSpace = "pre";
-            style.backgroundColor = "black";
             _caretDOM.style.width = "1px";
             _caretDOM.style.zIndex = 10001;
             _textView = aView;
@@ -2698,6 +2697,10 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 	if (aLoc >= [_textView._layoutManager numberOfCharacters])
 		rect.origin.x = CGRectGetMaxX(rect);
+
+#if PLATFORM(DOM)
+    _caretDOM.style.backgroundColor = [_textView._insertionPointColor cssString] || "black";
+#endif
 
     [self setRect:rect];
 }
