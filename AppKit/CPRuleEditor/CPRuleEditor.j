@@ -2132,7 +2132,13 @@ TODO: implement
         return;
 
     var point = [self convertPoint:[event locationInWindow] fromView:nil],
-        view = [_slices objectAtIndex:FLOOR(MAX(0, point.y) / _sliceHeight)];
+        index = FLOOR(MAX(0, point.y) / _sliceHeight);
+
+    // Check bounds before accessing the array to prevent CPRangeException
+    if (index >= [_slices count])
+        return;
+
+    var view = [_slices objectAtIndex:FLOOR(MAX(0, point.y) / _sliceHeight)];
 
     if ([self _dragShouldBeginFromMouseDown:view])
         [self _performDragForSlice:view withEvent:event];
