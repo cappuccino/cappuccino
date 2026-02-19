@@ -67,15 +67,21 @@
     [self setAutoresizingMask:CPViewWidthSizable];
 }
 
+- (void)_setSelected:(BOOL)isSelected
+{
+    [super _setSelected:isSelected];
+    [self _updateButtonImages];
+}
+
 - (void)_updateButtonImages
 {
-    // Re-fetch images from RuleEditor. This ensures we get the HUD images
-    // if the RuleEditor is in HUD state.
-    [_addButton setValue:[_ruleEditor _imageAdd] forThemeAttribute:@"image" inState:CPThemeStateNormal];
-    [_addButton setValue:[_ruleEditor _imageAddHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+    var rowState = [self themeState];
 
-    [_subtractButton setValue:[_ruleEditor _imageRemove] forThemeAttribute:@"image" inState:CPThemeStateNormal];
-    [_subtractButton setValue:[_ruleEditor _imageRemoveHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+    if ([self _isSelected])
+        rowState = rowState.and(CPThemeStateSelected);
+
+    [_addButton setImage:[_ruleEditor valueForThemeAttribute:@"add-image" inState:rowState]];
+    [_subtractButton setImage:[_ruleEditor valueForThemeAttribute:@"remove-image" inState:rowState]];
 }
 
 - (CPButton)_createRowButton
@@ -100,6 +106,8 @@
     var button = [self _createRowButton];
 
     [button setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
+    
+    // Initial setup, _updateButtonImages will be called later to set correct state-based images
     [button setValue:[_ruleEditor _imageAdd] forThemeAttribute:@"image" inState:CPThemeStateNormal];
     [button setValue:[_ruleEditor _imageAddHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
 
@@ -114,6 +122,8 @@
     var button = [self _createRowButton];
 
     [button setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
+    
+    // Initial setup
     [button setValue:[_ruleEditor _imageRemove] forThemeAttribute:@"image" inState:CPThemeStateNormal];
     [button setValue:[_ruleEditor _imageRemoveHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
 

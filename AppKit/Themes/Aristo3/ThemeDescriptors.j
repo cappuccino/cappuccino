@@ -8332,28 +8332,29 @@ var themedButtonValues                      = nil,
 + (CPRuleEditor)themedRuleEditor
 {
     var ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 300.0)],
-    
+
     // --- Standard Colors ---
     backgroundColors = [[CPColor whiteColor], [CPColor colorWithRed:235 / 255 green:239 / 255 blue:252 / 255 alpha:1]],
-    selectedActiveRowColor = [CPColor colorWithHexString:@"5f83b9"],
-    selectedInactiveRowColor = [CPColor colorWithWhite:0.83 alpha:1],
+
+    // Selection Colors
+    selectedActiveRowColor = @"A3CPColorBorderBlue",       // Active (Blue)
+    selectedInactiveRowColor = A3CPColorBorderBlueInactive, // Inactive (Light Gray)
+
     sliceTopBorderColor = [CPColor colorWithWhite:0.9 alpha:1.0],
     sliceBottomBorderColor = [CPColor colorWithWhite:0.729412 alpha:1.0],
     sliceLastBottomBorderColor = [CPColor colorWithWhite:0.6 alpha:1.0],
-    fontColor = [CPColor colorWithWhite:150 / 255 alpha:1],
-    
+
+    // Standard Font Color
+    fontColor = A3CPColorActiveText,
+
     // --- HUD Colors ---
-    // Matches themedTableView: Clear + Very Faint White (5%)
     hudBackgroundColors = [[CPColor clearColor], [CPColor colorWithWhite:1.0 alpha:0.05]],
-    
-    // Selection: Semi-transparent white (20%)
     hudSelectedRowColor = [CPColor colorWithWhite:1.0 alpha:0.2],
-    
-    // Borders: Very faint white lines (10%) to prevent "bright stripes" effect
     hudSliceBorderColor = [CPColor colorWithWhite:1.0 alpha:0.1],
     hudFontColor = [CPColor whiteColor],
 
-    // --- Standard Images ---
+    // --- Standard Images (Dark) ---
+    // Used for: Normal rows AND Inactive Selection (Gray background)
     buttonAddImage = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": svgPlus,
         "mask-image": svgPlus,
@@ -8378,7 +8379,33 @@ var themedButtonValues                      = nil,
         "mask-position": "center"
     } size:CGSizeMake(12, 12)],
 
-    // --- HUD Images (White Icons) ---
+    // --- Selected Images (White) ---
+    // Used for: Active Selection (Blue background)
+    buttonAddImageSelected = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgPlus,
+        "mask-image": svgPlus,
+        "background-color": @"#FFFFFF", // Force White
+        "-webkit-mask-size": "contain",
+        "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat",
+        "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center",
+        "mask-position": "center"
+    } size:CGSizeMake(12, 12)],
+
+    buttonRemoveImageSelected = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgMinus,
+        "mask-image": svgMinus,
+        "background-color": @"#FFFFFF", // Force White
+        "-webkit-mask-size": "contain",
+        "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat",
+        "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center",
+        "mask-position": "center"
+    } size:CGSizeMake(12, 12)],
+
+    // --- HUD Images (Always White) ---
     buttonAddImageHUD = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": svgPlus,
         "mask-image": svgPlus,
@@ -8407,34 +8434,51 @@ var themedButtonValues                      = nil,
     [
      // --- Standard Theme ---
      [@"alternating-row-colors",         backgroundColors],
-     [@"selected-color",                 selectedActiveRowColor,                 CPThemeStateNormal],
+
+     // Selection Backgrounds
+     [@"selected-color",                 selectedInactiveRowColor,               CPThemeStateNormal],
+     [@"selected-color",                 selectedActiveRowColor,                 CPThemeStateFirstResponder],
      [@"selected-color",                 selectedInactiveRowColor,               CPThemeStateDisabled],
+
+     // Borders
      [@"slice-top-border-color",         sliceTopBorderColor],
      [@"slice-bottom-border-color",      sliceBottomBorderColor],
      [@"slice-last-bottom-border-color", sliceLastBottomBorderColor],
+
      [@"font",                           [CPFont systemFontOfSize:10.0]],
-     [@"font-color",                     fontColor],
-     [@"add-image",                      buttonAddImage,                         CPThemeStateNormal],
-     [@"remove-image",                   buttonRemoveImage,                      CPThemeStateNormal],
      [@"vertical-alignment",             CPCenterVerticalTextAlignment],
 
+     // --- Text Color ---
+     // Normal & Inactive Selection (Gray) -> Black Text
+     [@"font-color",                     fontColor],
+     [@"font-color",                     fontColor,                              CPThemeStateSelected],
+     // Active Selection (Blue) -> White Text
+     [@"font-color",                     [CPColor whiteColor],                   [CPThemeStateSelected, CPThemeStateFirstResponder]],
+
+     // --- Button Icons ---
+     // 1. Normal State -> Dark
+     [@"add-image",                      buttonAddImage,                         CPThemeStateNormal],
+     [@"remove-image",                   buttonRemoveImage,                      CPThemeStateNormal],
+
+     // 2. Selected (Inactive/Gray) -> Dark (to contrast with light gray)
+     [@"add-image",                      buttonAddImage,                         CPThemeStateSelected],
+     [@"remove-image",                   buttonRemoveImage,                      CPThemeStateSelected],
+
+     // 3. Selected (Active/Blue) -> White (Highest Specificity)
+     // [@"add-image",                      buttonAddImageSelected,                 [CPThemeStateSelected, CPThemeStateKeyWindow]],
+     // [@"remove-image",                   buttonRemoveImageSelected,              [CPThemeStateSelected, CPThemeStateKeyWindow]],
+
      // --- HUD Mappings ---
-     // Alternating Row Colors (Zebra)
      [@"alternating-row-colors",         hudBackgroundColors,                    CPThemeStateHUD],
-     
-     // Selection Color
      [@"selected-color",                 hudSelectedRowColor,                    [CPThemeStateHUD, CPThemeStateNormal]],
      [@"selected-color",                 hudSelectedRowColor,                    [CPThemeStateHUD, CPThemeStateDisabled]],
-     
-     // Row Dividers (Borders) - Must be dimmed for HUD
+
      [@"slice-top-border-color",         hudSliceBorderColor,                    CPThemeStateHUD],
      [@"slice-bottom-border-color",      hudSliceBorderColor,                    CPThemeStateHUD],
      [@"slice-last-bottom-border-color", hudSliceBorderColor,                    CPThemeStateHUD],
-     
-     // Font Color
+
      [@"font-color",                     hudFontColor,                           CPThemeStateHUD],
-     
-     // Buttons
+
      [@"add-image",                      buttonAddImageHUD,                      [CPThemeStateHUD, CPThemeStateNormal]],
      [@"remove-image",                   buttonRemoveImageHUD,                   [CPThemeStateHUD, CPThemeStateNormal]]
      ];
