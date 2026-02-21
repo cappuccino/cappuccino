@@ -255,15 +255,28 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
     // If we are a submenu and we are being displayed off the right of the screen,
     // we should try and display on the left of our supermenu.
     var supermenu = [[self menu] supermenu];
-    if (supermenu && (CGRectGetMaxX(_unconstrainedFrame) > CGRectGetMaxX(_constraintRect)))
+
+    if (supermenu)
     {
-        var supermenuWindow = supermenu._menuWindow;
-        if (supermenuWindow)
+        if (CGRectGetMaxX(_unconstrainedFrame) > CGRectGetMaxX(_constraintRect))
         {
-            var supermenuFrame = [supermenuWindow frame];
-            _unconstrainedFrame.origin.x = CGRectGetMinX(supermenuFrame) - CGRectGetWidth(_unconstrainedFrame);
+            var supermenuWindow = supermenu._menuWindow;
+            if (supermenuWindow)
+            {
+                var supermenuFrame = [supermenuWindow frame];
+                _unconstrainedFrame.origin.x = CGRectGetMinX(supermenuFrame) - CGRectGetWidth(_unconstrainedFrame);
+            }
         }
+        
+        // Shift true submenus vertically to fit within the screen if they extend past the bottom
+        if (supermenu !== [CPApp mainMenu] && CGRectGetMaxY(_unconstrainedFrame) > CGRectGetMaxY(_constraintRect))
+            _unconstrainedFrame.origin.y -= CGRectGetMaxY(_unconstrainedFrame) - CGRectGetMaxY(_constraintRect);
     }
+
+    // Ensure no menu starts above the visible screen area, preventing it from incorrectly 
+    // starting scrolled with a top arrow.
+    if (CGRectGetMinY(_unconstrainedFrame) < CGRectGetMinY(_constraintRect))
+        _unconstrainedFrame.origin.y = CGRectGetMinY(_constraintRect);
 
     var constrainedFrame = CGRectIntersection(_unconstrainedFrame, _constraintRect),
         marginInset = [_menuView valueForThemeAttribute:@"menu-window-margin-inset"],
@@ -286,7 +299,8 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
     [super setFrame:constrainedFrame display:shouldDisplay animate:shouldAnimate];
 
     // This needs to happen before changing the frame.
-    var menuViewOrigin = CGPointMake(CGRectGetMinX(aFrame) + marginInset.left, CGRectGetMinY(aFrame) + marginInset.top),
+    // Base the view origin on our modified _unconstrainedFrame instead of aFrame
+    var menuViewOrigin = CGPointMake(CGRectGetMinX(_unconstrainedFrame) + marginInset.left, CGRectGetMinY(_unconstrainedFrame) + marginInset.top),
         moreAbove = menuViewOrigin.y < CGRectGetMinY(constrainedFrame) + marginInset.top,
         moreBelow = menuViewOrigin.y + CGRectGetHeight([_menuView frame]) > CGRectGetMaxY(constrainedFrame) - marginInset.bottom,
 
