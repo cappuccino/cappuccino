@@ -1078,8 +1078,10 @@ var _CPMenuBarVisible               = NO,
                 anEvent._isKeyEquivalent = YES; // prevent the menu keystroke from beeing inserted into textview
                 [self performActionForItemAtIndex:index];
 
+#if PLATFORM(DOM)
                 // we are done with this event in cappuccino space. do not let the browser do something weird additionally (e.g. command-o).
                 _CPDOMEventStop(anEvent._DOMEvent);
+#endif
             }
             else
             {
