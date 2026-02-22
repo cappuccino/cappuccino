@@ -1269,6 +1269,10 @@ CPTexturedBackgroundWindowMask
     [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [_windowView addSubview:_contentView];
 
+    // The window view manages the exact layout of the content view (e.g. offsetting for the toolbar).
+    if ([_windowView respondsToSelector:@selector(tile)])
+        [_windowView tile];
+
     /*
         If the initial first responder has been set to something other than
         the window, set it to the window because it will no longer be valid.
