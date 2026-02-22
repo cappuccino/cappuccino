@@ -1077,6 +1077,15 @@ var _CPMenuBarVisible               = NO,
 
                 anEvent._isKeyEquivalent = YES; // prevent the menu keystroke from beeing inserted into textview
                 [self performActionForItemAtIndex:index];
+
+#if PLATFORM(DOM)
+                // we are done with this event in cappuccino space. do not let the browser do something weird additionally (e.g. command-o).
+                // but we must not stop copy/paste events as these can only be handled by the browser at this time even if they are in our menu
+                // (until we move to CPTextView as the fieleditor)
+
+                if (characters != "c" && characters != "x" && characters != "v")
+                    _CPDOMEventStop(anEvent._DOMEvent);
+#endif
             }
             else
             {
