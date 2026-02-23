@@ -590,7 +590,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     // of the event, including the _isActionKey flag that was set at creation time.
     return (
             // Is it a command shortcut?
-            (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask | CPAlternateKeyMask)) ||
+            (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask)) ||
 
             // Is it a key that doesn't produce a character?
             ([_characters length] === 0) ||
