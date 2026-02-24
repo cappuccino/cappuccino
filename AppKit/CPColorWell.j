@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPString.j>
+@import <Foundation/CPKeyedUnarchiver.j>
 
 @import "CPView.j"
 @import "CPColor.j"
@@ -30,302 +31,632 @@
 var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiveNotification";
 
 /*!
-    @ingroup appkit
-    @class CPColorWell
+ @ingroup appkit
+ @class CPColorWell
 
-    CPColorWell is a CPControl for selecting and displaying a single color value. An example of a CPColorWell object (or simply color well) is found in CPColorPanel, which uses a color well to display the current color selection.</p>
+ CPColorWell is a CPControl for selecting and displaying a single color value. An example of a CPColorWell object (or simply color well) is found in CPColorPanel, which uses a color well to display the current color selection.
 
-    <p>An application can have one or more active CPColorWells. You can activate multiple CPColorWells by invoking the \c -activate: method with \c NO as its argument. When a mouse-down event occurs on an CPColorWell's border, it becomes the only active color well. When a color well becomes active, it brings up the color panel also.
-*/
+ <p>An application can have one or more active CPColorWells. You can activate multiple CPColorWells by invoking the \c -activate: method with \c NO as its argument. When a mouse-down event occurs on an CPColorWell's border, it becomes the only active color well. When a color well becomes active, it brings up the color panel also.
+
+ <h3>Architecture: CPColorPanel as Application-Wide Singleton</h3>
+
+ <p>CPColorPanel is implemented as an application-wide singleton via \c +sharedColorPanel. This architectural
+ decision is fundamental and not arbitrary:</p>
+
+ <ul>
+ <li><strong>Single Source of Truth:</strong> The color panel serves as the authoritative color source for the
+ entire application. Any UI element that needs a color selection—color wells, custom views, document objects—can
+ receive colors from this one panel.</li>
+
+ <li><strong>Visual Coherence:</strong> Having multiple color panels open simultaneously would create visual chaos
+ and make it impossible to determine which panel corresponds to which target. A singleton ensures one panel,
+ one interaction context.</li>
+
+ <li><strong>Responder Chain Integration:</strong> The singleton pattern enables the panel to use the responder
+ chain for target resolution. When a color changes, the panel sends \c -changeColor: to \c nil (the first responder),
+ and the responder chain determines which object handles it. This loose coupling means the panel doesn't need to
+ know what will receive its colors—it simply broadcasts, and the first responder that implements \c -changeColor:
+ will respond.</li>
+ </ul>
+
+ <h3>Communication via Responder Chain (Not Notifications)</h3>
+
+ <p>Color wells communicate with CPColorPanel through the <strong>responder chain</strong>, not through
+ NSNotificationCenter. This is critical to understanding the architecture:</p>
+
+ <ul>
+ <li><strong>Panel to Well:</strong> When the user picks a color in the panel, the panel sends \c -changeColor:
+ to \c nil. This message travels up the responder chain until it reaches the first responder that implements
+ \c -changeColor:. The active color well makes itself first responder (or ensures it's in the responder chain),
+ so it receives these messages.</li>
+
+ <li><strong>Well to Panel:</strong> When a well is clicked, it makes itself first responder, activates itself,
+ and tells the panel to \c orderFront:. The panel reads the well's color and updates its UI accordingly.</li>
+
+ <li><strong>Why Not Notifications?:</strong> Notifications broadcast to all observers, requiring additional logic
+ to determine "which well should respond?" The responder chain has built-in target resolution—the message goes to
+ exactly one recipient (the first responder or the next responder that implements the method). This is precisely
+ what we need: unambiguous, one-to-one communication.</li>
+ </ul>
+
+ <h3>The Multi-Well Scenario: Why This Design Matters</h3>
+
+ <p>Consider an application with multiple color wells visible simultaneously (e.g., a color picker for text color,
+ background color, border color, and shadow color). The correct behavior is:</p>
+
+ <ol>
+ <li>User clicks Well A → Well A becomes first responder → Panel opens showing Well A's color</li>
+ <li>User adjusts color in panel → Panel sends \c -changeColor: to nil → Well A receives it (it's first responder)</li>
+ <li>User clicks Well B (panel still open) → Well B becomes first responder → Panel updates to show Well B's color</li>
+ <li>User adjusts color in panel → Panel sends \c -changeColor: to nil → Well B receives it (it's now first responder)</li>
+ </ol>
+
+ <p>This works automatically through the responder chain. No manual tracking of "which well is active" is needed.
+ The window system maintains the first responder, and the responder chain delivers messages to it.</p>
+
+ <p><strong>Common Implementation Mistakes:</strong></p>
+ <ul>
+ <li><strong>Using notifications</strong> - Forces wells to register/unregister as observers, creates timing issues,
+ and requires explicit "active well" tracking. This breaks when multiple wells exist.</li>
+ <li><strong>Using target/action on the panel</strong> - Creates tight coupling where the panel "remembers" which
+ well opened it. When the user clicks another well, the panel continues sending colors to the original well.</li>
+ <li><strong>Not making wells first responder</strong> - If wells don't participate in the responder chain,
+ the panel's \c -changeColor: messages go nowhere.</li>
+ </ul>
+
+ <h3>Drag and Drop Integration</h3>
+
+ <p>Color wells participate fully in drag-and-drop operations:</p>
+
+ <ul>
+ <li><strong>As Drop Targets:</strong> Wells register for \c CPColorDragType and can receive colors dragged from
+ the panel, other wells, or any source providing color data. Drop targets don't need to be first responder—the
+ drag-and-drop system uses hit-testing to find the target under the cursor.</li>
+
+ <li><strong>As Drag Sources:</strong> Wells can be dragged from to provide colors to other targets. This requires
+ bypassing CPControl's tracking system (see implementation notes below).</li>
+ </ul>
+
+ <p>Drag-and-drop provides an alternative to the click-to-activate-panel workflow. Users can:</p>
+ <ul>
+ <li>Click well → adjust in panel → changes via responder chain</li>
+ <li>Drag from panel swatch → drop on well → direct color transfer</li>
+ <li>Drag from well → drop on another well → color copying</li>
+ </ul>
+
+ <h3>Implementation Notes: CPControl vs. CPView Mouse Handling</h3>
+
+ <p>CPColorWell inherits from CPControl, which uses a <strong>tracking system</strong> for mouse events
+ (\c -startTracking:, \c -continueTracking:, \c -stopTracking:). This system completely intercepts mouse events
+ during interaction, which prevents \c -mouseDragged: from being called.</p>
+
+ <p>This creates a problem: drag initiation requires \c -mouseDragged: to detect when the user moves beyond
+ a threshold distance. The solution is to <strong>bypass CPControl's tracking entirely</strong> by:</p>
+ <ol>
+ <li>Overriding \c -mouseDown: without calling \c [super mouseDown:]</li>
+ <li>Using \c [CPApp setTarget:selector:forMode:] to route events to our own tracking method</li>
+ <li>Handling \c -mouseDragged: and \c -mouseUp: directly</li>
+ </ol>
+
+ <p>This is why panel swatches (which inherit from CPView, not CPControl) can drag easily, while wells
+ (CPControl subclasses) require this workaround.</p>
+
+ <p>This architecture mirrors NSColorWell and NSColorPanel in AppKit exactly. It's not an implementation detail—it's
+ fundamental to how color selection works across the framework.</p>
+ */
 @implementation CPColorWell : CPControl
 {
-    BOOL    _active;
-    BOOL    _bordered;
+	BOOL    _active;
+	BOOL    _bordered;
 
-    CPColor _color;
+	CPColor _color;
+
+	CGPoint _mouseDownPoint;
+	BOOL    _isDragging;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
 {
-    if (aBinding == CPValueBinding)
-        return [CPColorWellValueBinder class];
+	if (aBinding == CPValueBinding)
+		return [CPColorWellValueBinder class];
 
-    return [super _binderClassForBinding:aBinding];
+	return [super _binderClassForBinding:aBinding];
 }
 
 + (CPString)defaultThemeClass
 {
-    return @"colorwell";
+	return @"colorwell";
 }
 
 + (CPDictionary)themeAttributes
 {
-    return @{
-            @"bezel-inset": CGInsetMakeZero(),
-            @"bezel-color": [CPNull null],
-            @"content-inset": CGInsetMake(3.0, 3.0, 3.0, 3.0),
-            @"content-border-inset": CGInsetMakeZero(),
-            @"content-border-color": [CPNull null],
-        };
+	return @{
+		@"bezel-inset": CGInsetMakeZero(),
+		@"bezel-color": [CPNull null],
+		@"content-inset": CGInsetMake(3.0, 3.0, 3.0, 3.0),
+		@"content-border-inset": CGInsetMakeZero(),
+		@"content-border-color": [CPNull null],
+	};
 }
 
 - (void)_reverseSetBinding
 {
-    var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
-        theBinding = [binderClass getBinding:CPValueBinding forObject:self];
+	var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
+	theBinding = [binderClass getBinding:CPValueBinding forObject:self];
 
-    [theBinding reverseSetValueFor:@"color"];
+	[theBinding reverseSetValueFor:@"color"];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
-    self = [super initWithFrame:aFrame];
+	self = [super initWithFrame:aFrame];
 
-    if (self)
-    {
-        _active = NO;
-        _color = [CPColor whiteColor];
-        [self setBordered:YES];
-    }
+	if (self)
+	{
+		_active = NO;
+		_color = [CPColor whiteColor];
+		[self setBordered:YES];
+		[self registerForDraggedTypes:[CPArray arrayWithObject:CPColorDragType]];
+	}
 
-    return self;
+	return self;
 }
 
 - (void)_registerNotifications
 {
-    var defaultCenter = [CPNotificationCenter defaultCenter];
+	var defaultCenter = [CPNotificationCenter defaultCenter];
 
-    [defaultCenter
-        addObserver:self
-           selector:@selector(colorWellDidBecomeExclusive:)
-               name:_CPColorWellDidBecomeExclusiveNotification
-             object:nil];
+	[defaultCenter
+	 addObserver:self
+	 selector:@selector(colorWellDidBecomeExclusive:)
+	 name:_CPColorWellDidBecomeExclusiveNotification
+	 object:nil];
 
-    [defaultCenter
-        addObserver:self
-           selector:@selector(colorPanelWillClose:)
-               name:CPWindowWillCloseNotification
-             object:[CPColorPanel sharedColorPanel]];
+	[defaultCenter
+	 addObserver:self
+	 selector:@selector(colorPanelWillClose:)
+	 name:CPWindowWillCloseNotification
+	 object:[CPColorPanel sharedColorPanel]];
 }
 
 - (void)_removeNotifications
 {
-    var defaultCenter = [CPNotificationCenter defaultCenter];
+	var defaultCenter = [CPNotificationCenter defaultCenter];
 
-    [defaultCenter
-        removeObserver:self
-                  name:_CPColorWellDidBecomeExclusiveNotification
-                object:nil];
+	[defaultCenter
+	 removeObserver:self
+	 name:_CPColorWellDidBecomeExclusiveNotification
+	 object:nil];
 
-    [defaultCenter
-        removeObserver:self
-                  name:CPWindowWillCloseNotification
-                object:[CPColorPanel sharedColorPanel]];
+	[defaultCenter
+	 removeObserver:self
+	 name:CPWindowWillCloseNotification
+	 object:[CPColorPanel sharedColorPanel]];
 
 }
 
 /*!
-    Sets whether the color well is bordered.
-*/
+ Sets whether the color well is bordered.
+ */
 - (void)setBordered:(BOOL)shouldBeBordered
 {
-    if (shouldBeBordered)
-        [self setThemeState:CPThemeStateBordered];
-    else
-        [self unsetThemeState:CPThemeStateBordered];
+	if (shouldBeBordered)
+		[self setThemeState:CPThemeStateBordered];
+	else
+		[self unsetThemeState:CPThemeStateBordered];
 }
 
 /*!
-    Returns whether the color well is bordered
-*/
+ Returns whether the color well is bordered
+ */
 - (BOOL)isBordered
 {
-    return [self hasThemeState:CPThemeStateBordered];
+	return [self hasThemeState:CPThemeStateBordered];
 }
 
 // Managing Color From Color Wells
 
 /*!
-    Returns the color well's current color.
-*/
+ Returns the color well's current color.
+ */
 - (CPColor)color
 {
-    return _color;
+	return _color;
 }
 
 /*!
-    Sets the color well's current color.
-*/
+ Sets the color well's current color.
+ */
 - (void)setColor:(CPColor)aColor
 {
-    if (_color == aColor)
-        return;
+	if (_color == aColor)
+		return;
 
-    _color = aColor;
+	_color = aColor;
 
-    [self setNeedsLayout];
+	[self setNeedsLayout];
+	[self _reverseSetBinding];
 }
 
 /*!
-    Changes the color of the well to that of \c aSender.
-    @param aSender the object from which to retrieve the color
-*/
+ Changes the color of the well to that of \c aSender.
+ @param aSender the object from which to retrieve the color
+ */
 - (void)takeColorFrom:(id)aSender
 {
-    [self setColor:[aSender color]];
+	[self setColor:[aSender color]];
 }
 
 // Activating and Deactivating Color Wells
 /*!
-    Activates the color well, displays the color panel, and makes the panel's current color the same as its own.
-    If exclusive is \c YES, deactivates any other CPColorWells. \c NO, keeps them active.
-    @param shouldBeExclusive whether other color wells should be deactivated.
-*/
+ Activates the color well, displays the color panel, and makes the panel's current color the same as its own.
+ If exclusive is \c YES, deactivates any other CPColorWells. \c NO, keeps them active.
+ @param shouldBeExclusive whether other color wells should be deactivated.
+ */
 - (void)activate:(BOOL)shouldBeExclusive
 {
-    if (shouldBeExclusive)
-        // FIXME: make this queue!
-        [[CPNotificationCenter defaultCenter]
-            postNotificationName:_CPColorWellDidBecomeExclusiveNotification
-                          object:self];
+	if (shouldBeExclusive)
+		// FIXME: make this queue!
+		[[CPNotificationCenter defaultCenter]
+		 postNotificationName:_CPColorWellDidBecomeExclusiveNotification
+		 object:self];
 
 
-    if ([self isActive])
-        return;
+	if ([self isActive])
+		return;
 
-    _active = YES;
-
-    [[CPNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(colorPanelDidChangeColor:)
-               name:CPColorPanelColorDidChangeNotification
-             object:[CPColorPanel sharedColorPanel]];
+	_active = YES;
 }
 
 /*!
-    Deactivates the color well.
-*/
+ Deactivates the color well.
+ */
 - (void)deactivate
 {
-    if (![self isActive])
-        return;
+	if (![self isActive])
+		return;
 
-    _active = NO;
-
-    [[CPNotificationCenter defaultCenter]
-        removeObserver:self
-                  name:CPColorPanelColorDidChangeNotification
-                object:[CPColorPanel sharedColorPanel]];
+	_active = NO;
 }
 
-/*!
-    Returns \c YES if the color well is active.
-*/
 - (BOOL)isActive
 {
-    return _active;
+	return _active;
 }
 
-- (void)colorPanelDidChangeColor:(CPNotification)aNotification
+// Responder chain and focus handling
+- (BOOL)acceptsFirstResponder
 {
-    [self takeColorFrom:[aNotification object]];
+	return [self isEnabled];
+}
 
-    [self sendAction:[self action] to:[self target]];
+- (BOOL)becomeFirstResponder
+{
+	if (![super becomeFirstResponder])
+		return NO;
+
+	[self setThemeState:CPThemeStateFirstResponder];
+	return YES;
+}
+
+- (BOOL)resignFirstResponder
+{
+	if (![super resignFirstResponder])
+		return NO;
+
+	[self unsetThemeState:CPThemeStateFirstResponder];
+	return YES;
+}
+
+// Respond to CPColorPanel via responder chain
+/*!
+ Receives color changes from CPColorPanel via the responder chain.
+
+ This is the central method for panel-to-well communication. When the user selects a color in the
+ color panel, the panel sends \c -changeColor: to \c nil (the first responder). This message travels
+ up the responder chain until it reaches an object that implements this method.
+
+ For a color well to receive these messages, it must be first responder. When a well is clicked
+ (see \c -stopTracking:at:mouseIsUp:), it makes itself first responder via
+ \c [[self window] makeFirstResponder:self], ensuring that subsequent \c -changeColor: messages
+ from the panel are delivered to this well.
+
+ This architecture requires NO notification observers, NO explicit well-to-panel connections, and
+ NO tracking of "which well is listening." The responder chain provides automatic, unambiguous
+ target resolution.
+
+ @param sender The CPColorPanel sending the color change (or any object implementing \c -color)
+ */
+- (void)changeColor:(id)sender
+{
+	[self takeColorFrom:sender];
+	[self sendAction:[self action] to:[self target]];
+}
+
+// Drag and drop support - receiving colors
+/*!
+ Drag-and-drop provides an alternative mechanism for color delivery that bypasses the responder chain.
+
+ During a drag operation, the well under the cursor becomes the target through standard AppKit drag-and-drop
+ target resolution (hit testing, \c draggingEntered:, etc.). This is independent of first responder status—
+ a well doesn't need to be active or first responder to receive a dragged color.
+
+ This allows users to drag colors from the panel (or other sources) directly to any well, even wells that
+ aren't currently active. This is more flexible than clicking to activate + panel interaction, and is
+ essential for rapid color workflow.
+
+ The well highlights itself during drag-over (\c CPThemeStateHighlighted) to provide visual feedback.
+ */
+- (CPDragOperation)draggingEntered:(id /*<CPDraggingInfo>*/)draggingInfo
+{
+	if (![self isEnabled])
+		return CPDragOperationNone;
+
+	var pasteboard = [draggingInfo draggingPasteboard];
+
+	if ([pasteboard availableTypeFromArray:[CPArray arrayWithObject:CPColorDragType]])
+	{
+		[self setThemeState:CPThemeStateHighlighted];
+		return CPDragOperationCopy;
+	}
+
+	return CPDragOperationNone;
+}
+
+- (CPDragOperation)draggingUpdated:(id /*<CPDraggingInfo>*/)draggingInfo
+{
+	return [self draggingEntered:draggingInfo];
+}
+
+- (void)draggingExited:(id /*<CPDraggingInfo>*/)draggingInfo
+{
+	[self unsetThemeState:CPThemeStateHighlighted];
+}
+
+- (BOOL)performDragOperation:(id /*<CPDraggingInfo>*/)draggingInfo
+{
+	var pasteboard = [draggingInfo draggingPasteboard];
+
+	if (![pasteboard availableTypeFromArray:[CPArray arrayWithObject:CPColorDragType]])
+		return NO;
+
+	var data = [pasteboard dataForType:CPColorDragType],
+	color = [CPKeyedUnarchiver unarchiveObjectWithData:data];
+
+	if (!color)
+		return NO;
+
+	[self unsetThemeState:CPThemeStateHighlighted];
+
+	[self setColor:color];
+	[self sendAction:[self action] to:[self target]];
+
+	return YES;
+}
+
+// Drag and drop support - providing colors
+/*!
+ Allows this well to serve as a drag source, providing its color to other targets.
+
+ This method is called from \c -mouseDragged: when the user drags beyond a threshold (3 pixels).
+ It uses the same drag mechanism as the working panel swatches: \c dragView:at:offset:event:pasteboard:source:slideBack:
+
+ When the user drags from a well, this method:
+ 1. Archives the well's color to the drag pasteboard as \c CPColorDragType
+ 2. Creates a visual drag view
+ 3. Initiates a drag operation that can be dropped on other wells, the panel, or custom views
+
+ This completes the drag-and-drop integration. Wells can both receive colors (via \c performDragOperation:)
+ and provide colors (via this method). Combined with the responder chain mechanism, users have multiple
+ workflows for color selection:
+ - Click well → adjust panel → automatic update via responder chain
+ - Drag from panel → drop on well → direct color transfer
+ - Drag from well → drop on another well → color copying
+ */
+- (void)_initiateDragWithEvent:(CPEvent)anEvent
+{
+	if (![self isEnabled])
+		return;
+
+	var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard],
+	data = [CPKeyedArchiver archivedDataWithRootObject:_color];
+
+	[pasteboard declareTypes:[CPArray arrayWithObject:CPColorDragType] owner:self];
+	[pasteboard setData:data forType:CPColorDragType];
+
+	// Create a drag view matching our content area
+	var contentRect = [self contentRectForBounds:[self bounds]],
+	dragBounds = CGRectMake(0, 0, CGRectGetWidth(contentRect), CGRectGetHeight(contentRect)),
+	dragView = [[CPView alloc] initWithFrame:dragBounds],
+	dragFillView = [[CPView alloc] initWithFrame:CGRectInset(dragBounds, 1.0, 1.0)];
+
+	[dragView setBackgroundColor:[CPColor blackColor]];
+	[dragFillView setBackgroundColor:_color];
+	[dragView addSubview:dragFillView];
+
+	// Convert the event location to our coordinate space for drag origin
+	var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+
+	[self dragView:dragView
+				at:CGPointMake(point.x - dragBounds.size.width / 2.0, point.y - dragBounds.size.height / 2.0)
+			offset:CPSizeMakeZero()
+			 event:anEvent
+		pasteboard:nil
+			source:self
+		 slideBack:YES];
 }
 
 - (void)colorWellDidBecomeExclusive:(CPNotification)aNotification
 {
-    if (self != [aNotification object])
-        [self deactivate];
+	if (self != [aNotification object])
+		[self deactivate];
 }
 
 - (void)colorPanelWillClose:(CPNotification)aNotification
 {
-    [self deactivate];
+	[self deactivate];
 }
 
-- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
+// Mouse handling - override mouse events to enable dragging
+/*!
+ Handles the initial mouse-down event.
+
+ <strong>Critical Implementation Note:</strong> We override \c mouseDown:, \c mouseDragged:, and \c mouseUp:
+ to enable drag-and-drop from color wells. CPControl's tracking system (\c startTracking:, \c continueTracking:,
+ \c stopTracking:) is designed for click/hold interaction, but we need to detect dragging to initiate
+ drag operations.
+
+ The approach: store the mouse-down point, and if \c mouseDragged: moves beyond a threshold, initiate
+ a drag. Otherwise, treat it as a click and activate the panel.
+ */
+- (void)mouseDown:(CPEvent)anEvent
 {
-    [self highlight:NO];
+	if (![self isEnabled])
+		return;
 
-    if (!mouseIsUp || !CGRectContainsPoint([self bounds], aPoint) || ![self isEnabled])
-        return;
+	// Store the initial point for drag threshold calculation
+	_mouseDownPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+	_isDragging = NO;
 
-    [self activate:YES];
+	[self highlight:YES];
+}
 
-    var colorPanel = [CPColorPanel sharedColorPanel];
+- (void)mouseDragged:(CPEvent)anEvent
+{
+	if (![self isEnabled])
+		return;
 
-    [colorPanel setPlatformWindow:[[self window] platformWindow]];
+	var currentPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+	deltaX = ABS(currentPoint.x - _mouseDownPoint.x),
+	deltaY = ABS(currentPoint.y - _mouseDownPoint.y);
 
-    [colorPanel setColor:_color];
-    [colorPanel orderFront:self];
+	// If we haven't started dragging yet and movement exceeds threshold, initiate drag
+	if (!_isDragging && (deltaX > 3 || deltaY > 3))
+	{
+		_isDragging = YES;
+		[self highlight:NO];
+		[self _initiateDragWithEvent:anEvent];
+		return;
+	}
+}
+
+/*!
+ Handles mouse-up after tracking.
+
+ This method serves two purposes:
+ <ol>
+ <li><strong>End of drag:</strong> If \c _isDragging is YES, the user was dragging and we're done.</li>
+ <li><strong>Click activation:</strong> If \c _isDragging is NO, the user clicked without dragging.
+ Make this well first responder and open the color panel.</li>
+ </ol>
+
+ The critical sequence for panel activation establishes the responder chain connection:
+ <ol>
+ <li>Make this well the first responder via \c [[window] makeFirstResponder:self]</li>
+ <li>Activate this well exclusively (deactivating other wells)</li>
+ <li>Configure the color panel with this well's color</li>
+ <li>Order the panel front</li>
+ </ol>
+
+ By making itself first responder BEFORE opening the panel, this well ensures it will receive subsequent
+ \c -changeColor: messages from the panel. The panel sends these messages to \c nil (first responder),
+ and the responder chain delivers them to this well.
+
+ When another well is clicked (with the panel still open), that well becomes first responder, and the
+ panel's color changes automatically route to it instead. This is the "well to panel" half of the
+ communication; the "panel to well" half happens via \c -changeColor: (see that method's documentation).
+ */
+- (void)mouseUp:(CPEvent)anEvent
+{
+	[self highlight:NO];
+
+	// If this was a drag, we're done
+	if (_isDragging)
+	{
+		_isDragging = NO;
+		return;
+	}
+
+	// This was a click, not a drag - activate the well and show the panel
+	var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+
+	if (!CGRectContainsPoint([self bounds], point) || ![self isEnabled])
+		return;
+
+	[[self window] makeFirstResponder:self];
+	[self activate:YES];
+
+	var colorPanel = [CPColorPanel sharedColorPanel];
+	[colorPanel setPlatformWindow:[[self window] platformWindow]];
+	[colorPanel setColor:_color];
+	[colorPanel orderFront:self];
 }
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+	var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    return CGRectInsetByInset(bounds, contentInset);
+	return CGRectInsetByInset(bounds, contentInset);
 }
 
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
-    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
+	var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
-    return CGRectInsetByInset(bounds, bezelInset);
+	return CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGRect)contentBorderRectForBounds:(CGRect)bounds
 {
-    var contentBorderInset = [self currentValueForThemeAttribute:@"content-border-inset"];
+	var contentBorderInset = [self currentValueForThemeAttribute:@"content-border-inset"];
 
-    return CGRectInsetByInset(bounds, contentBorderInset);
+	return CGRectInsetByInset(bounds, contentBorderInset);
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
 {
-    switch (aName)
-    {
-        case "bezel-view":
-            return [self bezelRectForBounds:[self bounds]];
-        case "content-view":
-            return [self contentRectForBounds:[self bounds]];
-        case "content-border-view":
-            return [self contentBorderRectForBounds:[self bounds]];
-    }
+	switch (aName)
+	{
+		case "bezel-view":
+			return [self bezelRectForBounds:[self bounds]];
+		case "content-view":
+			return [self contentRectForBounds:[self bounds]];
+		case "content-border-view":
+			return [self contentBorderRectForBounds:[self bounds]];
+	}
 
-    return [super rectForEphemeralSubviewNamed:aName];
+	return [super rectForEphemeralSubviewNamed:aName];
 }
 
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
 {
-    var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+	var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
 
-    [view setHitTests:NO];
+	[view setHitTests:NO];
 
-    return view;
+	return view;
 }
 
 - (void)layoutSubviews
 {
-    var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
-                                           positioned:CPWindowBelow
-                      relativeToEphemeralSubviewNamed:@"content-view"];
+	var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
+										   positioned:CPWindowBelow
+					  relativeToEphemeralSubviewNamed:@"content-view"];
 
-    [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+	[bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 
-    var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
-                                             positioned:CPWindowAbove
-                        relativeToEphemeralSubviewNamed:@"bezel-view"];
+	var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+											 positioned:CPWindowAbove
+						relativeToEphemeralSubviewNamed:@"bezel-view"];
 
 
-    [contentView setBackgroundColor:_color];
+	[contentView setBackgroundColor:_color];
 
-    var contentBorderView = [self layoutEphemeralSubviewNamed:@"content-border-view"
-                                                   positioned:CPWindowAbove
-                              relativeToEphemeralSubviewNamed:@"content-view"];
+	var contentBorderView = [self layoutEphemeralSubviewNamed:@"content-border-view"
+												   positioned:CPWindowAbove
+							  relativeToEphemeralSubviewNamed:@"content-view"];
 
-    [contentBorderView setBackgroundColor:[self currentValueForThemeAttribute:@"content-border-color"]];
+	[contentBorderView setBackgroundColor:[self currentValueForThemeAttribute:@"content-border-color"]];
 }
 
 
@@ -334,20 +665,20 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
 - (void)_addObservers
 {
-    if (_isObserving)
-        return;
+	if (_isObserving)
+		return;
 
-    [super _addObservers];
-    [self _registerNotifications];
+	[super _addObservers];
+	[self _registerNotifications];
 }
 
 - (void)_removeObservers
 {
-    if (!_isObserving)
-        return;
+	if (!_isObserving)
+		return;
 
-    [super _removeObservers];
-    [self _removeNotifications];
+	[super _removeObservers];
+	[self _removeNotifications];
 }
 
 @end
@@ -358,64 +689,65 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
 - (void)_updatePlaceholdersWithOptions:(CPDictionary)options
 {
-    var placeholderColor = [CPColor blackColor];
+	var placeholderColor = [CPColor blackColor];
 
-    [self _setPlaceholder:placeholderColor forMarker:CPMultipleValuesMarker isDefault:YES];
-    [self _setPlaceholder:placeholderColor forMarker:CPNoSelectionMarker isDefault:YES];
-    [self _setPlaceholder:placeholderColor forMarker:CPNotApplicableMarker isDefault:YES];
-    [self _setPlaceholder:placeholderColor forMarker:CPNullMarker isDefault:YES];
+	[self _setPlaceholder:placeholderColor forMarker:CPMultipleValuesMarker isDefault:YES];
+	[self _setPlaceholder:placeholderColor forMarker:CPNoSelectionMarker isDefault:YES];
+	[self _setPlaceholder:placeholderColor forMarker:CPNotApplicableMarker isDefault:YES];
+	[self _setPlaceholder:placeholderColor forMarker:CPNullMarker isDefault:YES];
 }
 
 - (id)valueForBinding:(CPString)aBinding
 {
-    return [_source color];
+	return [_source color];
 }
 
 - (void)setValue:(id)aValue forBinding:(CPString)theBinding
 {
-    [_source setColor:aValue];
+	[_source setColor:aValue];
 }
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
-    [_source setColor:aValue];
+	[_source setColor:aValue];
 }
 
 @end
 
 var CPColorWellColorKey     = "CPColorWellColorKey",
-    CPColorWellBorderedKey  = "CPColorWellBorderedKey";
+CPColorWellBorderedKey  = "CPColorWellBorderedKey";
 
 @implementation CPColorWell (CPCoding)
 
 /*!
-    Initializes the color well by unarchiving data from \c aCoder.
-    @param aCoder the coder containing the archived CPColorWell.
-*/
+ Initializes the color well by unarchiving data from \c aCoder.
+ @param aCoder the coder containing the archived CPColorWell.
+ */
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [super initWithCoder:aCoder];
+	self = [super initWithCoder:aCoder];
 
-    if (self)
-    {
-        _active = NO;
-        _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
-        [self setBordered:[aCoder decodeBoolForKey:CPColorWellBorderedKey]];
-    }
+	if (self)
+	{
+		_active = NO;
+		_color = [aCoder decodeObjectForKey:CPColorWellColorKey];
+		[self setBordered:[aCoder decodeBoolForKey:CPColorWellBorderedKey]];
+		[self registerForDraggedTypes:[CPArray arrayWithObject:CPColorDragType]];
+	}
 
-    return self;
+	return self;
 }
 
 /*!
-    Archives this button into the provided coder.
-    @param aCoder the coder to which the color well's instance data will be written.
-*/
+ Archives this button into the provided coder.
+ @param aCoder the coder to which the color well's instance data will be written.
+ */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [super encodeWithCoder:aCoder];
+	[super encodeWithCoder:aCoder];
 
-    [aCoder encodeObject:_color forKey:CPColorWellColorKey];
-    [aCoder encodeObject:[self isBordered] forKey:CPColorWellBorderedKey];
+	[aCoder encodeObject:_color forKey:CPColorWellColorKey];
+	[aCoder encodeBool:[self isBordered] forKey:CPColorWellBorderedKey];
 }
 
 @end
