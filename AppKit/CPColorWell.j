@@ -82,7 +82,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
 - (BOOL)acceptsFirstResponder
 {
-    return YES;
+    return [self isEnabled];
 }
 
 - (void)activate:(BOOL)shouldBeExclusive
