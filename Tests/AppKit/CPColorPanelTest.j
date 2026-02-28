@@ -28,7 +28,7 @@
 
 - (void)setColor:(CPColor)aColor
 {
-	[_receivedColors addObject:aColor];
+    [_receivedColors addObject:aColor];
 }
 
 - (CPArray)receivedColors
@@ -67,38 +67,20 @@
  */
 - (void)testSetColorUpdatesOpacitySlider
 {
-	var initialColor = [CPColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:1.0];
-	[_panel setColor:initialColor];
+	var initialColor = [CPColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.5];[_panel setColor:initialColor];
 
-	// Track if setColor gets called
-	var setColorCalled = NO;
-	var originalSetColor = _panel.setColor;
-	_panel.setColor = function(aColor)
-	{
-		setColorCalled = YES;
-		originalSetColor.call(this, aColor);
-	};
-
-	// Simulate user changing opacity slider
-	[_panel._opacitySlider setFloatValue:0.5];
-	[_panel _opacityChanged:_panel._opacitySlider];
-
-	_panel.setColor = originalSetColor; // Restore
-
-	[self assertFalse:setColorCalled
-			  message:"_opacityChanged should update state directly without calling setColor"];
+	[self assert:0.5 equals:[_panel._opacitySlider floatValue]
+		 message:"Opacity slider should match the color's alpha component"];
 }
 
 /*
- * Test that _opacityChanged: creates a new color with the correct alpha value.
+ * Test that setOpacity: creates a new color with the correct alpha value.
  */
 - (void)testOpacityChangeUpdatesColorAlpha
 {
 	var initialColor = [CPColor colorWithRed:0.5 green:0.5 blue:1.0 alpha:1.0];
-	[_panel setColor:initialColor];
-
-	[_panel._opacitySlider setFloatValue:0.3];
-	[_panel _opacityChanged:_panel._opacitySlider];
+	[_panel setColor:initialColor];[_panel._opacitySlider setFloatValue:0.3];
+	[_panel setOpacity:_panel._opacitySlider];
 
 	var newColor = [_panel color];
 	[self assert:0.3 equals:[newColor alphaComponent]
@@ -193,8 +175,7 @@
  */
 - (void)testColorMethodReturnsCurrentColor
 {
-	var testColor = [CPColor colorWithRed:0.2 green:0.4 blue:0.6 alpha:0.8];
-	[_panel setColor:testColor];
+	var testColor = [CPColor colorWithRed:0.2 green:0.4 blue:0.6 alpha:0.8];[_panel setColor:testColor];
 
 	[self assert:testColor same:[_panel color]
 		 message:"color method should return current color"];

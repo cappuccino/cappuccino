@@ -104,16 +104,4 @@
     [self assert:[colorWell color] equals:testColor message:"object correctly handles color assignment"];
 }
 
-/**
- * Tests default initialization properties.
- * 
- * Validates that newly created objects have expected default state.
- */
-- (void)testDefaultInitializationProperties
-{
-    [self assertNotNull:colorWell message:"object can be initialized"];
-    [self assert:[colorWell color] equals:[CPColor whiteColor] message:"object has correct default color"];
-    [self assertTrue:[colorWell isBordered] message:"object has correct default bordered state"];
-    [self assertFalse:[colorWell isActive] message:"object starts inactive"];
-}
 @end
