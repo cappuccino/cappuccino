@@ -8513,28 +8513,73 @@ var themedButtonValues                      = nil,
 
     var colorWell = [[CPColorWell alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)],
 
-    bezelColor = [CPColor colorWithCSSDictionary:@{
+    // --- Standard Styles ---
+    bezelColor =[CPColor colorWithCSSDictionary:@{
         @"border": @"1px solid " + A3ColorBorderDark,
         @"background-color": A3ColorBackgroundWhite,
         @"box-sizing": @"border-box"
     }],
 
-    // Add Focused State
-    bezelFocusedColor = [CPColor colorWithCSSDictionary:@{
+    bezelDisabledColor =[CPColor colorWithCSSDictionary:@{
+        @"border": @"1px solid " + A3ColorInactiveBorder,
+        @"background-color": A3ColorBackgroundInactive,
+        @"box-sizing": @"border-box"
+    }],
+
+    bezelFocusedColor =[CPColor colorWithCSSDictionary:@{
         @"border": @"1px solid " + A3ColorBorderBlue,
         @"background-color": A3ColorBackgroundWhite,
         @"box-shadow": @"0 0 0 1px " + A3ColorBorderBlue + " inset",
         @"box-sizing": @"border-box"
     }],
 
+    // --- HUD Styles ---
+    hudBezelColor =[CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.3)",
+        @"border-color": @"rgba(255, 255, 255, 0.3)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"box-sizing": @"border-box",
+        @"transition-duration": @"0.35s, 0.35s",
+        @"transition-property": @"box-shadow, border"
+    }],
+
+    hudBezelDisabledColor =[CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.1)",
+        @"border-color": @"rgba(255, 255, 255, 0.1)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"box-sizing": @"border-box",
+        @"transition-duration": @"0.35s, 0.35s",
+        @"transition-property": @"box-shadow, border"
+    }],
+
+    hudBezelFocusedColor =[CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.5)",
+        @"border-color": @"#ffffff",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0px 0px 3px 0px rgba(255,255,255,0.5)",
+        @"transition-duration": @"0.35s, 0.35s",
+        @"transition-property": @"box-shadow, border"
+    }],
+
     themedColorWellValues = [
-                             [@"bezel-color",            bezelColor,                         CPThemeStateBordered],
-                             // Register the focused state
-                             [@"bezel-color",            bezelFocusedColor,                  [CPThemeStateBordered, CPThemeStateFirstResponder]],
-                             
+                             // Standard Theme States
+                             [@"bezel-color",            bezelColor,                               CPThemeStateBordered],
+                             [@"bezel-color",            bezelDisabledColor,[CPThemeStateBordered, CPThemeStateDisabled]],
+                             [@"bezel-color",            bezelFocusedColor,                       [CPThemeStateBordered, CPThemeStateFirstResponder]],
+
+                             // HUD Theme States
+                             [@"bezel-color",            hudBezelColor,                      [CPThemeStateHUD, CPThemeStateBordered]],
+                             [@"bezel-color",            hudBezelDisabledColor,              [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+                             [@"bezel-color",            hudBezelFocusedColor,[CPThemeStateHUD, CPThemeStateBordered, CPThemeStateFirstResponder]],
+
+                             // Layout
                              [@"content-inset",          CGInsetMake(5.0, 5.0, 5.0, 5.0),    CPThemeStateBordered],
                              [@"content-border-inset",   CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBordered]
-                             ];
+                            ];
 
     [self registerThemeValues:themedColorWellValues forView:colorWell];
 
