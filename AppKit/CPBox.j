@@ -285,7 +285,7 @@ CPBelowBottom = 6;
 #pragma mark borderColor
 - (CPColor)borderColor
 {
-    return [self valueForThemeAttribute:@"border-color"];
+    return [self currentValueForThemeAttribute:@"border-color"];
 }
 
 - (void)setBorderColor:(CPColor)color
@@ -785,7 +785,7 @@ CPBelowBottom = 6;
             [_boxView setFrame:CGRectMake(0,2,bounds.size.width,1)];
         }
 
-        [_boxView setBackgroundColor:[self valueForThemeAttribute:@"border-color"]];
+        [_boxView setBackgroundColor:[self currentValueForThemeAttribute:@"border-color"]];
 
         return;
     }

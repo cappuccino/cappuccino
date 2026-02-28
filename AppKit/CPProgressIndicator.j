@@ -43,7 +43,6 @@ CPProgressIndicatorSpinningStyle = 1;
 */
 CPProgressIndicatorHUDBarStyle = 2;
 
-var CPProgressIndicatorSpinningStyleColors = [];
 
 /*!
     @ingroup appkit
@@ -71,6 +70,43 @@ var CPProgressIndicatorSpinningStyleColors = [];
     BOOL                        _isDisplayedWhenStopped;
 }
 
+// Inject CSS Keyframes for spinning animation (Standard + WebKit)
+
++ (void)initialize
+{
+    if (self !== [CPProgressIndicator class])
+        return;
+
+#if PLATFORM(DOM)
+
+    if (document.getElementById("cp-progress-indicator-style"))
+        return;
+
+    var style = document.createElement("style");
+    style.id = "cp-progress-indicator-style";
+    style.type = "text/css";
+    
+    // We define two animations:
+    // 1. cp-progress-indicator-spin: Rotates 360 degrees (for spinners)
+    // 2. cp-progress-indicator-bar-slide: Moves background-position (for striped bars)
+    var css = 
+        "@keyframes cp-progress-indicator-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } " +
+        "@-webkit-keyframes cp-progress-indicator-spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } } " +
+        
+        "@keyframes cp-progress-indicator-bar-slide { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } } " +
+        "@-webkit-keyframes cp-progress-indicator-bar-slide { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } }";
+    
+    if (style.styleSheet)
+        style.styleSheet.cssText = css;
+    else
+        style.appendChild(document.createTextNode(css));
+        
+    var head = document.getElementsByTagName("head")[0];
+    if (head) 
+        head.appendChild(style);
+#endif
+}
+
 + (CPString)defaultThemeClass
 {
     return @"progress-indicator";
@@ -83,12 +119,19 @@ var CPProgressIndicatorSpinningStyleColors = [];
             @"bar-color": [CPNull null],
             @"default-height": 20,
             @"bezel-color": [CPNull null],
-            @"spinning-mini-gif": [CPNull null],
-            @"spinning-small-gif": [CPNull null],
-            @"spinning-regular-gif": [CPNull null],
+            
+            // CSS Spinner Attributes
+            @"spinner-color": [CPColor grayColor],
+            @"spinner-track-color": [CPColor colorWithWhite:0.9 alpha:1.0],
+            @"spinner-line-width": 3.0,
+
             @"circular-border-color": [CPNull null],
             @"circular-border-size": 1,
-            @"circular-color": [CPNull null]
+            @"circular-color": [CPNull null],
+
+            @"spinning-mini-gif": [CPNull null],
+            @"spinning-small-gif": [CPNull null],
+            @"spinning-regular-gif": [CPNull null]
         };
 }
 
@@ -138,6 +181,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
     _isAnimating = YES;
 
     [self _hideOrDisplay];
+    [self setNeedsLayout]; // Trigger layout to update CSS animation state
 }
 
 /*!
@@ -149,6 +193,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
     _isAnimating = NO;
 
     [self _hideOrDisplay];
+    [self setNeedsLayout]; // Trigger layout to remove CSS animation state
 }
 
 /*!
@@ -233,7 +278,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
 
     _controlSize = aControlSize;
 
-    [self updateBackgroundColor];
+    [self setNeedsLayout];
 }
 
 /*!
@@ -285,7 +330,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
 
     _indeterminate = indeterminate;
 
-    [self updateBackgroundColor];
+    [self setNeedsLayout];
 }
 
 /*!
@@ -307,9 +352,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
 
     _style = aStyle;
 
-    [self setTheme:(_style === CPProgressIndicatorHUDBarStyle) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
-
-    [self updateBackgroundColor];
+    [self setNeedsLayout];
 }
 
 /*!
@@ -318,7 +361,14 @@ var CPProgressIndicatorSpinningStyleColors = [];
 - (void)sizeToFit
 {
     if (_style == CPProgressIndicatorSpinningStyle)
-        [self setFrameSize:[[CPProgressIndicatorSpinningStyleColors[_controlSize] patternImage] size]];
+    {
+        var size = 32.0;
+        if (_controlSize === CPMiniControlSize) size = 16.0;
+        else if (_controlSize === CPSmallControlSize) size = 24.0;
+        else if (_controlSize === CPRegularControlSize) size = 32.0;
+        
+        [self setFrameSize:CGSizeMake(size, size)];
+    }
     else
         [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), [self valueForThemeAttribute:@"default-height"])];
 }
@@ -381,6 +431,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aViewName
 {
+    // Handle the standard Bar View
     if (aViewName === @"bar-view" && _style !== CPProgressIndicatorSpinningStyle)
     {
         var width = CGRectGetWidth([self bounds]),
@@ -394,41 +445,78 @@ var CPProgressIndicatorSpinningStyleColors = [];
 
         return CGRectMake(0, 0, barWidth, [self valueForThemeAttribute:@"default-height"]);
     }
-
-    return nil;
-}
-
-/* @ignore */
-- (void)updateBackgroundColor
-{
-    if ([CPProgressIndicatorSpinningStyleColors count] === 0)
+    
+    // Handle the Spinning View (CSS Spinner)
+    if (aViewName === @"spinner-view" && _style == CPProgressIndicatorSpinningStyle && _indeterminate)
     {
-        CPProgressIndicatorSpinningStyleColors[CPMiniControlSize] = [self valueForThemeAttribute:@"spinning-mini-gif"];
-        CPProgressIndicatorSpinningStyleColors[CPSmallControlSize] = [self valueForThemeAttribute:@"spinning-small-gif"];
-        CPProgressIndicatorSpinningStyleColors[CPRegularControlSize] = [self valueForThemeAttribute:@"spinning-regular-gif"];
+        return [self bounds];
     }
 
-    [self setNeedsLayout];
+    // Return nil for views that shouldn't appear in the current style
+    return nil;
 }
 
 - (void)layoutSubviews
 {
     if (YES)//_isBezeled)
     {
+        // === SPINNING STYLE ===
         if (_style == CPProgressIndicatorSpinningStyle)
         {
-            if (!_indeterminate)
-                return;
+            // If indeterminate, use CSS spinner
+            if (_indeterminate)
+            {
+                var spinnerView = [self layoutEphemeralSubviewNamed:"spinner-view"
+                                                         positioned:CPWindowAbove
+                                    relativeToEphemeralSubviewNamed:nil];
+                                    
+                // Ensure other views are hidden
+                [self layoutEphemeralSubviewNamed:"bar-view" positioned:CPWindowBelow relativeToEphemeralSubviewNamed:nil];
 
-            // This will cause the bar view to go away due to having a nil rect when _style == CPProgressIndicatorSpinningStyle.
-            [self layoutEphemeralSubviewNamed:"bar-view"
-                                   positioned:CPWindowBelow
-              relativeToEphemeralSubviewNamed:nil];
+                // Configure CSS on the subview, NOT self._DOMElement, to avoid transform conflicts
+                var domEl = spinnerView._DOMElement,
+                    spinnerColor = [self currentValueForThemeAttribute:@"spinner-color"],
+                    trackColor = [self currentValueForThemeAttribute:@"spinner-track-color"],
+                    lineWidth = [self currentValueForThemeAttribute:@"spinner-line-width"],
+                    widthStr = lineWidth + "px";
 
-            [self setBackgroundColor:CPProgressIndicatorSpinningStyleColors[_controlSize]];
+                domEl.style.boxSizing = "border-box";
+                domEl.style.borderRadius = "50%";
+                domEl.style.borderStyle = "solid";
+                domEl.style.borderWidth = widthStr;
+                domEl.style.borderColor = [trackColor cssString];
+                domEl.style.borderTopColor = [spinnerColor cssString];
+                
+                // Animation logic
+                if (_isAnimating)
+                {
+                    var anim = "cp-progress-indicator-spin 1s linear infinite";
+                    domEl.style.animation = anim;
+                    domEl.style.WebkitAnimation = anim;
+                }
+                else
+                {
+                    domEl.style.animation = "none";
+                    domEl.style.WebkitAnimation = "none";
+                }
+                
+                // Ensure main view is transparent
+                [self setBackgroundColor:nil];
+            }
+            else
+            {
+                // Determinate Spinner (Pie Chart drawn in drawRect)
+                // Hide CSS spinner
+                [self layoutEphemeralSubviewNamed:"spinner-view" positioned:CPWindowBelow relativeToEphemeralSubviewNamed:nil];
+                [self setBackgroundColor:nil];
+            }
         }
+        // === BAR STYLE ===
         else
         {
+           // Hide spinner
+           [self layoutEphemeralSubviewNamed:"spinner-view" positioned:CPWindowBelow relativeToEphemeralSubviewNamed:nil];
+           
            [self setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 
            var barView = [self layoutEphemeralSubviewNamed:"bar-view"
@@ -447,6 +535,8 @@ var CPProgressIndicatorSpinningStyleColors = [];
 
 - (void)drawRect:(CGRect)aRect
 {
+    // Handle determinate state for Spinning style (Pie chart progress) via CoreGraphics.
+    // If indeterminate, the CSS animation (spinner-view) takes over and we draw nothing.
     if (_style == CPProgressIndicatorSpinningStyle && !_indeterminate)
     {
         var context = [[CPGraphicsContext currentContext] graphicsPort],
@@ -512,7 +602,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
         _isDisplayedWhenStoppedSet  = [aCoder decodeObjectForKey:@"_isDisplayedWhenStoppedSet"];
         _isDisplayedWhenStopped     = [aCoder decodeObjectForKey:@"_isDisplayedWhenStopped"];
 
-        [self updateBackgroundColor];
+        [self setNeedsLayout];
     }
 
     return self;
@@ -520,8 +610,6 @@ var CPProgressIndicatorSpinningStyleColors = [];
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // Don't encode the background colour. It can be recreated based on the flags
-    // and if encoded causes hardcoded image paths in the cib while just wasting space.
     var backgroundColor = [self backgroundColor];
     [self setBackgroundColor:nil];
     [super encodeWithCoder:aCoder];

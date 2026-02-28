@@ -102,6 +102,7 @@ CPThemeStateShadowViewHeavy = CPThemeState("shadowview-style-heavy");
         [self setWeight:CPLightShadow];
 
         [self setHitTests:NO];
+        [self setClipsToBounds:NO];
     }
 
     return self;
@@ -169,7 +170,6 @@ CPThemeStateShadowViewHeavy = CPThemeState("shadowview-style-heavy");
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-
     [self setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 }
 
