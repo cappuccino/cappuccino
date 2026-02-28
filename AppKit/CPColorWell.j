@@ -353,9 +353,6 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
     [contentView setBackgroundColor:_color];
     
-    // Dim the color presentation if the control is disabled
-    [contentView setAlphaValue:[self isEnabled] ? 1.0 : 0.5];
-
     var contentBorderView = [self layoutEphemeralSubviewNamed:@"content-border-view"
                                                    positioned:CPWindowAbove
                               relativeToEphemeralSubviewNamed:@"content-view"];
