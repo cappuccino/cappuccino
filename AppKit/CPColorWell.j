@@ -26,7 +26,6 @@
 @import "CPColor.j"
 @import "CPColorPanel.j"
 
-
 var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiveNotification";
 
 /*!
@@ -39,10 +38,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 */
 @implementation CPColorWell : CPControl
 {
-    BOOL    _active;
     BOOL    _bordered;
-
     CPColor _color;
+    BOOL    _isChangingColorFromPanel; // Guard flag to prevent recursion
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -77,52 +75,54 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [theBinding reverseSetValueFor:@"color"];
 }
 
+- (BOOL)isFirstResponder
+{
+    return [[self window] firstResponder] === self;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return [self isEnabled];
+}
+
+- (void)activate:(BOOL)shouldBeExclusive
+{
+    [[self window] makeFirstResponder:self];
+    [[CPColorPanel sharedColorPanel] orderFront:self];
+}
+
+- (BOOL)isActive
+{
+    return [self isFirstResponder] && [self isEnabled];
+}
+
+/*!
+    Deactivates the color well.
+*/
+- (void)deactivate
+{
+    if ([self isFirstResponder])
+        [[self window] makeFirstResponder:nil];
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
     if (self)
     {
-        _active = NO;
         _color = [CPColor whiteColor];
         [self setBordered:YES];
+        
+        // Register using string literal to avoid dependency issues
+        [self registerForDraggedTypes:[CPArray arrayWithObject:@"CPColorDragType"]];
     }
 
     return self;
 }
 
-- (void)_registerNotifications
-{
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
-    [defaultCenter
-        addObserver:self
-           selector:@selector(colorWellDidBecomeExclusive:)
-               name:_CPColorWellDidBecomeExclusiveNotification
-             object:nil];
-
-    [defaultCenter
-        addObserver:self
-           selector:@selector(colorPanelWillClose:)
-               name:CPWindowWillCloseNotification
-             object:[CPColorPanel sharedColorPanel]];
-}
-
-- (void)_removeNotifications
-{
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
-    [defaultCenter
-        removeObserver:self
-                  name:_CPColorWellDidBecomeExclusiveNotification
-                object:nil];
-
-    [defaultCenter
-        removeObserver:self
-                  name:CPWindowWillCloseNotification
-                object:[CPColorPanel sharedColorPanel]];
-
-}
+#pragma mark -
+#pragma mark Draw
 
 /*!
     Sets whether the color well is bordered.
@@ -143,7 +143,8 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     return [self hasThemeState:CPThemeStateBordered];
 }
 
-// Managing Color From Color Wells
+#pragma mark -
+#pragma mark Managing Color
 
 /*!
     Returns the color well's current color.
@@ -158,12 +159,17 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 */
 - (void)setColor:(CPColor)aColor
 {
-    if (_color == aColor)
+    if ([_color isEqual:aColor])
         return;
 
     _color = aColor;
 
     [self setNeedsLayout];
+    
+    // Only push back to the panel if we initiated the change (not if the panel pushed it to us)
+    // AND if we are the current focus.
+    if (!_isChangingColorFromPanel && [self isFirstResponder])
+        [[CPColorPanel sharedColorPanel] setColor:_color];
 }
 
 /*!
@@ -175,110 +181,139 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [self setColor:[aSender color]];
 }
 
-// Activating and Deactivating Color Wells
+/*!
+    Standard action method sent by CPColorPanel via the Responder Chain.
+*/
+- (void)changeColor:(id)aSender
+{
+    if ([aSender isKindOfClass:[CPColorPanel class]])
+    {
+        _isChangingColorFromPanel = YES;
+        [self setColor:[aSender color]];
+        _isChangingColorFromPanel = NO;
+        
+        // Forward the action to our target (e.g. controller)
+        [self sendAction:[self action] to:[self target]];
+    }
+}
+
+#pragma mark -
+#pragma mark Activating and Deactivating
+
 /*!
     Activates the color well, displays the color panel, and makes the panel's current color the same as its own.
     If exclusive is \c YES, deactivates any other CPColorWells. \c NO, keeps them active.
     @param shouldBeExclusive whether other color wells should be deactivated.
 */
-- (void)activate:(BOOL)shouldBeExclusive
+- (BOOL)becomeFirstResponder
 {
-    if (shouldBeExclusive)
-        // FIXME: make this queue!
-        [[CPNotificationCenter defaultCenter]
-            postNotificationName:_CPColorWellDidBecomeExclusiveNotification
-                          object:self];
+    [self setThemeState:CPThemeStateFirstResponder];
+    
+    var panel = [CPColorPanel sharedColorPanel];
+
+    // EXPLICITLY set ourselves as the target.
+    // This ensures that when the user clicks the panel (making Panel key),
+    // the panel still knows to send messages back to us.
+    [panel setTarget:self];
+    [panel setAction:@selector(changeColor:)];
+
+    // Sync panel to our current color
+    [panel setColor:_color];
 
 
-    if ([self isActive])
-        return;
-
-    _active = YES;
-
-    [[CPNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(colorPanelDidChangeColor:)
-               name:CPColorPanelColorDidChangeNotification
-             object:[CPColorPanel sharedColorPanel]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPColorWellDidBecomeExclusiveNotification object:self];
+    
+    return YES;
 }
 
-/*!
-    Deactivates the color well.
-*/
-- (void)deactivate
+- (BOOL)resignFirstResponder
 {
-    if (![self isActive])
-        return;
+    [self unsetThemeState:CPThemeStateFirstResponder];
+    
+    var panel = [CPColorPanel sharedColorPanel];
 
-    _active = NO;
-
-    [[CPNotificationCenter defaultCenter]
-        removeObserver:self
-                  name:CPColorPanelColorDidChangeNotification
-                object:[CPColorPanel sharedColorPanel]];
+    // Clean up if we were the target
+    if ([panel target] == self)
+        [panel setTarget:nil];
+        
+    return YES;
 }
 
-/*!
-    Returns \c YES if the color well is active.
-*/
-- (BOOL)isActive
+#pragma mark -
+#pragma mark Event Handling
+
+- (void)mouseDown:(CPEvent)anEvent
 {
-    return _active;
-}
-
-- (void)colorPanelDidChangeColor:(CPNotification)aNotification
-{
-    [self takeColorFrom:[aNotification object]];
-
-    [self sendAction:[self action] to:[self target]];
-}
-
-- (void)colorWellDidBecomeExclusive:(CPNotification)aNotification
-{
-    if (self != [aNotification object])
-        [self deactivate];
-}
-
-- (void)colorPanelWillClose:(CPNotification)aNotification
-{
-    [self deactivate];
-}
-
-- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
-{
-    [self highlight:NO];
-
-    if (!mouseIsUp || !CGRectContainsPoint([self bounds], aPoint) || ![self isEnabled])
+    if (![self isEnabled])
         return;
 
     [self activate:YES];
-
-    var colorPanel = [CPColorPanel sharedColorPanel];
-
-    [colorPanel setPlatformWindow:[[self window] platformWindow]];
-
-    [colorPanel setColor:_color];
-    [colorPanel orderFront:self];
 }
+
+#pragma mark -
+#pragma mark Drag and Drop
+
+- (void)draggingEntered:(id)sender
+{
+    var pasteboard = [sender draggingPasteboard];
+    
+    if ([[pasteboard types] containsObject:@"CPColorDragType"])
+    {
+        [self setThemeState:CPThemeStateHighlighted];
+        return CPDragOperationCopy;
+    }
+    
+    return CPDragOperationNone;
+}
+
+- (void)draggingExited:(id)sender
+{
+    [self unsetThemeState:CPThemeStateHighlighted];
+}
+
+- (BOOL)performDragOperation:(id)sender
+{
+    var pasteboard = [sender draggingPasteboard];
+    
+    if ([[pasteboard types] containsObject:@"CPColorDragType"])
+    {
+        var data = [pasteboard dataForType:@"CPColorDragType"],
+            newColor = [CPKeyedUnarchiver unarchiveObjectWithData:data];
+            
+        if (newColor && [newColor isKindOfClass:[CPColor class]])
+        {
+            [self setColor:newColor];
+            [self sendAction:[self action] to:[self target]];
+            
+            // Activate nicely after drop
+            [self activate:YES];
+            [self unsetThemeState:CPThemeStateHighlighted];
+            
+            return YES;
+        }
+    }
+    
+    return NO;
+}
+
+#pragma mark -
+#pragma mark Layout
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
-
     return CGRectInsetByInset(bounds, contentInset);
 }
 
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
-
     return CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGRect)contentBorderRectForBounds:(CGRect)bounds
 {
     var contentBorderInset = [self currentValueForThemeAttribute:@"content-border-inset"];
-
     return CGRectInsetByInset(bounds, contentBorderInset);
 }
 
@@ -300,9 +335,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
 {
     var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
-
     [view setHitTests:NO];
-
     return view;
 }
 
@@ -318,36 +351,13 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
                                              positioned:CPWindowAbove
                         relativeToEphemeralSubviewNamed:@"bezel-view"];
 
-
     [contentView setBackgroundColor:_color];
-
+    
     var contentBorderView = [self layoutEphemeralSubviewNamed:@"content-border-view"
                                                    positioned:CPWindowAbove
                               relativeToEphemeralSubviewNamed:@"content-view"];
 
     [contentBorderView setBackgroundColor:[self currentValueForThemeAttribute:@"content-border-color"]];
-}
-
-
-#pragma mark -
-#pragma mark Observers method
-
-- (void)_addObservers
-{
-    if (_isObserving)
-        return;
-
-    [super _addObservers];
-    [self _registerNotifications];
-}
-
-- (void)_removeObservers
-{
-    if (!_isObserving)
-        return;
-
-    [super _removeObservers];
-    [self _removeNotifications];
 }
 
 @end
@@ -398,9 +408,9 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
 
     if (self)
     {
-        _active = NO;
         _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
         [self setBordered:[aCoder decodeBoolForKey:CPColorWellBorderedKey]];
+        [self registerForDraggedTypes:[CPArray arrayWithObject:@"CPColorDragType"]];
     }
 
     return self;
