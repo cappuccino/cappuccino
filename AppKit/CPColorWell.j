@@ -91,6 +91,11 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [[CPColorPanel sharedColorPanel] orderFront:self];
 }
 
+- (BOOL)isActive
+{
+    return [self isFirstResponder] && [self isEnabled];
+}
+
 /*!
     Deactivates the color well.
 */
