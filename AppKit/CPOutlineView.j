@@ -2402,6 +2402,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         width = CGRectGetWidth(bounds),
         height = CGRectGetHeight(bounds);
 
+    if (!context)
+        return;
+        
     CGContextBeginPath(context);
 
     if (_angle)
