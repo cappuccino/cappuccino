@@ -285,6 +285,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     CPArray                         _pendingItemToClean;
     CPArray                         _itemAddedDuringLastLoading;
+
+    CPIndexSet                      _animatingDisclosureRows;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -315,6 +317,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         [super setDelegate:[[_CPOutlineViewTableViewDelegate alloc] initWithOutlineView:self]];
 
         [self setDisclosureControlPrototype:[[CPDisclosureButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 10.0)]];
+
+        _animatingDisclosureRows = [CPIndexSet indexSet];
     }
 
     return self;
@@ -325,12 +329,22 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _BlockDeselectView = function(view, row, column)
     {
         [view unsetThemeState:CPThemeStateSelectedDataView];
+        // Ensure we clear the focus state so the text goes back to normal color
+        [view unsetThemeState:CPThemeStateFirstResponder];
+        
         [_disclosureControlsForRows[row] unsetThemeState:CPThemeStateSelected];
     };
 
     _BlockSelectView = function(view, row, column)
     {
         [view setThemeState:CPThemeStateSelectedDataView];
+
+        // If the table is focused, apply the state that turns text white immediately
+        if ([self _isFocused])
+            [view setThemeState:CPThemeStateFirstResponder];
+        else
+            [view unsetThemeState:CPThemeStateFirstResponder];
+
         [_disclosureControlsForRows[row] setThemeState:CPThemeStateSelected];
     };
 }
@@ -480,6 +494,60 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         return YES;
 
     return itemInfo.shouldShowOutlineDisclosureControl;
+}
+
+- (void)_noteDisclosureAnimationWillStartForRow:(CPInteger)aRow
+{
+    [_animatingDisclosureRows addIndex:aRow];
+    // We do not need to setNeedsDisplay here because the button itself 
+    // will trigger a redraw when its state changes or when the animation setup occurs.
+}
+
+- (void)_noteDisclosureAnimationDidStopForRow:(CPInteger)aRow
+{
+    [_animatingDisclosureRows removeIndex:aRow];
+    
+    // Explicitly find the button for this row and force it to redraw.
+    // The button was returning early from drawRect during the animation.
+    // Now that the flag is cleared, we must tell it to paint again.
+    if (_disclosureControlsForRows && aRow < _disclosureControlsForRows.length)
+    {
+        var button = _disclosureControlsForRows[aRow];
+
+        if (button)
+            [button display];
+    }
+}
+- (BOOL)_isRowAnimatingDisclosure:(CPInteger)aRow
+{
+    return [_animatingDisclosureRows containsIndex:aRow];
+}
+
+- (CPInteger)rowForView:(CPView)aView
+{
+    // 1. Try the standard lookup (for normal cells)
+    var row = [super rowForView:aView];
+
+    if (row !== CPNotFound)
+        return row;
+
+    // 2. If not found, check if it is a disclosure button
+    if ([aView isKindOfClass:[CPDisclosureButton class]])
+    {
+        // Check the list of active disclosure buttons
+        // _disclosureControlsForRows is a native JS array, so we use indexOf
+        var index = _disclosureControlsForRows.indexOf(aView);
+
+        if (index > -1)
+            return index;
+
+        // 3. Check if it is an animation clone (from the fix in the previous step)
+        // The clone is not in the array, but it carries the row index.
+        if (aView._animatingRowIndex !== undefined && aView._animatingRowIndex !== null)
+            return aView._animatingRowIndex;
+    }
+
+    return CPNotFound;
 }
 
 /*!
@@ -2207,7 +2275,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 @implementation CPDisclosureButton : CPButton
 {
-    float _angle;
+    float           _angle;
+
+    // Animation state tracking
+    BOOL            _isAnimatingClone;
+    CPInteger       _animatingRowIndex; 
+    CPOutlineView   _parentOutlineView;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -2219,6 +2292,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         [self setBordered:NO];
         [self setWantsLayer:YES];
         [self setHighlightsBy:0];
+        _isAnimatingClone = NO; // Default for real buttons
     }
     return self;
 }
@@ -2234,8 +2308,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     return _angle;
 }
 
-// Standard setState behavior: ALWAYS snap to the correct angle immediately.
-// The animation clone will hide this snap from the user.
 - (void)setState:(CPInteger)aState
 {
     [super setState:aState];
@@ -2250,65 +2322,81 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 {
     var bounds = [self bounds];
 
-    // Only animate if the user released the mouse INSIDE the button (valid click)
     if (CGRectContainsPoint(bounds, point))
     {
-        // 1. Create a "Ghost" clone of this button
-        var clone = [[CPDisclosureButton alloc] initWithFrame:[self frame]];
-        
-        // 2. Copy the visual appearance to the clone
-        [clone setWantsLayer:YES];
-        [clone setThemeState:[self themeState]];
-        
-        // Ensure the clone is NOT highlighted (since the click is finishing), 
-        // so it looks like the resting state of the button.
-        [clone unsetThemeState:CPThemeStateHighlighted];
-        [clone setHighlighted:NO];
-        
-        // Set the clone's initial angle to match the current button's angle
-        [clone setAngle:_angle];
-        
-        // Make the clone ignore mouse events (transparency)
-        [clone setHitTests:NO];
-        
-        // 3. Add the clone to the OutlineView (superview) directly.
-        // We place it visually above 'self'.
-        [[self superview] addSubview:clone positioned:CPWindowAbove relativeTo:self];
+        var outlineView = [self superview],
+            row = [outlineView rowForView:self];
 
-        // 4. Calculate the target angle based on what the state WILL be.
-        // Current state is On -> going to Off (-PI_2). Current is Off -> going to On (0.0).
-        var isCurrentlyExpanded = ([self state] === CPOnState),
-            targetAngle = isCurrentlyExpanded ? -PI_2 : 0.0;
+        if ([outlineView isKindOfClass:[CPOutlineView class]] && row !== CPNotFound)
+        {
+            // 1. Tell OutlineView to suppress drawing of the real button
+            [outlineView _noteDisclosureAnimationWillStartForRow:row];
 
-        // 5. Animate the CLONE
-        var anim = [CABasicAnimation animationWithKeyPath:@"angle"];
-        [anim setFromValue:_angle];
-        [anim setToValue:targetAngle];
-        [anim setDuration:0.25];
-        [anim setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
-        
-        // Set the clone as the layer-delegate so the angle-property can be animated on it
-        [[clone layer] setDelegate:clone];
-        // Set the clone as the delegate so it can remove itself when done
-        [anim setDelegate:clone];
-        
-        [[clone layer] addAnimation:anim forKey:@"angle"];
+            // 2. Create the clone
+            var clone = [[CPDisclosureButton alloc] initWithFrame:[self frame]];
+            
+            [clone setWantsLayer:YES];
+            [clone setThemeState:[self themeState]];
+            [clone unsetThemeState:CPThemeStateHighlighted];
+            [clone setHighlighted:NO];
+            [clone setAngle:_angle];
+            [clone setHitTests:NO];
+            
+            // 3. Mark this as a clone so drawRect knows to draw it
+            clone._isAnimatingClone = YES;
+            clone._animatingRowIndex = row;
+            clone._parentOutlineView = outlineView;
+            
+            [outlineView addSubview:clone positioned:CPWindowAbove relativeTo:self];
 
-        // Set final angle on clone so it doesn't flicker back at the end of the frame
-        [clone setAngle:targetAngle];
+            // 4. Calculate angles
+            var isCurrentlyExpanded = ([self state] === CPOnState),
+                targetAngle = isCurrentlyExpanded ? -PI_2 : 0.0;
+
+            // 5. Setup Animation
+            var anim = [CABasicAnimation animationWithKeyPath:@"angle"];
+            [anim setFromValue:_angle];
+            [anim setToValue:targetAngle];
+            [anim setDuration:0.25];
+            [anim setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+            
+            [[clone layer] setDelegate:clone];
+            [anim setDelegate:clone];
+            
+            [[clone layer] addAnimation:anim forKey:@"angle"];
+
+            // Set final angle on clone to avoid flicker at end
+            [clone setAngle:targetAngle];
+        }
     }
 
     [super stopTracking:lastPoint at:point mouseIsUp:mouseIsUp];
 }
 
-// This method is called on the CLONE instance when its animation finishes
 - (void)animationDidStop:(CAAnimation)anim finished:(BOOL)flag
 {
+    // This runs on the CLONE
+    if (_parentOutlineView)
+        [_parentOutlineView _noteDisclosureAnimationDidStopForRow:_animatingRowIndex];
+
     [self removeFromSuperview];
 }
 
 - (void)drawRect:(CGRect)aRect
 {
+    // If I am NOT the clone, I must check if my row is animating.
+    // If it is animating, the clone is drawing on top of me, so I should be invisible.
+    if (!_isAnimatingClone)
+    {
+        var outlineView = [self superview];
+        if ([outlineView isKindOfClass:[CPOutlineView class]])
+        {
+            var row = [outlineView rowForView:self];
+            if (row !== CPNotFound && [outlineView _isRowAnimatingDisclosure:row])
+                return; // Suppress the real button
+        }
+    }
+
     var bounds = [self bounds],
         context = [[CPGraphicsContext currentContext] graphicsPort],
         width = CGRectGetWidth(bounds),
@@ -2411,6 +2499,8 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
         [super setDelegate:[[_CPOutlineViewTableViewDelegate alloc] initWithOutlineView:self]];
 
         [self _updateIsViewBased];
+
+        _animatingDisclosureRows = [CPIndexSet indexSet];
     }
 
     return self;
