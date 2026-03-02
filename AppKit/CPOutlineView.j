@@ -2731,17 +2731,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     CGContextSetFillColor(context, triangleColor);
     CGContextFillPath(context);
-
-    CGContextBeginPath(context);
-    CGContextMoveToPoint(context, 0.0, 0.0);
-    CGContextAddLineToPoint(context, 4.5, 8.0);
-
-    if (_angle === 0.0)
-        CGContextAddLineToPoint(context, 9.0, 0.0);
-
-    var strokeAlpha = (isHUD || (isSelected && !isKeyWindow)) ? 0.3 : 0.7;
-    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha:strokeAlpha]);
-    CGContextStrokePath(context);
 }
 
 @end
