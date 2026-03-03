@@ -2847,7 +2847,12 @@ var _CPCopyPlaceholder = '-';
         }
 
         var nativeString = nativeClipboard.getData('text/plain');
-        [currentFirstResponder _pasteString:nativeString || [pasteboard stringForType:CPStringPboardType] || ''];
+
+        // Use setTimeout to prevent flickering
+        setTimeout(function()
+        {
+            [currentFirstResponder _pasteString:nativeString || [pasteboard stringForType:CPStringPboardType] || ''];
+        }, 20);
     };
 
     // COPY handler
@@ -2890,7 +2895,11 @@ var _CPCopyPlaceholder = '-';
             nativeClipboard.setData('text/rtf', rtfForPasting);
 
         // Then, perform the delete part of the cut operation in the text view
-        [currentFirstResponder deleteBackward:self];
+        // Use setTimeout to prevent flickering
+        setTimeout(function()
+        {
+            [currentFirstResponder deleteBackward:self];
+        }, 20);
     };
 #endif
 }
