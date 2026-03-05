@@ -8492,13 +8492,38 @@ var themedButtonValues                      = nil,
 {
     var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0) styleMask:_CPToolTipWindowMask],
 
-    themeValues =
-    [
-     [@"stroke-color",       [CPColor colorWithHexString:@"B0B0B0"]],
-     [@"stroke-width",       1.0],
-     [@"border-radius",      2.0],
-     [@"background-color",   [CPColor colorWithHexString:@"FFFFCA"]],
-     [@"color",              [CPColor blackColor]]
+    // Pure DOM CSS dictionary for Standard Tooltip
+    bezelColor =[CPColor colorWithCSSDictionary:@{
+        @"background-color": @"#FFFFCA",
+        @"border": @"1px solid #B0B0B0",
+        @"border-radius": @"2px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0px 1px 3px rgba(0,0,0,0.25)"
+    }],
+    
+    // Pure DOM CSS dictionary for HUD Tooltip
+    hudBezelColor =[CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.85)",
+        @"border": @"1px solid rgba(255, 255, 255, 0.25)",
+        @"border-radius": @"2px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0px 2px 5px rgba(0,0,0,0.5)"
+    }],
+
+    themeValues = [
+         // Legacy overrides zeroed out to prevent canvas interference
+         [@"stroke-color",       [CPColor clearColor]],
+         [@"stroke-width",       0.0],
+         [@"border-radius",      0.0],
+         [@"background-color",   [CPColor clearColor]],
+
+         // --- Standard Theme Mappings ---
+         [@"bezel-color",        bezelColor],
+         [@"color",             [CPColor blackColor]],
+
+         // --- HUD Theme Mappings ---
+         [@"bezel-color",        hudBezelColor,         CPThemeStateHUD],
+         [@"color",              [CPColor whiteColor],  CPThemeStateHUD]
     ];
 
     [self registerThemeValues:themeValues forView:toolTipView];
