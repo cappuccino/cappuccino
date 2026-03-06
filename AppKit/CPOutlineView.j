@@ -2558,6 +2558,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     BOOL            _isAnimatingClone;
     CPInteger       _animatingRowIndex; 
     CPOutlineView   _parentOutlineView;
+    
+    DOMElement      _arrowElement;
+    CPString        _lastColorCSS;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -2569,14 +2572,57 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         [self setBordered:NO];
         [self setWantsLayer:YES];
         [self setHighlightsBy:0];
-        _isAnimatingClone = NO; // Default for real buttons
+        
+        [self _setupDisclosureButton];
     }
     return self;
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        [self _setupDisclosureButton];
+    }
+    return self;
+}
+
+- (void)_setupDisclosureButton
+{
+    _isAnimatingClone = NO; // Default for real buttons
+
+#if PLATFORM(DOM)
+
+    // Add a dedicated DOM element for the SVG arrow
+    _arrowElement = document.createElement("div");
+    _arrowElement.style.position = "absolute";
+    _arrowElement.style.top = "0px";
+    _arrowElement.style.left = "0px";
+    _arrowElement.style.width = "100%";
+    _arrowElement.style.height = "100%";
+    _arrowElement.style.backgroundPosition = "center center";
+    _arrowElement.style.backgroundRepeat = "no-repeat";
+    // 24px maps the 24x24 viewBox to exact pixels, making the 10x5 path scale perfectly
+    _arrowElement.style.backgroundSize = "24px 24px";
+    _arrowElement.style.pointerEvents = "none";
+    
+    self._DOMElement.appendChild(_arrowElement);
+#endif
 }
 
 - (void)setAngle:(float)anAngle
 {
     _angle = anAngle;
+    
+    // Rotate the DOM element directly using standard CSS transforms
+    var deg = _angle * (180.0 / Math.PI);
+
+#if PLATFORM(DOM)
+    _arrowElement.style.transform = "rotate(" + deg + "deg)";
+#endif
+
     [self display];
 }
 
@@ -2589,10 +2635,11 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 {
     [super setState:aState];
 
+    // Using setAngle immediately triggers the transform
     if ([self state] === CPOnState)
-        _angle = 0.0;
+        [self setAngle:0.0];
     else
-        _angle = -PI_2;
+        [self setAngle:-PI_2];
 }
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)point mouseIsUp:(BOOL)mouseIsUp
@@ -2622,9 +2669,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             // 3. Mark this as a clone so drawRect knows to draw it
             clone._isAnimatingClone = YES;
             clone._animatingRowIndex = row;
-            clone._parentOutlineView = outlineView;
-            
-            [outlineView addSubview:clone positioned:CPWindowAbove relativeTo:self];
+            clone._parentOutlineView = outlineView;[outlineView addSubview:clone positioned:CPWindowAbove relativeTo:self];
 
             // 4. Calculate angles
             var isCurrentlyExpanded = ([self state] === CPOnState),
@@ -2636,7 +2681,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             [anim setToValue:targetAngle];
             [anim setDuration:0.25];
             [anim setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
-            
+
             [[clone layer] setDelegate:clone];
             [anim setDelegate:clone];
             
@@ -2661,6 +2706,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 - (void)drawRect:(CGRect)aRect
 {
+
+#if PLATFORM(DOM)
+    if (_arrowElement && _arrowElement.parentNode !== self._DOMElement)
+        self._DOMElement.appendChild(_arrowElement);
+#endif
+
     // If I am NOT the clone, I must check if my row is animating.
     // If it is animating, the clone is drawing on top of me, so I should be invisible.
     if (!_isAnimatingClone)
@@ -2670,33 +2721,17 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         {
             var row = [outlineView rowForView:self];
             if (row !== CPNotFound && [outlineView _isRowAnimatingDisclosure:row])
+            {
+
+#if PLATFORM(DOM)
+                _arrowElement.style.display = "none";
+#endif
                 return; // Suppress the real button
+            }
         }
     }
 
-    var bounds = [self bounds],
-        context = [[CPGraphicsContext currentContext] graphicsPort],
-        width = CGRectGetWidth(bounds),
-        height = CGRectGetHeight(bounds);
-
-    if (!context)
-        return;
-
-    CGContextBeginPath(context);
-
-    if (_angle)
-    {
-        var centre = CGPointMake(FLOOR(width / 2.0), FLOOR(height / 2.0));
-        CGContextTranslateCTM(context, centre.x, centre.y);
-        CGContextRotateCTM(context, _angle);
-        CGContextTranslateCTM(context, -centre.x, -centre.y);
-    }
-    
-    CGContextTranslateCTM(context, FLOOR((width - 9.0) / 2.0), FLOOR((height - 8.0) / 2.0));
-    CGContextMoveToPoint(context, 0.0, 0.0);
-    CGContextAddLineToPoint(context, 9.0, 0.0);
-    CGContextAddLineToPoint(context, 4.5, 8.0);
-    CGContextClosePath(context);
+        _arrowElement.style.display = "block";
     
     var isSelected = [self hasThemeState:CPThemeStateSelected],
         isHighlighted = [self hasThemeState:CPThemeStateHighlighted],
@@ -2704,6 +2739,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         isHUD = [self window] && ([[self window] styleMask] & CPHUDBackgroundWindowMask), 
         triangleColor = nil;
 
+    // Establish the required color based on the state/outline selection
     if (isHUD)
     {
         triangleColor = isSelected ? [CPColor blackColor] : [CPColor whiteColor];
@@ -2716,7 +2752,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         if (isSelected)
             triangleColor = isKeyWindow ? [CPColor whiteColor] : [CPColor blackColor];
         else triangleColor = [CPColor colorWithCalibratedWhite:0.45 alpha: 1.0];
-        
+
         if (isHighlighted)
         {
              if (isSelected && isKeyWindow)
@@ -2729,8 +2765,19 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         }
     }
 
-    CGContextSetFillColor(context, triangleColor);
-    CGContextFillPath(context);
+    var colorCSS = [triangleColor cssString];
+    
+    // Convert and inject the updated SVG only when the required color has changed 
+    if (_lastColorCSS !== colorCSS)
+    {
+        _lastColorCSS = colorCSS;
+        var svgString = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 10L12 15L17 10H7Z" fill="' + colorCSS + '"/></svg>';
+        var b64 = window.btoa(svgString);
+
+#if PLATFORM(DOM)
+        _arrowElement.style.backgroundImage = "url('data:image/svg+xml;charset=utf-8;base64," + b64 + "')";
+#endif
+    }
 }
 
 @end
