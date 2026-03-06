@@ -1309,7 +1309,9 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     if (_scrollerStyle === CPScrollerStyleLegacy)
     {
-        [[self bottomCornerView] setFrame:[self _bottomCornerViewFrame]];
+        var bottomCornerFrame = [self _bottomCornerViewFrame];
+        [[self bottomCornerView] setFrame:bottomCornerFrame];
+        [[self bottomCornerView] setHidden:CGRectIsEmpty(bottomCornerFrame)];
         [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
     }
 
@@ -1598,6 +1600,9 @@ Notifies the delegate when the scroll view has finished scrolling.
         return;
 
     [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color-"+CPScrollViewBorderSuffixes[_borderType]]];
+
+    if (_scrollerStyle === CPScrollerStyleLegacy)
+        [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
 }
 
 - (BOOL)isCSSBased
