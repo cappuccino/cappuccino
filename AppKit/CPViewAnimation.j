@@ -28,6 +28,8 @@ CPViewAnimationTargetKey = @"CPViewAnimationTargetKey";
 CPViewAnimationStartFrameKey = @"CPViewAnimationStartFrameKey";
 CPViewAnimationEndFrameKey = @"CPViewAnimationEndFrameKey";
 CPViewAnimationEffectKey = @"CPViewAnimationEffectKey";
+CPViewAnimationStartOpacityKey = @"CPViewAnimationStartOpacityKey";
+CPViewAnimationEndOpacityKey = @"CPViewAnimationEndOpacityKey";
 
 CPViewAnimationFadeInEffect = @"CPViewAnimationFadeInEffect";
 CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
@@ -132,12 +134,24 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
 
         [view setFrame:intermediateFrame];
 
-        // Update the view's alpha value
-        var effect = [self _effect:dictionary];
-        if (effect === CPViewAnimationFadeInEffect)
-            [view setAlphaValue:1.0 * value];
-        else if (effect === CPViewAnimationFadeOutEffect)
-            [view setAlphaValue:1.0 + ( 0.0 - 1.0 ) * value];
+        // Check for explicit Opacity keys first
+        var startOpacity = [dictionary objectForKey:CPViewAnimationStartOpacityKey],
+            endOpacity = [dictionary objectForKey:CPViewAnimationEndOpacityKey];
+
+        if (startOpacity != nil && endOpacity != nil)
+        {
+            // Interpolate alpha
+            [view setAlphaValue:startOpacity + (endOpacity - startOpacity) * value];
+        }
+        else 
+        {
+            // Fallback to legacy Effect keys
+            var effect = [self _effect:dictionary];
+            if (effect === CPViewAnimationFadeInEffect)
+                [view setAlphaValue:1.0 * value];
+            else if (effect === CPViewAnimationFadeOutEffect)
+                [view setAlphaValue:1.0 + ( 0.0 - 1.0 ) * value];
+        }
 
         if (progress === 1.0)
             [self _targetView:view setHidden:CGRectIsEmpty(endFrame) || [view alphaValue] === 0.0];
@@ -155,11 +169,20 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
 
         [view setFrame:endFrame];
 
-        var effect = [self _effect:dictionary];
-        if (effect === CPViewAnimationFadeInEffect)
-            [view setAlphaValue:1.0];
-        else if (effect === CPViewAnimationFadeOutEffect)
-            [view setAlphaValue:0.0];
+        var endOpacity = [dictionary objectForKey:CPViewAnimationEndOpacityKey];
+        
+        if (endOpacity != nil)
+        {
+            [view setAlphaValue:endOpacity];
+        }
+        else
+        {
+            var effect = [self _effect:dictionary];
+            if (effect === CPViewAnimationFadeInEffect)
+                [view setAlphaValue:1.0];
+            else if (effect === CPViewAnimationFadeOutEffect)
+                [view setAlphaValue:0.0];
+        }
 
         [self _targetView:view setHidden:CGRectIsEmpty(endFrame) || [view alphaValue] === 0.0];
     }

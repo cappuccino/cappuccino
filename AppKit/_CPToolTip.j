@@ -118,13 +118,9 @@ var _CPToolTipHeight = 24.0,
         textFrameSizeSingleLine = [aText sizeWithFont:font],
         textFrameSize = [aText sizeWithFont:font inWidth:(aToolTipSize.width)];
 
-    // this small adjustement fixes
-    // tooltips wrapping issues from fractional pixels.
     textFrameSizeSingleLine.width += 1;
     textFrameSize.width += 1;
 
-
-    // If the text fully fits within the maximum width, shrink to fit.
     if (textFrameSizeSingleLine.width < aToolTipSize.width)
     {
         var textField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()],
@@ -137,13 +133,26 @@ var _CPToolTipHeight = 24.0,
     if (textFrameSize.height < 100)
     {
         aToolTipSize.height = textFrameSize.height + 4;
-        return [aToolTipSize, textFrameSize];
+        
+        // FIX: Snap to whole pixels
+        aToolTipSize.width = CEIL(aToolTipSize.width);
+        aToolTipSize.height = CEIL(aToolTipSize.height);
+        textFrameSize.width = CEIL(textFrameSize.width);
+        textFrameSize.height = CEIL(textFrameSize.height);
+        
+        return[aToolTipSize, textFrameSize];
     }
 
     var newWidth        = aToolTipSize.width + ((parseInt(textFrameSize.height - 100) / _CPToolTipHeight) * _CPToolTipHeight);
     textFrameSize       = [aText sizeWithFont:font inWidth:newWidth - 4];
     aToolTipSize.width  = newWidth + 2;
     aToolTipSize.height = textFrameSize.height + 4;
+
+    // FIX: Snap to whole pixels
+    aToolTipSize.width = CEIL(aToolTipSize.width);
+    aToolTipSize.height = CEIL(aToolTipSize.height);
+    textFrameSize.width = CEIL(textFrameSize.width);
+    textFrameSize.height = CEIL(textFrameSize.height);
 
     return [aToolTipSize, textFrameSize];
 }
@@ -199,6 +208,12 @@ var _CPToolTipHeight = 24.0,
 
         [self setLevel:CPStatusWindowLevel];
         [self setAlphaValue:0.9];
+
+        if ([_toolTipWindow styleMask] & CPHUDBackgroundWindowMask)
+        {
+            [_content setThemeState:CPThemeStateHUD];
+            [_windowView setThemeState:CPThemeStateHUD];
+       }
 
         [_windowView setNeedsDisplay:YES];
 

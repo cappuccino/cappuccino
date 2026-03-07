@@ -979,6 +979,9 @@ CPTexturedBackgroundWindowMask
 - (void)orderFront:(id)aSender
 {
     [self orderWindow:CPWindowAbove relativeTo:0];
+
+    if (_styleMask & CPHUDBackgroundWindowMask)
+        [_contentView _setThemeStateRecursively:CPThemeStateHUD];
 }
 
 - (void)_orderFront
@@ -2537,6 +2540,10 @@ CPTexturedBackgroundWindowMask
     [self _sendDelegateWindowWillClose];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
+
+    // Give a chance to the _windowView to do things before closing (for example, remove an observer)
+    if ([_windowView respondsToSelector:@selector(_close)])
+        [_windowView _close];
 
     [_parentWindow removeChildWindow:self];
     [self _orderOutRecursively:NO];

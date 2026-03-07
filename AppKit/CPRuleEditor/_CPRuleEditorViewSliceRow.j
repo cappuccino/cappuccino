@@ -67,6 +67,23 @@
     [self setAutoresizingMask:CPViewWidthSizable];
 }
 
+- (void)_setSelected:(BOOL)isSelected
+{
+    [super _setSelected:isSelected];
+    [self _updateButtonImages];
+}
+
+- (void)_updateButtonImages
+{
+    var rowState = [self themeState];
+
+    if ([self _isSelected])
+        rowState = rowState.and(CPThemeStateSelected);
+
+    [_addButton setImage:[_ruleEditor valueForThemeAttribute:@"add-image" inState:rowState]];
+    [_subtractButton setImage:[_ruleEditor valueForThemeAttribute:@"remove-image" inState:rowState]];
+}
+
 - (CPButton)_createRowButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
@@ -89,6 +106,8 @@
     var button = [self _createRowButton];
 
     [button setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
+    
+    // Initial setup, _updateButtonImages will be called later to set correct state-based images
     [button setValue:[_ruleEditor _imageAdd] forThemeAttribute:@"image" inState:CPThemeStateNormal];
     [button setValue:[_ruleEditor _imageAddHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
 
@@ -103,6 +122,8 @@
     var button = [self _createRowButton];
 
     [button setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
+    
+    // Initial setup
     [button setValue:[_ruleEditor _imageRemove] forThemeAttribute:@"image" inState:CPThemeStateNormal];
     [button setValue:[_ruleEditor _imageRemoveHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
 
@@ -492,7 +513,21 @@
 
 - (void)viewDidMoveToWindow
 {
+    [super viewDidMoveToWindow];
+    [self _updateButtonImages];
     [self layoutSubviews];
+}
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    [self _updateButtonImages];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    [self _updateButtonImages];
 }
 
 - (void)_addObservers
