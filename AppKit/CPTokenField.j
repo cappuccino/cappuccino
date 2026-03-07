@@ -453,8 +453,8 @@ CPTokenFieldDeleteButtonType     = 1;
     {
         [_tokenScrollView documentView]._DOMElement.appendChild(element);
 
-        //post CPControlTextDidBeginEditingNotification
-        [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+        // Removed so CPTokenField doesn't fire the notification the moment it becomes the first responder, but instead defers to the first keystroke, just like Cocoa (see keyDown: in CPTextField).
+        // [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
 
         [[CPRunLoop mainRunLoop] performBlock:function()
         {
