@@ -264,7 +264,8 @@
 
     [self _rearrangeObjects];
 
-    if ([self preservesSelection])[self __setSelectedObjects:oldSelectedObjects];
+    if ([self preservesSelection])
+        [self __setSelectedObjects:oldSelectedObjects];
     else[self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
 }
 
@@ -275,7 +276,7 @@
 
 - (id)contentArray
 {
-    return[self content];
+    return [self content];
 }
 
 - (id)arrangedObjects
@@ -300,8 +301,7 @@
     else
         oldSelectionIndexPaths = [self selectionIndexPaths];
 
-    // Rebuild the proxy tree. In a full implementation, this observes children using _childrenKeyPath
-    // and applies _sortDescriptors recursively.[self __rebuildArrangedObjectsTree];
+    // Rebuild the proxy tree from the content using _childrenKeyPath and _sortDescriptors[self __rebuildArrangedObjectsTree];
 
     if ([self preservesSelection])
         [self __setSelectedObjects:oldSelectedObjects];
@@ -311,28 +311,50 @@
 
 - (void)__rebuildArrangedObjectsTree
 {
-    // A simplified rebuilding logic: we set the content as the represented object's children
-    // of the root proxy node.
     var rootNode = [[CPTreeNode alloc] initWithRepresentedObject:nil];
     var contentArray = [self contentArray];
 
-    // Sort top level if needed
-    var sortedContent = contentArray;
-    if ([_sortDescriptors count] > 0)
-        sortedContent = [contentArray sortedArrayUsingDescriptors:_sortDescriptors];
+    if (contentArray && [contentArray count] > 0)
+    {
+        var children = [self _buildTreeNodesForObjects:contentArray];
+        [[rootNode mutableChildNodes] addObjectsFromArray:children];
+    }
 
-    var count = [sortedContent count];
-    var children = [CPMutableArray arrayWithCapacity:count];
+    _arrangedObjects = rootNode;
+}
+
+// Recursively builds the node tree mapping model objects to CPTreeNodes
+- (CPArray)_buildTreeNodesForObjects:(CPArray)objects
+{
+    var count = [objects count];
+    if (count === 0)
+        return[];
+
+    var sortedObjects = objects;
+    if ([_sortDescriptors count] > 0)
+        sortedObjects = [objects sortedArrayUsingDescriptors:_sortDescriptors];
+
+    var nodes = [CPMutableArray arrayWithCapacity:count];
 
     for (var i = 0; i < count; i++)
     {
-        var node = [[CPTreeNode alloc] initWithRepresentedObject:sortedContent[i]];
-        // Note: Recursive population and sorting of children based on _childrenKeyPath
-        // would occur here in a complete tree parser.[children addObject:node];
+        var obj = sortedObjects[i],
+        node = [[CPTreeNode alloc] initWithRepresentedObject:obj];
+
+        if (_childrenKeyPath)
+        {
+            var childObjects = [obj valueForKeyPath:_childrenKeyPath];
+            if (childObjects && [childObjects count] > 0)
+            {
+                var childNodes = [self _buildTreeNodesForObjects:childObjects];
+                [[node mutableChildNodes] addObjectsFromArray:childNodes];
+            }
+        }
+
+        [nodes addObject:node];
     }
 
-    [[rootNode mutableChildNodes] addObjectsFromArray:children];
-    _arrangedObjects = rootNode;
+    return nodes;
 }
 
 // --- Selection Management ---
@@ -389,16 +411,15 @@
 {
     var newPaths = [_selectionIndexPaths mutableCopy];
     [newPaths addObjectsFromArray:indexPaths];
-    // Remove duplicates and maintain sorted order
-    // ...
-    return[self setSelectionIndexPaths:newPaths];
+    // Remove duplicates and maintain sorted order (omitted for brevity)
+    return [self setSelectionIndexPaths:newPaths];
 }
 
 - (BOOL)removeSelectionIndexPaths:(CPArray)indexPaths
 {
     var newPaths = [_selectionIndexPaths mutableCopy];
     [newPaths removeObjectsInArray:indexPaths];
-    return [self setSelectionIndexPaths:newPaths];
+    return[self setSelectionIndexPaths:newPaths];
 }
 
 - (CPArray)selectedNodes
@@ -409,7 +430,8 @@
     for (var i = 0; i < count; i++)
     {
         var node = [[self arrangedObjects] descendantNodeAtIndexPath:_selectionIndexPaths[i]];
-        if (node)[nodes addObject:node];
+        if (node)
+            [nodes addObject:node];
     }
     return nodes;
 }
@@ -437,7 +459,7 @@
 
 - (BOOL)canInsert
 {
-    return [self isEditable];
+    return[self isEditable];
 }
 
 - (BOOL)canInsertChild
@@ -473,11 +495,12 @@
     if (![self canAddChild])
         return;
 
-    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject],
+    var newObject = [self automaticallyPreparesContent] ?[self newObject] : [self _defaultNewObject],
     parentNode = [[self arrangedObjects] descendantNodeAtIndexPath:[self selectionIndexPath]],
     childCount = [[parentNode childNodes] count];
 
     var insertPath = [[self selectionIndexPath] indexPathByAddingIndex:childCount];
+
     [self insertObject:newObject atArrangedObjectIndexPath:insertPath];
 }
 
@@ -486,7 +509,7 @@
     if (![self canInsert])
         return;
 
-    var newObject = [self automaticallyPreparesContent] ? [self newObject] :[self _defaultNewObject];
+    var newObject = [self automaticallyPreparesContent] ?[self newObject] : [self _defaultNewObject];
     var indexPath = [self selectionIndexPath] ||[CPIndexPath indexPathWithIndex:0];
 
     [self insertObject:newObject atArrangedObjectIndexPath:indexPath];
@@ -497,19 +520,18 @@
     if (![self canInsertChild])
         return;
 
-    var newObject = [self automaticallyPreparesContent] ? [self newObject] :[self _defaultNewObject],
+    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject],
     insertPath = [[self selectionIndexPath] indexPathByAddingIndex:0];
+
     [self insertObject:newObject atArrangedObjectIndexPath:insertPath];
 }
 
 - (void)insertObject:(id)anObject atArrangedObjectIndexPath:(CPIndexPath)indexPath
-{
-    [self insertObjects:[anObject] atArrangedObjectIndexPaths:[indexPath]];
+{[self insertObjects:[anObject] atArrangedObjectIndexPaths:[indexPath]];
 }
 
 - (void)insertObjects:(CPArray)objects atArrangedObjectIndexPaths:(CPArray)indexPaths
-{
-    [self willChangeValueForKey:@"content"];
+{[self willChangeValueForKey:@"content"];
     _disableSetContent = YES;
 
     var count = [objects count];
@@ -521,8 +543,7 @@
 
         if (length === 1)
         {
-            // Insert at root level
-            [_contentObject insertObject:object atIndex:[path indexAtPosition:0]];
+            // Insert at root level[_contentObject insertObject:object atIndex:[path indexAtPosition:0]];
         }
         else
         {
@@ -547,15 +568,13 @@
 
     [self _rearrangeObjects];
 
-    if ([self selectsInsertedObjects])
-        [self setSelectionIndexPaths:indexPaths];
+    if ([self selectsInsertedObjects])[self setSelectionIndexPaths:indexPaths];
 
     [self didChangeValueForKey:@"content"];
 }
 
 - (void)remove:(id)sender
-{
-    [self removeObjectsAtArrangedObjectIndexPaths:_selectionIndexPaths];
+{[self removeObjectsAtArrangedObjectIndexPaths:_selectionIndexPaths];
 }
 
 - (void)removeObjectAtArrangedObjectIndexPath:(CPIndexPath)indexPath
@@ -608,7 +627,7 @@
 
 - (void)moveNodes:(CPArray)nodes toIndexPath:(CPIndexPath)startingIndexPath
 {
-    // A proper implementation handles repositioning inside the tree while maintaining object state[CPException raise:CPUnsupportedMethodException reason:@"moveNodes:toIndexPath: is not yet implemented in CPTreeController."];
+    [CPException raise:CPUnsupportedMethodException reason:@"moveNodes:toIndexPath: is not yet implemented in CPTreeController."];
 }
 
 @end
@@ -644,8 +663,7 @@ CPTreeControllerLeafKeyPath                      = @"CPTreeControllerLeafKeyPath
 
         if (![self content] && [self automaticallyPreparesContent])
             [self prepareContent];
-        else if (![self content])
-            [self _setContentArray:[]];
+        else if (![self content])[self _setContentArray:[]];
     }
 
     return self;
@@ -671,4 +689,3 @@ CPTreeControllerLeafKeyPath                      = @"CPTreeControllerLeafKeyPath
 }
 
 @end
-
