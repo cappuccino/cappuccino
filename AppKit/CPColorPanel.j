@@ -51,7 +51,7 @@ CPColorPickerViewWidth  = 265;
 CPColorPickerViewHeight = 370;
 
 CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";
-CPColorDragType = "CPColorDragType";
+CPColorDragType = @"CPColorDragType";
 
 var PREVIEW_HEIGHT = 20.0,
     TOOLBAR_HEIGHT = 32.0,

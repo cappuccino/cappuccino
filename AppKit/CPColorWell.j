@@ -308,12 +308,14 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
+
     return CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGRect)contentBorderRectForBounds:(CGRect)bounds
 {
     var contentBorderInset = [self currentValueForThemeAttribute:@"content-border-inset"];
+
     return CGRectInsetByInset(bounds, contentBorderInset);
 }
 
@@ -335,7 +337,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
 {
     var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+
     [view setHitTests:NO];
+
     return view;
 }
 
@@ -352,7 +356,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
                         relativeToEphemeralSubviewNamed:@"bezel-view"];
 
     [contentView setBackgroundColor:_color];
-    
+
     var contentBorderView = [self layoutEphemeralSubviewNamed:@"content-border-view"
                                                    positioned:CPWindowAbove
                               relativeToEphemeralSubviewNamed:@"content-view"];
