@@ -2344,3 +2344,5 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
             ? [CPColor colorWithCalibratedWhite:0.4 alpha: 1.0]
             : [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0]);
 };
+
+@import "CPOutlineView+CPBindings.j"

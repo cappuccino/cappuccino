@@ -260,7 +260,7 @@
 
 - (CPString)description
 {
-    return[CPString stringWithFormat:@"<OrgNode %@>", [self name]];
+    return [CPString stringWithFormat:@"<OrgNode %@>", [self name]];
 }
 
 @end
