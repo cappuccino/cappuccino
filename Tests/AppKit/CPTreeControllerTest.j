@@ -100,7 +100,6 @@
 
     var engineering = [[controller contentArray] objectAtIndex:0],
     backendTeam = [[engineering children] objectAtIndex:1];
-
     [self assert:1 equals:[[backendTeam children] count] message:@"Child should be added to the model object's children array"];
     [self assert:@"Tom" equals:[[[backendTeam children] objectAtIndex:0] name]];
 }
@@ -111,6 +110,7 @@
 
     var path = [CPIndexPath indexPathWithIndex:1];
     var hrDept = [OrgNode nodeWithName:@"Human Resources"];
+
     [controller insertObject:hrDept atArrangedObjectIndexPath:path];
     [self assert:3 equals:[[controller contentArray] count]];
     [self assert:hrDept equals:[[controller contentArray] objectAtIndex:1]];
@@ -142,23 +142,49 @@
 {
     var controller = [self treeController];
 
-    var paths = [CPArray arrayWithObjects:[CPIndexPath indexPathWithIndex:0],[CPIndexPath indexPathWithIndex:1]];
+    var paths = [CPArray arrayWithObjects:[CPIndexPath indexPathWithIndex:0], [CPIndexPath indexPathWithIndex:1]];
 
     [controller removeObjectsAtArrangedObjectIndexPaths:paths];
 
     [self assert:0 equals:[[controller contentArray] count] message:@"All root nodes should be removed"];
 }
 
-- (void)testAvoidsEmptySelection
+- (void)testSelectingEmptyIndexPathsExplicitlyWithAvoidsEmptySelection
+{
+    var controller = [self treeController];
+
+    [controller setAvoidsEmptySelection:YES];
+
+    [controller setSelectionIndexPath:[CPIndexPath indexPathWithIndex:0]];
+    [controller setSelectionIndexPaths:[CPArray array]];
+
+    [self assertTrue:([[controller selectionIndexPaths] count] == 0) message:@"Selection should be empty when unselecting explicitly, even with avoidsEmptySelection"];
+}
+
+- (void)testAvoidsEmptySelectionWhenRemoving
 {
     var controller = [self treeController];
     [controller setAvoidsEmptySelection:YES];
-    [controller setSelectionIndexPaths:[CPArray array]];
+
+    var path = [CPIndexPath indexPathWithIndex:0];
+    [controller setSelectionIndexPath:path];
+
+    // Remove "Engineering"
+    [controller removeObjectAtArrangedObjectIndexPath:path];
 
     [self assertTrue:([[controller selectionIndexPaths] count] == 1) message:@"Selection should fallback to the first item when avoidsEmptySelection is YES"];
+    // "Marketing" is now at index 0
     [self assert:[CPIndexPath indexPathWithIndex:0] equals:[controller selectionIndexPath]];
+
+    // Test behavior when AvoidsEmptySelection is NO[controller insertObject:[OrgNode nodeWithName:@"New Dept"] atArrangedObjectIndexPath:[CPIndexPath indexPathWithIndex:1]];
     [controller setAvoidsEmptySelection:NO];
-    [controller setSelectionIndexPaths:[CPArray array]];
+
+    // Reselect "Marketing" at index 0
+    [controller setSelectionIndexPath:[CPIndexPath indexPathWithIndex:0]];
+
+    // Remove "Marketing"
+    [controller removeObjectAtArrangedObjectIndexPath:[CPIndexPath indexPathWithIndex:0]];
+
     [self assertTrue:([[controller selectionIndexPaths] count] == 0) message:@"Selection should be allowed to be empty when avoidsEmptySelection is NO"];
 }
 
@@ -168,8 +194,8 @@
     [controller setChildrenKeyPath:@"subItems"];
 
     var data = [OrgNode nodeWithName:@"Root"];
-    [data setValue:[CPMutableArray arrayWithObject:[OrgNode nodeWithName:@"Sub"]] forKey:@"subItems"];
 
+    [data setValue:[CPMutableArray arrayWithObject:[OrgNode nodeWithName:@"Sub"]] forKey:@"subItems"];
     [controller setContent:[CPMutableArray arrayWithObject:data]];
 
     var path = [[CPIndexPath indexPathWithIndex:0] indexPathByAddingIndex:0];
@@ -186,7 +212,6 @@
     var controller = [[CPTreeController alloc] init];
 
     [controller bind:@"contentArray" toObject:self withKeyPath:@"contentArray" options:nil];
-
     [self assert:[self contentArray] equals:[controller contentArray]];
     [self assert:2 equals:[[[controller arrangedObjects] childNodes] count]];
 }
@@ -199,6 +224,7 @@
     [controller setSelectionIndexPath:path];
 
     var selectedObjects = [controller selectedObjects];
+
     [self assert:1 equals:[selectedObjects count]];
     [self assert:@"Marketing" equals:[[selectedObjects objectAtIndex:0] name]];
 }
@@ -238,4 +264,3 @@
 }
 
 @end
-
