@@ -68,7 +68,7 @@ var CPTextFieldDOMCurrentElement = nil,
     CPTextFieldCachedDragFunction = nil,
     CPTextFieldBlurHandler = nil,
     CPTextFieldInputFunction = nil,
-    CPTexFieldCurrentCSSSelectableField = nil
+    CPTexFieldCurrentCSSSelectableField = nil,
     CPTextFieldLastValidationFailureEvent = nil,
     CPTextFieldLastValidationFailureString = nil,
     CPTextFieldLastValidationFailureField = nil,
@@ -336,8 +336,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                                            characters:nil
                           charactersIgnoringModifiers:nil
                                             isARepeat:NO
-                                              keyCode:nil
-                                          isActionKey:NO];
+                                              keyCode:nil];
 
             [CPTextFieldInputOwner keyUp:cappEvent];
 
@@ -771,27 +770,33 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"],
         left          = CGRectGetMinX(contentRect);
 
+    // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
+    if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
+        left -= 1;
+
     switch (verticalAlign)
     {
         case CPTopVerticalTextAlignment:
-            var topPoint = CEIL(CGRectGetMinY(contentRect)) + "px";
+            var topPoint = CGRectGetMinY(contentRect) + "px";
             break;
 
         case CPCenterVerticalTextAlignment:
-            var topPoint = CEIL((CGRectGetMidY(contentRect) - (lineHeight / 2))) + "px";
+            var topPoint = (CGRectGetMidY(contentRect) - (lineHeight / 2)) + "px";
             break;
 
         case CPBottomVerticalTextAlignment:
-            var topPoint = CEIL((CGRectGetMaxY(contentRect) - lineHeight)) + "px";
+            var topPoint = (CGRectGetMaxY(contentRect) - lineHeight) + "px";
             break;
 
         default:
-            var topPoint = CEIL(CGRectGetMinY(contentRect)) + "px";
+            var topPoint = CGRectGetMinY(contentRect) + "px";
             break;
     }
 
-    // Use currentValueForThemeAttribute to respect all current states (HUD, Placeholder, Editing, etc.)
-    element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
+    if ([self hasThemeState:CPTextFieldStatePlaceholder])
+        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder] cssString];
+    else
+        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPThemeStateEditing] cssString];
 
     switch ([self alignment])
     {
@@ -1287,16 +1292,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [_delegate controlTextDidChange:note];
 
     [super textDidChange:note];
-}
-
-- (void)validateEditing
-{
-#if PLATFORM(DOM)
-    var element = [self _inputElement];
-    
-    if (element)
-        [self _setStringValue:element.value isNewValue:YES errorDescription:nil];
-#endif
 }
 
 - (void)textDidBeginEditing:(CPNotification)note
