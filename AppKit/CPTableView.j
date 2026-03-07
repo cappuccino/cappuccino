@@ -595,14 +595,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     [super setThemeState:aState];
     [self setBackgroundColor:[self hasThemeState:CPThemeStateHUD] ? [CPColor clearColor] : [CPColor whiteColor]];
-
 }
 
 - (void)unsetThemeState:(CPThemeState)aState
 {
     [super unsetThemeState:aState];
     [self setBackgroundColor:[self hasThemeState:CPThemeStateHUD] ? [CPColor clearColor] : [CPColor whiteColor]];
-
 }
 
 - (void)_initSubclass

@@ -1596,10 +1596,11 @@ Notifies the delegate when the scroll view has finished scrolling.
 
 - (void)layoutSubviews
 {
-    if (![self isCSSBased] || (_borderType === CPNoBorder))
+    if (![self isCSSBased])
         return;
 
-    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color-"+CPScrollViewBorderSuffixes[_borderType]]];
+    if (_borderType !== CPNoBorder)
+        [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color-"+CPScrollViewBorderSuffixes[_borderType]]];
 
     if (_scrollerStyle === CPScrollerStyleLegacy)
         [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
