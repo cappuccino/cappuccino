@@ -1131,6 +1131,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (![self isEnabled] || !([self isEditable] || [self isSelectable]))
         return;
 
+    if ([self isEditable] && !_isEditing)
+    {
+        _isEditing = YES;
+        [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    }
+
     // CPTextField uses an HTML input element to take the input so we need to
     // propagate the dom event so the element is updated. This has to be done
     // before interpretKeyEvents: though so individual commands have a chance
