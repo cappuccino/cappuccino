@@ -252,7 +252,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     Theme states for custom data views are documented in CPTableView.
 */
-@implementation CPOutlineView : CPTableView <CPTableViewDataSource, CPTableViewDelegate>
+@implementation CPOutlineView : CPTableView
 {
     id <CPOutlineViewDataSource>    _outlineViewDataSource;
     id <CPOutlineViewDelegate>      _outlineViewDelegate;
