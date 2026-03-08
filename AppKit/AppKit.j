@@ -116,3 +116,4 @@
 @import "CPWindowController.j"
 @import "CPWorkspace.j"
 @import "CPFontPanel.j"
+@import "CPTreeController.j"

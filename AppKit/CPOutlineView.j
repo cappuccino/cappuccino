@@ -1118,6 +1118,11 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [self reloadItem:anItem reloadChildren:NO];
 }
 
+- (int)_numberOfRows
+{
+    return _itemsForRows ? _itemsForRows.length : 0;
+}
+
 /*!
     Reloads the data for a given item and optionally the children.
 
@@ -1129,12 +1134,19 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _pendingItemToClean = [];
     _itemAddedDuringLastLoading = [];
 
+    var previousRowCount = _itemsForRows.length;
+
     if (!!shouldReloadChildren || !anItem)
         [self _loadItemInfoForItem:anItem intermediate:NO];
     else
         [self _reloadItem:anItem];
 
     [self _cleanPendingItem];
+
+    // Safely update the table size and force a synchronous layout recalculation
+    // BEFORE the views are reloaded, avoiding the clipping issue.
+    if (_itemsForRows.length !== previousRowCount)
+        [self noteNumberOfRowsChanged];
 
     [super _reloadDataViews];
 }
@@ -1182,9 +1194,20 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     for (var i = [previousItems count] - 1; i >= 0; i--)
     {
-        var item = previousItems[i];
+        var item = previousItems[i],
+            found = NO;
 
-        if (![children containsObject:item])
+        // Use strict identity (===) instead of containsObject: (which triggers isEqual:)
+        for (var j = 0, count = children.length; j < count; j++)
+        {
+            if (children[j] === item)
+            {
+                found = YES;
+                break;
+            }
+        }
+
+        if (!found)
             [self _addPendingItem:item];
     }
 }
@@ -1198,7 +1221,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     var children = itemInfo.children;
 
-    for (var i = [children count]; i >= 0; i--)
+    // Fixed out-of-bounds index (was previously [children count])
+    for (var i = children.length - 1; i >= 0; i--)
     {
         var child = children[i];
         [self _addPendingItem:child];
@@ -1209,7 +1233,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 - (void)_cleanPendingItem
 {
-    for (var i = [_pendingItemToClean count]; i >= 0; i--)
+    for (var i = [_pendingItemToClean count] - 1; i >= 0; i--)
     {
         var item = _pendingItemToClean[i];
 
@@ -1253,7 +1277,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     var weight = itemInfo.weight,
         descendants = anItem ? [anItem] : [];
 
-    [_itemAddedDuringLastLoading addObject:anItem];
+    if (anItem)
+        [_itemAddedDuringLastLoading addObject:anItem];
 
     if (itemInfo.isExpanded && [self _sendDataSourceShouldDeferDisplayingChildrenOfItem:anItem])
     {
@@ -1430,7 +1455,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     var parent = itemInfo.parent;
 
     // Check if the parent is the root item because we never return the actual root item
-    if (itemInfo[[parent UID]] === _rootItemInfo)
+    if (parent && _itemInfosForItems[[parent UID]] === _rootItemInfo)
         parent = nil;
 
     return parent;
@@ -2524,7 +2549,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_menuForTableColumn_item_))
     {
         var item = [_outlineView itemAtRow:aRow];
-        return [_outlineView._outlineViewDelegate outlineView:_outlineView menuForTableColumn:aTableColumn item:item]
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView menuForTableColumn:aTableColumn item:item];
     }
 
     // We reimplement CPView menuForEvent: because we can't call it directly. CPTableView implements menuForEvent:
@@ -2853,3 +2878,264 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
             ? [CPColor colorWithCalibratedWhite:0.4 alpha: 1.0]
             : [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0]);
 };
+
+@implementation CPOutlineView (CPBindings)
+
++ (void)initialize
+{
+    if (self !== [CPOutlineView class])
+        return;
+
+    [self exposeBinding:@"content"];
+    [self exposeBinding:@"selectionIndexPaths"];
+    [self exposeBinding:@"sortDescriptors"];
+}
+
+/*!
+    Returns the currently selected index paths. 
+    This allows the outline view to be KVC-compliant for `selectionIndexPaths`.
+*/
+- (CPArray)selectionIndexPaths
+{
+    var indexes = [self selectedRowIndexes],
+        paths = [CPMutableArray array],
+        index = [indexes firstIndex];
+        
+    while (index !== CPNotFound)
+    {
+        var item = [self itemAtRow:index];
+        
+        // Check if the item is a CPTreeNode proxy (which it will be when bound to CPTreeController)
+        if ([item respondsToSelector:@selector(indexPath)])
+            [paths addObject:[item indexPath]];
+            
+        index = [indexes indexGreaterThanIndex:index];
+    }
+    
+    return paths;
+}
+
+@end
+
+
+@implementation CPOutlineView (CPBinder)
+
+- (id)content { return nil; }
+- (void)setContent:(id)aContent { }
+- (void)setSelectionIndexPaths:(CPArray)paths { }
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding === @"content")
+        return [_CPOutlineViewContentBinder class];
+        
+    if (aBinding === @"selectionIndexPaths")
+        return [_CPOutlineViewSelectionIndexPathsBinder class];
+        
+    return [super _binderClassForBinding:aBinding];
+}
+
+@end
+
+
+// --- Content Binder ---
+
+/*!
+    _CPOutlineViewContentBinder acts as the CPOutlineViewDataSource when the outline view 
+    is bound to a CPTreeController's arrangedObjects.
+*/
+@implementation _CPOutlineViewContentBinder : CPBinder
+{
+    CPTreeNode _rootNode;
+}
+
+- (void)setValueFor:(CPString)aBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath =[_info objectForKey:CPObservedKeyPathKey],
+        value = [destination valueForKeyPath:keyPath];
+
+    if (!value || ![value isKindOfClass:[CPTreeNode class]])
+        _rootNode = [[CPTreeNode alloc] initWithRepresentedObject:nil];
+    else
+        _rootNode = value;
+        
+    // Because CPBinder triggers setValueFor: synchronously during its initialization 
+    // (before -bind is ever called), we must lazily assign the data source here.
+    if ([_source dataSource] !== self)
+    {
+        // Assigning the data source automatically triggers [_source reloadData] 
+        // inside CPOutlineView, so we don't need to call it manually here.
+        [_source setDataSource:self];
+    }
+    else
+    {
+        // If it was already set, we just manually trigger the reload.
+        [_source reloadData];
+    }
+}
+
+- (CPTreeNode)rootNode
+{
+    return _rootNode;
+}
+
+// -- CPOutlineViewDataSource implementation --
+
+- (id)outlineView:(CPOutlineView)outlineView child:(CPInteger)index ofItem:(id)item
+{
+    var node = item || _rootNode;
+    return [[node childNodes] objectAtIndex:index];
+}
+
+- (BOOL)outlineView:(CPOutlineView)outlineView isItemExpandable:(id)item
+{
+    var node = item || _rootNode;
+    return ![node isLeaf];
+}
+
+- (int)outlineView:(CPOutlineView)outlineView numberOfChildrenOfItem:(id)item
+{
+    var node = item || _rootNode;
+    return [[node childNodes] count];
+}
+
+- (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item
+{
+    if ([item respondsToSelector:@selector(representedObject)])
+        return [item representedObject];
+        
+    return item;
+}
+
+@end
+
+// --- Selection Index Paths Binder ---
+
+/*!
+    _CPOutlineViewSelectionIndexPathsBinder listens for selection changes on the CPOutlineView 
+    and translates the selected rows into CPIndexPaths to push to the CPTreeController.
+    It also intercepts changes from the CPTreeController and auto-expands the tree to highlight them.
+*/
+@implementation _CPOutlineViewSelectionIndexPathsBinder : CPBinder
+{
+    BOOL _isSyncingFromModel;
+}
+
+- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
+{
+    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
+
+    [[CPNotificationCenter defaultCenter]
+        addObserver:self 
+           selector:@selector(outlineViewSelectionDidChange:) 
+               name:CPOutlineViewSelectionDidChangeNotification 
+             object:aSource];
+}
+
++ (void)unbind:(CPString)aBinding forObject:(id)anObject
+{
+    if (aBinding === "selectionIndexPaths")
+        [[CPNotificationCenter defaultCenter]
+            removeObserver:self
+                      name:CPOutlineViewSelectionDidChangeNotification
+                    object:anObject];
+
+    [super unbind:aBinding forObject:anObject];
+}
+
+- (void)setValueFor:(CPString)aBinding
+{
+    // 1. SUPPRESS KVO AT THE VERY TOP to avoid circular updates when expanding parents
+    _isSyncingFromModel = YES;
+
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        indexPaths = [destination valueForKeyPath:keyPath] || [],
+        indexes = [CPMutableIndexSet indexSet];
+
+    // 2. Fetch the root node directly from the CPTreeController (destination)
+    var rootNode = [destination respondsToSelector:@selector(arrangedObjects)] ? [destination arrangedObjects] : nil;
+
+    if (rootNode)
+    {
+        for (var i = 0, count = [indexPaths count]; i < count; i++)
+        {
+            var item = [rootNode descendantNodeAtIndexPath:[indexPaths objectAtIndex:i]];
+
+            if (item)
+            {
+                var parentsToExpand = [CPMutableArray array],
+                    parent = [item parentNode];
+                    
+                while (parent && parent !== rootNode)
+                {
+                    [parentsToExpand insertObject:parent atIndex:0];
+                    parent = [parent parentNode];
+                }
+                
+                for (var j = 0; j < [parentsToExpand count]; j++)
+                    [_source expandItem:parentsToExpand[j]];
+                
+                var row = [_source rowForItem:item];
+
+                if (row !== CPNotFound && row >= 0)
+                    [indexes addIndex:row];
+            }
+        }
+    }
+    
+    // Adjust the CPOutlineView selection
+    [_source selectRowIndexes:indexes byExtendingSelection:NO];
+
+    // 3. Re-enable KVO after adjustments are done
+    _isSyncingFromModel = NO;
+}
+
+- (void)outlineViewSelectionDidChange:(CPNotification)note
+{
+    // We only want to push the change back if we aren't currently syncing down from the model
+    if (_isSyncingFromModel)
+        return;
+
+    // In CPBinder, reverseSetValueFor: takes the name of the property on _source
+    // it should fetch the updated value from. Since CPOutlineView has the selectionIndexPaths method:
+    [self reverseSetValueFor:@"selectionIndexPaths"];
+}
+
+@end
+
+@implementation _CPOutlineViewContentBinder (DynamicColumns)
+
+- (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item
+{
+    var rep = [item respondsToSelector:@selector(representedObject)] ? [item representedObject] : item;
+    
+    // Dynamically fetch the value using the column's identifier (e.g., "name")
+    if (rep && [tableColumn identifier])
+        return [rep valueForKey:[tableColumn identifier]];
+        
+    return rep;
+}
+
+// Add this to support inline bidirectional editing in the outline view
+- (void)outlineView:(CPOutlineView)outlineView setObjectValue:(id)value forTableColumn:(CPTableColumn)tableColumn byItem:(id)item
+{
+    var rep = [item respondsToSelector:@selector(representedObject)] ?[item representedObject] : item;
+    
+    // Push the inline edit back to the model using the column's identifier
+    if (rep && [tableColumn identifier])
+        [rep setValue:value forKey:[tableColumn identifier]];
+}
+
+- (id)content
+{
+    // CPTableView internals probe the binder for its flat content to draw rows. 
+    // For an outline view, the flat content is exactly the internally mapped items for rows.
+    if (_source && _source._itemsForRows)
+        return _source._itemsForRows;
+        
+    return [];
+}
+
+@end
