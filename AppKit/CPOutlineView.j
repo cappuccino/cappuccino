@@ -2440,24 +2440,6 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
     CPTreeNode _rootNode;
 }
 
-- (void)bind
-{
-    // 1. Set the data source FIRST so that it is ready when 
-    //[super bind] triggers the initial synchronous setValueFor:
-    [_source setDataSource:self];
-    
-    // 2. Establish KVO (which immediately triggers setValueFor:)
-    [super bind];
-}
-
-- (void)unbind
-{
-    if ([_source dataSource] === self)
-        [_source setDataSource:nil];
-        
-    [super unbind];
-}
-
 - (void)setValueFor:(CPString)aBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
