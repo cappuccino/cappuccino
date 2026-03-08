@@ -183,7 +183,7 @@
 }
 
 - (void)_setContentArray:(id)anArray {[self setContent:anArray]; }
-- (id)contentArray { return [self content]; }
+- (id)contentArray { return _contentObject; }
 - (id)arrangedObjects { return _arrangedObjects; }
 
 - (void)rearrangeObjects
@@ -226,9 +226,12 @@
 - (CPArray)_buildTreeNodesForObjects:(CPArray)objects
 {
     var count = [objects count];
-    if (count === 0) return [CPArray array];
+
+    if (count === 0)
+        return [];
 
     var sortedObjects = objects;
+
     if (_sortDescriptors && [_sortDescriptors count] > 0)
         sortedObjects = [objects sortedArrayUsingDescriptors:_sortDescriptors];
 
@@ -242,12 +245,15 @@
         if (_childrenKeyPath)
         {
             var childObjects = [obj valueForKeyPath:_childrenKeyPath];
+
             if (childObjects && [childObjects count] > 0)
             {
                 var childNodes = [self _buildTreeNodesForObjects:childObjects];
                 [[node mutableChildNodes] addObjectsFromArray:childNodes];
             }
-        }[nodes addObject:node];
+        }
+
+        [nodes addObject:node];
     }
 
     return nodes;
@@ -291,14 +297,22 @@
     if ([_selectionIndexPaths isEqualToArray:newPaths])
         return NO;
 
+    [self willChangeValueForKey:@"selectionIndexPaths"];
+
     _selectionIndexPaths = [newPaths copy];
+    
 
     var binderClass = [[self class] _binderClassForBinding:@"selectionIndexPaths"];
+
     if (binderClass)
     {
         var binding = [binderClass getBinding:@"selectionIndexPaths" forObject:self];
-        if (binding)[binding reverseSetValueFor:@"selectionIndexPaths"];
+
+        if (binding)
+            [binding reverseSetValueFor:@"selectionIndexPaths"];
     }
+
+    [self didChangeValueForKey:@"selectionIndexPaths"];
 
     return YES;
 }
@@ -441,7 +455,8 @@
 }
 
 - (void)insertObjects:(CPArray)objects atArrangedObjectIndexPaths:(CPArray)indexPaths
-{[self willChangeValueForKey:@"content"];
+{
+    [self willChangeValueForKey:@"content"];
     _disableSetContent = YES;
 
     var count = [objects count];
@@ -496,7 +511,8 @@
 }
 
 - (void)removeObjectAtArrangedObjectIndexPath:(CPIndexPath)indexPath
-{[self removeObjectsAtArrangedObjectIndexPaths:[CPArray arrayWithObject:indexPath]];
+{
+    [self removeObjectsAtArrangedObjectIndexPaths:[CPArray arrayWithObject:indexPath]];
 }
 
 - (void)removeObjectsAtArrangedObjectIndexPaths:(CPArray)indexPaths
@@ -513,7 +529,8 @@
         length = [path length];
 
         if (length === 1)
-        {[_contentObject removeObjectAtIndex:[path indexAtPosition:0]];
+        {
+            [_contentObject removeObjectAtIndex:[path indexAtPosition:0]];
         }
         else
         {
