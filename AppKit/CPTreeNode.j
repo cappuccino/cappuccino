@@ -54,7 +54,8 @@
     // If we have a parent, calculate path based on parent's path + our index
     if (_parentNode)
     {
-        var index = [_childNodes indexOfObjectIdenticalTo:self];
+        // Search the parent's child nodes, not our own!
+        var index = [[_parentNode childNodes] indexOfObjectIdenticalTo:self];
         
         // If the parent is the root (and technically has no path itself in some implementations),
         // we might get nil. Handle that gracefully.
@@ -68,7 +69,7 @@
     
     // If we are the root, we don't have an index path in the context of a tree controller usually,
     // or we are [] (empty path). Returning nil is acceptable for the absolute root.
-    return nil; 
+    return nil;
 }
 
 - (BOOL)isLeaf
@@ -167,18 +168,21 @@
     if (!indexPath || [indexPath length] == 0)
         return self;
 
-    var index = [indexPath indexAtPosition:0],
-        count = [_childNodes count];
-        
-    if (index >= count)
-        return nil;
-        
-    var child = [_childNodes objectAtIndex:index];
-    
-    if ([indexPath length] == 1)
-        return child;
-        
-    return [child descendantNodeAtIndexPath:[indexPath indexPathByRemovingFirstIndex]];
+    var node = self,
+        length = [indexPath length];
+
+    for (var i = 0; i < length; i++)
+    {
+        var index = [indexPath indexAtPosition:i],
+            count = [node count];
+            
+        if (index >= count || index < 0)
+            return nil;
+            
+        node = [node objectAtIndex:index];
+    }
+
+    return node;
 }
 
 @end

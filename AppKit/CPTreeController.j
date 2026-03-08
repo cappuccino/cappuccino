@@ -300,7 +300,6 @@
     [self willChangeValueForKey:@"selectionIndexPaths"];
 
     _selectionIndexPaths = [newPaths copy];
-    
 
     var binderClass = [[self class] _binderClassForBinding:@"selectionIndexPaths"];
 

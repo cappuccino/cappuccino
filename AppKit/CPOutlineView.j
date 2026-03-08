@@ -1110,7 +1110,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     var parent = itemInfo.parent;
 
     // Check if the parent is the root item because we never return the actual root item
-    if (parent && itemInfo[[parent UID]] === _rootItemInfo)
+    if (parent && _itemInfosForItems[[parent UID]] === _rootItemInfo)
         parent = nil;
 
     return parent;
@@ -2531,25 +2531,26 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
     BOOL _isSyncingFromModel;
 }
 
-- (void)bind
+- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
 {
-    [super bind];
-    
-    [[CPNotificationCenter defaultCenter] 
+    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
+
+    [[CPNotificationCenter defaultCenter]
         addObserver:self 
            selector:@selector(outlineViewSelectionDidChange:) 
                name:CPOutlineViewSelectionDidChangeNotification 
-             object:_source];
+             object:aSource];
 }
 
-- (void)unbind
++ (void)unbind:(CPString)aBinding forObject:(id)anObject
 {
-    [[CPNotificationCenter defaultCenter] 
-        removeObserver:self 
-                  name:CPOutlineViewSelectionDidChangeNotification 
-                object:_source];
-                
-    [super unbind];
+    if (aBinding === "selectionIndexPaths")
+        [[CPNotificationCenter defaultCenter]
+            removeObserver:self
+                      name:CPOutlineViewSelectionDidChangeNotification
+                    object:anObject];
+
+    [super unbind:aBinding forObject:anObject];
 }
 
 - (void)setValueFor:(CPString)aBinding
@@ -2606,7 +2607,7 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
     if (_isSyncingFromModel)
         return;
 
-    // In CPBinder, reverseSetValueFor: takes the name of the property on _source 
+    // In CPBinder, reverseSetValueFor: takes the name of the property on _source
     // it should fetch the updated value from. Since CPOutlineView has the selectionIndexPaths method:
     [self reverseSetValueFor:@"selectionIndexPaths"];
 }
