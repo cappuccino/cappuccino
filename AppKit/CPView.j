@@ -662,6 +662,11 @@ var CPViewHighDPIDrawingEnabled = YES;
 #endif
     }
 
+#if PLATFORM(DOM)
+    var origin = aSubview._frame.origin;
+    CPDOMDisplayServerSetStyleLeftTop(aSubview._DOMElement, _boundsTransform, origin.x, origin.y);
+#endif
+
     [aSubview setNextResponder:self];
     [aSubview _scaleSizeUnitSquareToSize:[self _hierarchyScaleSize]];
 

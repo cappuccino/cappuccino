@@ -269,7 +269,8 @@ var _CPMenuBarVisible               = NO,
     if (self)
     {
         _title = aTitle;
-        _items = [];
+        // Use CPMutableArray instead of raw JS array for consistency with removeAllItems
+        _items = [CPMutableArray array]; 
 
         _autoenablesItems = YES;
         _showsStateColumn = YES;
@@ -374,6 +375,10 @@ var _CPMenuBarVisible               = NO,
     [self willChangeValueForKey:@"items"];
     _items = [CPMutableArray array];
     [self didChangeValueForKey:@"items"];
+    
+    // Ensure the main menu updates if cleared
+    if (self === [CPApp mainMenu] && _CPMenuBarSharedWindow)
+        [_CPMenuBarSharedWindow setMenu:self];
 }
 
 /*!
@@ -389,6 +394,9 @@ var _CPMenuBarVisible               = NO,
     */
     if ([aMenuItem menu] !== self || !_items)
         return;
+
+    if (_menuWindow)
+        [[_menuWindow _menuView] tile];
 
     [aMenuItem setValue:[aMenuItem valueForKey:@"changeCount"] + 1 forKey:@"changeCount"];
 
@@ -1062,7 +1070,23 @@ var _CPMenuBarVisible               = NO,
         if ([anEvent _triggersKeyEquivalent:[item keyEquivalent] withModifierMask:[item keyEquivalentModifierMask]])
         {
             if ([item isEnabled])
+            {
+                // Flash the top-level item if this is the Main Menu
+                if (self === [CPApp mainMenu])
+                    [self _flashItemAtIndex:index];
+
+                anEvent._isKeyEquivalent = YES; // prevent the menu keystroke from beeing inserted into textview
                 [self performActionForItemAtIndex:index];
+
+#if PLATFORM(DOM)
+                // we are done with this event in cappuccino space. do not let the browser do something weird additionally (e.g. command-o).
+                // but we must not stop copy/paste events as these can only be handled by the browser at this time even if they are in our menu
+                // (until we move to CPTextView as the fieleditor)
+
+                if (characters != "c" && characters != "x" && characters != "v")
+                    _CPDOMEventStop(anEvent._DOMEvent);
+#endif
+            }
             else
             {
                 //beep?
@@ -1072,7 +1096,13 @@ var _CPMenuBarVisible               = NO,
         }
 
         if ([[item submenu] performKeyEquivalent:anEvent])
+        {
+            // Flash the top-level item if a submenu handled the event
+            if (self === [CPApp mainMenu])
+                [self _flashItemAtIndex:index];
+
             return YES;
+        }
    }
 
    return NO;
@@ -1152,6 +1182,25 @@ var _CPMenuBarVisible               = NO,
     return nil;
 }
 
+//
+/*
+    @ignore
+*/
+- (void)_flashItemAtIndex:(int)anIndex
+{
+    // If we are using a native bridge (like a desktop wrapper), let the OS handle the visual feedback.
+    if ([CPPlatform supportsNativeMainMenu])
+        return;
+
+    [self _highlightItemAtIndex:anIndex];
+    [self performSelector:@selector(_stopFlashingItem) withObject:nil afterDelay:0.2];
+}
+
+- (void)_stopFlashingItem
+{
+    [self _highlightItemAtIndex:CPNotFound];
+}
+
 @end
 
 
@@ -1223,6 +1272,11 @@ var _CPMenuBarVisible               = NO,
         postNotificationName:CPMenuDidAddItemNotification
                       object:self
                     userInfo:@{ @"CPMenuItemIndex": anIndex }];
+
+    // FIX #1222: If this is the main menu, force the shared menu bar window to refresh its layout.
+    // This ensures new items are positioned correctly (e.g. not pushed to the far right by previous layout states).
+    if (self === [CPApp mainMenu] && _CPMenuBarSharedWindow)
+        [_CPMenuBarSharedWindow setMenu:self];
 }
 
 - (void)removeObjectFromItemsAtIndex:(CPUInteger)anIndex
@@ -1238,6 +1292,10 @@ var _CPMenuBarVisible               = NO,
         postNotificationName:CPMenuDidRemoveItemNotification
                       object:self
                     userInfo:@{ @"CPMenuItemIndex": anIndex }];
+    
+    // FIX #1222: Ensure the shared menu bar updates layout when items are removed.
+    if (self === [CPApp mainMenu] && _CPMenuBarSharedWindow)
+        [_CPMenuBarSharedWindow setMenu:self];
 }
 
 @end
@@ -1331,4 +1389,3 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 
 @import "_CPMenuBarWindow.j"
 @import "_CPMenuWindow.j"
-

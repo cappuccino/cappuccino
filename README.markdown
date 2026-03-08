@@ -8,7 +8,7 @@ Cappuccino is an open-source framework that supports building powerful, desktop-
 Cappuccino faithfully implements the proven design patterns of NeXTSTEP/Apple's Cocoa frameworks, enabling the creation of incredibly complex and reliable applications with a fraction of the code.
 
 > **✨ Project Status: Active Development & Node.js Transition**
-> Cappuccino has been under continuous development since 2008 and is actively maintained. A major transition to a modern, **Node.js-based toolchain** has recently been finalized. The current release is a production-ready Release Candidate, with a formal release scheduled for 2025. It is stable, fast, and ready for new projects.
+> Cappuccino has been under continuous development since 2008 and is actively maintained. A major transition to a modern, **Node.js-based toolchain** has recently been finalized. The current release is a production-ready Release Candidate, with a formal release scheduled for 2026. It is stable, fast, and ready for new projects.
 
 ---
 
@@ -16,7 +16,7 @@ Cappuccino faithfully implements the proven design patterns of NeXTSTEP/Apple's 
 
 Cappuccino is not intended for building simple websites. It is for building **applications**—especially complex, data-rich, line-of-business tools where productivity and user experience are paramount.
 
-*   **💻 True Desktop Behavior, Out-of-the-Box:** Applications built with Cappuccino behave like native desktop software by default. This includes a rich palette of UI controls, **full keyboard navigation and focus management**, and **multi-level undo/redo support** — as you can see in this [Demo application](https://ansb.uniklinik-freiburg.de/UIBuilder/index.html). Also take a look at the [Kitchen Sink demo](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink).
+*   **💻 True Desktop Behavior, Out-of-the-Box:** Applications built with Cappuccino behave like native desktop software by default. This includes a rich palette of UI controls, **full keyboard navigation and focus management**, and **multi-level undo/redo support** — as you can see in this [Showcase application](https://ansb.uniklinik-freiburg.de/ThemeKitchenSinkA3). Also take a look at the [Cookbook tutorial](https://cappuccino-cookbook.5apps.com/).
 *   **🚀 Incredible Productivity:** Less code is needed. High-level abstractions and a powerful object-oriented model mean development is focused on application logic, not browser quirks.
 *   **🏛️ Stable & Mature:** Built on decades of proven API design from Cocoa®, Cappuccino provides a stable foundation, free from the churn common in the JavaScript ecosystem.
 *   **🧱 True Object-Oriented Architecture:** Objective-J's message-passing architecture promotes loose coupling and clean design, making large-scale applications easier to build and maintain.
