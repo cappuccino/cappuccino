@@ -68,7 +68,11 @@ var CPTextFieldDOMCurrentElement = nil,
     CPTextFieldCachedDragFunction = nil,
     CPTextFieldBlurHandler = nil,
     CPTextFieldInputFunction = nil,
-    CPTexFieldCurrentCSSSelectableField = nil;
+    CPTexFieldCurrentCSSSelectableField = nil,
+    CPTextFieldLastValidationFailureEvent = nil,
+    CPTextFieldLastValidationFailureString = nil,
+    CPTextFieldLastValidationFailureField = nil,
+    CPTextFieldLastValidationFailureResult = NO;
 
 var CPSecureTextFieldCharacter = "\u2022";
 
@@ -991,7 +995,26 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         var acceptInvalidValue = NO;
 
         if (_implementedDelegateMethods & CPTextFieldDelegate_control_didFailToFormatString_errorDescription_)
-            acceptInvalidValue = [_delegate control:self didFailToFormatString:aValue errorDescription:error];
+        {
+            var currentEvent = [CPApp currentEvent];
+
+            if (currentEvent &&
+                CPTextFieldLastValidationFailureField === self &&
+                CPTextFieldLastValidationFailureString === aValue &&
+                CPTextFieldLastValidationFailureEvent === currentEvent)
+            {
+                acceptInvalidValue = CPTextFieldLastValidationFailureResult;
+            }
+            else
+            {
+                acceptInvalidValue = [_delegate control:self didFailToFormatString:aValue errorDescription:error];
+
+                CPTextFieldLastValidationFailureField = self;
+                CPTextFieldLastValidationFailureString = aValue;
+                CPTextFieldLastValidationFailureEvent = currentEvent;
+                CPTextFieldLastValidationFailureResult = acceptInvalidValue;
+            }
+        }
 
         if (acceptInvalidValue === NO)
             return NO;
