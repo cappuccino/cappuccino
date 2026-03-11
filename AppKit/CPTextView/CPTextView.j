@@ -193,6 +193,21 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #pragma mark -
 #pragma mark Class methods
 
+// ADDED: Theming support
++ (CPString)defaultThemeClass
+{
+    return @"textview";
+}
+
++ (CPDictionary)themeAttributes
+{
+    return @{
+            @"background-color": [CPColor textBackgroundColor],
+            @"content-inset": CGSizeMake(2, 0),
+            @"text-color": [CPColor textColor]
+        };
+}
+
 /* <!> FIXME
     just a testing characterSet
     all of this depend of the current language.
@@ -212,7 +227,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self setEditable:YES];
         [self setSelectable:YES];
         [self setRichText:NO];
-        [self setBackgroundColor:[CPColor whiteColor]];
+        // Removed hardcoded background color. Theming now handles this via _updateThemeState,
+        // which is triggered by setEditable: during initialization.
 
         _usesFontPanel = YES;
         _allowsUndo = YES;
@@ -220,9 +236,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _selectedTextAttributes = [CPDictionary dictionaryWithObject:[CPColor selectedTextBackgroundColor]
                                                               forKey:CPBackgroundColorAttributeName];
 
-        _insertionPointColor = [CPColor blackColor];
+        _insertionPointColor = [CPColor insertionPointColor];
 
-        _textColor = [CPColor blackColor];
+        _textColor = [CPColor textColor];
         _font = [CPFont systemFontOfSize:12.0];
         [self setFont:_font];
 
@@ -246,6 +262,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #endif
 
     _selectionRange = CPMakeRange(0, 0);
+    // The text container inset is now set from the theme in _updateThemeState.
+    // We set a default here, which will be overridden by the theme on initialization.
     _textContainerInset = CGSizeMake(2, 0);
     _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
 
@@ -575,6 +593,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [self _resignFirstResponder];
 
+    // Call super to ensure proper responder chain cleanup and theme state update (removes CPThemeStateEditing).
+    [super resignFirstResponder];
+
     return YES;
 }
 
@@ -736,6 +757,17 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return [_textStorage string];
 }
 
+// ADDED: Override setEditable to manage theme state
+- (void)setEditable:(BOOL)aFlag
+{
+    [super setEditable:aFlag];
+
+    if (![self isEditable])
+        [self setThemeState:CPThemeStateDisabled];
+    else
+        [self unsetThemeState:CPThemeStateDisabled];
+}
+
 - (void)setTextContainer:(CPTextContainer)aContainer
 {
     _textContainer = aContainer;
@@ -751,6 +783,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     _textContainerInset = aSize;
     [self invalidateTextContainerOrigin];
+    [self setNeedsDisplay:YES];
 }
 
 - (void)invalidateTextContainerOrigin
@@ -912,6 +945,24 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
         [_caret setVisibility:NO];
 #endif
+}
+
+- (void)_updateThemeState
+{
+    [super _updateThemeState];
+
+#if PLATFORM(DOM)
+    // Allow themes to use background images/patterns by making the element background transparent.
+    _DOMElement.style.background = "transparent";
+#endif
+
+    // Apply the background color from the theme.
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
+
+    // Apply the content inset from the theme.
+    var inset = [self currentValueForThemeAttribute:@"content-inset"] || CGSizeMakeZero();
+    if (!CGSizeEqualToSize(inset, _textContainerInset))
+        [self setTextContainerInset:inset];
 }
 
 
@@ -1140,7 +1191,9 @@ Sets the selection to a range of characters in response to user action.
         dragPlaceholder = [[CPTextView alloc] initWithFrame:_frame];
         [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
 
-        [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
+        // Removed hardcoded background color. The placeholder is a new CPTextView
+        // instance and will be themed automatically on initialization.
+
         [dragPlaceholder setAlphaValue:0.5];
 
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
@@ -1171,6 +1224,18 @@ Sets the selection to a range of characters in response to user action.
     // Save old selection so we can only send textViewDidChangeTypingAttribute notification when selection is changed on mouse up.
     _mouseDownOldSelection = _selectionRange;
     [self setSelectedRange:setRange affinity:0 stillSelecting:YES];
+}
+
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    [super mouseEntered:anEvent];
+    [self setThemeState:CPThemeStateHovered];
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    [super mouseExited:anEvent];
+    [self unsetThemeState:CPThemeStateHovered];
 }
 
 - (CPMenu)menuForEvent:(CPEvent)anEvent
@@ -2374,7 +2439,8 @@ Sets the selection to a range of characters in response to user action.
 
     _placeholderString = aString;
 
-    [self setString:[[CPAttributedString alloc] initWithString:_placeholderString attributes:@{CPForegroundColorAttributeName:[CPColor colorWithRed:0.66 green:0.66 blue:0.66 alpha:1]}]];
+    // Use themeable color for placeholder text.
+    [self setString:[[CPAttributedString alloc] initWithString:_placeholderString attributes:@{CPForegroundColorAttributeName:[CPColor disabledControlTextColor]}]];
 }
 
 - (void)_continuouslyReverseSetBinding
@@ -2509,7 +2575,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
         _typingAttributes = [[_textStorage attributesAtIndex:0 effectiveRange:nil] copy];
 
         if (![_typingAttributes valueForKey:CPForegroundColorAttributeName])
-            [_typingAttributes setObject:[CPColor blackColor] forKey:CPForegroundColorAttributeName];
+            [_typingAttributes setObject:[CPColor textColor] forKey:CPForegroundColorAttributeName];
 
         _textColor = [_typingAttributes valueForKey:CPForegroundColorAttributeName];
         [self setFont:[_typingAttributes valueForKey:CPFontAttributeName]];
