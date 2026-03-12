@@ -2288,14 +2288,27 @@ var themedButtonValues                      = nil,
                                                             }],
     hudKnobCssColor = [CPColor colorWithCSSDictionary:@{
                                                             @"background-color": @"rgba(255, 255, 255, 0.35)",
-                                                            @"border-radius": @"3px",
-                                                            @"border": @"1px solid rgba(0,0,0,0.2)"
+                                                            @"border-radius": @"4px",
+                                                            @"border": @"1px solid rgba(0,0,0,0.2)",
+                                                            @"box-sizing": @"border-box",
+                                                            @"transition-duration": @"0.2s",
+                                                            @"transition-property": @"background-color"
                                                         }],
 
-    // HUD Track (Transparent/Dark)
+    // Brightened color for hover state
+    hudKnobHoverCssColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(255, 255, 255, 0.6)",
+                                                            @"border-radius": @"4px",
+                                                            @"border": @"1px solid rgba(0,0,0,0.2)",
+                                                            @"box-sizing": @"border-box",
+                                                            @"transition-duration": @"0.2s",
+                                                            @"transition-property": @"background-color"
+                                                        }],
+
+    // HUD Track (Replaced border-radius with border-left to prevent weird gaps)
     hudTrackCssColor = [CPColor colorWithCSSDictionary:@{
                                                             @"background-color": @"rgba(0, 0, 0, 0.15)",
-                                                            @"border-radius": @"3px"
+                                                            @"border-left": @"1px solid rgba(255, 255, 255, 0.1)"
                                                         }],
 
     themedVerticalScrollerValues =
@@ -2320,16 +2333,17 @@ var themedButtonValues                      = nil,
      [@"knob-inset",             CGInsetMake(3.0, 3.0, 3.0, 4.0),    [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
      [@"track-inset",            CGInsetMake(0.0, 0.0, 0.0, 0.0),    [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
      [@"track-border-overlay",   0.0,                                [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
-     [@"knob-slot-color",        trackCssColorLegacy,                   [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
-     [@"knob-color",             knobCssColorLegacy,                    [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
-     [@"knob-color",             knobCssColorLegacyOver,                    [CPThemeStateVertical, CPThemeStateScrollViewLegacy, CPThemeStateSelected]],
-     [@"decrement-line-size",    CGSizeMakeZero(),             [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
-     [@"increment-line-size",    CGSizeMakeZero(),             [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
+     [@"knob-slot-color",        trackCssColorLegacy,                [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
+     [@"knob-color",             knobCssColorLegacy,                 [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
+     [@"knob-color",             knobCssColorLegacyOver,             [CPThemeStateVertical, CPThemeStateScrollViewLegacy, CPThemeStateSelected]],
+     [@"decrement-line-size",    CGSizeMakeZero(),[CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
+     [@"increment-line-size",    CGSizeMakeZero(),[CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
 
-     // HUD
-     [@"knob-color",  hudKnobCssColor,  [CPThemeStateVertical, CPThemeStateHUD]],
-     [@"knob-slot-color", hudTrackCssColor, [CPThemeStateHUD, CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
-     [@"knob-color",  hudKnobCssColor,  [CPThemeStateHUD, CPThemeStateVertical, CPThemeStateScrollViewLegacy]]
+     // HUD (Overlay + Legacy mappings + Hover mappings)[@"knob-color",  hudKnobCssColor,      [CPThemeStateVertical, CPThemeStateHUD]],
+     [@"knob-color",  hudKnobHoverCssColor,[CPThemeStateVertical, CPThemeStateHUD, CPThemeStateSelected]],
+     [@"knob-slot-color", hudTrackCssColor,[CPThemeStateHUD, CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
+     [@"knob-color",  hudKnobCssColor,     [CPThemeStateHUD, CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
+     [@"knob-color",  hudKnobHoverCssColor,[CPThemeStateHUD, CPThemeStateVertical, CPThemeStateScrollViewLegacy, CPThemeStateSelected]]
     ];
 
     [self registerThemeValues:themedVerticalScrollerValues forView:scroller];
@@ -2383,14 +2397,27 @@ var themedButtonValues                      = nil,
                                                             }],
     hudKnobCssColor = [CPColor colorWithCSSDictionary:@{
                                                             @"background-color": @"rgba(255, 255, 255, 0.35)",
-                                                            @"border-radius": @"3px",
-                                                            @"border": @"1px solid rgba(0,0,0,0.2)"
+                                                            @"border-radius": @"4px",
+                                                            @"border": @"1px solid rgba(0,0,0,0.2)",
+                                                            @"box-sizing": @"border-box",
+                                                            @"transition-duration": @"0.2s",
+                                                            @"transition-property": @"background-color"
                                                         }],
 
-    // HUD Track (Transparent/Dark)
-    hudTrackCssColor = [CPColor colorWithCSSDictionary:@{
+    // Brightened color for hover state
+    hudKnobHoverCssColor =[CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(255, 255, 255, 0.6)",
+                                                            @"border-radius": @"4px",
+                                                            @"border": @"1px solid rgba(0,0,0,0.2)",
+                                                            @"box-sizing": @"border-box",
+                                                            @"transition-duration": @"0.2s",
+                                                            @"transition-property": @"background-color"
+                                                        }],
+
+    // HUD Track
+    hudTrackCssColor =[CPColor colorWithCSSDictionary:@{
                                                             @"background-color": @"rgba(0, 0, 0, 0.15)",
-                                                            @"border-radius": @"3px"
+                                                            @"border-top": @"1px solid rgba(255, 255, 255, 0.1)"
                                                         }],
     themedHorizontalScrollerValues =
     [
@@ -2404,26 +2431,29 @@ var themedButtonValues                      = nil,
      [@"track-border-overlay",   9.0],
      [@"knob-slot-color",        [CPNull null]],
      [@"knob-color",             knobCssColor],
-     [@"knob-color",             lightKnobCssColor,                       CPThemeStateScrollerKnobLight],
+     [@"knob-color",             lightKnobCssColor,                  CPThemeStateScrollerKnobLight],
      [@"knob-color",             knobCssColor,                       CPThemeStateScrollerKnobDark],
      [@"decrement-line-size",    CGSizeMakeZero()],
      [@"increment-line-size",    CGSizeMakeZero()],
 
      // Legacy
-     [@"scroller-width",         15.0,                               CPThemeStateScrollViewLegacy],
-     [@"knob-inset",             CGInsetMake(4.0, 3.0, 3.0, 3.0),    CPThemeStateScrollViewLegacy],
-     [@"track-inset",            CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateScrollViewLegacy],
-     [@"track-border-overlay",   0.0,                                CPThemeStateScrollViewLegacy],
-     [@"knob-slot-color",        trackCssColorLegacy,                   CPThemeStateScrollViewLegacy],
-     [@"knob-color",             knobCssColorLegacy,                    CPThemeStateScrollViewLegacy],
-     [@"knob-color",             knobCssColorLegacyOver,                    [CPThemeStateScrollViewLegacy, CPThemeStateSelected]],
-     [@"decrement-line-size",    CGSizeMakeZero(),             CPThemeStateScrollViewLegacy],
-     [@"increment-line-size",    CGSizeMakeZero(),             CPThemeStateScrollViewLegacy],
+     [@"scroller-width",         15.0,                              CPThemeStateScrollViewLegacy],
+     [@"knob-inset",             CGInsetMake(4.0, 3.0, 3.0, 3.0),   CPThemeStateScrollViewLegacy],
+     [@"track-inset",            CGInsetMake(0.0, 0.0, 0.0, 0.0),   CPThemeStateScrollViewLegacy],
+     [@"track-border-overlay",   0.0,                               CPThemeStateScrollViewLegacy],
+     [@"knob-slot-color",        trackCssColorLegacy,               CPThemeStateScrollViewLegacy],
+     [@"knob-color",             knobCssColorLegacy,                CPThemeStateScrollViewLegacy],
+     [@"knob-color",             knobCssColorLegacyOver,            [CPThemeStateScrollViewLegacy, CPThemeStateSelected]],
+     [@"decrement-line-size",    CGSizeMakeZero(),                  CPThemeStateScrollViewLegacy],
+     [@"increment-line-size",    CGSizeMakeZero(),                  CPThemeStateScrollViewLegacy],
 
-     // HUD
-     [@"knob-color",  hudKnobCssColor,  CPThemeStateHUD],
+     // HUD (Overlay + Legacy mappings + Hover mappings)
+     [@"knob-color",  hudKnobCssColor,      CPThemeStateHUD],
+     [@"knob-color",  hudKnobHoverCssColor, [CPThemeStateHUD, CPThemeStateSelected]],
+
      [@"knob-slot-color", hudTrackCssColor, [CPThemeStateHUD, CPThemeStateScrollViewLegacy]],
-     [@"knob-color",  hudKnobCssColor,  [CPThemeStateHUD, CPThemeStateScrollViewLegacy]]
+     [@"knob-color",  hudKnobCssColor,      [CPThemeStateHUD, CPThemeStateScrollViewLegacy]],
+     [@"knob-color",  hudKnobHoverCssColor, [CPThemeStateHUD, CPThemeStateScrollViewLegacy, CPThemeStateSelected]]
     ];
 
     [self registerThemeValues:themedHorizontalScrollerValues forView:scroller];
