@@ -475,6 +475,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (!stringForPasting)
         return;
 
+    if (![stringForPasting isKindOfClass:[CPAttributedString class]])
+        stringForPasting = [[CPAttributedString alloc] initWithString:stringForPasting attributes:nil];
+
     var shouldUseSmartPasting = [self _shouldUseSmartPasting];
 
     if (shouldUseSmartPasting)
