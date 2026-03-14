@@ -349,6 +349,12 @@ CPTokenFieldDeleteButtonType     = 1;
     if (theBinding)
         [theBinding reverseSetValueFor:@"objectValue"];
 
+    if (!_isEditing)
+    {
+        _isEditing = YES;
+        [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    }
+
     [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
 
     _shouldNotifyTarget = YES;
@@ -497,6 +503,8 @@ CPTokenFieldDeleteButtonType     = 1;
     [self _setObserveWindowKeyNotifications:NO];
 
     [self _resignFirstKeyResponder];
+
+    _isEditing = NO;
 
     if (_shouldNotifyTarget)
     {
@@ -1031,6 +1039,16 @@ CPTokenFieldDeleteButtonType     = 1;
 #if PLATFORM(DOM)
     CPTokenFieldTextDidChangeValue = [self stringValue];
 #endif
+
+    // Has to be enabled, and it also has to be editable or selectable.
+    if (![self isEnabled] || !([self isEditable] || [self isSelectable]))
+        return;
+
+    if ([self isEditable] && !_isEditing)
+    {
+        _isEditing = YES;
+        [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    }
 
     // Leave the default _propagateCurrentDOMEvent setting in place. This might be YES or NO depending
     // on if something that could be a browser shortcut was pressed or not, such as Cmd-R to reload.
