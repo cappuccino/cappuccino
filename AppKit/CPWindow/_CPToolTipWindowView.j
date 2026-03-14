@@ -25,10 +25,9 @@
 
 @implementation _CPToolTipWindowView : _CPWindowView
 {
-    BOOL            _mouseDownPressed   @accessors(getter=isMouseDownPressed, setter=setMouseDownPressed:);
-    unsigned        _gravity            @accessors(property=gravity);
+    BOOL        _mouseDownPressed   @accessors(getter=isMouseDownPressed, setter=setMouseDownPressed:);
+    unsigned    _gravity            @accessors(property=gravity);
 }
-
 
 #pragma mark -
 #pragma mark Class methods
@@ -41,21 +40,30 @@
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"stroke-color": [CPColor colorWithHexString:@"E3E3E3"],
-            @"background-color": [CPColor colorWithHexString:@"FFFFCA"],
-            @"border-radius": 2.0,
-            @"stroke-width": 1.0,
-            @"color": [CPColor blackColor],
-        };
+        // 1. The DOM-based CSS rendering attributes. 
+        // _CPWindowView will natively apply this to the outer window bounds.
+        @"bezel-color":[CPColor colorWithCSSDictionary:@{
+            @"background-color": @"#FFFFCA",
+            @"border": @"1px solid #B0B0B0",
+            @"border-radius": @"2px",
+            @"box-sizing": @"border-box",
+            @"box-shadow": @"0px 1px 3px rgba(0,0,0,0.25)"
+        }],
+        @"color": [CPColor blackColor],
+        
+        // 2. Legacy attributes zeroed out to satisfy the build process/theme inheritance
+        @"background-color": [CPColor clearColor],
+        @"stroke-color": [CPColor clearColor],
+        @"stroke-width": 0.0,
+        @"border-radius": 0.0
+    };
 }
 
-/*! compute the contentView frame from a given window frame
-    @param aFrameRect the window frame
-*/
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
     var contentRect = [super contentRectForFrameRect:aFrameRect];
 
+    // This pushes the text inwards so it doesn't touch the outer CSS border
     contentRect.origin.x += 3;
     contentRect.origin.y += 3;
     contentRect.size.width -= 6;
@@ -64,50 +72,34 @@
     return contentRect;
 }
 
-/*! compute the window frame from a given contentView frame
-    @param aContentRect the contentView frame
-*/
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
     var aFrameRect = CGRectMakeCopy(aContentRect);
 
     aFrameRect.origin.x -= 3;
     aFrameRect.origin.y -= 3;
-    aFrameRect.size.width += 6;
-    aFrameRect.size.height += 6;
+    aFrameRect.size.width += 9;
+    aFrameRect.size.height += 9;
 
     return aFrameRect;
 }
 
-
 #pragma mark -
-#pragma mark drawing
+#pragma mark DOM/CSS Rendering
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+    
+    // Apply the CSS dictionary to the standard CPView subview (contentView).
+    // This bypasses the _CPWindowView canvas interceptor and applies directly to the DOM.
+
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+}
 
 - (void)drawRect:(CGRect)aRect
 {
-    [super drawRect:aRect];
-
-    var context = [[CPGraphicsContext currentContext] graphicsPort],
-        radius = [self currentValueForThemeAttribute:@"border-radius"],
-        strokeWidth = [self currentValueForThemeAttribute:@"stroke-width"],
-        strokeColor = [self currentValueForThemeAttribute:@"stroke-color"],
-        bgColor = [self currentValueForThemeAttribute:@"background-color"];
-
-    CGContextSetStrokeColor(context, strokeColor);
-    CGContextSetFillColor(context, bgColor);
-    CGContextSetLineWidth(context, strokeWidth);
-
-    aRect.origin.x += strokeWidth;
-    aRect.origin.y += strokeWidth;
-    aRect.size.width -= strokeWidth * 2;
-    aRect.size.height -= strokeWidth * 2;
-
-    var path = CGPathWithRoundedRectangleInRect(aRect, radius, radius, YES, YES, YES, YES);
-    CGContextAddPath(context, path);
-    CGContextStrokePath(context);
-
-    CGContextAddPath(context, path);
-    CGContextFillPath(context);
+    // Intentionally empty to disable legacy Canvas drawing.
 }
 
 @end

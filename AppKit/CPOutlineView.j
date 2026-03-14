@@ -23,6 +23,7 @@
 @import "CPButton.j"
 @import "CPTableColumn.j"
 @import "CPTableView.j"
+@import "CPViewAnimation.j"
 
 @global CPApp
 
@@ -285,6 +286,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     CPArray                         _pendingItemToClean;
     CPArray                         _itemAddedDuringLastLoading;
+
+    CPIndexSet                      _animatingDisclosureRows;
+
+    BOOL                            _animates @accessors(property=animates);
+    CPViewAnimation                 _rowsAnimation;
+    CPArray                         _animationGhosts;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -315,6 +322,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         [super setDelegate:self];
 
         [self setDisclosureControlPrototype:[[CPDisclosureButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 10.0)]];
+
+        _animatingDisclosureRows = [CPIndexSet indexSet];
+        _animates = YES;
     }
 
     return self;
@@ -325,12 +335,22 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _BlockDeselectView = function(view, row, column)
     {
         [view unsetThemeState:CPThemeStateSelectedDataView];
+        // Ensure we clear the focus state so the text goes back to normal color
+        [view unsetThemeState:CPThemeStateFirstResponder];
+        
         [_disclosureControlsForRows[row] unsetThemeState:CPThemeStateSelected];
     };
 
     _BlockSelectView = function(view, row, column)
     {
         [view setThemeState:CPThemeStateSelectedDataView];
+
+        // If the table is focused, apply the state that turns text white immediately
+        if ([self _isFocused])
+            [view setThemeState:CPThemeStateFirstResponder];
+        else
+            [view unsetThemeState:CPThemeStateFirstResponder];
+
         [_disclosureControlsForRows[row] setThemeState:CPThemeStateSelected];
     };
 }
@@ -482,6 +502,60 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     return itemInfo.shouldShowOutlineDisclosureControl;
 }
 
+- (void)_noteDisclosureAnimationWillStartForRow:(CPInteger)aRow
+{
+    [_animatingDisclosureRows addIndex:aRow];
+    // We do not need to setNeedsDisplay here because the button itself 
+    // will trigger a redraw when its state changes or when the animation setup occurs.
+}
+
+- (void)_noteDisclosureAnimationDidStopForRow:(CPInteger)aRow
+{
+    [_animatingDisclosureRows removeIndex:aRow];
+    
+    // Explicitly find the button for this row and force it to redraw.
+    // The button was returning early from drawRect during the animation.
+    // Now that the flag is cleared, we must tell it to paint again.
+    if (_disclosureControlsForRows && aRow < _disclosureControlsForRows.length)
+    {
+        var button = _disclosureControlsForRows[aRow];
+
+        if (button)
+            [button display];
+    }
+}
+- (BOOL)_isRowAnimatingDisclosure:(CPInteger)aRow
+{
+    return [_animatingDisclosureRows containsIndex:aRow];
+}
+
+- (CPInteger)rowForView:(CPView)aView
+{
+    // 1. Try the standard lookup (for normal cells)
+    var row = [super rowForView:aView];
+
+    if (row !== CPNotFound)
+        return row;
+
+    // 2. If not found, check if it is a disclosure button
+    if ([aView isKindOfClass:[CPDisclosureButton class]])
+    {
+        // Check the list of active disclosure buttons
+        // _disclosureControlsForRows is a native JS array, so we use indexOf
+        var index = _disclosureControlsForRows.indexOf(aView);
+
+        if (index > -1)
+            return index;
+
+        // 3. Check if it is an animation clone (from the fix in the previous step)
+        // The clone is not in the array, but it carries the row index.
+        if (aView._animatingRowIndex !== undefined && aView._animatingRowIndex !== null)
+            return aView._animatingRowIndex;
+    }
+
+    return CPNotFound;
+}
+
 /*!
     Used to find if an item is already expanded.
 
@@ -621,6 +695,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 */
 - (void)expandItem:(id)anItem expandChildren:(BOOL)shouldExpandChildren
 {
+    var oldRowCount = [self numberOfRows],
+        parentIndex = [self rowForItem:anItem];
+
     if ([self _delegateRespondsToShouldExpandItem])
         if ([_outlineViewDelegate outlineView:self shouldExpandItem:anItem] == NO)
             return;
@@ -663,7 +740,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         if (rowCountDelta)
         {
             var selection = [self selectedRowIndexes],
-                expandIndex = [self rowForItem:anItem] + 1;
+                expandIndex = parentIndex + 1;
 
             if ([selection intersectsIndexesInRange:CPMakeRange(expandIndex, _itemsForRows.length)])
             {
@@ -690,6 +767,17 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         if (r === CPOutlineViewCoalesceSelectionNotificationStateDid)
             [self _noteSelectionDidChange];
     }
+
+    // FIX: Animation logic moved to the end to match Version 1 behavior.
+    // This ensures views are ready and handles both single and recursive expansion.
+    var newRowCount = [self numberOfRows],
+        addedCount = newRowCount - oldRowCount;
+
+    if (_animates && addedCount > 0)
+    {
+        [self layoutSubviews]; // Force views to spawn so we can animate them
+        [self _animateExpandFromIndex:parentIndex addedCount:addedCount];
+    }
 }
 
 /*!
@@ -702,29 +790,30 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if (!anItem)
         return;
 
+    var collapseTopIndex = [self rowForItem:anItem];
+
+    // FIX 1: Safety check to prevent "jumping". 
+    // If the parent row isn't found or invisible, we cannot animate.
+    if (collapseTopIndex === CPNotFound || collapseTopIndex < 0)
+        return;
+
     if ([self _delegateRespondsToShouldCollapseItem])
         if ([_outlineViewDelegate outlineView:self shouldCollapseItem:anItem] == NO)
             return;
 
     var itemInfo = _itemInfosForItems[[anItem UID]];
 
-    if (!itemInfo)
+    if (!itemInfo || !itemInfo.isExpanded)
         return;
 
-    if (!itemInfo.isExpanded)
-        return;
-
-    // Don't spam notifications.
     _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOn;
 
     [self _noteItemWillCollapse:anItem];
-    // Update selections:
-    // * Deselect items inside the collapsed item.
-    // * Shift row selections below the collapsed item so that the same logical items remain selected.
-    var collapseTopIndex = [self rowForItem:anItem],
-        topLevel = [self levelForRow:collapseTopIndex],
+
+    var topLevel = [self levelForRow:collapseTopIndex],
         collapseEndIndex = collapseTopIndex;
 
+    // Calculate how many items are being removed
     while (collapseEndIndex + 1 < _itemsForRows.length && [self levelForRow:collapseEndIndex + 1] > topLevel)
         collapseEndIndex++;
 
@@ -738,29 +827,285 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         {
             [self _noteSelectionIsChanging];
             [selection removeIndexesInRange:collapseRange];
-            [self _setSelectedRowIndexes:selection]; // _noteSelectionDidChange will be suppressed.
+            [self _setSelectedRowIndexes:selection]; 
         }
 
-        // Shift any selected rows below upwards.
         if ([selection intersectsIndexesInRange:CPMakeRange(collapseEndIndex + 1, _itemsForRows.length)])
         {
             [self _noteSelectionIsChanging];
             [selection shiftIndexesStartingAtIndex:collapseEndIndex + 1 by:-collapseRange.length];
-            [self _setSelectedRowIndexes:selection]; // _noteSelectionDidChange will be suppressed.
+            [self _setSelectedRowIndexes:selection];
         }
     }
 
-    itemInfo.isExpanded = NO;
+    // Capture visual ghosts BEFORE the data is removed
+    var ghosts = nil;
+    if (_animates && collapseRange.length > 0)
+        ghosts = [self _createGhostsForRowsFrom:collapseRange.location to:CPMaxRange(collapseRange) - 1];
 
+    // Collapse the model
+    itemInfo.isExpanded = NO;
     [self reloadItem:anItem reloadChildren:YES];
     [self _noteItemDidCollapse:anItem];
 
-    // Send selection notifications only after the items have loaded so that
-    // the new selection is consistent with the actual rows for any observers.
+    // Trigger Animation
+    if (_animates && collapseRange.length > 0)
+    {
+        [self layoutSubviews]; 
+        [self _animateCollapseFromIndex:collapseTopIndex removedCount:collapseRange.length ghosts:ghosts];
+    }
+
     var r = _coalesceSelectionNotificationState;
     _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOff;
+
     if (r === CPOutlineViewCoalesceSelectionNotificationStateDid)
         [self _noteSelectionDidChange];
+}
+
+- (void)_animateCollapseFromIndex:(CPInteger)parentIndex removedCount:(CPInteger)removedCount ghosts:(CPArray)ghosts
+{
+    // FIX 2: Ensure we don't animate if parent is invalid
+    if (parentIndex < 0)
+        return;
+
+    if (_rowsAnimation && [_rowsAnimation isAnimating])
+        [_rowsAnimation stopAnimation];
+
+    var viewAnimations = [],
+        // The Y position the ghosts will slide INTO (the parent row's Y position)
+        parentY = [self frameOfDataViewAtColumn:0 row:parentIndex].origin.y;
+
+    // Calculate shift offset based on ghost height or row height
+    var shiftOffset = 0;
+    if (ghosts && ghosts.length > 0)
+    {
+        var firstGhostFrame = [ghosts[0] frame],
+            maxY = CGRectGetMaxY(firstGhostFrame);
+        for(var i = 1; i < ghosts.length; i++)
+            maxY = MAX(maxY, CGRectGetMaxY([ghosts[i] frame]));
+        shiftOffset = maxY - firstGhostFrame.origin.y;
+    }
+    else
+    {
+        shiftOffset = removedCount * [self rowHeight];
+    }
+
+    // 1. Ghost views slide up into parent and fade out
+    if (ghosts)
+    {
+        for (var i = 0; i < ghosts.length; i++)
+        {
+            var ghost = ghosts[i],
+                startFrame = [ghost frame],
+                targetFrame = CGRectMake(startFrame.origin.x, parentY, startFrame.size.width, startFrame.size.height);
+            
+            // FIX 3: Removed [self addSubview:positioned:relativeTo:] 
+            // Ghosts remain at the top of the view stack (where they were created) 
+            // ensuring they are visible and don't get hidden behind the background.
+            
+            [viewAnimations addObject:@{
+                CPViewAnimationTargetKey: ghost,
+                CPViewAnimationStartFrameKey: startFrame,
+                CPViewAnimationEndFrameKey: targetFrame,
+                CPViewAnimationEffectKey: CPViewAnimationFadeOutEffect
+            }];
+        }
+    }
+
+    // 2. Siblings (rows below the collapsed group) slide UP to fill the gap
+    var columns = [self tableColumns],
+        colIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, columns.length)],
+        startIndex = parentIndex + 1,
+        rowCount = [self numberOfRows];
+    
+    // FIX 4: Only animate rows that actually exist after the parent
+    if (startIndex < rowCount)
+    {
+        var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startIndex, rowCount - startIndex)];
+        
+        [self _enumerateViewsInRows:rowIndexes columns:colIndexes usingBlock:function(view, row, column, stop) {
+            
+            var targetFrame = [view frame];
+            
+            // Siblings start lower (at target Y + shift) and move UP to target Y
+            var startFrame = CGRectMake(targetFrame.origin.x, targetFrame.origin.y + shiftOffset, targetFrame.size.width, targetFrame.size.height);
+            
+            [view setFrame:startFrame];
+            
+            [viewAnimations addObject:@{
+                CPViewAnimationTargetKey: view,
+                CPViewAnimationStartFrameKey: startFrame,
+                CPViewAnimationEndFrameKey: targetFrame
+            }];
+        }];
+        
+        // Also animate disclosure triangles for the siblings
+        var disclosureRows = [];
+        [rowIndexes getIndexes:disclosureRows maxCount:-1 inIndexRange:nil];
+        
+        for (var i = 0; i < disclosureRows.length; i++)
+        {
+            var btn = _disclosureControlsForRows[disclosureRows[i]];
+            if (btn)
+            {
+                var targetBtnFrame = [btn frame],
+                    startBtnFrame = CGRectMake(targetBtnFrame.origin.x, targetBtnFrame.origin.y + shiftOffset, targetBtnFrame.size.width, targetBtnFrame.size.height);
+                
+                [btn setFrame:startBtnFrame];
+                
+                [viewAnimations addObject:@{
+                    CPViewAnimationTargetKey: btn,
+                    CPViewAnimationStartFrameKey: startBtnFrame,
+                    CPViewAnimationEndFrameKey: targetBtnFrame
+                }];
+            }
+        }
+    }
+
+    [self _runAnimation:viewAnimations withGhosts:ghosts];
+}
+
+// MARK: - CPRuleEditor Style Animations
+
+- (CPArray)_createGhostsForRowsFrom:(CPInteger)startRow to:(CPInteger)endRow
+{
+    var ghosts = [];
+    var columns = [self tableColumns];
+    var rowIndexes =[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startRow, endRow - startRow + 1)];
+    var colIndexes =[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, columns.length)];[self _enumerateViewsInRows:rowIndexes columns:colIndexes usingBlock:function(view, row, column, stop) {
+        var ghost = [[CPView alloc] initWithFrame:[view frame]];
+        if (view._DOMElement)
+            ghost._DOMElement.innerHTML = view._DOMElement.innerHTML;
+        [self addSubview:ghost];
+        [ghosts addObject:ghost];
+    }];
+    
+    var disclosureRows = [];[rowIndexes getIndexes:disclosureRows maxCount:-1 inIndexRange:nil];
+    for (var i = 0; i < disclosureRows.length; i++)
+    {
+        var btn = _disclosureControlsForRows[disclosureRows[i]];
+        if (btn)
+        {
+            var ghostBtn = [[CPView alloc] initWithFrame:[btn frame]];
+            if (btn._DOMElement)
+                ghostBtn._DOMElement.innerHTML = btn._DOMElement.innerHTML;[self addSubview:ghostBtn];
+            [ghosts addObject:ghostBtn];
+        }
+    }
+    
+    return ghosts;
+}
+
+- (void)_animateExpandFromIndex:(CPInteger)parentIndex addedCount:(CPInteger)addedCount
+{
+    if (_rowsAnimation && [_rowsAnimation isAnimating])[_rowsAnimation stopAnimation];
+
+    var viewAnimations = [];
+    var columns = [self tableColumns];
+    var colIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, columns.length)];
+    
+    var startIndex = parentIndex + 1;
+    var rowIndexes =[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startIndex, [self numberOfRows] - startIndex)];
+    var parentY = parentIndex >= 0 ? [self frameOfDataViewAtColumn:0 row:parentIndex].origin.y : 0;
+    
+    // Safely calculate the shift gap even with variable row heights
+    var shiftOffset = 0;
+    if (addedCount > 0 && (startIndex + addedCount) < [self numberOfRows])
+    {
+        var firstNewTarget = [self frameOfDataViewAtColumn:0 row:startIndex].origin.y;
+        var firstDisplacedTarget = [self frameOfDataViewAtColumn:0 row:startIndex + addedCount].origin.y;
+        shiftOffset = firstDisplacedTarget - firstNewTarget;
+    }
+    else
+        shiftOffset = addedCount * [self rowHeight];[self _enumerateViewsInRows:rowIndexes columns:colIndexes usingBlock:function(view, row, column, stop) {
+        var isNewRow = (row < startIndex + addedCount);
+        var targetFrame = [view frame];
+        var startFrame;
+        var animDict = @{ CPViewAnimationTargetKey: view, CPViewAnimationEndFrameKey: targetFrame };
+
+        if (isNewRow)
+        {
+            startFrame = CGRectMake(targetFrame.origin.x, parentY, targetFrame.size.width, targetFrame.size.height);
+            [animDict setObject:CPViewAnimationFadeInEffect forKey:CPViewAnimationEffectKey];[view setAlphaValue:0.0];
+        }
+        else
+            startFrame = CGRectMake(targetFrame.origin.x, targetFrame.origin.y - shiftOffset, targetFrame.size.width, targetFrame.size.height);
+
+        [view setFrame:startFrame];[animDict setObject:startFrame forKey:CPViewAnimationStartFrameKey];
+        [viewAnimations addObject:animDict];
+    }];
+
+    var disclosureRows = [];
+    [rowIndexes getIndexes:disclosureRows maxCount:-1 inIndexRange:nil];
+    for (var i = 0; i < disclosureRows.length; i++)
+    {
+        var r = disclosureRows[i];
+        var btn = _disclosureControlsForRows[r];
+        if (btn)
+        {
+            var isNewRow = (r < startIndex + addedCount);
+            var targetBtnFrame = [btn frame];
+            var startBtnFrame;
+            var animBtnDict = @{ CPViewAnimationTargetKey: btn, CPViewAnimationEndFrameKey: targetBtnFrame };
+
+            if (isNewRow)
+            {
+                startBtnFrame = CGRectMake(targetBtnFrame.origin.x, parentY, targetBtnFrame.size.width, targetBtnFrame.size.height);[animBtnDict setObject:CPViewAnimationFadeInEffect forKey:CPViewAnimationEffectKey];[btn setAlphaValue:0.0];
+            }
+            else
+                startBtnFrame = CGRectMake(targetBtnFrame.origin.x, targetBtnFrame.origin.y - shiftOffset, targetBtnFrame.size.width, targetBtnFrame.size.height);
+
+            [btn setFrame:startBtnFrame];[animBtnDict setObject:startBtnFrame forKey:CPViewAnimationStartFrameKey];
+            [viewAnimations addObject:animBtnDict];
+        }
+    }
+
+    [self _runAnimation:viewAnimations withGhosts:nil];
+}
+
+- (void)_runAnimation:(CPArray)viewAnimations withGhosts:(CPArray)ghosts
+{
+    // Clean up interrupted animations
+    if (_animationGhosts)
+    {
+        for (var i = 0; i < _animationGhosts.length; i++)
+            [_animationGhosts[i] removeFromSuperview];
+    }
+    _animationGhosts = ghosts;
+
+    if (viewAnimations.length > 0)
+    {
+        _rowsAnimation = [[CPViewAnimation alloc] initWithViewAnimations:viewAnimations];
+        [_rowsAnimation setDuration:0.25];[_rowsAnimation setAnimationCurve:CPAnimationEaseInOut];
+        [_rowsAnimation setDelegate:self];
+        [_rowsAnimation startAnimation];
+    }
+    else if (ghosts)
+    {
+        for (var i = 0; i < ghosts.length; i++)
+            [ghosts[i] removeFromSuperview];
+        _animationGhosts = nil;
+    }
+}
+
+- (void)animationDidEnd:(CPViewAnimation)animation
+{
+    var animations = [animation viewAnimations];
+    
+    for (var i = 0; i < animations.length; i++)
+    {
+        var view = animations[i][CPViewAnimationTargetKey];
+        if (!_animationGhosts || ![_animationGhosts containsObject:view])[view setAlphaValue:1.0]; 
+    }
+
+    if (_animationGhosts)
+    {
+        for (var i = 0; i < _animationGhosts.length; i++)
+            [_animationGhosts[i] removeFromSuperview];
+        _animationGhosts = nil;
+    }
+
+    [self setNeedsLayout];
 }
 
 /*!
@@ -2202,7 +2547,15 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 @implementation CPDisclosureButton : CPButton
 {
-    float _angle;
+    float           _angle;
+
+    // Animation state tracking
+    BOOL            _isAnimatingClone;
+    CPInteger       _animatingRowIndex; 
+    CPOutlineView   _parentOutlineView;
+    
+    DOMElement      _arrowElement;
+    CPString        _lastColorCSS;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -2210,65 +2563,219 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     self = [super initWithFrame:aFrame];
 
     if (self)
+    {
         [self setBordered:NO];
-
+        [self setWantsLayer:YES];
+        [self setHighlightsBy:0];
+        
+        [self _setupDisclosureButton];
+    }
     return self;
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        [self _setupDisclosureButton];
+    }
+    return self;
+}
+
+- (void)_setupDisclosureButton
+{
+    _isAnimatingClone = NO; // Default for real buttons
+
+#if PLATFORM(DOM)
+
+    // Add a dedicated DOM element for the SVG arrow
+    _arrowElement = document.createElement("div");
+    _arrowElement.style.position = "absolute";
+    _arrowElement.style.top = "0px";
+    _arrowElement.style.left = "0px";
+    _arrowElement.style.width = "100%";
+    _arrowElement.style.height = "100%";
+    _arrowElement.style.backgroundPosition = "center center";
+    _arrowElement.style.backgroundRepeat = "no-repeat";
+    // 24px maps the 24x24 viewBox to exact pixels, making the 10x5 path scale perfectly
+    _arrowElement.style.backgroundSize = "24px 24px";
+    _arrowElement.style.pointerEvents = "none";
+    
+    self._DOMElement.appendChild(_arrowElement);
+#endif
+}
+
+- (void)setAngle:(float)anAngle
+{
+    _angle = anAngle;
+    
+    // Rotate the DOM element directly using standard CSS transforms
+    var deg = _angle * (180.0 / Math.PI);
+
+#if PLATFORM(DOM)
+    _arrowElement.style.transform = "rotate(" + deg + "deg)";
+#endif
+
+    [self display];
+}
+
+- (float)angle
+{
+    return _angle;
 }
 
 - (void)setState:(CPInteger)aState
 {
     [super setState:aState];
 
+    // Using setAngle immediately triggers the transform
     if ([self state] === CPOnState)
-        _angle = 0.0;
-
+        [self setAngle:0.0];
     else
-        _angle = -PI_2;
+        [self setAngle:-PI_2];
+}
+
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)point mouseIsUp:(BOOL)mouseIsUp
+{
+    var bounds = [self bounds];
+
+    if (CGRectContainsPoint(bounds, point))
+    {
+        var outlineView = [self superview],
+            row = [outlineView rowForView:self];
+
+        if ([outlineView isKindOfClass:[CPOutlineView class]] && row !== CPNotFound)
+        {
+            // 1. Tell OutlineView to suppress drawing of the real button
+            [outlineView _noteDisclosureAnimationWillStartForRow:row];
+
+            // 2. Create the clone
+            var clone = [[CPDisclosureButton alloc] initWithFrame:[self frame]];
+            
+            [clone setWantsLayer:YES];
+            [clone setThemeState:[self themeState]];
+            [clone unsetThemeState:CPThemeStateHighlighted];
+            [clone setHighlighted:NO];
+            [clone setAngle:_angle];
+            [clone setHitTests:NO];
+            
+            // 3. Mark this as a clone so drawRect knows to draw it
+            clone._isAnimatingClone = YES;
+            clone._animatingRowIndex = row;
+            clone._parentOutlineView = outlineView;[outlineView addSubview:clone positioned:CPWindowAbove relativeTo:self];
+
+            // 4. Calculate angles
+            var isCurrentlyExpanded = ([self state] === CPOnState),
+                targetAngle = isCurrentlyExpanded ? -PI_2 : 0.0;
+
+            // 5. Setup Animation
+            var anim = [CABasicAnimation animationWithKeyPath:@"angle"];
+            [anim setFromValue:_angle];
+            [anim setToValue:targetAngle];
+            [anim setDuration:0.25];
+            [anim setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+
+            [[clone layer] setDelegate:clone];
+            [anim setDelegate:clone];
+            
+            [[clone layer] addAnimation:anim forKey:@"angle"];
+
+            // Set final angle on clone to avoid flicker at end
+            [clone setAngle:targetAngle];
+        }
+    }
+
+    [super stopTracking:lastPoint at:point mouseIsUp:mouseIsUp];
+}
+
+- (void)animationDidStop:(CAAnimation)anim finished:(BOOL)flag
+{
+    // This runs on the CLONE
+    if (_parentOutlineView)
+        [_parentOutlineView _noteDisclosureAnimationDidStopForRow:_animatingRowIndex];
+
+    [self removeFromSuperview];
 }
 
 - (void)drawRect:(CGRect)aRect
 {
-    var bounds = [self bounds],
-        context = [[CPGraphicsContext currentContext] graphicsPort],
-        width = CGRectGetWidth(bounds),
-        height = CGRectGetHeight(bounds);
 
-    CGContextBeginPath(context);
+#if PLATFORM(DOM)
+    if (_arrowElement && _arrowElement.parentNode !== self._DOMElement)
+        self._DOMElement.appendChild(_arrowElement);
+#endif
 
-    if (_angle)
+    // If I am NOT the clone, I must check if my row is animating.
+    // If it is animating, the clone is drawing on top of me, so I should be invisible.
+    if (!_isAnimatingClone)
     {
-        var centre = CGPointMake(FLOOR(width / 2.0), FLOOR(height / 2.0));
-        CGContextTranslateCTM(context, centre.x, centre.y);
-        CGContextRotateCTM(context, _angle);
-        CGContextTranslateCTM(context, -centre.x, -centre.y);
+        var outlineView = [self superview];
+        if ([outlineView isKindOfClass:[CPOutlineView class]])
+        {
+            var row = [outlineView rowForView:self];
+            if (row !== CPNotFound && [outlineView _isRowAnimatingDisclosure:row])
+            {
+
+#if PLATFORM(DOM)
+                _arrowElement.style.display = "none";
+#endif
+                return; // Suppress the real button
+            }
+        }
     }
 
-    // Center, but crisp.
-    CGContextTranslateCTM(context, FLOOR((width - 9.0) / 2.0), FLOOR((height - 8.0) / 2.0));
+        _arrowElement.style.display = "block";
+    
+    var isSelected = [self hasThemeState:CPThemeStateSelected],
+        isHighlighted = [self hasThemeState:CPThemeStateHighlighted],
+        isKeyWindow = [self hasThemeState:CPThemeStateKeyWindow],
+        isHUD = [self window] && ([[self window] styleMask] & CPHUDBackgroundWindowMask), 
+        triangleColor = nil;
 
-    CGContextMoveToPoint(context, 0.0, 0.0);
-    CGContextAddLineToPoint(context, 9.0, 0.0);
-    CGContextAddLineToPoint(context, 4.5, 8.0);
-    CGContextClosePath(context);
+    // Establish the required color based on the state/outline selection
+    if (isHUD)
+    {
+        triangleColor = isSelected ? [CPColor blackColor] : [CPColor whiteColor];
 
-    CGContextSetFillColor(context,
-        colorForDisclosureTriangle([self hasThemeState:CPThemeStateSelected],
-            [self hasThemeState:CPThemeStateHighlighted]));
-    CGContextFillPath(context);
+        if (isHighlighted)
+            triangleColor = [triangleColor colorWithAlphaComponent:0.5];
+    }
+    else
+    {
+        if (isSelected)
+            triangleColor = isKeyWindow ? [CPColor whiteColor] : [CPColor blackColor];
+        else triangleColor = [CPColor colorWithCalibratedWhite:0.45 alpha: 1.0];
 
-    CGContextBeginPath(context);
-    CGContextMoveToPoint(context, 0.0, 0.0);
-    CGContextAddLineToPoint(context, 4.5, 8.0);
+        if (isHighlighted)
+        {
+             if (isSelected && isKeyWindow)
+                triangleColor = [CPColor colorWithCalibratedWhite:0.9 alpha: 1.0];
 
-    if (_angle === 0.0)
-        CGContextAddLineToPoint(context, 9.0, 0.0);
+             else if (isSelected && !isKeyWindow)
+                triangleColor = [CPColor colorWithCalibratedWhite:0.2 alpha: 1.0];
+             else
+                triangleColor = [CPColor colorWithCalibratedWhite:0.25 alpha: 1.0];
+        }
+    }
 
-    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.7]);
-    CGContextStrokePath(context);
+    var colorCSS = [triangleColor cssString];
+    
+    // Convert and inject the updated SVG only when the required color has changed 
+    if (_lastColorCSS !== colorCSS)
+    {
+        _lastColorCSS = colorCSS;
+        var svgString = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 10L12 15L17 10H7Z" fill="' + colorCSS + '"/></svg>';
+        var b64 = window.btoa(svgString);
+
+#if PLATFORM(DOM)
+        _arrowElement.style.backgroundImage = "url('data:image/svg+xml;charset=utf-8;base64," + b64 + "')";
+#endif
+    }
 }
 
 @end
-
 
 var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey",
     CPOutlineViewOutlineTableColumnKey = @"CPOutlineViewOutlineTableColumnKey",
@@ -2303,6 +2810,8 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
         [super setDelegate:self];
 
         [self _updateIsViewBased];
+
+        _animatingDisclosureRows = [CPIndexSet indexSet];
     }
 
     return self;
