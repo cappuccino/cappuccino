@@ -3631,7 +3631,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_)
     {
-        var objectValue =[self _objectValueForTableColumn:aTableColumn row:aRow useCache:useCache];
+        var objectValue = [self _objectValueForTableColumn:aTableColumn row:aRow useCache:useCache];
         [aDataView setObjectValue:objectValue];
         providedByDataSource = YES;
     }
