@@ -864,7 +864,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 - (void)_animateCollapseFromIndex:(CPInteger)parentIndex removedCount:(CPInteger)removedCount ghosts:(CPArray)ghosts
 {
-    // FIX 2: Ensure we don't animate if parent is invalid
+    // Ensure we don't animate if parent is invalid
     if (parentIndex < 0)
         return;
 
@@ -998,7 +998,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 - (void)_animateExpandFromIndex:(CPInteger)parentIndex addedCount:(CPInteger)addedCount
 {
-    if (_rowsAnimation && [_rowsAnimation isAnimating])[_rowsAnimation stopAnimation];
+    if (_rowsAnimation && [_rowsAnimation isAnimating])
+        [_rowsAnimation stopAnimation];
 
     var viewAnimations = [];
     var columns = [self tableColumns];
