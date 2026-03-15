@@ -787,12 +787,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (void)reloadItem:(id)anItem reloadChildren:(BOOL)shouldReloadChildren
 {
 
-    if (_rowsAnimation && [_rowsAnimation isAnimating])
-    {
-        [_rowsAnimation stopAnimation];
-        [self animationDidEnd:_rowsAnimation];
-    }
-
     _pendingItemToClean = [];
     _itemAddedDuringLastLoading = [];
 
