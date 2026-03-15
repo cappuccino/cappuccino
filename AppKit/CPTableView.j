@@ -3627,17 +3627,28 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView useCache:(BOOL)useCache
 {
+    var providedByDataSource = NO;
+
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_)
-        [aDataView setObjectValue:[self _objectValueForTableColumn:aTableColumn row:aRow useCache:useCache]];
+    {
+        var objectValue = [self _objectValueForTableColumn:aTableColumn row:aRow useCache:useCache];
+        [aDataView setObjectValue:objectValue];
+        providedByDataSource = YES;
+    }
 
     // This gives the table column an opportunity to apply its bindings.
-    // It will override the value set above if there is a binding.
+    // It will override the value set above if there is an explicit column binding.
+    var columnHasBindings = [[[CPBinder allBindingsForObject:aTableColumn] allKeys] count] > 0;
 
-    if (_contentBindingExplicitlySet)
-        [self _prepareContentBindedDataView:aDataView forRow:aRow];
-    else
-        // For both cell-based and view-based
+    if (columnHasBindings)
+    {
         [aTableColumn _prepareDataView:aDataView forRow:aRow];
+    }
+    // Only forcefully bind the raw content object if the data source didn't already provide a formatted value
+    else if (_contentBindingExplicitlySet && !providedByDataSource)
+    {
+        [self _prepareContentBindedDataView:aDataView forRow:aRow];
+    }
 }
 
 - (void)_prepareContentBindedDataView:(CPView)dataView forRow:(CPInteger)aRow
