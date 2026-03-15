@@ -2922,7 +2922,7 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
 - (void)setValueFor:(CPString)aBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath =[_info objectForKey:CPObservedKeyPathKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
         value = [destination valueForKeyPath:keyPath];
 
     if (!value || ![value isKindOfClass:[CPTreeNode class]])
@@ -2930,19 +2930,10 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
     else
         _rootNode = value;
         
-    // Because CPBinder triggers setValueFor: synchronously during its initialization 
-    // (before -bind is ever called), we must lazily assign the data source here.
     if ([_source dataSource] !== self)
-    {
-        // Assigning the data source automatically triggers [_source reloadData] 
-        // inside CPOutlineView, so we don't need to call it manually here.
         [_source setDataSource:self];
-    }
     else
-    {
-        // If it was already set, we just manually trigger the reload.
         [_source reloadData];
-    }
 }
 
 - (CPTreeNode)rootNode
@@ -2972,10 +2963,31 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
 
 - (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item
 {
-    if ([item respondsToSelector:@selector(representedObject)])
-        return [item representedObject];
+    var rep = [item respondsToSelector:@selector(representedObject)] ? [item representedObject] : item;
+
+    // Dynamically fetch the value using the column's identifier (e.g., "name")
+    if (rep && [tableColumn identifier] && [tableColumn identifier] !== @"")
+        return [rep valueForKey:[tableColumn identifier]];
+
+    return rep;
+}
+
+- (void)outlineView:(CPOutlineView)outlineView setObjectValue:(id)value forTableColumn:(CPTableColumn)tableColumn byItem:(id)item
+{
+    var rep = [item respondsToSelector:@selector(representedObject)] ?[item representedObject] : item;
+    
+    // Push the inline edit back to the model using the column's identifier
+    if (rep && [tableColumn identifier] && [tableColumn identifier] !== @"")
+        [rep setValue:value forKey:[tableColumn identifier]];
+}
+
+- (id)content
+{
+    // CPTableView internals probe the binder for its flat content to draw rows. 
+    if (_source && _source._itemsForRows)
+        return _source._itemsForRows;
         
-    return item;
+    return [];
 }
 
 @end
@@ -3075,37 +3087,3 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
 
 @end
 
-@implementation _CPOutlineViewContentBinder (DynamicColumns)
-
-- (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item
-{
-    var rep = [item respondsToSelector:@selector(representedObject)] ? [item representedObject] : item;
-    
-    // Dynamically fetch the value using the column's identifier (e.g., "name")
-    if (rep && [tableColumn identifier])
-        return [rep valueForKey:[tableColumn identifier]];
-        
-    return rep;
-}
-
-// Add this to support inline bidirectional editing in the outline view
-- (void)outlineView:(CPOutlineView)outlineView setObjectValue:(id)value forTableColumn:(CPTableColumn)tableColumn byItem:(id)item
-{
-    var rep = [item respondsToSelector:@selector(representedObject)] ?[item representedObject] : item;
-    
-    // Push the inline edit back to the model using the column's identifier
-    if (rep && [tableColumn identifier])
-        [rep setValue:value forKey:[tableColumn identifier]];
-}
-
-- (id)content
-{
-    // CPTableView internals probe the binder for its flat content to draw rows. 
-    // For an outline view, the flat content is exactly the internally mapped items for rows.
-    if (_source && _source._itemsForRows)
-        return _source._itemsForRows;
-        
-    return [];
-}
-
-@end
