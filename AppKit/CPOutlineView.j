@@ -2454,12 +2454,12 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
 
 - (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item
 {
-    var rep =[item respondsToSelector:@selector(representedObject)] ? [item representedObject] : item;
-    
+    var rep = [item respondsToSelector:@selector(representedObject)] ? [item representedObject] : item;
+
     // Dynamically fetch the value using the column's identifier (e.g., "name")
-    if (rep && [tableColumn identifier] &&[tableColumn identifier] !== @"")
+    if (rep && [tableColumn identifier] && [tableColumn identifier] !== @"")
         return [rep valueForKey:[tableColumn identifier]];
-        
+
     return rep;
 }
 
