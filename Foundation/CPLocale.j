@@ -90,7 +90,7 @@ var sharedSystemLocale = nil,
     if (!sharedCurrentLocale)
     {
         var localeIdentifier = @"en_US",
-        language;
+            language;
 
         if (typeof navigator !== "undefined")
         {
