@@ -99,13 +99,21 @@ var sharedSystemLocale = nil,
 
             if (language)
             {
-                // Browsers use locale strings such as "en-US", but CPLocale uses "en_US".
-                language = language.replace("-", "_").substring(0, 5);
-                // Some browsers have "en_us" at this point, while we want "en_US".
-                language = language.substring(0, 3).toLowerCase() + language.substring(3, 5).toUpperCase();
+                // Split the BCP 47 tag into parts (e.g.,["zh", "Hans", "CN"] or ["en", "US"] or ["fr"])
+                var parts = language.split("-");
 
-                if ([availableLocaleIdentifiers indexOfObject:language] !== CPNotFound)
-                    localeIdentifier = language;
+                if (parts.length > 1)
+                {
+                    // Grab the language and the LAST part (the region code)
+                    var langCode = parts[0].toLowerCase();
+                    var regionCode = parts[parts.length - 1].toUpperCase();
+                    language = langCode + "_" + regionCode;
+                }
+                else
+                {
+                    // It's just a 2-letter code, keep it as is (or map it if your app strictly requires xx_XX)
+                    language = parts[0].toLowerCase();
+                }
             }
         }
 
