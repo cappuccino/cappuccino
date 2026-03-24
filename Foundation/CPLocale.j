@@ -99,13 +99,38 @@ var sharedSystemLocale = nil,
 
             if (language)
             {
-                // Browsers use locale strings such as "en-US", but CPLocale uses "en_US".
-                language = language.replace("-", "_").substring(0, 5);
-                // Some browsers have "en_us" at this point, while we want "en_US".
-                language = language.substring(0, 3).toLowerCase() + language.substring(3, 5).toUpperCase();
+                // Split the BCP 47 tag into parts (e.g.,["zh", "Hans", "CN"] or ["en", "US"] or ["fr"])
+                var parts = language.split("-");
 
-                if ([availableLocaleIdentifiers indexOfObject:language] !== CPNotFound)
-                    localeIdentifier = language;
+                if (parts.length > 1)
+                {
+                    // Chrome behavior: e.g., "de-DE" or "en-US"
+                    var langCode = parts[0].toLowerCase();
+                    var regionCode = parts[parts.length - 1].toUpperCase();
+
+                    // Update localeIdentifier!
+                    localeIdentifier = langCode + "_" + regionCode;
+                }
+                else
+                {
+                    // Firefox behavior: e.g., "de", "fr", "en"
+                    var langCode = parts[0].toLowerCase();
+
+                    // Create a mapping of 2-letter language codes to default region codes
+                    var defaultRegions = {
+                        "de": "DE",
+                        "en": "US",
+                        "es": "ES",
+                        "fr": "FR",
+                        "sv": "SE"
+                    };
+
+                    // Look up the default region, or fallback to the uppercased language code (e.g. "it" -> "IT")
+                    var regionCode = defaultRegions[langCode] || langCode.toUpperCase();
+
+                    // Update localeIdentifier!
+                    localeIdentifier = langCode + "_" + regionCode;
+                }
             }
         }
 
