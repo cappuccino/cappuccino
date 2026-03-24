@@ -90,7 +90,7 @@ var sharedSystemLocale = nil,
     if (!sharedCurrentLocale)
     {
         var localeIdentifier = @"en_US",
-            language;
+        language;
 
         if (typeof navigator !== "undefined")
         {
@@ -104,15 +104,32 @@ var sharedSystemLocale = nil,
 
                 if (parts.length > 1)
                 {
-                    // Grab the language and the LAST part (the region code)
+                    // Chrome behavior: e.g., "de-DE" or "en-US"
                     var langCode = parts[0].toLowerCase();
                     var regionCode = parts[parts.length - 1].toUpperCase();
-                    language = langCode + "_" + regionCode;
+
+                    // Update localeIdentifier!
+                    localeIdentifier = langCode + "_" + regionCode;
                 }
                 else
                 {
-                    // It's just a 2-letter code, keep it as is (or map it if your app strictly requires xx_XX)
-                    language = parts[0].toLowerCase();
+                    // Firefox behavior: e.g., "de", "fr", "en"
+                    var langCode = parts[0].toLowerCase();
+
+                    // Create a mapping of 2-letter language codes to default region codes
+                    var defaultRegions = {
+                        "de": "DE",
+                        "en": "US",
+                        "es": "ES",
+                        "fr": "FR",
+                        "sv": "SE"
+                    };
+
+                    // Look up the default region, or fallback to the uppercased language code (e.g. "it" -> "IT")
+                    var regionCode = defaultRegions[langCode] || langCode.toUpperCase();
+
+                    // Update localeIdentifier!
+                    localeIdentifier = langCode + "_" + regionCode;
                 }
             }
         }
