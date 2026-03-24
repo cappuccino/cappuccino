@@ -10528,7 +10528,7 @@ var _CPKVOInfoMake = function(anObserver, theOptions, aContext, aForwarder)
 {
     return {observer: anObserver, options: theOptions, context: aContext, forwarder: aForwarder};
 };
-objj_executeFile("CPArray+KVO.j", YES);objj_executeFile("CPSet+KVO.j", YES);p;10;CPLocale.jt;8992;@STATIC;1.0;i;10;CPObject.jt;8958;objj_executeFile("CPObject.j", YES);CPLocaleIdentifier = "CPLocaleIdentifier";
+objj_executeFile("CPArray+KVO.j", YES);objj_executeFile("CPSet+KVO.j", YES);p;10;CPLocale.jt;9223;@STATIC;1.0;i;10;CPObject.jt;9189;objj_executeFile("CPObject.j", YES);CPLocaleIdentifier = "CPLocaleIdentifier";
 CPLocaleLanguageCode = "CPLocaleLanguageCode";
 CPLocaleCountryCode = "CPLocaleCountryCode";
 CPLocaleScriptCode = "CPLocaleScriptCode";
@@ -10632,10 +10632,20 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("systemLocale"), functi
             language = typeof navigator.language !== "undefined" ? navigator.language : navigator.userLanguage;
             if (language)
             {
-                language = language.replace("-", "_").substring(0, 5);
-                language = language.substring(0, 3).toLowerCase() + language.substring(3, 5).toUpperCase();
-                if ((availableLocaleIdentifiers == null ? availableLocaleIdentifiers : (availableLocaleIdentifiers.isa.method_msgSend["indexOfObject:"] || _objj_forward)(availableLocaleIdentifiers, "indexOfObject:", language)) !== CPNotFound)
-                    localeIdentifier = language;
+                var parts = language.split("-");
+                if (parts.length > 1)
+                {
+                    var langCode = parts[0].toLowerCase();
+                    var regionCode = parts[parts.length - 1].toUpperCase();
+                    localeIdentifier = langCode + "_" + regionCode;
+                }
+                else
+                {
+                    var langCode = parts[0].toLowerCase();
+                    var defaultRegions = {"de": "DE", "en": "US", "es": "ES", "fr": "FR", "sv": "SE"};
+                    var regionCode = defaultRegions[langCode] || langCode.toUpperCase();
+                    localeIdentifier = langCode + "_" + regionCode;
+                }
             }
         }
         sharedCurrentLocale = ((___r1 = (CPLocale.isa.method_msgSend["alloc"] || _objj_forward)(CPLocale, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithLocaleIdentifier:"] || _objj_forward)(___r1, "initWithLocaleIdentifier:", localeIdentifier));
