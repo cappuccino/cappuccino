@@ -321,7 +321,25 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     if (![self hasThemeState:CPThemeStateSelected] && ![self hasThemeState:CPThemeStateScrollViewLegacy])
         return CPScrollerNoPart;
 
-    if (CGRectContainsPoint([self rectForPart:CPScrollerKnob], aPoint))
+    // Fetch the visual rect for the knob
+    var bounds = [self bounds],
+        knobRect = [self rectForPart:CPScrollerKnob],
+        hitKnobRect = CGRectMake(CGRectGetMinX(knobRect), CGRectGetMinY(knobRect), CGRectGetWidth(knobRect), CGRectGetHeight(knobRect));
+
+    // Expand the hit test rect to span the entire track on the minor axis 
+    // so dragging works smoothly even if the user clicks slightly off-center.
+    if ([self isVertical])
+    {
+        hitKnobRect.origin.x = 0;
+        hitKnobRect.size.width = CGRectGetWidth(bounds);
+    }
+    else
+    {
+        hitKnobRect.origin.y = 0;
+        hitKnobRect.size.height = CGRectGetHeight(bounds);
+    }
+
+    if (CGRectContainsPoint(hitKnobRect, aPoint))
         return CPScrollerKnob;
 
     if (CGRectContainsPoint([self rectForPart:CPScrollerDecrementPage], aPoint))
