@@ -300,6 +300,26 @@
     [knob setSliderType:CPCircularSlider];
     [knob setToolTip:@"CPCircularSlider (Knob)."];
     [leftContent addSubview:knob];
+
+    // --- 3 Blended Color Wells ---
+    var wellWidth = 36.0;
+    var wellHeight = 24.0;
+    var wellY = currentY + 29.0; // Centered vertically with the 32px knob
+    
+    var colorWell1 = [[CPColorWell alloc] initWithFrame:CGRectMake(innerX + 48, wellY, wellWidth, wellHeight)];
+    [colorWell1 setColor:[CPColor colorWithRed:1.0 green:0.55 blue:0.65 alpha:1.0]]; // Pastel Pink[colorWell1 setToolTip:@"Pastel Pink"];
+    [leftContent addSubview:colorWell1];
+
+    var colorWell2 = [[CPColorWell alloc] initWithFrame:CGRectMake(innerX + 92, wellY, wellWidth, wellHeight)];
+    [colorWell2 setColor:[CPColor colorWithRed:0.75 green:0.60 blue:0.85 alpha:1.0]]; // Pastel Purple
+    [colorWell2 setToolTip:@"Pastel Purple"];
+    [leftContent addSubview:colorWell2];
+
+    var colorWell3 = [[CPColorWell alloc] initWithFrame:CGRectMake(innerX + 136, wellY, wellWidth, wellHeight)];
+    [colorWell3 setColor:[CPColor colorWithRed:0.45 green:0.75 blue:1.0 alpha:1.0]]; // Pastel Blue
+    [colorWell3 setToolTip:@"Pastel Blue"];
+    [leftContent addSubview:colorWell3];
+    // ----------------------------------
     
     currentY += 60.0;
 
