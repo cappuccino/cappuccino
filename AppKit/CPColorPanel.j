@@ -51,7 +51,7 @@ CPColorPickerViewWidth  = 265;
 CPColorPickerViewHeight = 370;
 
 CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";
-CPColorDragType = @"CPColorDragType";
+CPColorDragType = CPColorPboardType;
 
 var PREVIEW_HEIGHT = 20.0,
     TOOLBAR_HEIGHT = 32.0,
@@ -154,11 +154,21 @@ var SharedColorPanel = nil,
     _color = aColor;
     [_previewView setBackgroundColor:_color];
 
-    // Push color via Responder Chain (targets First Responder, i.e., the active CPColorWell)
-    [CPApp sendAction:@selector(changeColor:) to:nil from:self];
+    // Check if the color change originated from user interaction inside the panel itself.
+    // We only broadcast `changeColor:` if the user picked a color via the panel's UI.
+    // If an external CPColorWell called `setColor:` programmatically, broadcasting it
+    // back down the responder chain would incorrectly change the previous First Responder.
+    var currentEvent = [CPApp currentEvent],
+        isFromPanel = currentEvent && ([currentEvent window] === self);
 
-    if (_target && _action)
-        [CPApp sendAction:_action to:_target from:self];
+    if (isFromPanel)
+    {
+        // Push color via Responder Chain (targets First Responder, i.e., the active CPColorWell)
+        [CPApp sendAction:@selector(changeColor:) to:nil from:self];
+
+        if (_target && _action)
+            [CPApp sendAction:_action to:_target from:self];
+    }
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPColorPanelColorDidChangeNotification
@@ -425,15 +435,17 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     CPColor         _dragColor;
     CPColorPanel    _colorPanel;
     CPCookie        _swatchCookie;
+    CGPoint         _mouseDownPoint;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
+    _mouseDownPoint = CGPointMake(0, 0);
     [self setBackgroundColor:[CPColor grayColor]];
 
-    [self registerForDraggedTypes:[CPArray arrayWithObjects:@"CPColorDragType"]];
+    [self registerForDraggedTypes:[CPArray arrayWithObjects:CPColorDragType]];
 
     var whiteColor = [CPColor whiteColor];
 
@@ -525,23 +537,34 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     [self saveColorList];
 }
 
+- (void)mouseDown:(CPEvent)anEvent
+{
+    _mouseDownPoint = [anEvent locationInWindow];
+}
+
 - (void)mouseUp:(CPEvent)anEvent
 {
     var point = [self convertPoint:[anEvent locationInWindow] fromView:nil],
         bounds = [self bounds];
 
     if (!CGRectContainsPoint(bounds, point) || point.x > [self bounds].size.width - 1 || point.x < 1)
-        return NO;
+        return;
 
     [_colorPanel setColor:[self colorAtIndex:FLOOR(point.x / 13)] updatePicker:YES];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
-    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+    var windowPoint = [anEvent locationInWindow];
+    
+    // Prevent accidental drags from rapid clicking causing small micro-movements
+    if (ABS(windowPoint.x - _mouseDownPoint.x) < 3 && ABS(windowPoint.y - _mouseDownPoint.y) < 3)
+        return;
+
+    var point = [self convertPoint:windowPoint fromView:nil];
 
      if (point.x > [self bounds].size.width - 1 || point.x < 1)
-        return NO;
+        return;
 
     var swatch = _swatches[FLOOR(point.x / 13)];
     _dragColor = [[swatch subviews][0] backgroundColor];
@@ -557,8 +580,8 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     [dragView addSubview:dragFillView];
 
     var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
-    [pasteboard declareTypes:[CPArray arrayWithObject:@"CPColorDragType"] owner:self];
-    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:@"CPColorDragType"];
+    [pasteboard declareTypes:[CPArray arrayWithObject:CPColorDragType] owner:self];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:CPColorDragType];
 
     [self dragView:dragView
                 at:CGPointMake(point.x - bounds.size.width / 2.0, point.y - bounds.size.height / 2.0)
@@ -571,20 +594,27 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 - (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
 {
-    if (aType == @"CPColorDragType")
+    if (aType == CPColorDragType)
         [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:aType];
 }
 
-- (void)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
+- (BOOL)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
 {
     var location = [self convertPoint:[aSender draggingLocation] fromView:nil],
         pasteboard = [aSender draggingPasteboard],
         swatch = nil;
 
-    if (![pasteboard availableTypeFromArray:[@"CPColorDragType"]] || location.x > [self bounds].size.width - 1 || location.x < 1)
+    if (![pasteboard availableTypeFromArray:[CPColorDragType]] || location.x > [self bounds].size.width - 1 || location.x < 1)
         return NO;
 
-    [self setColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:@"CPColorDragType"]] atIndex:FLOOR(location.x / 13)];
+    [self setColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] atIndex:FLOOR(location.x / 13)];
+    
+    return YES;
+}
+
+- (unsigned)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+{
+    return CPDragOperationCopy;
 }
 
 @end
@@ -593,13 +623,15 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 @implementation _CPColorPanelPreview : CPView
 {
     CPColorPanel    _colorPanel;
+    CGPoint         _mouseDownPoint;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
+    _mouseDownPoint = CGPointMake(0, 0);
 
-    [self registerForDraggedTypes:[CPArray arrayWithObjects:@"CPColorDragType"]];
+    [self registerForDraggedTypes:[CPArray arrayWithObjects:CPColorDragType]];
 
     return self;
 }
@@ -614,15 +646,17 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     return _colorPanel;
 }
 
-- (void)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
+- (BOOL)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
 {
     var pasteboard = [aSender draggingPasteboard];
 
-    if (![pasteboard availableTypeFromArray:[@"CPColorDragType"]])
+    if (![pasteboard availableTypeFromArray:[CPColorDragType]])
         return NO;
 
-    var color = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:@"CPColorDragType"]];
+    var color = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]];
     [_colorPanel setColor:color updatePicker:YES];
+    
+    return YES;
 }
 
 - (BOOL)isOpaque
@@ -630,9 +664,19 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     return YES;
 }
 
+- (void)mouseDown:(CPEvent)anEvent
+{
+    _mouseDownPoint = [anEvent locationInWindow];
+}
+
 - (void)mouseDragged:(CPEvent)anEvent
 {
-    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+    var windowPoint = [anEvent locationInWindow];
+    
+    if (ABS(windowPoint.x - _mouseDownPoint.x) < 3 && ABS(windowPoint.y - _mouseDownPoint.y) < 3)
+        return;
+
+    var point = [self convertPoint:windowPoint fromView:nil];
 
     var bounds = CGRectMake(0, 0, 15, 15);
 
@@ -645,8 +689,8 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     [dragView addSubview:dragFillView];
 
     var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
-    [pasteboard declareTypes:[CPArray arrayWithObject:@"CPColorDragType"] owner:self];
-    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self backgroundColor]] forType:@"CPColorDragType"];
+    [pasteboard declareTypes:[CPArray arrayWithObject:CPColorDragType] owner:self];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self backgroundColor]] forType:CPColorDragType];
 
     [self dragView:dragView
                 at:CGPointMake(point.x - bounds.size.width / 2.0, point.y - bounds.size.height / 2.0)
@@ -659,8 +703,13 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 - (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
 {
-    if (aType == @"CPColorDragType")
+    if (aType == CPColorDragType)
         [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self backgroundColor]] forType:aType];
+}
+
+- (unsigned)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+{
+    return CPDragOperationCopy;
 }
 
 @end
