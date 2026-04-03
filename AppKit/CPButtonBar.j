@@ -69,6 +69,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 @implementation CPButtonBar : CPView
 {
     CPArray             _buttons;
+    CPArray             _rightButtons;
     CPMutableArray      _dividers;
     CPMutableArray      _flexibles;
     CPButtonBarStyle    _style;
@@ -98,6 +99,8 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
     id <CPButtonBarDelegate>    _delegate;
     unsigned                    _delegateSelectors;
+    BOOL               _hasResizeControl;
+    BOOL               _resizeControlIsLeftAligned;
 }
 
 #pragma mark -
@@ -288,6 +291,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     if (self)
     {
         _buttons               = @[];
+        _rightButtons          = @[];
         _dividers              = @[];
         _flexibles             = @[];
         _flexibleSpacesCount   = 0;
@@ -302,7 +306,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
         [self setButtonsAreBordered:    [self currentValueForThemeAttribute:@"bordered-buttons"]];
         [self setDrawsSeparator:        [self currentValueForThemeAttribute:@"draws-separator"]];
         [self setIsTransparent:         [self currentValueForThemeAttribute:@"is-transparent"]];
-        [self setAutomaticResizeControl:[self currentValueForThemeAttribute:@"auto-resize-control"]]
+        [self setAutomaticResizeControl:[self currentValueForThemeAttribute:@"auto-resize-control"]];
 
         // Adapt the height of the button bar if needed
         var minSize   = [self currentValueForThemeAttribute:@"min-size"],
@@ -323,7 +327,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
         // This is needed when compiling themes
         [self _loadThemeValues];
 
-        [self setNeedsLayout:YES];
+        [self setNeedsLayout];
     }
 
     return self;
@@ -542,6 +546,30 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 - (CPArray)buttons
 {
     return [CPArray arrayWithArray:_buttons];
+}
+
+- (void)setRightButtons:(CPArray)buttons
+{
+    for (var i = [_rightButtons count] - 1; i >= 0; i--)
+    {
+        [_rightButtons[i] removeFromSuperview];
+        [_rightButtons[i] removeObserver:self forKeyPath:@"hidden"];
+    }
+
+    _rightButtons = [CPArray arrayWithArray:buttons];
+
+    for (var i = [_rightButtons count] - 1; i >= 0; i--)
+    {
+        [_rightButtons[i] addObserver:self forKeyPath:@"hidden" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:nil];
+        [_rightButtons[i] setBordered:YES];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (CPArray)rightButtons
+{
+    return [CPArray arrayWithArray:_rightButtons];
 }
 
 - (void)setButtonsAreBordered:(BOOL)shouldBeBordered
@@ -881,6 +909,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
             flexibleSpaceWidth = (remainingSpace > 0) ? remainingSpace / _flexibleSpacesCount : 0;
     }
 
+    // --- 1. LINKE/NORMALE BUTTONS PLATZIEREN ---
     for (var i = 0, count = _buttons.length, button, width, extraSpace, buttonHeight; i < count; i++)
     {
         button = _buttons[i];
@@ -917,10 +946,41 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
         }
     }
 
+    // --- 2. RECHTE BUTTONS (aus Upstream) PLATZIEREN ---
+    var rightButtonsNotHidden = [CPArray arrayWithArray:_rightButtons],
+        rightCount = [rightButtonsNotHidden count];
+
+    while (rightCount--)
+    {
+        var button = rightButtonsNotHidden[rightCount];
+
+        if ([button isHidden])
+        {
+            [button removeFromSuperview];
+            [rightButtonsNotHidden removeObject:button];
+        }
+    }
+
+    var currentRightOffset = _hasRightResizeControl ? CGRectGetMaxX(bounds) - rightResizeWidth + 1 : CGRectGetMaxX(bounds) + 1;
+
+    for (var i = 0, count = [rightButtonsNotHidden count]; i < count; i++)
+    {
+        var rightButton = rightButtonsNotHidden[i],
+            btnWidth = CGRectGetWidth([rightButton frame]),
+            btnHeight = CGRectGetHeight([rightButton frame]);
+
+        [rightButton setFrame:CGRectMake(currentRightOffset - btnWidth, _buttonVerticalOffset + (height - btnHeight)/2, btnWidth, btnHeight)];
+        currentRightOffset -= btnWidth - 1;
+        
+        if (![rightButton superview])
+            [self addSubview:rightButton];
+    }
+
+    // --- 3. RESIZE CONTROLS ---
     if (_hasLeftResizeControl)
     {
         var resizeControlView = [self layoutEphemeralSubviewNamed:@"left-resize-control-view"
-                                                       positioned:CPWindowAbove
+                                                      positioned:CPWindowAbove
                                   relativeToEphemeralSubviewNamed:nil];
 
         [resizeControlView setAutoresizingMask:CPViewMaxXMargin];
@@ -993,7 +1053,10 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     CPButtonBarDividersKey                   = @"CPButtonBarDividersKey",
     CPButtonBarFlexiblesKey                  = @"CPButtonBarFlexiblesKey",
     CPButtonBarFlexibleSpacesCountKey        = @"CPButtonBarFlexibleSpacesCountKey",
-    CPButtonBarDelegateKey                   = @"CPButtonBarDelegateKey";
+    CPButtonBarDelegateKey                   = @"CPButtonBarDelegateKey",
+    CPButtonBarHasResizeControlKey           = @"CPButtonBarHasResizeControlKey",
+    CPButtonBarResizeControlIsLeftAlignedKey = @"CPButtonBarResizeControlIsLeftAlignedKey",
+    CPButtonBarRightButtonsKey               = @"CPButtonBarRightButtonsKey";
 
 @implementation CPButtonBar (CPCoding)
 
@@ -1011,27 +1074,32 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     [aCoder encodeObject:_dividers                   forKey:CPButtonBarDividersKey];
     [aCoder encodeObject:_flexibles                  forKey:CPButtonBarFlexiblesKey];
     [aCoder encodeInt:   _flexibleSpacesCount        forKey:CPButtonBarFlexibleSpacesCountKey];
-
     [aCoder encodeConditionalObject:_delegate        forKey:CPButtonBarDelegateKey];
+    [aCoder encodeBool:_hasResizeControl             forKey:CPButtonBarHasResizeControlKey];
+    [aCoder encodeBool:_resizeControlIsLeftAligned   forKey:CPButtonBarResizeControlIsLeftAlignedKey];
+    [aCoder encodeObject:_rightButtons               forKey:CPButtonBarRightButtonsKey];
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
     {
-        _hasLeftResizeControl   = [aCoder decodeBoolForKey:CPButtonBarHasLeftResizeControlKey];
-        _hasRightResizeControl  = [aCoder decodeBoolForKey:CPButtonBarHasRightResizeControlKey];
-        _automaticResizeControl = [aCoder decodeBoolForKey:CPButtonBarAutomaticResizeControlKey];
+        _hasLeftResizeControl       = [aCoder decodeBoolForKey:CPButtonBarHasLeftResizeControlKey];
+        _hasRightResizeControl      = [aCoder decodeBoolForKey:CPButtonBarHasRightResizeControlKey];
+        _automaticResizeControl     = [aCoder decodeBoolForKey:CPButtonBarAutomaticResizeControlKey];
+        _hasResizeControl           = [aCoder decodeBoolForKey:CPButtonBarHasResizeControlKey];
+        _resizeControlIsLeftAligned = [aCoder decodeBoolForKey:CPButtonBarResizeControlIsLeftAlignedKey];
 
         [self setButtonsAreBordered:!![aCoder decodeBoolForKey:CPButtonBarButtonsAreBorderedKey]];
         [self setDrawsSeparator:    !![aCoder decodeBoolForKey:CPButtonBarDrawsSeparatorKey]];
         [self setIsTransparent:     !![aCoder decodeBoolForKey:CPButtonBarIsTransparentKey]];
 
         _buttons                    = [aCoder decodeObjectForKey:CPButtonBarButtonsKey] || @[];
+        _rightButtons               = [aCoder decodeObjectForKey:CPButtonBarRightButtonsKey] || [];
         _dividers                   = [aCoder decodeObjectForKey:CPButtonBarDividersKey] || @[];
         _flexibles                  = [aCoder decodeObjectForKey:CPButtonBarFlexiblesKey] || @[];
         _flexibleSpacesCount        = [aCoder decodeIntForKey:CPButtonBarFlexibleSpacesCountKey];
-
+     
         [self setNeedsRelayout:YES];
     }
 
