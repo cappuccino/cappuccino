@@ -9547,7 +9547,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithObjects:count:"
 
 ,["id"])]);
 }
-objj_executeFile("CPKeyValueObserving.j", YES);p;21;CPKeyValueObserving.jt;71509;@STATIC;1.0;i;9;CPArray.ji;14;CPDictionary.ji;13;CPException.ji;12;CPIndexSet.ji;8;CPNull.ji;10;CPObject.ji;7;CPSet.ji;13;CPArray+KVO.ji;11;CPSet+KVO.jt;71350;objj_executeFile("CPArray.j", YES);objj_executeFile("CPDictionary.j", YES);objj_executeFile("CPException.j", YES);objj_executeFile("CPIndexSet.j", YES);objj_executeFile("CPNull.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPSet.j", YES);{
+objj_executeFile("CPKeyValueObserving.j", YES);p;21;CPKeyValueObserving.jt;84692;@STATIC;1.0;i;9;CPArray.ji;14;CPDictionary.ji;13;CPException.ji;12;CPIndexSet.ji;8;CPNull.ji;10;CPObject.ji;7;CPSet.ji;13;CPArray+KVO.ji;11;CPSet+KVO.jt;84533;objj_executeFile("CPArray.j", YES);objj_executeFile("CPDictionary.j", YES);objj_executeFile("CPException.j", YES);objj_executeFile("CPIndexSet.j", YES);objj_executeFile("CPNull.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPSet.j", YES);{
 var the_class = objj_getClass("CPObject")
 if(!the_class) throw new SyntaxError("*** Could not find definition for class \"CPObject\"");
 var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_getUid("willChangeValueForKey:"), function $CPObject__willChangeValueForKey_(self, _cmd, aKey)
@@ -10053,8 +10053,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("adding"), function $_CP
 {
     if (!anObserver)
         return;
-    var forwarder = nil;
-    if (aPath.indexOf('.') !== CPNotFound && aPath.charAt(0) !== '@')
+    var forwarder = nil,
+        collectionOperatorMatch = aPath.match(/^(.*)\.(@\w+)(?:\.(.*))?$/);
+    if (collectionOperatorMatch)
+        forwarder = ((___r1 = (_CPKVOCollectionOperatorObserver == null ? _CPKVOCollectionOperatorObserver : (_CPKVOCollectionOperatorObserver.isa.method_msgSend["alloc"] || _objj_forward)(_CPKVOCollectionOperatorObserver, "alloc"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithTarget:observer:keyPath:options:context:"] || _objj_forward)(___r1, "initWithTarget:observer:keyPath:options:context:", self._targetObject, anObserver, aPath, options, aContext));
+    else if (aPath.indexOf('.') !== CPNotFound && aPath.charAt(0) !== '@')
         forwarder = ((___r1 = (_CPKVOForwardingObserver == null ? _CPKVOForwardingObserver : (_CPKVOForwardingObserver.isa.method_msgSend["alloc"] || _objj_forward)(_CPKVOForwardingObserver, "alloc"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithKeyPath:object:observer:options:context:"] || _objj_forward)(___r1, "initWithKeyPath:object:observer:options:context:", aPath, self._targetObject, anObserver, options, aContext));
     else
         (self.isa.method_msgSend["_replaceModifiersForKey:"] || _objj_forward)(self, "_replaceModifiersForKey:", aPath);
@@ -10451,6 +10454,164 @@ class_addMethods(the_class, [new objj_method(sel_getUid("removeAllObjects"), fun
 }
 
 ,["void","id","id"])]);
+}
+
+{var the_class = objj_allocateClassPair(CPObject, "_CPKVOCollectionOperatorObserver"),
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_target", "id"), new objj_ivar("_originalObserver", "id"), new objj_ivar("_fullKeyPath", "CPString"), new objj_ivar("_options", "unsigned"), new objj_ivar("_context", "id"), new objj_ivar("_collectionKeyPath", "CPString"), new objj_ivar("_operator", "CPString"), new objj_ivar("_valueKeyPath", "CPString"), new objj_ivar("_observedItems", "CPArray"), new objj_ivar("_cachedValue", "id")]);objj_registerClassPair(the_class);
+class_addMethods(the_class, [new objj_method(sel_getUid("initWithTarget:observer:keyPath:options:context:"), function $_CPKVOCollectionOperatorObserver__initWithTarget_observer_keyPath_options_context_(self, _cmd, aTarget, anObserver, aKeyPath, options, aContext)
+{
+    self = (objj_getClass("_CPKVOCollectionOperatorObserver").super_class.method_dtable["init"] || _objj_forward)(self, "init");
+    if (self)
+    {
+        self._target = aTarget;
+        self._originalObserver = anObserver;
+        self._fullKeyPath = aKeyPath;
+        self._options = options;
+        self._context = aContext;
+        self._observedItems = (CPArray.isa.method_msgSend["array"] || _objj_forward)(CPArray, "array");
+        var match = aKeyPath.match(/^(.*)\.(@\w+)(?:\.(.*))?$/);
+        if (match)
+        {
+            self._collectionKeyPath = match[1];
+            self._operator = match[2];
+            self._valueKeyPath = match[3];
+        }
+        self._cachedValue = ((___r1 = self._target), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["valueForKeyPath:"] || _objj_forward)(___r1, "valueForKeyPath:", self._fullKeyPath));
+        ((___r1 = self._target), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addObserver:forKeyPath:options:context:"] || _objj_forward)(___r1, "addObserver:forKeyPath:options:context:", self, self._collectionKeyPath, self._options, nil));
+        (self == null ? self : (self.isa.method_msgSend["_setupItemObservers"] || _objj_forward)(self, "_setupItemObservers"));
+    }
+    return self;
+    var ___r1;
+}
+
+,["id","id","id","CPString","unsigned","id"]), new objj_method(sel_getUid("_setupItemObservers"), function $_CPKVOCollectionOperatorObserver___setupItemObservers(self, _cmd)
+{
+    var collection = ((___r1 = self._target), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["valueForKeyPath:"] || _objj_forward)(___r1, "valueForKeyPath:", self._collectionKeyPath));
+    if (collection && (collection == null ? collection : (collection.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(collection, "respondsToSelector:", sel_getUid("objectEnumerator"))))
+    {
+        var enumerator = (collection == null ? collection : (collection.isa.method_msgSend["objectEnumerator"] || _objj_forward)(collection, "objectEnumerator")),
+            item;
+        while ((item = (enumerator == null ? enumerator : (enumerator.isa.method_msgSend["nextObject"] || _objj_forward)(enumerator, "nextObject"))) !== nil)
+        {
+            if (self._valueKeyPath && (item == null ? item : (item.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(item, "respondsToSelector:", sel_getUid("addObserver:forKeyPath:options:context:"))))
+                (item == null ? item : (item.isa.method_msgSend["addObserver:forKeyPath:options:context:"] || _objj_forward)(item, "addObserver:forKeyPath:options:context:", self, self._valueKeyPath, self._options, nil));
+            ((___r1 = self._observedItems), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addObject:"] || _objj_forward)(___r1, "addObject:", item));
+        }
+    }
+    var ___r1;
+}
+
+,["void"]), new objj_method(sel_getUid("_tearDownItemObservers"), function $_CPKVOCollectionOperatorObserver___tearDownItemObservers(self, _cmd)
+{
+    if (self._valueKeyPath)
+    {
+        var count = ((___r1 = self._observedItems), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count"));
+        while (count--)
+        {
+            var item = ((___r1 = self._observedItems), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", count));
+            if ((item == null ? item : (item.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(item, "respondsToSelector:", sel_getUid("removeObserver:forKeyPath:context:"))))
+                (item == null ? item : (item.isa.method_msgSend["removeObserver:forKeyPath:context:"] || _objj_forward)(item, "removeObserver:forKeyPath:context:", self, self._valueKeyPath, nil));
+        }
+    }
+    ((___r1 = self._observedItems), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeAllObjects"] || _objj_forward)(___r1, "removeAllObjects"));
+    var ___r1;
+}
+
+,["void"]), new objj_method(sel_getUid("observeValueForKeyPath:ofObject:change:context:"), function $_CPKVOCollectionOperatorObserver__observeValueForKeyPath_ofObject_change_context_(self, _cmd, keyPath, object, change, context)
+{
+    var isPrior = ((___r1 = (change == null ? change : (change.isa.method_msgSend["objectForKey:"] || _objj_forward)(change, "objectForKey:", CPKeyValueChangeNotificationIsPriorKey))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["boolValue"] || _objj_forward)(___r1, "boolValue"));
+    if (object === self._target && (keyPath == null ? keyPath : (keyPath.isa.method_msgSend["isEqualToString:"] || _objj_forward)(keyPath, "isEqualToString:", self._collectionKeyPath)))
+    {
+        if (!isPrior)
+        {
+            var kind = (change == null ? change : (change.isa.method_msgSend["objectForKey:"] || _objj_forward)(change, "objectForKey:", CPKeyValueChangeKindKey));
+            if (kind === CPKeyValueChangeSetting)
+            {
+                (self.isa.method_msgSend["_tearDownItemObservers"] || _objj_forward)(self, "_tearDownItemObservers");
+                (self.isa.method_msgSend["_setupItemObservers"] || _objj_forward)(self, "_setupItemObservers");
+            }
+            else if (kind === CPKeyValueChangeInsertion || kind === CPKeyValueChangeReplacement)
+            {
+                if (kind === CPKeyValueChangeReplacement)
+                {
+                    var oldItems = (change == null ? change : (change.isa.method_msgSend["objectForKey:"] || _objj_forward)(change, "objectForKey:", CPKeyValueChangeOldKey));
+                    if (oldItems)
+                    {
+                        for (var i = 0, len = oldItems.length; i < len; i++)
+                        {
+                            var item = oldItems[i];
+                            if (self._valueKeyPath && (item == null ? item : (item.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(item, "respondsToSelector:", sel_getUid("removeObserver:forKeyPath:context:"))))
+                                (item == null ? item : (item.isa.method_msgSend["removeObserver:forKeyPath:context:"] || _objj_forward)(item, "removeObserver:forKeyPath:context:", self, self._valueKeyPath, nil));
+                            ((___r1 = self._observedItems), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObject:"] || _objj_forward)(___r1, "removeObject:", item));
+                        }
+                    }
+                }
+                var newItems = (change == null ? change : (change.isa.method_msgSend["objectForKey:"] || _objj_forward)(change, "objectForKey:", CPKeyValueChangeNewKey));
+                if (newItems)
+                {
+                    for (var i = 0, len = newItems.length; i < len; i++)
+                    {
+                        var item = newItems[i];
+                        if (self._valueKeyPath && (item == null ? item : (item.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(item, "respondsToSelector:", sel_getUid("addObserver:forKeyPath:options:context:"))))
+                            (item == null ? item : (item.isa.method_msgSend["addObserver:forKeyPath:options:context:"] || _objj_forward)(item, "addObserver:forKeyPath:options:context:", self, self._valueKeyPath, self._options, nil));
+                        ((___r1 = self._observedItems), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addObject:"] || _objj_forward)(___r1, "addObject:", item));
+                    }
+                }
+            }
+            else if (kind === CPKeyValueChangeRemoval)
+            {
+                var oldItems = (change == null ? change : (change.isa.method_msgSend["objectForKey:"] || _objj_forward)(change, "objectForKey:", CPKeyValueChangeOldKey));
+                if (oldItems)
+                {
+                    for (var i = 0, len = oldItems.length; i < len; i++)
+                    {
+                        var item = oldItems[i];
+                        if (self._valueKeyPath && (item == null ? item : (item.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(item, "respondsToSelector:", sel_getUid("removeObserver:forKeyPath:context:"))))
+                            (item == null ? item : (item.isa.method_msgSend["removeObserver:forKeyPath:context:"] || _objj_forward)(item, "removeObserver:forKeyPath:context:", self, self._valueKeyPath, nil));
+                        ((___r1 = self._observedItems), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObject:"] || _objj_forward)(___r1, "removeObject:", item));
+                    }
+                }
+            }
+        }
+        (self.isa.method_msgSend["_notifyOriginalObserverIsPrior:"] || _objj_forward)(self, "_notifyOriginalObserverIsPrior:", isPrior);
+    }
+    else if (self._valueKeyPath && (keyPath == null ? keyPath : (keyPath.isa.method_msgSend["isEqualToString:"] || _objj_forward)(keyPath, "isEqualToString:", self._valueKeyPath)) && ((___r1 = self._observedItems), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["containsObject:"] || _objj_forward)(___r1, "containsObject:", object)))
+    {
+        (self.isa.method_msgSend["_notifyOriginalObserverIsPrior:"] || _objj_forward)(self, "_notifyOriginalObserverIsPrior:", isPrior);
+    }
+    var ___r1;
+}
+
+,["void","CPString","id","CPDictionary","id"]), new objj_method(sel_getUid("_notifyOriginalObserverIsPrior:"), function $_CPKVOCollectionOperatorObserver___notifyOriginalObserverIsPrior_(self, _cmd, isPrior)
+{
+    var change = (CPMutableDictionary.isa.method_msgSend["dictionaryWithObject:forKey:"] || _objj_forward)(CPMutableDictionary, "dictionaryWithObject:forKey:", CPKeyValueChangeSetting, CPKeyValueChangeKindKey);
+    if (isPrior)
+        (change == null ? change : (change.isa.method_msgSend["setObject:forKey:"] || _objj_forward)(change, "setObject:forKey:", YES, CPKeyValueChangeNotificationIsPriorKey));
+    if (self._options & CPKeyValueObservingOptionOld)
+        (change == null ? change : (change.isa.method_msgSend["setObject:forKey:"] || _objj_forward)(change, "setObject:forKey:", self._cachedValue !== nil ? self._cachedValue : (CPNull.isa.method_msgSend["null"] || _objj_forward)(CPNull, "null"), CPKeyValueChangeOldKey));
+    if (!isPrior)
+    {
+        var newValue = ((___r1 = self._target), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["valueForKeyPath:"] || _objj_forward)(___r1, "valueForKeyPath:", self._fullKeyPath));
+        if (self._options & CPKeyValueObservingOptionNew)
+            (change == null ? change : (change.isa.method_msgSend["setObject:forKey:"] || _objj_forward)(change, "setObject:forKey:", newValue !== nil ? newValue : (CPNull.isa.method_msgSend["null"] || _objj_forward)(CPNull, "null"), CPKeyValueChangeNewKey));
+        ((___r1 = self._originalObserver), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["observeValueForKeyPath:ofObject:change:context:"] || _objj_forward)(___r1, "observeValueForKeyPath:ofObject:change:context:", self._fullKeyPath, self._target, change, self._context));
+        self._cachedValue = newValue;
+    }
+    else
+    {
+        ((___r1 = self._originalObserver), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["observeValueForKeyPath:ofObject:change:context:"] || _objj_forward)(___r1, "observeValueForKeyPath:ofObject:change:context:", self._fullKeyPath, self._target, change, self._context));
+    }
+    var ___r1;
+}
+
+,["void","BOOL"]), new objj_method(sel_getUid("finalize"), function $_CPKVOCollectionOperatorObserver__finalize(self, _cmd)
+{
+    ((___r1 = self._target), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObserver:forKeyPath:"] || _objj_forward)(___r1, "removeObserver:forKeyPath:", self, self._collectionKeyPath));
+    (self.isa.method_msgSend["_tearDownItemObservers"] || _objj_forward)(self, "_tearDownItemObservers");
+    var ___r1;
+}
+
+,["void"])]);
 }
 
 {var the_class = objj_allocateClassPair(CPObject, "_CPKVOForwardingObserver"),
