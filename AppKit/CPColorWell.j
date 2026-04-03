@@ -25,6 +25,7 @@
 @import "CPView.j"
 @import "CPColor.j"
 @import "CPColorPanel.j"
+@import "CPPasteboard.j"
 
 var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiveNotification";
 
@@ -41,6 +42,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     BOOL    _bordered;
     CPColor _color;
     BOOL    _isChangingColorFromPanel; // Guard flag to prevent recursion
+    CGPoint _mouseDownPoint;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -112,10 +114,10 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     if (self)
     {
         _color = [CPColor whiteColor];
+        _mouseDownPoint = CGPointMakeZero();
         [self setBordered:YES];
         
-        // Register using string literal to avoid dependency issues
-        [self registerForDraggedTypes:[CPArray arrayWithObject:@"CPColorDragType"]];
+        [self registerForDraggedTypes:[CPArray arrayWithObject:CPColorPboardType]];
     }
 
     return self;
@@ -247,8 +249,45 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     if (![self isEnabled])
         return;
 
+    _mouseDownPoint = [anEvent locationInWindow];
     [self activate:YES];
 }
+
+- (void)mouseDragged:(CPEvent)anEvent
+{
+    if (![self isEnabled])
+        return;
+        
+    var windowPoint = [anEvent locationInWindow];
+    
+    // Prevent accidental drags from rapid clicking causing small micro-movements
+    if (ABS(windowPoint.x - _mouseDownPoint.x) < 3 && ABS(windowPoint.y - _mouseDownPoint.y) < 3)
+        return;
+
+    var bounds = CGRectMake(0, 0, 15, 15);
+    var dragView = [[CPView alloc] initWithFrame:bounds],
+        dragFillView = [[CPView alloc] initWithFrame:CGRectInset(bounds, 1.0, 1.0)];
+
+    [dragView setBackgroundColor:[CPColor blackColor]];
+    [dragFillView setBackgroundColor:_color];
+
+    [dragView addSubview:dragFillView];
+
+    var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
+    [pasteboard declareTypes:[CPArray arrayWithObject:CPColorPboardType] owner:self];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_color] forType:CPColorPboardType];
+
+    var point = [self convertPoint:windowPoint fromView:nil];
+
+    [self dragView:dragView
+                at:CGPointMake(point.x - bounds.size.width / 2.0, point.y - bounds.size.height / 2.0)
+            offset:CGPointMake(0.0, 0.0)
+             event:anEvent
+        pasteboard:pasteboard
+            source:self
+         slideBack:YES];
+}
+
 
 #pragma mark -
 #pragma mark Drag and Drop
@@ -257,7 +296,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
     var pasteboard = [sender draggingPasteboard];
     
-    if ([[pasteboard types] containsObject:@"CPColorDragType"])
+    if ([[pasteboard types] containsObject:CPColorPboardType])
     {
         [self setThemeState:CPThemeStateHighlighted];
         return CPDragOperationCopy;
@@ -275,9 +314,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
     var pasteboard = [sender draggingPasteboard];
     
-    if ([[pasteboard types] containsObject:@"CPColorDragType"])
+    if ([[pasteboard types] containsObject:CPColorPboardType])
     {
-        var data = [pasteboard dataForType:@"CPColorDragType"],
+        var data = [pasteboard dataForType:CPColorPboardType],
             newColor = [CPKeyedUnarchiver unarchiveObjectWithData:data];
             
         if (newColor && [newColor isKindOfClass:[CPColor class]])
@@ -294,6 +333,17 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     }
     
     return NO;
+}
+
+- (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
+{
+    if (aType == CPColorPboardType)
+        [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_color] forType:aType];
+}
+
+- (unsigned)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+{
+    return CPDragOperationCopy;
 }
 
 #pragma mark -
@@ -414,7 +464,7 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
     {
         _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
         [self setBordered:[aCoder decodeBoolForKey:CPColorWellBorderedKey]];
-        [self registerForDraggedTypes:[CPArray arrayWithObject:@"CPColorDragType"]];
+        [self registerForDraggedTypes:[CPArray arrayWithObject:CPColorPboardType]];
     }
 
     return self;
