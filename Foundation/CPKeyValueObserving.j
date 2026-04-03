@@ -1282,6 +1282,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     CPString _valueKeyPath;
 
     CPArray  _observedItems;
+    id       _cachedValue;
 }
 
 - (id)initWithTarget:(id)aTarget observer:(id)anObserver keyPath:(CPString)aKeyPath options:(unsigned)options context:(id)aContext
@@ -1297,8 +1298,6 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
         _context = aContext;
         _observedItems = [CPArray array];
 
-        // Parse key path like "collectionKeyPath.@sum.valueKeyPath"
-        // Captures: 1=collectionKeyPath, 2=@sum, 3=valueKeyPath
         var match = aKeyPath.match(/^(.*)\.(@\w+)(?:\.(.*))?$/);
         if (match)
         {
@@ -1307,8 +1306,9 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
             _valueKeyPath = match[3];
         }
 
-        // Observe the collection itself on the target to catch array resets/mutations
-        [_target addObserver:self forKeyPath:_collectionKeyPath options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:nil];
+        _cachedValue = [_target valueForKeyPath:_fullKeyPath];
+
+        [_target addObserver:self forKeyPath:_collectionKeyPath options:_options context:nil];
 
         [self _setupItemObservers];
     }
@@ -1353,19 +1353,50 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
 - (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(id)context
 {
-    // Branch 1: The collection on the target was modified
+    var isPrior = [[change objectForKey:CPKeyValueChangeNotificationIsPriorKey] boolValue];
+
     if (object === _target && [keyPath isEqualToString:_collectionKeyPath])
     {
-        var kind = [change objectForKey:CPKeyValueChangeKindKey];
+        // Only tear down/rebuild observers when the actual change happens, not during the "Prior" notification
+        if (!isPrior)
+        {
+            var kind = [change objectForKey:CPKeyValueChangeKindKey];
 
-        if (kind === CPKeyValueChangeSetting)
-        {
-            [self _tearDownItemObservers];
-            [self _setupItemObservers];
-        }
-        else if (kind === CPKeyValueChangeInsertion || kind === CPKeyValueChangeReplacement)
-        {
-            if (kind === CPKeyValueChangeReplacement)
+            if (kind === CPKeyValueChangeSetting)
+            {
+                [self _tearDownItemObservers];
+                [self _setupItemObservers];
+            }
+            else if (kind === CPKeyValueChangeInsertion || kind === CPKeyValueChangeReplacement)
+            {
+                if (kind === CPKeyValueChangeReplacement)
+                {
+                    var oldItems = [change objectForKey:CPKeyValueChangeOldKey];
+                    if (oldItems)
+                    {
+                        for (var i = 0, len = oldItems.length; i < len; i++)
+                        {
+                            var item = oldItems[i];
+                            if (_valueKeyPath && [item respondsToSelector:@selector(removeObserver:forKeyPath:context:)])
+                                [item removeObserver:self forKeyPath:_valueKeyPath context:nil];
+                            [_observedItems removeObject:item];
+                        }
+                    }
+                }
+
+                var newItems = [change objectForKey:CPKeyValueChangeNewKey];
+                if (newItems)
+                {
+                    for (var i = 0, len = newItems.length; i < len; i++)
+                    {
+                        var item = newItems[i];
+                        if (_valueKeyPath && [item respondsToSelector:@selector(addObserver:forKeyPath:options:context:)])
+                            [item addObserver:self forKeyPath:_valueKeyPath options:_options context:nil];
+                        [_observedItems addObject:item];
+                    }
+                }
+            }
+            else if (kind === CPKeyValueChangeRemoval)
             {
                 var oldItems = [change objectForKey:CPKeyValueChangeOldKey];
                 if (oldItems)
@@ -1379,53 +1410,41 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                     }
                 }
             }
-
-            var newItems = [change objectForKey:CPKeyValueChangeNewKey];
-            if (newItems)
-            {
-                for (var i = 0, len = newItems.length; i < len; i++)
-                {
-                    var item = newItems[i];
-                    if (_valueKeyPath && [item respondsToSelector:@selector(addObserver:forKeyPath:options:context:)])
-                        [item addObserver:self forKeyPath:_valueKeyPath options:_options context:nil];
-                    [_observedItems addObject:item];
-                }
-            }
-        }
-        else if (kind === CPKeyValueChangeRemoval)
-        {
-            var oldItems = [change objectForKey:CPKeyValueChangeOldKey];
-            if (oldItems)
-            {
-                for (var i = 0, len = oldItems.length; i < len; i++)
-                {
-                    var item = oldItems[i];
-                    if (_valueKeyPath && [item respondsToSelector:@selector(removeObserver:forKeyPath:context:)])
-                        [item removeObserver:self forKeyPath:_valueKeyPath context:nil];
-                    [_observedItems removeObject:item];
-                }
-            }
         }
 
-        [self _notifyOriginalObserver];
+        [self _notifyOriginalObserverIsPrior:isPrior];
     }
-    // Branch 2: One of the children items has updated
     else if (_valueKeyPath && [keyPath isEqualToString:_valueKeyPath] && [_observedItems containsObject:object])
     {
-        [self _notifyOriginalObserver];
+        [self _notifyOriginalObserverIsPrior:isPrior];
     }
 }
 
-- (void)_notifyOriginalObserver
+- (void)_notifyOriginalObserverIsPrior:(BOOL)isPrior
 {
-    // Ask standard KVC to evaluate the entire aggregate string (e.g., @sum.value)
-    var newValue = [_target valueForKeyPath:_fullKeyPath],
-        change = @{
-            CPKeyValueChangeKindKey: CPKeyValueChangeSetting,
-            CPKeyValueChangeNewKey: (newValue !== nil ? newValue : [CPNull null])
-        };
+    var change = [CPMutableDictionary dictionaryWithObject:CPKeyValueChangeSetting forKey:CPKeyValueChangeKindKey];
 
-    [_originalObserver observeValueForKeyPath:_fullKeyPath ofObject:_target change:change context:_context];
+    if (isPrior)
+        [change setObject:YES forKey:CPKeyValueChangeNotificationIsPriorKey];
+
+    if (_options & CPKeyValueObservingOptionOld)
+        [change setObject:(_cachedValue !== nil ? _cachedValue : [CPNull null]) forKey:CPKeyValueChangeOldKey];
+
+    if (!isPrior)
+    {
+        var newValue = [_target valueForKeyPath:_fullKeyPath];
+        if (_options & CPKeyValueObservingOptionNew)
+            [change setObject:(newValue !== nil ? newValue : [CPNull null]) forKey:CPKeyValueChangeNewKey];
+
+        [_originalObserver observeValueForKeyPath:_fullKeyPath ofObject:_target change:change context:_context];
+
+        // Update the cache for the next notification
+        _cachedValue = newValue;
+    }
+    else
+    {
+        [_originalObserver observeValueForKeyPath:_fullKeyPath ofObject:_target change:change context:_context];
+    }
 }
 
 - (void)finalize
@@ -1435,7 +1454,6 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 }
 
 @end
-
 
 @implementation _CPKVOForwardingObserver : CPObject
 {
