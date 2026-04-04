@@ -8570,29 +8570,51 @@ var themedButtonValues                      = nil,
 
     // --- Standard Styles ---
     bezelColor =[CPColor colorWithCSSDictionary:@{
-        @"border": @"1px solid " + A3ColorBorderDark,
         @"background-color": A3ColorBackgroundWhite,
-        @"box-sizing": @"border-box"
+        @"border-color": A3ColorBorderDark,
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"0px",
+        @"box-sizing": @"border-box",
+        @"transition-duration": @"0.35s, 0.35s", // Fade out smoothly
+        @"transition-property": @"box-shadow, border"
     }],
 
     bezelDisabledColor =[CPColor colorWithCSSDictionary:@{
-        @"border": @"1px solid " + A3ColorInactiveBorder,
         @"background-color": A3ColorBackgroundInactive,
-        @"box-sizing": @"border-box"
+        @"border-color": A3ColorInactiveBorder,
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"0px",
+        @"box-sizing": @"border-box",
+        @"transition-duration": @"0.35s, 0.35s",
+        @"transition-property": @"box-shadow, border"
     }],
 
+    // Matches CPTextField focused style exactly
     bezelFocusedColor =[CPColor colorWithCSSDictionary:@{
-        @"border": @"1px solid " + A3ColorBorderBlue,
         @"background-color": A3ColorBackgroundWhite,
-        @"box-shadow": @"0 0 0 1px " + A3ColorBorderBlue + " inset",
-        @"box-sizing": @"border-box"
+        @"border-color": @"A3ColorBorderBlue",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"0px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0px 0px 2px 0px rgb(59,127,202)", // Outer glow instead of inset
+        @"transition-duration": @"0.35s, 0.35s", // Fade in smoothly
+        @"transition-property": @"box-shadow, border"
     }],
 
+    // Drag-Hover Target: Slightly more pronounced blue glow, faster transition
     bezelHighlightedColor =[CPColor colorWithCSSDictionary:@{
-        @"border": @"1px solid " + A3ColorBorderBlue,
         @"background-color": A3ColorBackgroundWhite,
-        @"box-shadow": @"0 0 0 2px " + A3ColorBorderBlue + " inset", // Thicker inner shadow for drop target
-        @"box-sizing": @"border-box"
+        @"border-color": @"A3ColorBorderBlue",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"0px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0px 0px 4px 1px rgb(59,127,202)", // Thicker drop-target glow
+        @"transition-duration": @"0.1s, 0.1s", // Snappy transition for drag feedback
+        @"transition-property": @"box-shadow, border"
     }],
 
     // --- HUD Styles ---
@@ -8601,6 +8623,7 @@ var themedButtonValues                      = nil,
         @"border-color": @"rgba(255, 255, 255, 0.3)",
         @"border-style": @"solid",
         @"border-width": @"1px",
+        @"border-radius": @"0px",
         @"box-sizing": @"border-box",
         @"transition-duration": @"0.35s, 0.35s",
         @"transition-property": @"box-shadow, border"
@@ -8611,6 +8634,7 @@ var themedButtonValues                      = nil,
         @"border-color": @"rgba(255, 255, 255, 0.1)",
         @"border-style": @"solid",
         @"border-width": @"1px",
+        @"border-radius": @"0px",
         @"box-sizing": @"border-box",
         @"transition-duration": @"0.35s, 0.35s",
         @"transition-property": @"box-shadow, border"
@@ -8621,40 +8645,43 @@ var themedButtonValues                      = nil,
         @"border-color": @"#ffffff",
         @"border-style": @"solid",
         @"border-width": @"1px",
+        @"border-radius": @"0px",
         @"box-sizing": @"border-box",
         @"box-shadow": @"0px 0px 3px 0px rgba(255,255,255,0.5)",
         @"transition-duration": @"0.35s, 0.35s",
         @"transition-property": @"box-shadow, border"
     }],
 
+    // HUD Drag-Hover Target
     hudBezelHighlightedColor =[CPColor colorWithCSSDictionary:@{
         @"background-color": @"rgba(0, 0, 0, 0.6)",
         @"border-color": @"#ffffff",
         @"border-style": @"solid",
         @"border-width": @"1px",
+        @"border-radius": @"0px",
         @"box-sizing": @"border-box",
-        @"box-shadow": @"0px 0px 5px 0px rgba(255,255,255,0.9), 0 0 0 1px #ffffff inset", // Bright outer/inner glow
-        @"transition-duration": @"0.1s, 0.1s", // Faster transition for snappy drag response
+        @"box-shadow": @"0px 0px 5px 0px rgba(255,255,255,0.9), 0 0 0 1px #ffffff inset",
+        @"transition-duration": @"0.1s, 0.1s",
         @"transition-property": @"box-shadow, border"
     }],
 
     themedColorWellValues = [
-                             // Standard Theme States
-                             [@"bezel-color",            bezelColor,                               CPThemeStateBordered],
-                             [@"bezel-color",            bezelDisabledColor,[CPThemeStateBordered, CPThemeStateDisabled]],
-                             [@"bezel-color",            bezelFocusedColor,                       [CPThemeStateBordered, CPThemeStateFirstResponder]],
-                             [@"bezel-color",            bezelHighlightedColor,                   [CPThemeStateBordered, CPThemeStateHighlighted]],
+         // Standard Theme States
+         [@"bezel-color",            bezelColor,                               CPThemeStateBordered],
+         [@"bezel-color",            bezelDisabledColor,[CPThemeStateBordered, CPThemeStateDisabled]],
+         [@"bezel-color",            bezelFocusedColor,                       [CPThemeStateBordered, CPThemeStateFirstResponder]],
+         [@"bezel-color",            bezelHighlightedColor,                   [CPThemeStateBordered, CPThemeStateHighlighted]],
 
-                             // HUD Theme States
-                             [@"bezel-color",            hudBezelColor,                      [CPThemeStateHUD, CPThemeStateBordered]],
-                             [@"bezel-color",            hudBezelDisabledColor,              [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
-                             [@"bezel-color",            hudBezelFocusedColor,[CPThemeStateHUD, CPThemeStateBordered, CPThemeStateFirstResponder]],
+         // HUD Theme States
+         [@"bezel-color",            hudBezelColor,                      [CPThemeStateHUD, CPThemeStateBordered]],
+         [@"bezel-color",            hudBezelDisabledColor,              [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
+         [@"bezel-color",            hudBezelFocusedColor,[CPThemeStateHUD, CPThemeStateBordered, CPThemeStateFirstResponder]],
+         [@"bezel-color",            hudBezelHighlightedColor,           [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
 
-                             // Layout
-                             [@"content-inset",          CGInsetMake(5.0, 5.0, 5.0, 5.0),    CPThemeStateBordered],
-                             [@"content-border-inset",   CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBordered],
-                             [@"bezel-color",            hudBezelHighlightedColor,          [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]]
-                            ];
+         // Layout
+         [@"content-inset",          CGInsetMake(5.0, 5.0, 5.0, 5.0),    CPThemeStateBordered],
+         [@"content-border-inset",   CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBordered]
+    ];
 
     [self registerThemeValues:themedColorWellValues forView:colorWell];
 
