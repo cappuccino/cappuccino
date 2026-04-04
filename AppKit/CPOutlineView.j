@@ -1512,6 +1512,21 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     return [super frameOfDataViewAtColumn:aColumn row:aRow];
 }
 
+- (void)_applyToolTipToDataView:(CPView)aDataView forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+{
+    if (_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_toolTipForView_rect_tableColumn_item_mouseLocation_)
+    {
+        var item = [self itemAtRow:aRow],
+            tooltip = [self _sendDelegateToolTipForView:aDataView rect:[aDataView frame] tableColumn:aTableColumn item:item mouseLocation:CGPointMakeZero()];
+
+        [aDataView setToolTip:tooltip];
+    }
+    else
+    {
+        [super _applyToolTipToDataView:aDataView forTableColumn:aTableColumn row:aRow];
+    }
+}
+
 /*!
     Retargets the drop item for the outlineview.
 
@@ -2117,6 +2132,17 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*** CPTableViewDelegate methods ***/
+
+/*!
+    @ignore
+*/
+- (CPString)_sendDelegateToolTipForView:(id)aView rect:(CGRect)aRect tableColumn:(CPTableColumn)aTableColumn item:(id)anItem mouseLocation:(CGPoint)aPoint
+{
+    if (!(_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_toolTipForView_rect_tableColumn_item_mouseLocation_))
+        return nil;
+
+    return [_outlineViewDelegate outlineView:self toolTipForView:aView rect:aRect tableColumn:aTableColumn item:anItem mouseLocation:aPoint];
+}
 
 - (BOOL)tableView:(CPTableView)theTableView shouldSelectRow:(CPInteger)theRow
 {
