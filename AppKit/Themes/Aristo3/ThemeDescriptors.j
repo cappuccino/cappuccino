@@ -8588,6 +8588,13 @@ var themedButtonValues                      = nil,
         @"box-sizing": @"border-box"
     }],
 
+    bezelHighlightedColor =[CPColor colorWithCSSDictionary:@{
+        @"border": @"1px solid " + A3ColorBorderBlue,
+        @"background-color": A3ColorBackgroundWhite,
+        @"box-shadow": @"0 0 0 2px " + A3ColorBorderBlue + " inset", // Thicker inner shadow for drop target
+        @"box-sizing": @"border-box"
+    }],
+
     // --- HUD Styles ---
     hudBezelColor =[CPColor colorWithCSSDictionary:@{
         @"background-color": @"rgba(0, 0, 0, 0.3)",
@@ -8620,11 +8627,23 @@ var themedButtonValues                      = nil,
         @"transition-property": @"box-shadow, border"
     }],
 
+    hudBezelHighlightedColor =[CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.6)",
+        @"border-color": @"#ffffff",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0px 0px 5px 0px rgba(255,255,255,0.9), 0 0 0 1px #ffffff inset", // Bright outer/inner glow
+        @"transition-duration": @"0.1s, 0.1s", // Faster transition for snappy drag response
+        @"transition-property": @"box-shadow, border"
+    }],
+
     themedColorWellValues = [
                              // Standard Theme States
                              [@"bezel-color",            bezelColor,                               CPThemeStateBordered],
                              [@"bezel-color",            bezelDisabledColor,[CPThemeStateBordered, CPThemeStateDisabled]],
                              [@"bezel-color",            bezelFocusedColor,                       [CPThemeStateBordered, CPThemeStateFirstResponder]],
+                             [@"bezel-color",            bezelHighlightedColor,                   [CPThemeStateBordered, CPThemeStateHighlighted]],
 
                              // HUD Theme States
                              [@"bezel-color",            hudBezelColor,                      [CPThemeStateHUD, CPThemeStateBordered]],
@@ -8633,7 +8652,8 @@ var themedButtonValues                      = nil,
 
                              // Layout
                              [@"content-inset",          CGInsetMake(5.0, 5.0, 5.0, 5.0),    CPThemeStateBordered],
-                             [@"content-border-inset",   CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBordered]
+                             [@"content-border-inset",   CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBordered],
+                             [@"bezel-color",            hudBezelHighlightedColor,          [CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]]
                             ];
 
     [self registerThemeValues:themedColorWellValues forView:colorWell];
