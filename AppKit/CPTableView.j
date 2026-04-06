@@ -296,6 +296,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _CPTableDrawView            _tableDrawView;
 
     SEL                         _doubleAction;
+    id                          _doubleClickTarget @accessors(property=doubleClickTarget);
+    id                          _doubleClickArgument @accessors(property=doubleClickArgument);
     CPInteger                   _clickedRow;
     CPInteger                   _clickedColumn;
     unsigned                    _columnAutoResizingStyle;
@@ -4734,7 +4736,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     //double click actions
     if ([[CPApp currentEvent] clickCount] === 2 && _doubleAction)
-        [self sendAction:_doubleAction to:_target];
+    {
+        var target = _doubleClickTarget || _target,
+            argument = [self infoForBinding:@"doubleClickArgument"] ? _doubleClickArgument : self;
+
+        [CPApp sendAction:_doubleAction to:target from:argument];
+    }
 }
 
 /*
@@ -6098,6 +6105,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     if (aBinding == @"content")
         _contentBindingExplicitlySet = YES;
+    else if (aBinding == @"doubleClickTarget")
+    {
+        if ([options objectForKey:CPSelectorNameBindingOption])
+            [self setDoubleAction:CPSelectorFromString([options objectForKey:CPSelectorNameBindingOption])];
+    }
 
     [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
 }
