@@ -3616,8 +3616,19 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self _setEditingState:NO forView:dataView];
 
     [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
+    [self _applyToolTipToDataView:dataView forTableColumn:tableColumn row:row];
 
     return dataView;
+}
+
+- (void)_applyToolTipToDataView:(CPView)aDataView forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+{
+    var tooltip = nil;
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_toolTipForView_rect_tableColumn_row_mouseLocation_)
+        tooltip = [self _sendDelegateToolTipForView:aDataView rect:[aDataView frame] tableColumn:aTableColumn row:aRow mouseLocation:CGPointMakeZero()];
+
+    [aDataView setToolTip:tooltip];
 }
 
 - (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView
@@ -5969,7 +5980,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 /*!
     @ignore
-    Not yet implemented
 */
 - (CPString)_sendDelegateToolTipForView:(id)aView rect:(CGRect)aRect tableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex mouseLocation:(CGPoint)aPoint
 {
