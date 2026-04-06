@@ -100,18 +100,17 @@ var AppControllerInstance = nil;
     if (aRowIndex < 0 || aRowIndex >= [rows count])
         return nil;
 
-    var info =[rows objectAtIndex:aRowIndex],
+    var info = [rows objectAtIndex:aRowIndex],
         filename = [info valueForKey:@"filename"],
-        isUploading =[info valueForKey:@"uploading"],
+        isUploading = [info valueForKey:@"uploading"],
         progress = [info valueForKey:@"progress"];
 
     // Provide a dynamic tooltip based on the state of the data in the row
     if (isUploading)
-        return[CPString stringWithFormat:@"Uploading '%@' (%d%% complete)", filename, progress];
+        return [CPString stringWithFormat:@"Uploading '%@' (%d%% complete)", filename, progress];
 
-    return[CPString stringWithFormat:@"File: %@\nStatus: Idle", filename];
+    return [CPString stringWithFormat:@"File: %@\nStatus: Idle", filename];
 }
-// --------------------------------------------------------------------------------------
 
 - (@action)start:(id)sender
 {
