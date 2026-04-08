@@ -178,8 +178,10 @@
 
     [self _rearrangeObjects];
 
-    if ([self preservesSelection])[self __setSelectedObjects:oldSelectedObjects];
-    else[self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
+    if ([self preservesSelection])
+        [self __setSelectedObjects:oldSelectedObjects];
+    else
+        [self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
 }
 
 - (void)_setContentArray:(id)anArray {[self setContent:anArray]; }
@@ -205,8 +207,10 @@
 
     [self __rebuildArrangedObjectsTree];
 
-    if ([self preservesSelection])[self __setSelectedObjects:oldSelectedObjects];
-    else[self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
+    if ([self preservesSelection])
+        [self __setSelectedObjects:oldSelectedObjects];
+    else
+        [self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
 }
 
 - (void)__rebuildArrangedObjectsTree
