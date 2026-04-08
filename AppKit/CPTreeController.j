@@ -54,7 +54,7 @@
 
 + (CPSet)keyPathsForValuesAffectingContentArray
 {
-    return[CPSet setWithObjects:@"content"];
+    return [CPSet setWithObjects:@"content"];
 }
 
 + (CPSet)keyPathsForValuesAffectingArrangedObjects
@@ -64,7 +64,7 @@
 
 + (CPSet)keyPathsForValuesAffectingSelectionIndexPath
 {
-    return[CPSet setWithObjects:@"selectionIndexPaths"];
+    return [CPSet setWithObjects:@"selectionIndexPaths"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelectedObjects
@@ -79,7 +79,7 @@
 
 + (CPSet)keyPathsForValuesAffectingCanAddChild
 {
-    return[CPSet setWithObjects:@"selectionIndexPaths"];
+    return [CPSet setWithObjects:@"selectionIndexPaths"];
 }
 
 + (CPSet)keyPathsForValuesAffectingCanInsert
@@ -267,7 +267,7 @@
 - (BOOL)setSelectionIndexPath:(CPIndexPath)indexPath
 {
     var paths = indexPath ? [CPArray arrayWithObject:indexPath] : [CPArray array];
-    return[self setSelectionIndexPaths:paths];
+    return [self setSelectionIndexPaths:paths];
 }
 
 - (CPArray)selectionIndexPaths { return _selectionIndexPaths; }
@@ -329,7 +329,7 @@
 {
     var newPaths = [_selectionIndexPaths mutableCopy];
     [newPaths removeObjectsInArray:indexPaths];
-    return[self setSelectionIndexPaths:newPaths];
+    return [self setSelectionIndexPaths:newPaths];
 }
 
 - (CPArray)selectedNodes
@@ -361,7 +361,7 @@
 - (BOOL)__setSelectedObjects:(CPArray)objects
 {
     if (!objects || [objects count] === 0)
-        return[self __setSelectionIndexPaths:[CPArray array] avoidEmpty:_avoidsEmptySelection];
+        return [self __setSelectionIndexPaths:[CPArray array] avoidEmpty:_avoidsEmptySelection];
 
     var newPaths = [CPMutableArray array];
     for (var i = 0, count = [objects count]; i < count; i++)
@@ -371,7 +371,7 @@
             [newPaths addObject:path];
     }
 
-    return[self __setSelectionIndexPaths:newPaths avoidEmpty:_avoidsEmptySelection];
+    return [self __setSelectionIndexPaths:newPaths avoidEmpty:_avoidsEmptySelection];
 }
 
 - (CPIndexPath)_indexPathForObject:(id)anObject inNode:(CPTreeNode)node
@@ -392,7 +392,7 @@
     return nil;
 }
 
-- (BOOL)canInsert { return[self isEditable]; }
+- (BOOL)canInsert { return [self isEditable]; }
 - (BOOL)canInsertChild { return [self isEditable] &&[_selectionIndexPaths count] > 0; }
 - (BOOL)canAddChild { return [self canInsertChild]; }
 
