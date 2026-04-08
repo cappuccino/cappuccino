@@ -308,4 +308,17 @@ var rowHeights = [ ];
     return anItem.customHeight;
 }
 
+- (CPString)outlineView:(CPOutlineView)anOutlineView toolTipForView:(CPView)aView rect:(CGRect)aRect tableColumn:(CPTableColumn)aTableColumn item:(id)anItem mouseLocation:(CGPoint)aPoint
+{
+    if (anItem === nil)
+        return nil;
+
+    var title = [anItem title],
+        childCount = [[anItem children] count],
+        childString = childCount === 1 ? @"1 child" : childCount + @" children";
+
+    // Dynamischer Tooltip basierend auf dem 'Menu' Objekt
+    return [CPString stringWithFormat:@"Outline Node: %@\nContains: %@", title, childString];
+}
+
 @end

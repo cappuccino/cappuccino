@@ -54,7 +54,7 @@
 
 + (CPSet)keyPathsForValuesAffectingContentArray
 {
-    return[CPSet setWithObjects:@"content"];
+    return [CPSet setWithObjects:@"content"];
 }
 
 + (CPSet)keyPathsForValuesAffectingArrangedObjects
@@ -64,7 +64,7 @@
 
 + (CPSet)keyPathsForValuesAffectingSelectionIndexPath
 {
-    return[CPSet setWithObjects:@"selectionIndexPaths"];
+    return [CPSet setWithObjects:@"selectionIndexPaths"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelectedObjects
@@ -79,7 +79,7 @@
 
 + (CPSet)keyPathsForValuesAffectingCanAddChild
 {
-    return[CPSet setWithObjects:@"selectionIndexPaths"];
+    return [CPSet setWithObjects:@"selectionIndexPaths"];
 }
 
 + (CPSet)keyPathsForValuesAffectingCanInsert
@@ -178,8 +178,10 @@
 
     [self _rearrangeObjects];
 
-    if ([self preservesSelection])[self __setSelectedObjects:oldSelectedObjects];
-    else[self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
+    if ([self preservesSelection])
+        [self __setSelectedObjects:oldSelectedObjects];
+    else
+        [self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
 }
 
 - (void)_setContentArray:(id)anArray {[self setContent:anArray]; }
@@ -205,8 +207,10 @@
 
     [self __rebuildArrangedObjectsTree];
 
-    if ([self preservesSelection])[self __setSelectedObjects:oldSelectedObjects];
-    else[self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
+    if ([self preservesSelection])
+        [self __setSelectedObjects:oldSelectedObjects];
+    else
+        [self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
 }
 
 - (void)__rebuildArrangedObjectsTree
@@ -267,7 +271,7 @@
 - (BOOL)setSelectionIndexPath:(CPIndexPath)indexPath
 {
     var paths = indexPath ? [CPArray arrayWithObject:indexPath] : [CPArray array];
-    return[self setSelectionIndexPaths:paths];
+    return [self setSelectionIndexPaths:paths];
 }
 
 - (CPArray)selectionIndexPaths { return _selectionIndexPaths; }
@@ -281,12 +285,77 @@
     return result;
 }
 
+- (void)_ensureTreeNodesExistForIndexPaths:(CPArray)indexPaths
+{
+    if (!_childrenKeyPath)
+        return;
+
+    var count = [indexPaths count];
+
+    for (var i = 0; i < count; i++)
+    {
+        var path = [indexPaths objectAtIndex:i];
+        var length = [path length];
+        var currentNode = [self arrangedObjects];
+
+        for (var j = 0; j < length; j++)
+        {
+            var index = [path indexAtPosition:j];
+
+            var obj = [currentNode representedObject];
+            var expectedChildObjects = nil;
+
+            if (!obj && currentNode === [self arrangedObjects])
+                expectedChildObjects = [self contentArray];
+            else if (obj)
+                expectedChildObjects = [obj valueForKeyPath:_childrenKeyPath];
+
+            if (expectedChildObjects)
+            {
+                var childNodes = [currentNode mutableChildNodes];
+                var needsRebuild = NO;
+
+                if (!childNodes || [childNodes count] !== [expectedChildObjects count])
+                {
+                    needsRebuild = YES;
+                }
+                else
+                {
+                    for (var k = 0, kCount = [childNodes count]; k < kCount; k++)
+                    {
+                        if ([[childNodes objectAtIndex:k] representedObject] !== [expectedChildObjects objectAtIndex:k])
+                        {
+                            needsRebuild = YES;
+                            break;
+                        }
+                    }
+                }
+
+                if (needsRebuild)
+                {
+                    [childNodes removeAllObjects];
+                    var newNodes = [self _buildTreeNodesForObjects:expectedChildObjects];[childNodes addObjectsFromArray:newNodes];
+                }
+            }
+
+            var children = [currentNode childNodes];
+            if (children && index < [children count])
+                currentNode = [children objectAtIndex:index];
+            else
+                break;
+        }
+    }
+}
+
 - (BOOL)__setSelectionIndexPaths:(CPArray)indexPaths avoidEmpty:(BOOL)avoidEmpty
 {
     var newPaths = indexPaths;
 
     if (!newPaths)
         newPaths = [CPArray array];
+
+    if ([newPaths count] > 0)
+        [self _ensureTreeNodesExistForIndexPaths:newPaths];
 
     if (![newPaths count] && avoidEmpty)
     {
@@ -329,7 +398,7 @@
 {
     var newPaths = [_selectionIndexPaths mutableCopy];
     [newPaths removeObjectsInArray:indexPaths];
-    return[self setSelectionIndexPaths:newPaths];
+    return [self setSelectionIndexPaths:newPaths];
 }
 
 - (CPArray)selectedNodes
@@ -361,7 +430,7 @@
 - (BOOL)__setSelectedObjects:(CPArray)objects
 {
     if (!objects || [objects count] === 0)
-        return[self __setSelectionIndexPaths:[CPArray array] avoidEmpty:_avoidsEmptySelection];
+        return [self __setSelectionIndexPaths:[CPArray array] avoidEmpty:_avoidsEmptySelection];
 
     var newPaths = [CPMutableArray array];
     for (var i = 0, count = [objects count]; i < count; i++)
@@ -371,7 +440,7 @@
             [newPaths addObject:path];
     }
 
-    return[self __setSelectionIndexPaths:newPaths avoidEmpty:_avoidsEmptySelection];
+    return [self __setSelectionIndexPaths:newPaths avoidEmpty:_avoidsEmptySelection];
 }
 
 - (CPIndexPath)_indexPathForObject:(id)anObject inNode:(CPTreeNode)node
@@ -392,7 +461,7 @@
     return nil;
 }
 
-- (BOOL)canInsert { return[self isEditable]; }
+- (BOOL)canInsert { return [self isEditable]; }
 - (BOOL)canInsertChild { return [self isEditable] &&[_selectionIndexPaths count] > 0; }
 - (BOOL)canAddChild { return [self canInsertChild]; }
 
