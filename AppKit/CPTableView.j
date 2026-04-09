@@ -3486,13 +3486,73 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 [removeIndexes addIndex:columnIdx];
         }
 
-        var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
-        [self _unloadDataViewsInRows:rowIndexes columns:removeIndexes];
+        if ([removeIndexes count] > 0)
+        {
+            var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
+            [self _unloadDataViewsInRows:rowIndexes columns:removeIndexes];
 
-        [_tableColumns removeObjectsAtIndexes:removeIndexes];
+            [_tableColumns removeObjectsAtIndexes:removeIndexes];
 
-        _dirtyTableColumnRangeIndex = 0;
-        [self _recalculateTableColumnRanges];
+            _dirtyTableColumnRangeIndex = 0;
+            [self _recalculateTableColumnRanges];
+
+            // Shift cached index sets downwards to account for the removed columns
+            var shiftIndexSet = function(indexSet)
+            {
+                var newSet = [CPIndexSet indexSet];
+                [indexSet enumerateIndexesUsingBlock:function(idx, stop)
+                {
+                    if (![removeIndexes containsIndex:idx])
+                    {
+                        var shift = 0,
+                            remIdx = [removeIndexes firstIndex];
+
+                        while (remIdx !== CPNotFound && remIdx < idx)
+                        {
+                            shift++;
+                            remIdx = [removeIndexes indexGreaterThanIndex:remIdx];
+                        }
+
+                        [newSet addIndex:idx - shift];
+                    }
+                }];
+                return newSet;
+            };
+
+            _exposedColumns = shiftIndexSet(_exposedColumns);
+            _selectedColumnIndexes = shiftIndexSet(_selectedColumnIndexes);
+
+            // Shift individual index variables
+            var shiftIndex = function(idx)
+            {
+                if (idx === CPNotFound || idx === -1)
+                    return idx;
+                
+                if ([removeIndexes containsIndex:idx])
+                    return CPNotFound;
+                
+                var shift = 0,
+                    remIdx = [removeIndexes firstIndex];
+
+                while (remIdx !== CPNotFound && remIdx < idx)
+                {
+                    shift++;
+                    remIdx = [removeIndexes indexGreaterThanIndex:remIdx];
+                }
+
+                return idx - shift;
+            };
+
+            _editingColumn = shiftIndex(_editingColumn);
+            
+            _draggedColumnIndex = shiftIndex(_draggedColumnIndex);
+            if (_draggedColumnIndex === CPNotFound)
+                _draggedColumnIndex = -1;
+                
+            _clickedColumn = shiftIndex(_clickedColumn);
+            if (_clickedColumn === CPNotFound)
+                _clickedColumn = -1;
+        }
 
         [_differedColumnDataToRemove removeAllObjects];
         _needsDifferedTableColumnRemove = NO;
