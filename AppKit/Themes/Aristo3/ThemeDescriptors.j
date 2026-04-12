@@ -2820,11 +2820,11 @@ var themedButtonValues                      = nil,
     imageCancel = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": svgCancel,
         "mask-image": svgCancel,
-        "background-color": A3ColorActiveText,
+        "background-color": "#888888",
         "-webkit-mask-size": "contain", "mask-size": "contain",
         "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
         "-webkit-mask-position": "center", "mask-position": "center"
-    } size:CGSizeMake(11,11)],
+    } size:CGSizeMake(12,12)],
 
     imageSearchLight = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": svgMagnifier,
@@ -2961,7 +2961,7 @@ var themedButtonValues                      = nil,
         "-webkit-mask-size": "contain", "mask-size": "contain",
         "-webkit-mask-repeat": "no-repeat", "mask-repeat": "no-repeat",
         "-webkit-mask-position": "center", "mask-position": "center"
-    } size:CGSizeMake(11,11)],
+    } size:CGSizeMake(12,12)],
 
     // Small HUD
     imageSearchHUDSmall = [CPImage imageWithCSSDictionary:@{
@@ -3065,8 +3065,8 @@ var themedButtonValues                      = nil,
     [
      // --- Regular Size ---
      [@"image-search-inset",        CGInsetMake(-1, 0, 0, 2)],
-     [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, 0)],
-     
+     [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, -3)],
+
      [@"image-search",              imageSearch],
      [@"image-find",                imageSearch], // In Cocoa, find image shows only while editing
      [@"image-search",              imageSearch,                    CPThemeStateEditing],
@@ -3098,7 +3098,7 @@ var themedButtonValues                      = nil,
 
      // --- Small Size ---
      [@"image-search-inset",        CGInsetMake(-1, -1, 0, 2),      CPThemeStateControlSizeSmall],
-     [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, -1),      CPThemeStateControlSizeSmall],
+     [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, -2),      CPThemeStateControlSizeSmall],
      [@"image-search",              imageSearchSmall,               CPThemeStateControlSizeSmall],
      [@"image-find",                imageSearchSmall,               [CPThemeStateControlSizeSmall, CPThemeStateEditing]],
      [@"image-find",                imageFindSmall,                 [CPThemeStateControlSizeSmall, CPThemeStateEditing]], // Specific override
@@ -3122,7 +3122,7 @@ var themedButtonValues                      = nil,
 
      // --- Mini Size ---
      [@"image-search-inset",        CGInsetMake(-1, -2, 0, 2),      CPThemeStateControlSizeMini],
-     [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, -2),      CPThemeStateControlSizeMini],
+     [@"image-cancel-inset",        CGInsetMake(-1, 5, 0, -3),      CPThemeStateControlSizeMini],
      [@"image-search",              imageSearchMini,                CPThemeStateControlSizeMini],
      [@"image-find",                imageSearchMini,                [CPThemeStateControlSizeMini, CPThemeStateEditing]],
      [@"image-find",                imageFindMini,                  [CPThemeStateControlSizeMini, CPThemeStateEditing]],
