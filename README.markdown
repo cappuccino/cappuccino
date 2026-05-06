@@ -6,8 +6,6 @@
 > **✨ Project Status: Active Development & Node.js Transition**
 > Cappuccino has been under continuous development since 2008 and is actively maintained. A major transition to a modern, **Node.js-based toolchain** has recently been finalized. The current release is a production-ready Release Candidate, with a formal release scheduled for 2026. It is stable, fast, and ready for new projects.
 
----
-
 ## Why Use Cappuccino?
 
 Cappuccino is an open-source framework that supports building powerful, desktop-class applications running in any modern web browser. Cappuccino is not intended for building simple websites. It is for building **applications**—especially complex, data-rich, line-of-business tools where productivity and user experience are paramount. Instead of direct manipulation of HTML, CSS, and the DOM, applications are built using Objective-J, a superset of JavaScript modeled on Objective-C. This gives you a lot of benefits:
