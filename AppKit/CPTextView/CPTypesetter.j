@@ -318,6 +318,9 @@ var CPSystemTypesetterFactory,
 
         var currentCharCode = theString.charCodeAt(glyphIndex),
             charStr = theString.charAt(glyphIndex),
+            // this is ignoring kerning and ligatures but 100x faster than calculating the full string
+            // we cut corners here and do the exact calculation in - glyphFrames of _CPLineFragment (CPLayoutManager.j)
+            // this gives an overall speed imrovement of ~20% in my testing (depending on text size / view size of course)
             charWidth = [charStr sizeWithFont:currentFont inWidth:NULL].width,
             rangeWidth = prevRangeWidth + charWidth;
 

@@ -1229,6 +1229,10 @@ var _objectsInRange = function(aList, aRange)
     }
 }
 
+// The spacings with kerning/ligatures are recalculated here for the visible part
+// See comment in layoutGlyphsInLayoutManager: of CPSimpleTypesetter
+// This gives an overall speed imrovement of ~20% in my testing (depending on text size / view size of course)
+
 - (CPArray)glyphFrames
 {
     if (!_exactFramesCalculated && _glyphsFrames && _runs && _runs.length > 0)
