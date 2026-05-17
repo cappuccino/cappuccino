@@ -286,6 +286,8 @@ _oncontextmenuhandler = function () { return false; };
 
     if (removeRange.length)
         _removeInvalidLineFragmentsRange = CPMakeRangeCopy(removeRange);
+    else
+        _removeInvalidLineFragmentsRange = nil;
 
     // We erased all lines
     if (!startIndex)
@@ -716,7 +718,7 @@ _oncontextmenuhandler = function () { return false; };
 
     var index = location - lineFragment._range.location;
 
-    return lineFragment._glyphsFrames[index]._descent;
+    return [lineFragment glyphFrames][index]._descent;
 }
 
 - (void)setLineFragmentRect:(CGRect)fragmentRect forGlyphRange:(CPRange)glyphRange usedRect:(CGRect)usedRect
@@ -1074,6 +1076,7 @@ var _objectsInRange = function(aList, aRange)
 
     BOOL            _isInvalid;
     BOOL            _isLast;
+    BOOL            _exactFramesCalculated;
     CGRect          _fragmentRect;
     CGRect          _usedRect;
     CGPoint         _location;
@@ -1161,6 +1164,7 @@ var _objectsInRange = function(aList, aRange)
         _range = CPMakeRangeCopy(aRange);
         _textContainer = aContainer;
         _isInvalid = NO;
+        _exactFramesCalculated = NO;
         _runs = [];
         _glyphsFrames = [];
         _glyphsOffsets = [];
@@ -1207,6 +1211,8 @@ var _objectsInRange = function(aList, aRange)
 
 - (void)setAdvancements:(CPArray)someAdvancements
 {
+    _exactFramesCalculated = NO;
+
     var count = someAdvancements.length,
         origin = CGPointMake(_fragmentRect.origin.x + _location.x, _fragmentRect.origin.y),
         height = _usedRect.size.height;
@@ -1221,6 +1227,62 @@ var _objectsInRange = function(aList, aRange)
         _glyphsOffsets[i] = height - someAdvancements[i].height;
         origin.x += someAdvancements[i].width;
     }
+}
+
+- (CPArray)glyphFrames
+{
+    if (!_exactFramesCalculated && _glyphsFrames && _runs && _runs.length > 0)
+    {
+        _exactFramesCalculated = YES;
+        var originX = _fragmentRect.origin.x + _location.x,
+        currentX = originX,
+        frameIndex = 0,
+        l = _runs.length;
+
+        // Wir gehen alle Runs (Wörter/Textblöcke in dieser Zeile) durch
+        for (var r = 0; r < l; r++)
+        {
+            var run = _runs[r],
+            runStr = run.string;
+
+            if (!runStr)
+            {
+                // Attachments / Unsichtbares überspringen
+                if (frameIndex < _glyphsFrames.length)
+                {
+                    var frame = _glyphsFrames[frameIndex];
+                    frame.origin.x = currentX;
+                    currentX += frame.size.width;
+                    frameIndex++;
+                }
+                continue;
+            }
+
+            var runLen = runStr.length,
+            runFont = run.font;
+
+            // Nun messen wir für diesen sichtbaren Run den exakten Substring inkl. Kerning/Ligaturen
+            for (var i = 0; i < runLen; i++)
+            {
+                if (frameIndex >= _glyphsFrames.length) break;
+
+                var frame = _glyphsFrames[frameIndex],
+                prefix = runStr.substr(0, i),
+                prefixWidth = prefix.length > 0 ? [prefix sizeWithFont:runFont inWidth:NULL].width : 0.0,
+                prefixWithChar = runStr.substr(0, i + 1),
+                prefixWithCharWidth = [prefixWithChar sizeWithFont:runFont inWidth:NULL].width;
+
+                frame.origin.x = currentX + prefixWidth;
+                frame.size.width = prefixWithCharWidth - prefixWidth;
+
+                frameIndex++;
+            }
+
+            currentX += [runStr sizeWithFont:runFont inWidth:NULL].width;
+        }
+    }
+
+    return _glyphsFrames;
 }
 
 - (void)_adjustForHeight:(double)height
@@ -1281,6 +1343,8 @@ var _objectsInRange = function(aList, aRange)
 
 - (void)drawInContext:(CGContext)context atPoint:(CGPoint)aPoint forRange:(CPRange)aRange
 {
+    [self glyphFrames]; // Erzwingt die exakte Berechnung, bevor gezeichnet wird!
+
     var runs = _objectsInRange(_runs, aRange),
         c = runs.length,
         orig = CGPointMake(_fragmentRect.origin.x, _fragmentRect.origin.y);

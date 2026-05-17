@@ -316,8 +316,10 @@ var CPSystemTypesetterFactory,
         lineRange.length++;
         measuringRange.length++;
 
-        var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
-            rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:currentFont inWidth:NULL].width + currentAnchor;
+        var currentCharCode = theString.charCodeAt(glyphIndex),
+            charStr = theString.charAt(glyphIndex),
+            charWidth = [charStr sizeWithFont:currentFont inWidth:NULL].width,
+            rangeWidth = prevRangeWidth + charWidth;
 
         switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
