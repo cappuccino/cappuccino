@@ -316,13 +316,8 @@ var CPSystemTypesetterFactory,
         lineRange.length++;
         measuringRange.length++;
 
-        var currentCharCode = theString.charCodeAt(glyphIndex),
-            charStr = theString.charAt(glyphIndex),
-            // this is ignoring kerning and ligatures but 100x faster than calculating the full string
-            // we cut corners here and do the exact calculation in - glyphFrames of _CPLineFragment (CPLayoutManager.j)
-            // this gives an overall speed imrovement of ~20% in my testing (depending on text size / view size of course)
-            charWidth = [charStr sizeWithFont:currentFont inWidth:NULL].width,
-            rangeWidth = prevRangeWidth + charWidth;
+        var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
+            rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:currentFont inWidth:NULL].width + currentAnchor;
 
         switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
@@ -370,6 +365,17 @@ var CPSystemTypesetterFactory,
                 wrapWidth = rangeWidth;
                 wrapRange._height = _lineHeight;
                 wrapRange._base = _lineBase;
+                
+                // Optimization: Start measuring from the next character to avoid O(n^2) 
+                // string width calculation within a line since spaces do not carry ligatures or kerning.
+                // Only reset the measuring range if the next character is NOT another space.
+                // This prevents compounded subpixel rounding errors with contiguous spaces.
+                if (theString.charCodeAt(glyphIndex + 1) !== 32)
+                {
+                    currentAnchor = rangeWidth;
+                    measuringRange = CPMakeRange(glyphIndex + 1, 0);
+                }
+                
                 break;
 
             case 10:
