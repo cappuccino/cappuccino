@@ -286,6 +286,8 @@ _oncontextmenuhandler = function () { return false; };
 
     if (removeRange.length)
         _removeInvalidLineFragmentsRange = CPMakeRangeCopy(removeRange);
+    else
+        _removeInvalidLineFragmentsRange = nil;
 
     // We erased all lines
     if (!startIndex)
