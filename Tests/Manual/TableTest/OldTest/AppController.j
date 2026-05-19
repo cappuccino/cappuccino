@@ -164,10 +164,20 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 - (void)removeColumn:(id)sender
 {
-   // if ([[tableView tableColumns] containsObject:randomColumn])
-        [tableView removeTableColumn:randomColumn];
-    //else
-      //  [tableView addTableColumn:randomColumn];
+    var columns = [tableView tableColumns];
+    
+    // Check if we still have columns left to remove
+    if (columns && [columns count] > 0)
+    {
+        var columnToRemove = [columns lastObject];
+        [tableView removeTableColumn:columnToRemove];
+        
+        CPLog.debug(@"Removed column with identifier: " + [columnToRemove identifier]);
+    }
+    else
+    {
+        CPLog.debug(@"No more columns to remove!");
+    }
 }
 
 - (void)addColumn:(id)sender

@@ -365,6 +365,17 @@ var CPSystemTypesetterFactory,
                 wrapWidth = rangeWidth;
                 wrapRange._height = _lineHeight;
                 wrapRange._base = _lineBase;
+                
+                // Optimization: Start measuring from the next character to avoid O(n^2) 
+                // string width calculation within a line since spaces do not carry ligatures or kerning.
+                // Only reset the measuring range if the next character is NOT another space.
+                // This prevents compounded subpixel rounding errors with contiguous spaces.
+                if (theString.charCodeAt(glyphIndex + 1) !== 32)
+                {
+                    currentAnchor = rangeWidth;
+                    measuringRange = CPMakeRange(glyphIndex + 1, 0);
+                }
+                
                 break;
 
             case 10:
