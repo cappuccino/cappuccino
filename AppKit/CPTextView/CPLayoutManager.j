@@ -305,13 +305,17 @@ _oncontextmenuhandler = function () { return false; };
 
 - (BOOL)_rescuingInvalidFragmentsWasPossibleForGlyphRange:(CPRange)aRange
 {
-    var l = _lineFragments.length,
-        location = aRange.location,
-        found = NO,
-        targetLine = 0;
+    // 1. EARLY EXIT: If there are no fragments to rescue (e.g. setting new text), do nothing.
+    if (!_lineFragmentsForRescue || _lineFragmentsForRescue.length === 0)
+        return NO;
 
-   // try to find the first linefragment of the desired range
-    for (; targetLine < l; targetLine++)
+    var l = _lineFragments.length,
+            location = aRange.location,
+            found = NO,
+            targetLine = l - 1; // Start from the END of the array
+
+    // 2. REVERSE SEARCH: The fragment we want is almost always at the end.
+    for (; targetLine >= 0; targetLine--)
     {
         if (CPLocationInRange(location, _lineFragments[targetLine]._range))
         {
@@ -333,9 +337,6 @@ _oncontextmenuhandler = function () { return false; };
         oldLength = CPMaxRange([_lineFragmentsForRescue lastObject]._range),
         newLength = [[_textStorage string].length],
         removalSkip = 1;
-
-  //  if (ABS(newLength - oldLength) > 1)
-  //      return NO;
 
     if (![oldLineFragment isVisuallyIdenticalToFragment:newLineFragment])
     {
