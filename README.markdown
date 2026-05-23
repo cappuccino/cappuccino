@@ -78,7 +78,7 @@ Pure JavaScript and Objective-J can be mixed and matched, even in the same file.
 ## Find Out More
 
 *   **Official Website:** [cappuccino.dev](http://cappuccino.dev)
-*   **Documentation & Tutorials:** [cappuccino.dev/learn/](http://cappuccino.dev/learn/),  [cappuccino cookbook](https://cappuccino-cookbook.5apps.com)
+*   **Documentation & Tutorials:** [cappuccino.dev/learn/](http://cappuccino.dev/learn/), [Browser online documentation](https://daboe01.github.io/CappDoc/), [cappuccino cookbook](https://cappuccino-cookbook.5apps.com)
 *   **Gitter Community Chat:** [gitter.im/cappuccino/cappuccino](https://gitter.im/cappuccino/cappuccino)
 *   **GitHub Wiki:** [github.com/cappuccino/cappuccino/wiki](https://github.com/cappuccino/cappuccino/wiki)
 *   **FAQ:** [cappuccino.dev/support/faq.html](http://cappuccino.dev/support/faq.html)
