@@ -8,7 +8,7 @@
 
 ## Why Use Cappuccino?
 
-Cappuccino is an open-source framework that supports building powerful, desktop-class applications running in any modern web browser. Cappuccino is not intended for building simple websites. It is for building **applications**—especially complex, data-rich, line-of-business tools where productivity and user experience are paramount. Instead of direct manipulation of HTML, CSS, and the DOM, applications are built using Objective-J, a superset of JavaScript modeled on Objective-C. This gives you a lot of benefits:
+Cappuccino is not intended for building websites. It is for building **applications**—especially complex, data-rich, line-of-business tools where productivity and user experience are paramount. Instead of direct manipulation of HTML, CSS, and the DOM, applications are built using Objective-J, a superset of JavaScript modeled on Objective-C. This gives you a lot of benefits:
 
 *   **💻 True Desktop Behavior, Out-of-the-Box:** Applications built with Cappuccino behave like native desktop software by default. This includes a rich palette of UI controls, **full keyboard navigation and focus management**, and **multi-level undo/redo support** — as you can see in this [Showcase application](https://ansb.uniklinik-freiburg.de/ThemeKitchenSinkA3). Also take a look at the [Cookbook tutorial](https://cappuccino-cookbook.5apps.com/).
 *   **🚀 Incredible Productivity:** Less code is needed. High-level abstractions and a powerful object-oriented model mean development is focused on application logic, not browser quirks.
