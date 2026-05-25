@@ -330,17 +330,16 @@ var kRgsymRtf = {
 
 - (BOOL)pushState
 {
-    _states.push["group"];
+    _states.push(_curState);
     return YES;
 }
 
 - (BOOL)popState
 {
-    _states.pop();
-
-    if (_curState > 0)
-        _curState--;
-
+    if (_states.length > 0)
+    {
+        _curState = _states.pop();
+    }
     return YES;
 }
 
@@ -602,9 +601,6 @@ var kRgsymRtf = {
                CPLogConsole("skip : " + keyword + " param: " + param);
 
         }
-
-        if (_states.length > 0)
-            _curState = 1;
 
         return '';
     }
