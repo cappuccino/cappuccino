@@ -40,6 +40,15 @@ FIXME: this class should be redone using a 'real' parser
 
 var hexTable = [];
 
+var cp1252Map = {
+    0x80: 0x20AC, 0x82: 0x201A, 0x83: 0x0192, 0x84: 0x201E, 0x85: 0x2026,
+    0x86: 0x2020, 0x87: 0x2021, 0x88: 0x02C6, 0x89: 0x2030, 0x8A: 0x0160,
+    0x8B: 0x2039, 0x8C: 0x0152, 0x8E: 0x017D, 0x91: 0x2018, 0x92: 0x2019,
+    0x93: 0x201C, 0x94: 0x201D, 0x95: 0x2022, 0x96: 0x2013, 0x97: 0x2014,
+    0x98: 0x02DC, 0x99: 0x2122, 0x9A: 0x0161, 0x9B: 0x203A, 0x9C: 0x0153,
+    0x9E: 0x017E, 0x9F: 0x0178
+};
+
 // Hold the attributes of the current run
 @implementation _RTFAttribute : CPObject
 {
@@ -346,25 +355,23 @@ var kRgsymRtf = {
             return '';
 
         case "ipfnHex":
-            ch = _rtf.charAt(++_currentParseIndex);
-
             var hex = '';
-
-            while (new RegExp("[a-fA-F0-9\\']").test(ch))
+            // Konsumiere exakt 2 Zeichen nach dem \'
+            for (var i = 0; i < 2; i++)
             {
-                if (ch == "'")
+                var nextCh = _rtf.charAt(++_currentParseIndex);
+                if (/[a-fA-F0-9]/.test(nextCh))
                 {
-                    _currentParseIndex++;
-                    continue;
+                    hex += nextCh;
                 }
-
-                hex += (ch + '');
-                ch = _rtf.charAt(++_currentParseIndex);
+                else
+                {
+                    _currentParseIndex--;
+                    break;
+                }
             }
-            //ch = parseInt(ch, 16);
-            //console.log("hex : " + hex);
+
             _hexreturn = YES;
-            _currentParseIndex--;
 
             if (_curState !== 0)
                return '';
@@ -734,32 +741,16 @@ var kRgsymRtf = {
                 {
                     if (ch.length > 0)
                     {
-                        if (parseInt(ch, 16) & 0x80)
-                        {
-                            hex += ch.toUpperCase();
+                        var byteVal = parseInt(ch, 16);
+                        var unicodeVal = byteVal;
+                        
+                        // Windows-1252 Mapping für den Bereich 0x80 - 0x9F anwenden
+                        if (byteVal >= 0x80 && byteVal <= 0x9F) {
+                            unicodeVal = cp1252Map[byteVal] || byteVal;
                         }
-                        else
-                        {
-                            [self _appendPlainString: String.fromCharCode(parseInt((hex + ch), 16))];
-                            hex = '';
-                        }
-
-                        if (hex.length == 4)
-                        {
-                            var temp = parseInt(hex, 16);
-
-                            if (hexTable && hexTable[hex.toUpperCase()] !== undefined)
-                                temp = parseInt(hexTable[hex.toUpperCase()], 16);
-
-                            [self _appendPlainString: String.fromCharCode(temp)];
-                            hex = '';
-                        }
+                        
+                        [self _appendPlainString: String.fromCharCode(unicodeVal)];
                     }
-                    else
-                    {
-                        CPLogConsole("hex skipped");
-                    }
-
                     _hexreturn = NO;
                 }
                 else if (ch !== undefined && _curState === 0)
