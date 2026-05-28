@@ -120,7 +120,7 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 }
 
 // Builds the current formatting lookup key (e.g. "%[property]@ %[is]@ %@")
-- (CPString)formattingKeyForViews:(NSArray *)views
+- (CPString)formattingKeyForViews:(CPArray)views
 {
     var keyParts = [];
     var count = [views count];
@@ -133,7 +133,7 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 }
 
 // Localizes all popup menu options within the row under their proper context
-- (void)localizeMenuItemsForViews:(NSArray *)views
+- (void)localizeMenuItemsForViews:(CPArray)views
 {
     var count = [views count];
     for (var i = 0; i < count; i++)
@@ -189,7 +189,7 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 }
 
 // Translates labels and reorders the active subviews based on positional formatting string
-- (NSArray *)localizeAndReorderViews:(NSArray *)views
+- (CPArray)localizeAndReorderViews:(CPArray)views
 {
     var key = [self formattingKeyForViews:views];
     var localizedPattern = [self localizedStringForString:key];
