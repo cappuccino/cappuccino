@@ -17,14 +17,13 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-@import <AppKit/CPView.j>
-@import <AppKit/CPScrollView.j>
-@import <AppKit/CPBezierPath.j>
-@import <AppKit/CPColor.j>
-@import <AppKit/CPStringDrawing.j>
-@import <AppKit/CPFont.j>
-@import <AppKit/CPImage.j>
-@import <Foundation/CPAttributedString.j>
+@import "CPView.j"
+@import "CPScrollView.j"
+@import "CPBezierPath.j"
+@import "CPColor.j"
+@import "CPStringDrawing.j"
+@import "CPFont.j"
+@import "CPImage.j"
 
 @class CPRulerMarker
 
