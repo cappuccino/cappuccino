@@ -1021,6 +1021,22 @@ var LABEL_MARGIN    = 2.0;
     BOOL            _FIXME_isHUD;
 }
 
+- (BOOL)acceptsFirstResponder
+{
+    if (_view && [_view acceptsFirstResponder])
+        return YES;
+
+     return NO;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    if (_view && [_view acceptsFirstResponder])
+        return [[self window] makeFirstResponder:_view];
+
+    return [super becomeFirstResponder];
+}
+
 - (id)initWithToolbarItem:(CPToolbarItem)aToolbarItem toolbar:(CPToolbar)aToolbar
 {
     self = [super init];

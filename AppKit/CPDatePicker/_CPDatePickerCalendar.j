@@ -251,7 +251,15 @@
 
 - (void)_displayNextMonth
 {
-     [self setDateValue:[_monthView nextMonth]];
+    // Copy the date so we don't modify the view's state directly
+    var nextDate = [[_monthView nextMonth] copy];
+    
+    // Set to the middle of the month (15th).
+    // This prevents [setDateValue:]'s timezone adjustment from 
+    // shifting the date back into the previous month (e.g., Nov 1 -> Oct 31).
+    nextDate.setDate(15);
+    
+    [self setDateValue:nextDate];
 }
 
 - (void)_displayPreviousMonth

@@ -44,11 +44,11 @@
     [button setKeyEquivalent:"a"];
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0
         timestamp:0 windowNumber:0 context:nil
-        characters:"b" charactersIgnoringModifiers:"b" isARepeat:NO keyCode:0]];
+        characters:"b" charactersIgnoringModifiers:"b" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:wasClicked];
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0
         timestamp:0 windowNumber:0 context:nil
-        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0]];
+        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertTrue:wasClicked];
 }
 
@@ -60,11 +60,11 @@
     [button setKeyEquivalentModifierMask:CPAlternateKeyMask];
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0
         timestamp:0 windowNumber:0 context:nil
-        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0]];
+        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:wasClicked];
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:CPAlternateKeyMask
         timestamp:0 windowNumber:0 context:nil
-        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0]];
+        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertTrue:wasClicked];
 }
 
@@ -76,12 +76,12 @@
 
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0
         timestamp:0 windowNumber:0 context:nil
-        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0]];
+        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:wasClicked];
 
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:CPShiftKeyMask
         timestamp:0 windowNumber:0 context:nil
-        characters:"A" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0]];
+        characters:"A" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertTrue:wasClicked];
 }
 
@@ -92,15 +92,15 @@
     [button setKeyEquivalent:CPEscapeFunctionKey];
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0
         timestamp:0 windowNumber:0 context:nil
-        characters:CPDeleteCharacter charactersIgnoringModifiers:CPDeleteCharacter isARepeat:NO keyCode:0]];
+        characters:CPDeleteCharacter charactersIgnoringModifiers:CPDeleteCharacter isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:wasClicked];
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0
         timestamp:0 windowNumber:0 context:nil
-        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0]];
+        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:wasClicked];
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0
         timestamp:0 windowNumber:0 context:nil
-        characters:CPEscapeFunctionKey charactersIgnoringModifiers:CPEscapeFunctionKey isARepeat:NO keyCode:0]];
+        characters:CPEscapeFunctionKey charactersIgnoringModifiers:CPEscapeFunctionKey isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertTrue:wasClicked];
 }
 

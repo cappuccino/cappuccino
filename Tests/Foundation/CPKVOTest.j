@@ -3,6 +3,8 @@
 
 @class CarTester
 @class ToManyTester
+@class AccountTester
+@class TransactionTester
 
 @implementation CPKVOTest : OJTestCase
 {
@@ -436,6 +438,35 @@
     [self assertTrue:_sawObservation message:@"Never recieved an observation"];
 }
 
+- (void)testCollectionOperatorKeyPath
+{
+    var account = [[AccountTester alloc] init],
+        t1 = [[TransactionTester alloc] initWithAmount:10.0],
+        t2 = [[TransactionTester alloc] initWithAmount:20.0];
+
+    [account setTransactions:[t1, t2]];
+
+    // 1. Test updating a child property triggers an aggregate update
+    [account addObserver:self forKeyPath:@"transactions.@sum.amount" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:@"testCollectionOperatorKeyPath_ItemChange"];
+    
+    _sawObservation = NO;
+    [t1 setAmount:15.0]; // KVC sum goes from 30.0 -> 35.0
+    
+    [self assertTrue:_sawObservation message:@"Never received an observation when child item's property changed"];
+    [account removeObserver:self forKeyPath:@"transactions.@sum.amount"];
+
+    // 2. Test replacing the whole array triggers an aggregate update
+    [account addObserver:self forKeyPath:@"transactions.@sum.amount" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:@"testCollectionOperatorKeyPath_ArrayReplace"];
+    
+    var t3 = [[TransactionTester alloc] initWithAmount:5.0];
+    
+    _sawObservation = NO;
+    [account setTransactions:[t1, t2, t3]]; // KVC sum goes from 35.0 -> 40.0
+
+    [self assertTrue:_sawObservation message:@"Never received an observation when collection was replaced"];
+    [account removeObserver:self forKeyPath:@"transactions.@sum.amount"];
+}
+
 - (void)testPerformance
 {
     bob = [PersonTester new];
@@ -777,6 +808,16 @@
             testNestedNotificationsBobCount += 1;
             break;
 
+        case "testCollectionOperatorKeyPath_ItemChange":
+            [self assert:newValue equals:35.0];
+            [self assert:oldValue equals:30.0];
+            break;
+
+        case "testCollectionOperatorKeyPath_ArrayReplace":
+            [self assert:newValue equals:40.0];
+            [self assert:oldValue equals:35.0];
+            break;
+
         default:
             [self assertFalse:YES message:@"unhandled observation, must be an error"];
             return;
@@ -954,4 +995,26 @@
     return [CPSet setWithObjects:@"affectingKey", @"otherAffectingKey"];
 }
 
+@end
+
+@implementation TransactionTester : CPObject
+{
+    float amount @accessors;
+}
+
+- (id)initWithAmount:(float)anAmount
+{
+    self = [super init];
+    if (self) {
+        amount = anAmount;
+    }
+    return self;
+}
+
+@end
+
+@implementation AccountTester : CPObject
+{
+    CPArray transactions @accessors;
+}
 @end

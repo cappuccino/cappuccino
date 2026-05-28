@@ -36,6 +36,7 @@
     BOOL    _hasResizeControl;
     BOOL    _resizeControlIsLeftAligned;
     CPArray _buttons;
+    CPArray _rightButtons;
 }
 
 + (id)plusButton
@@ -104,6 +105,7 @@
     if (self)
     {
         _buttons = [];
+        _rightButtons = [];
         [self setNeedsLayout];
     }
 
@@ -155,6 +157,30 @@
 - (CPArray)buttons
 {
     return [CPArray arrayWithArray:_buttons];
+}
+
+- (void)setRightButtons:(CPArray)buttons
+{
+    for (var i = [_rightButtons count] - 1; i >= 0; i--)
+    {
+        [_rightButtons[i] removeFromSuperview];
+        [_rightButtons[i] removeObserver:self forKeyPath:@"hidden"];
+    }
+
+    _rightButtons = [CPArray arrayWithArray:buttons];
+
+    for (var i = [_rightButtons count] - 1; i >= 0; i--)
+    {
+        [_rightButtons[i] addObserver:self forKeyPath:@"hidden" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:nil];
+        [_rightButtons[i] setBordered:YES];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (CPArray)rightButtons
+{
+    return [CPArray arrayWithArray:_rightButtons];
 }
 
 - (void)setHasResizeControl:(BOOL)shouldHaveResizeControl
@@ -243,46 +269,73 @@
         }
     }
 
-    var currentButtonOffset = _resizeControlIsLeftAligned ? CGRectGetMaxX([self bounds]) + 1 : -1,
-        bounds = [self bounds],
+    var rightButtonsNotHidden = [CPArray arrayWithArray:_rightButtons],
+        rightCount = [rightButtonsNotHidden count];
+
+    while (rightCount--)
+    {
+        var button = rightButtonsNotHidden[rightCount];
+
+        if ([button isHidden])
+        {
+            [button removeFromSuperview];
+            [rightButtonsNotHidden removeObject:button];
+        }
+    }
+
+    var bounds = [self bounds],
         height = CGRectGetHeight(bounds) - 1,
         frameWidth = CGRectGetWidth(bounds),
         resizeRect = _hasResizeControl ? [self rectForEphemeralSubviewNamed:"resize-control-view"] : CGRectMakeZero(),
         resizeWidth = CGRectGetWidth(resizeRect),
         availableWidth = frameWidth - resizeWidth - 1;
 
-    for (var i = 0, count = [buttonsNotHidden count]; i < count; i++)
+    var currentLeftOffset = _resizeControlIsLeftAligned ? resizeWidth - 1 : -1,
+        currentRightOffset = _resizeControlIsLeftAligned ? CGRectGetMaxX(bounds) + 1 : CGRectGetMaxX(bounds) - resizeWidth + 1;
+
+    var setupButton = function(button, isRightAligned)
     {
-        var button = buttonsNotHidden[i],
-            width = CGRectGetWidth([button frame]);
+        var width = CGRectGetWidth([button frame]);
 
         if (availableWidth > width)
             availableWidth -= width;
         else
-            break;
+            return NO;
 
-        if (_resizeControlIsLeftAligned)
+        if (isRightAligned)
         {
-            [button setFrame:CGRectMake(currentButtonOffset - width, 1, width, height)];
-            currentButtonOffset -= width - 1;
+            [button setFrame:CGRectMake(currentRightOffset - width, 1, width, height)];
+            currentRightOffset -= width - 1;
         }
         else
-        {
-            [button setFrame:CGRectMake(currentButtonOffset, 1, width, height)];
-            currentButtonOffset += width - 1;
+        {[button setFrame:CGRectMake(currentLeftOffset, 1, width, height)];
+            currentLeftOffset += width - 1;
         }
 
         [button setValue:normalColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateNormal, CPThemeStateBordered]];
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateHighlighted,  CPThemeStateBordered, ]];
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateHighlighted, CPThemeStateBordered]];
         [button setValue:disabledColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateDisabled, CPThemeStateBordered]];
         [button setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateBordered];
 
-        // FIXME shouldn't need this
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateNormal, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
+        // FIXME shouldn't need this[button setValue:normalColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateNormal, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
         [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateHighlighted, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
         [button setValue:disabledColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateDisabled, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
 
         [self addSubview:button];
+        
+        return YES;
+    };
+
+    for (var i = 0, count = [buttonsNotHidden count]; i < count; i++)
+    {
+        if (!setupButton(buttonsNotHidden[i], _resizeControlIsLeftAligned))
+            break;
+    }
+
+    for (var i = 0, count = [rightButtonsNotHidden count]; i < count; i++)
+    {
+        if (!setupButton(rightButtonsNotHidden[i], YES))
+            break;
     }
 
     if (_hasResizeControl)
@@ -314,7 +367,8 @@
 
 var CPButtonBarHasResizeControlKey = @"CPButtonBarHasResizeControlKey",
     CPButtonBarResizeControlIsLeftAlignedKey = @"CPButtonBarResizeControlIsLeftAlignedKey",
-    CPButtonBarButtonsKey = @"CPButtonBarButtonsKey";
+    CPButtonBarButtonsKey = @"CPButtonBarButtonsKey",
+    CPButtonBarRightButtonsKey = @"CPButtonBarRightButtonsKey";
 
 @implementation CPButtonBar (CPCoding)
 
@@ -325,6 +379,7 @@ var CPButtonBarHasResizeControlKey = @"CPButtonBarHasResizeControlKey",
     [aCoder encodeBool:_hasResizeControl forKey:CPButtonBarHasResizeControlKey];
     [aCoder encodeBool:_resizeControlIsLeftAligned forKey:CPButtonBarResizeControlIsLeftAlignedKey];
     [aCoder encodeObject:_buttons forKey:CPButtonBarButtonsKey];
+    [aCoder encodeObject:_rightButtons forKey:CPButtonBarRightButtonsKey];
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -332,6 +387,7 @@ var CPButtonBarHasResizeControlKey = @"CPButtonBarHasResizeControlKey",
     if (self = [super initWithCoder:aCoder])
     {
         _buttons = [aCoder decodeObjectForKey:CPButtonBarButtonsKey] || [];
+        _rightButtons = [aCoder decodeObjectForKey:CPButtonBarRightButtonsKey] || [];
         _hasResizeControl = [aCoder decodeBoolForKey:CPButtonBarHasResizeControlKey];
         _resizeControlIsLeftAligned = [aCoder decodeBoolForKey:CPButtonBarResizeControlIsLeftAlignedKey];
     }

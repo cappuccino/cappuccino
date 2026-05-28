@@ -64,6 +64,9 @@ var AppControllerInstance = nil;
 - (void)awakeFromCib
 {
     [[tableView tableColumns][0] setDataView:dataView];
+    
+    // Set the delegate so we can test the new toolTip feature
+    [tableView setDelegate:self];
 
     rows = [
         [CPDictionary dictionaryWithJSObject:{ id:1, filename: "Jack.png", size:1327, uploading:NO, progress:0 }],
@@ -86,6 +89,27 @@ var AppControllerInstance = nil;
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(CPInteger)index
 {
     return !uploading;
+}
+
+// --------------------------------------------------------------------------------------
+// Tool tip test
+// --------------------------------------------------------------------------------------
+- (CPString)tableView:(CPTableView)aTableView toolTipForView:(CPView)aView rect:(CGRect)aRect tableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex mouseLocation:(CGPoint)aPoint
+{
+    // Make sure the row exists
+    if (aRowIndex < 0 || aRowIndex >= [rows count])
+        return nil;
+
+    var info = [rows objectAtIndex:aRowIndex],
+        filename = [info valueForKey:@"filename"],
+        isUploading = [info valueForKey:@"uploading"],
+        progress = [info valueForKey:@"progress"];
+
+    // Provide a dynamic tooltip based on the state of the data in the row
+    if (isUploading)
+        return [CPString stringWithFormat:@"Uploading '%@' (%d%% complete)", filename, progress];
+
+    return [CPString stringWithFormat:@"File: %@\nStatus: Idle", filename];
 }
 
 - (@action)start:(id)sender

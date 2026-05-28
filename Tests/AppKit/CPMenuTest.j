@@ -149,24 +149,24 @@
     // Don't match anything.
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask
         timestamp:0 windowNumber:0 context:nil
-        characters:"b" charactersIgnoringModifiers:"b" isARepeat:NO keyCode:0]];
+        characters:"b" charactersIgnoringModifiers:"b" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled || undoWasCalled];
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:0
         timestamp:0 windowNumber:0 context:nil
-        characters:"o" charactersIgnoringModifiers:"o" isARepeat:NO keyCode:0]];
+        characters:"o" charactersIgnoringModifiers:"o" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled || undoWasCalled];
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask
         timestamp:0 windowNumber:0 context:nil
-        characters:"o" charactersIgnoringModifiers:"o" isARepeat:NO keyCode:0]];
+        characters:"o" charactersIgnoringModifiers:"o" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || undoWasCalled];
     [self assertTrue:openDocumentWasCalled message:"expect openDocumentWasCalled"];
 
     openDocumentWasCalled = NO;
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask
         timestamp:0 windowNumber:0 context:nil
-        characters:CPUndoKeyEquivalent charactersIgnoringModifiers:CPUndoKeyEquivalent isARepeat:NO keyCode:0]];
+        characters:CPUndoKeyEquivalent charactersIgnoringModifiers:CPUndoKeyEquivalent isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled];
     [self assertTrue:undoWasCalled];
 }
@@ -177,7 +177,7 @@
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:0
         timestamp:0 windowNumber:0 context:nil
-        characters:CPEscapeFunctionKey charactersIgnoringModifiers:CPEscapeFunctionKey isARepeat:NO keyCode:0]];
+        characters:CPEscapeFunctionKey charactersIgnoringModifiers:CPEscapeFunctionKey isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:escapeWasCalled || openDocumentWasCalled || undoWasCalled];
     [self assertTrue:escapeNoModifierWasCalled];
 
@@ -185,7 +185,7 @@
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask
         timestamp:0 windowNumber:0 context:nil
-        characters:CPEscapeFunctionKey charactersIgnoringModifiers:CPEscapeFunctionKey isARepeat:NO keyCode:0]];
+        characters:CPEscapeFunctionKey charactersIgnoringModifiers:CPEscapeFunctionKey isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:escapeNoModifierWasCalled || openDocumentWasCalled || undoWasCalled];
     [self assertTrue:escapeWasCalled];
 }
@@ -196,7 +196,7 @@
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask
         timestamp:0 windowNumber:0 context:nil
-        characters:@"s" charactersIgnoringModifiers:@"s" isARepeat:NO keyCode:0]];
+        characters:@"s" charactersIgnoringModifiers:@"s" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled || saveDocumentAsWasCalled || undoWasCalled];
     [self assertTrue:saveDocumentWasCalled message:"saveDocumentWasCalled"];
 
@@ -204,7 +204,7 @@
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask | CPShiftKeyMask
         timestamp:0 windowNumber:0 context:nil
-        characters:@"s" charactersIgnoringModifiers:@"s" isARepeat:NO keyCode:0]];
+        characters:@"s" charactersIgnoringModifiers:@"s" isARepeat:NO keyCode:0 isActionKey:NO]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled || saveDocumentWasCalled || undoWasCalled];
     [self assertTrue:saveDocumentAsWasCalled message:"saveDocumentAsWasCalled"];
 }

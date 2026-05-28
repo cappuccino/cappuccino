@@ -22,13 +22,12 @@
 
 @import <Foundation/CPObject.j>
 @import <Foundation/CPIndexPath.j>
-
+@import <Foundation/CPArray.j>
 
 @implementation CPTreeNode : CPObject
 {
-    id              _representedObject @accessors(readonly, property=representedObject);
-
-    CPTreeNode      _parentNode @accessors(readonly, property=parentNode);
+    id              _representedObject  @accessors(property=representedObject);
+    CPTreeNode      _parentNode         @accessors(property=parentNode);
     CPMutableArray  _childNodes;
 }
 
@@ -52,36 +51,35 @@
 
 - (CPIndexPath)indexPath
 {
-    if (_parentNode != nil)
+    // If we have a parent, calculate path based on parent's path + our index
+    if (_parentNode)
     {
-        var path;
-        var index;
-
-        index = [[_parentNode childNodes] indexOfObject:self];
-        path = [_parentNode indexPath];
-
-        if (path != nil)
-        {
-            return [path indexPathByAddingIndex:index];
-        }
-        else
-        {
-            return [CPIndexPath indexPathWithIndex:index];
-        }
+        // Search the parent's child nodes, not our own!
+        var index = [[_parentNode childNodes] indexOfObjectIdenticalTo:self];
+        
+        // If the parent is the root (and technically has no path itself in some implementations),
+        // we might get nil. Handle that gracefully.
+        var parentPath = [_parentNode indexPath];
+        
+        if (parentPath)
+            return [parentPath indexPathByAddingIndex:index];
+            
+        return [CPIndexPath indexPathWithIndex:index];
     }
-    else
-    {
-        return nil;
-    }
+    
+    // If we are the root, we don't have an index path in the context of a tree controller usually,
+    // or we are [] (empty path). Returning nil is acceptable for the absolute root.
+    return nil;
 }
 
 - (BOOL)isLeaf
 {
-    return [_childNodes count] <= 0;
+    return [_childNodes count] == 0;
 }
 
 - (CPArray)childNodes
 {
+    // Return a copy to prevent external modification without KVC
     return [_childNodes copy];
 }
 
@@ -90,18 +88,29 @@
     return [self mutableArrayValueForKey:@"childNodes"];
 }
 
-- (void)insertObject:(id)aTreeNode inChildNodesAtIndex:(CPInteger)anIndex
-{
-    [[aTreeNode._parentNode mutableChildNodes] removeObjectIdenticalTo:aTreeNode];
+// MARK: - KVC Compliance Methods
 
-    aTreeNode._parentNode = self;
+- (void)insertObject:(CPTreeNode)aTreeNode inChildNodesAtIndex:(CPInteger)anIndex
+{
+    // Optional: Auto-detach from old parent if strictly moving nodes
+    if ([aTreeNode isKindOfClass:[CPTreeNode class]] && aTreeNode._parentNode)
+    {
+        [[aTreeNode._parentNode mutableChildNodes] removeObjectIdenticalTo:aTreeNode];
+    }
+
+    // Direct ivar access is allowed here since we are inside the class implementation
+    if ([aTreeNode isKindOfClass:[CPTreeNode class]])
+        aTreeNode._parentNode = self;
 
     [_childNodes insertObject:aTreeNode atIndex:anIndex];
 }
 
 - (void)removeObjectFromChildNodesAtIndex:(CPInteger)anIndex
 {
-    [_childNodes objectAtIndex:anIndex]._parentNode = nil;
+    var node = [_childNodes objectAtIndex:anIndex];
+    
+    if ([node isKindOfClass:[CPTreeNode class]])
+        node._parentNode = nil;
 
     [_childNodes removeObjectAtIndex:anIndex];
 }
@@ -110,16 +119,33 @@
 {
     var oldTreeNode = [_childNodes objectAtIndex:anIndex];
 
-    oldTreeNode._parentNode = nil;
-    aTreeNode._parentNode = self;
+    if ([oldTreeNode isKindOfClass:[CPTreeNode class]])
+        oldTreeNode._parentNode = nil;
+    
+    if ([aTreeNode isKindOfClass:[CPTreeNode class]])
+        aTreeNode._parentNode = self;
 
     [_childNodes replaceObjectAtIndex:anIndex withObject:aTreeNode];
 }
 
+// MARK: - Convenience Accessors
+
 - (id)objectInChildNodesAtIndex:(CPInteger)anIndex
 {
-    return _childNodes[anIndex];
+    return [_childNodes objectAtIndex:anIndex];
 }
+
+- (CPInteger)count
+{
+    return [_childNodes count];
+}
+
+- (id)objectAtIndex:(CPInteger)anIndex
+{
+    return [_childNodes objectAtIndex:anIndex];
+}
+
+// MARK: - Utility
 
 - (void)sortWithSortDescriptors:(CPArray)sortDescriptors recursively:(BOOL)shouldSortRecursively
 {
@@ -129,25 +155,39 @@
         return;
 
     var count = [_childNodes count];
-
     while (count--)
-        [_childNodes[count] sortWithSortDescriptors:sortDescriptors recursively:YES];
+    {
+        var child = [_childNodes objectAtIndex:count];
+        if ([child respondsToSelector:@selector(sortWithSortDescriptors:recursively:)])
+            [child sortWithSortDescriptors:sortDescriptors recursively:YES];
+    }
 }
 
 - (CPTreeNode)descendantNodeAtIndexPath:(CPIndexPath)indexPath
 {
-    var index = 0,
-        count = [indexPath length],
-        node = self;
+    if (!indexPath || [indexPath length] == 0)
+        return self;
 
-    for (; index < count; ++index)
-        node = [node objectInChildNodesAtIndex:[indexPath indexAtPosition:index]];
+    var node = self,
+        length = [indexPath length];
+
+    for (var i = 0; i < length; i++)
+    {
+        var index = [indexPath indexAtPosition:i],
+            count = [node count];
+            
+        if (index >= count || index < 0)
+            return nil;
+            
+        node = [node objectAtIndex:index];
+    }
 
     return node;
 }
 
 @end
 
+// Coding implementation remains correct
 var CPTreeNodeRepresentedObjectKey  = @"CPTreeNodeRepresentedObjectKey",
     CPTreeNodeParentNodeKey         = @"CPTreeNodeParentNodeKey",
     CPTreeNodeChildNodesKey         = @"CPTreeNodeChildNodesKey";
@@ -163,6 +203,10 @@ var CPTreeNodeRepresentedObjectKey  = @"CPTreeNodeRepresentedObjectKey",
         _representedObject = [aCoder decodeObjectForKey:CPTreeNodeRepresentedObjectKey];
         _parentNode = [aCoder decodeObjectForKey:CPTreeNodeParentNodeKey];
         _childNodes = [aCoder decodeObjectForKey:CPTreeNodeChildNodesKey];
+        
+        // Safety check to ensure decoding gave us a CPArray
+        if (!_childNodes)
+            _childNodes = [[CPMutableArray alloc] init];
     }
 
     return self;

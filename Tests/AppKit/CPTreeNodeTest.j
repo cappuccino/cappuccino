@@ -25,7 +25,7 @@
 
     indexPath = [CPIndexPath indexPathWithIndex:1];
 
-    [self assert:undefined equals:[treeNode descendantNodeAtIndexPath:indexPath]];
+    [self assert:nil equals:[treeNode descendantNodeAtIndexPath:indexPath]];
 }
 
 @end

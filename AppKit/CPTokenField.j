@@ -551,7 +551,7 @@ CPTokenFieldDeleteButtonType     = 1;
         CPTokenFieldCachedDragFunction = nil;
 
         document.body.ondrag = CPTokenFieldCachedDragFunction;
-        document.body.onselectstart = CPTokenFieldCachedSelectStartFunction
+        document.body.onselectstart = CPTokenFieldCachedSelectStartFunction;
     }
 
 #endif

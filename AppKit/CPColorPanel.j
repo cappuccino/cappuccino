@@ -51,6 +51,7 @@ CPColorPickerViewWidth  = 265;
 CPColorPickerViewHeight = 370;
 
 CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";
+CPColorDragType = CPColorPboardType;
 
 var PREVIEW_HEIGHT = 20.0,
     TOOLBAR_HEIGHT = 32.0,
@@ -129,8 +130,6 @@ var SharedColorPanel = nil,
 
     if (self)
     {
-        //[[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
-
         [self setTitle:@"Color Panel"];
         [self setLevel:CPFloatingWindowLevel];
 
@@ -149,20 +148,37 @@ var SharedColorPanel = nil,
 */
 - (void)setColor:(CPColor)aColor
 {
+    if ([_color isEqual:aColor])
+        return;
+
     _color = aColor;
     [_previewView setBackgroundColor:_color];
 
-    [CPApp sendAction:@selector(changeColor:) to:nil from:self];
+    // Check if the color change originated from user interaction inside the panel itself.
+    // We only broadcast `changeColor:` if the user picked a color via the panel's UI.
+    // If an external CPColorWell called `setColor:` programmatically, broadcasting it
+    // back down the responder chain would incorrectly change the previous First Responder.
+    var currentEvent = [CPApp currentEvent],
+        isFromPanel = currentEvent && ([currentEvent window] === self);
 
-    if (_target && _action)
-        [CPApp sendAction:_action to:_target from:self];
+    if (isFromPanel)
+    {
+        // Push color via Responder Chain (targets First Responder, i.e., the active CPColorWell)
+        [CPApp sendAction:@selector(changeColor:) to:nil from:self];
+
+        if (_target && _action)
+            [CPApp sendAction:_action to:_target from:self];
+    }
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPColorPanelColorDidChangeNotification
                       object:self];
 
-    [_activePicker setColor:_color];
-    [_opacitySlider setFloatValue:[_color alphaComponent]];
+    if (_activePicker)
+        [_activePicker setColor:_color];
+
+    if (_opacitySlider)
+        [_opacitySlider setFloatValue:[_color alphaComponent]];
 }
 
 /*!
@@ -174,7 +190,7 @@ var SharedColorPanel = nil,
 {
     [self setColor:aColor];
 
-    if (bool)
+    if (bool && _activePicker)
         [_activePicker setColor:_color];
 }
 
@@ -332,7 +348,7 @@ var SharedColorPanel = nil,
             buttonForLater = button;
     }
 
-    // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
+    // Preview
     var previewBox = [[CPView alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + 10, CGRectGetWidth(bounds) - 86, PREVIEW_HEIGHT)];
 
     _previewView = [[_CPColorPanelPreview alloc] initWithFrame:CGRectInset([previewBox bounds], 2.0, 2.0)];
@@ -350,7 +366,7 @@ var SharedColorPanel = nil,
     [_previewLabel setTextColor:[CPColor blackColor]];
     [_previewLabel setAlignment:CPRightTextAlignment];
 
-    // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
+    // Swatches
     var swatchBox = [[CPView alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + 10 + PREVIEW_HEIGHT + 5, CGRectGetWidth(bounds) - 86, SWATCH_HEIGHT + 2.0)];
 
     [swatchBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
@@ -391,8 +407,6 @@ var SharedColorPanel = nil,
     [contentView addSubview:opacityLabel];
     [contentView addSubview:_opacitySlider];
 
-    _target = nil;
-    _action = nil;
     _activePicker = nil;
 
     [_previewView setBackgroundColor:_color];
@@ -412,8 +426,6 @@ var SharedColorPanel = nil,
 @end
 
 
-CPColorDragType = "CPColorDragType";
-
 var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 /* @ignore */
@@ -423,12 +435,14 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     CPColor         _dragColor;
     CPColorPanel    _colorPanel;
     CPCookie        _swatchCookie;
+    CGPoint         _mouseDownPoint;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
+    _mouseDownPoint = CGPointMake(0, 0);
     [self setBackgroundColor:[CPColor grayColor]];
 
     [self registerForDraggedTypes:[CPArray arrayWithObjects:CPColorDragType]];
@@ -442,7 +456,6 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
     for (var i = 0; i < 50; i++)
     {
-        // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
         var view = [[CPView alloc] initWithFrame:CGRectMake(13 * i + 1, 1, 12, 12)],
             fillView = [[CPView alloc] initWithFrame:CGRectInset([view bounds], 1.0, 1.0)];
 
@@ -494,7 +507,6 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 - (CPArray)saveColorList
 {
     var result = [];
-    // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     for (var i = 0; i < _swatches.length; i++)
         result.push([[[_swatches[i] subviews][0] backgroundColor] hexString]);
 
@@ -521,9 +533,13 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 - (void)setColor:(CPColor)aColor atIndex:(int)index
 {
-    // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     [[_swatches[index] subviews][0] setBackgroundColor:aColor];
     [self saveColorList];
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    _mouseDownPoint = [anEvent locationInWindow];
 }
 
 - (void)mouseUp:(CPEvent)anEvent
@@ -532,28 +548,29 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
         bounds = [self bounds];
 
     if (!CGRectContainsPoint(bounds, point) || point.x > [self bounds].size.width - 1 || point.x < 1)
-        return NO;
+        return;
 
     [_colorPanel setColor:[self colorAtIndex:FLOOR(point.x / 13)] updatePicker:YES];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
-    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+    var windowPoint = [anEvent locationInWindow];
+    
+    // Prevent accidental drags from rapid clicking causing small micro-movements
+    if (ABS(windowPoint.x - _mouseDownPoint.x) < 3 && ABS(windowPoint.y - _mouseDownPoint.y) < 3)
+        return;
+
+    var point = [self convertPoint:windowPoint fromView:nil];
 
      if (point.x > [self bounds].size.width - 1 || point.x < 1)
-        return NO;
-
-    [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:[CPArray arrayWithObject:CPColorDragType] owner:self];
+        return;
 
     var swatch = _swatches[FLOOR(point.x / 13)];
-
-    // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     _dragColor = [[swatch subviews][0] backgroundColor];
 
     var bounds = CGRectMakeCopy([swatch bounds]);
 
-    // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     var dragView = [[CPView alloc] initWithFrame:bounds],
         dragFillView = [[CPView alloc] initWithFrame:CGRectInset(bounds, 1.0, 1.0)];
 
@@ -562,11 +579,15 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
     [dragView addSubview:dragFillView];
 
+    var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
+    [pasteboard declareTypes:[CPArray arrayWithObject:CPColorDragType] owner:self];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:CPColorDragType];
+
     [self dragView:dragView
                 at:CGPointMake(point.x - bounds.size.width / 2.0, point.y - bounds.size.height / 2.0)
             offset:CGPointMake(0.0, 0.0)
              event:anEvent
-        pasteboard:nil
+        pasteboard:pasteboard
             source:self
          slideBack:YES];
 }
@@ -577,7 +598,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
         [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:aType];
 }
 
-- (void)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
+- (BOOL)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
 {
     var location = [self convertPoint:[aSender draggingLocation] fromView:nil],
         pasteboard = [aSender draggingPasteboard],
@@ -587,6 +608,13 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
         return NO;
 
     [self setColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] atIndex:FLOOR(location.x / 13)];
+    
+    return YES;
+}
+
+- (unsigned)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+{
+    return CPDragOperationCopy;
 }
 
 @end
@@ -595,11 +623,13 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 @implementation _CPColorPanelPreview : CPView
 {
     CPColorPanel    _colorPanel;
+    CGPoint         _mouseDownPoint;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
+    _mouseDownPoint = CGPointMake(0, 0);
 
     [self registerForDraggedTypes:[CPArray arrayWithObjects:CPColorDragType]];
 
@@ -616,7 +646,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     return _colorPanel;
 }
 
-- (void)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
+- (BOOL)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
 {
     var pasteboard = [aSender draggingPasteboard];
 
@@ -625,6 +655,8 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
     var color = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]];
     [_colorPanel setColor:color updatePicker:YES];
+    
+    return YES;
 }
 
 - (BOOL)isOpaque
@@ -632,15 +664,22 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     return YES;
 }
 
+- (void)mouseDown:(CPEvent)anEvent
+{
+    _mouseDownPoint = [anEvent locationInWindow];
+}
+
 - (void)mouseDragged:(CPEvent)anEvent
 {
-    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+    var windowPoint = [anEvent locationInWindow];
+    
+    if (ABS(windowPoint.x - _mouseDownPoint.x) < 3 && ABS(windowPoint.y - _mouseDownPoint.y) < 3)
+        return;
 
-    [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:[CPColorDragType] owner:self];
+    var point = [self convertPoint:windowPoint fromView:nil];
 
     var bounds = CGRectMake(0, 0, 15, 15);
 
-    // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     var dragView = [[CPView alloc] initWithFrame:bounds],
         dragFillView = [[CPView alloc] initWithFrame:CGRectInset(bounds, 1.0, 1.0)];
 
@@ -649,11 +688,15 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
     [dragView addSubview:dragFillView];
 
+    var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
+    [pasteboard declareTypes:[CPArray arrayWithObject:CPColorDragType] owner:self];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self backgroundColor]] forType:CPColorDragType];
+
     [self dragView:dragView
                 at:CGPointMake(point.x - bounds.size.width / 2.0, point.y - bounds.size.height / 2.0)
             offset:CGPointMake(0.0, 0.0)
              event:anEvent
-        pasteboard:nil
+        pasteboard:pasteboard
             source:self
          slideBack:YES];
 }
@@ -662,6 +705,11 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 {
     if (aType == CPColorDragType)
         [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self backgroundColor]] forType:aType];
+}
+
+- (unsigned)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+{
+    return CPDragOperationCopy;
 }
 
 @end

@@ -48,13 +48,6 @@
 @global CPYearMonthDayDatePickerElementFlag
 @global CPEraDatePickerElementFlag
 
-var CPZeroKeyCode = 48,
-    CPNineKeyCode = 57,
-    CPMajAKeyCode = 65,
-    CPMajPKeyCode = 80,
-    CPAKeyCode = 97,
-    CPPKeyCode = 112;
-
 // This class is used to represente the datePicker with the CPTextFieldAndStepperDatePickerStyle/CPTextFieldDatePickerStyle mode
 @implementation _CPDatePickerTextField : CPControl
 {
@@ -131,7 +124,7 @@ var CPZeroKeyCode = 48,
     // Don't forget to unbind, otherwise several steppers will increase or decrease
     [_currentTextField unbind:@"objectValue"];
     [_currentTextField makeDeselectable];
-    _currentTextField = nil
+    _currentTextField = nil;
 
     // This is usefull when clicking on the stepper when the datePicker is not selected
     [_stepper setObjectValue:0];
@@ -221,13 +214,30 @@ var CPZeroKeyCode = 48,
 {
     [_datePickerElementView _updateResponderTextField];
 
-    // We select the firstTextField when the datePicker becomes firstResponder if _currentTextField is null. It can be null just when using tab
     if (!_currentTextField)
     {
+        var targetField = nil;
+
         if (flags & CPShiftKeyMask)
-            [self _selectTextField:_lastTextField];
+        {
+            // Try last field; if hidden, find previous visible
+            if ([_lastTextField isHidden])
+                targetField = [self _previousVisibleTextFieldFrom:_lastTextField];
+            else
+                targetField = _lastTextField;
+        }
         else
-            [self _selectTextField:_firstTextField];
+        {
+            // Try first field; if hidden, find next visible
+            if ([_firstTextField isHidden])
+                targetField = [self _nextVisibleTextFieldFrom:_firstTextField];
+            else
+                targetField = _firstTextField;
+        }
+
+        // Only select if we actually found a valid visible field
+        if (targetField)
+            [self _selectTextField:targetField];
     }
 }
 
@@ -334,23 +344,92 @@ var CPZeroKeyCode = 48,
     return [super performKeyEquivalent:anEvent];
 }
 
+- (_CPDatePickerElementTextField)_nextVisibleTextFieldFrom:(_CPDatePickerElementTextField)aTextField
+{
+    var runner = [aTextField nextTextField];
+
+    // If we wrapped back to the start immediately, or runner is nil, we are done.
+    if (!runner || runner == _firstTextField)
+        return nil;
+
+    // Traverse hidden fields
+    while (runner && [runner isHidden])
+    {
+        // If we hit the absolute last field and it is hidden, we've reached the end.
+        if (runner == _lastTextField)
+            return nil;
+
+        runner = [runner nextTextField];
+
+        // Safety: if we wrapped back to the start inside the loop
+        if (runner == _firstTextField)
+            return nil;
+    }
+
+    return runner;
+}
+
+- (_CPDatePickerElementTextField)_previousVisibleTextFieldFrom:(_CPDatePickerElementTextField)aTextField
+{
+    var runner = [aTextField previousTextField];
+
+    // If we wrapped back to the end immediately, or runner is nil, we are done.
+    if (!runner || runner == _lastTextField)
+        return nil;
+
+    // Traverse hidden fields
+    while (runner && [runner isHidden])
+    {
+        // If we hit the absolute first field and it is hidden, we've reached the start.
+        if (runner == _firstTextField)
+            return nil;
+
+        runner = [runner previousTextField];
+
+        // Safety: if we wrapped back to the end inside the loop
+        if (runner == _lastTextField)
+            return nil;
+    }
+
+    return runner;
+}
+
 - (void)insertTab:(id)sender
 {
     if (!_currentTextField)
         return;
 
-    if (_currentTextField == _lastTextField)
-        [[self window] selectNextKeyView:self];
+    // Ensure boundaries are up to date
+    [_datePickerElementView _updateResponderTextField];
+
+    var nextField = [self _nextVisibleTextFieldFrom:_currentTextField];
+
+    if (nextField)
+    {
+        [self _selectTextField:nextField];
+    }
     else
-        [self moveRight:sender];
-}
+    {
+        // We reached the visual end. Manually find the next external view.
+        // We cannot rely on [[self window] selectNextKeyView:self] because it might 
+        // loop back into our own internal fields or select 'self' which refuses focus.
+        var nextView = [_currentTextField nextValidKeyView];
 
-- (void)moveRight:(id)sender
-{
-    if (!_currentTextField)
-        return;
+        // Skip any view that is part of this control (descendant)
+        while (nextView && [nextView isDescendantOf:self])
+        {
+            // If we looped back to the current field, we are trapped in a closed loop with no exit.
+            if (nextView == _currentTextField)
+            {
+                nextView = nil;
+                break;
+            }
+            nextView = [nextView nextValidKeyView];
+        }
 
-    [self _selectTextField:[_currentTextField nextTextField]];
+        if (nextView)
+            [[self window] makeFirstResponder:nextView];
+    }
 }
 
 - (void)insertBacktab:(id)sender
@@ -358,10 +437,47 @@ var CPZeroKeyCode = 48,
     if (!_currentTextField)
         return;
 
-    if (_currentTextField == _firstTextField)
-        [[self window] selectPreviousKeyView:self];
+    [_datePickerElementView _updateResponderTextField];
+
+    var prevField = [self _previousVisibleTextFieldFrom:_currentTextField];
+
+    if (prevField)
+    {
+        [self _selectTextField:prevField];
+    }
     else
-        [self moveLeft:sender];
+    {
+        // We reached the visual start. Manually find the previous external view.
+        var prevView = [_currentTextField previousValidKeyView];
+
+        // Skip any view that is part of this control
+        while (prevView && [prevView isDescendantOf:self])
+        {
+            if (prevView == _currentTextField)
+            {
+                prevView = nil;
+                break;
+            }
+            prevView = [prevView previousValidKeyView];
+        }
+
+        if (prevView)
+            [[self window] makeFirstResponder:prevView];
+    }
+}
+
+- (void)moveRight:(id)sender
+{
+    if (!_currentTextField)
+        return;
+
+    [_datePickerElementView _updateResponderTextField];
+
+    // Use the helper to skip hidden fields
+    var nextField = [self _nextVisibleTextFieldFrom:_currentTextField];
+    
+    if (nextField)
+        [self _selectTextField:nextField];
 }
 
 - (void)moveLeft:(id)sender
@@ -369,7 +485,13 @@ var CPZeroKeyCode = 48,
     if (!_currentTextField)
         return;
 
-    [self _selectTextField:[_currentTextField previousTextField]];
+    [_datePickerElementView _updateResponderTextField];
+
+    // Use the helper to skip hidden fields to be safe
+    var prevField = [self _previousVisibleTextFieldFrom:_currentTextField];
+
+    if (prevField)
+        [self _selectTextField:prevField];
 }
 
 - (void)moveDown:(id)sender
@@ -401,7 +523,7 @@ var CPZeroKeyCode = 48,
 }
 
 /*! KeyDown event
-    We just care care about the event A/P and every numbers
+    We just care about the event A/P and every numbers
 */
 - (void)keyDown:(CPEvent)anEvent
 {
@@ -410,18 +532,27 @@ var CPZeroKeyCode = 48,
 
     [self interpretKeyEvents:[anEvent]];
 
-    if ([_datePicker _isAmericanFormat] && [_currentTextField dateType] == CPAMPMDateType && ([anEvent keyCode] == CPAKeyCode || [anEvent keyCode] == CPPKeyCode || [anEvent keyCode] == CPMajAKeyCode || [anEvent keyCode] == CPMajPKeyCode))
+    var characters = [anEvent characters];
+
+    if ([_datePicker _isAmericanFormat] && [_currentTextField dateType] == CPAMPMDateType && [characters length] > 0)
     {
-        if ([anEvent keyCode] == CPAKeyCode || [anEvent keyCode] == CPMajAKeyCode)
+        var charUpper = [characters uppercaseString];
+
+        if (charUpper === "A")
+        {
             [_currentTextField setStringValue:@"AM"];
-        else
+            [[CPNotificationCenter defaultCenter] postNotificationName:CPDatePickerElementTextFieldAMPMChangedNotification object:_currentTextField userInfo:nil];
+            return;
+        }
+        else if (charUpper === "P")
+        {
             [_currentTextField setStringValue:@"PM"];
-
-        [[CPNotificationCenter defaultCenter] postNotificationName:CPDatePickerElementTextFieldAMPMChangedNotification object:_currentTextField userInfo:nil];
-
-        return;
+            [[CPNotificationCenter defaultCenter] postNotificationName:CPDatePickerElementTextFieldAMPMChangedNotification object:_currentTextField userInfo:nil];
+            return;
+        }
     }
 
+    // Pass the event down to the specific field (which handles numeric input validation via regex)
     [_currentTextField setValueForKeyEvent:anEvent];
 }
 

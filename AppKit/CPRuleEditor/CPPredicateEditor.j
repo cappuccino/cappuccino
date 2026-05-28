@@ -269,6 +269,8 @@
     _currentAnimation = nil;
     _sendAction = NO;
 
+    var rows = [];
+
     if (predicate != nil)
     {
         if ((_nestingMode == CPRuleEditorNestingModeSimple || _nestingMode == CPRuleEditorNestingModeCompound)
@@ -276,9 +278,12 @@
             predicate = [[CPCompoundPredicate alloc] initWithType:[self _compoundPredicateTypeForRootRows] subpredicates:[CPArray arrayWithObject:predicate]];
 
         var row = [self _rowObjectFromPredicate:predicate];
+        
         if (row != nil)
-            [_boundArrayOwner setValue:[CPArray arrayWithObject:row] forKey:_boundArrayKeyPath];
+            [rows addObject:row];
     }
+
+    [_boundArrayOwner setValue:rows forKey:_boundArrayKeyPath];
 
     [self setAnimation:animation];
 }

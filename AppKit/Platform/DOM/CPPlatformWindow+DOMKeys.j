@@ -132,38 +132,36 @@ CPKeyCodes = {
 
 /*!
  * Returns true if the key fires a keypress event in the current browser.
+ * The keypress event is deprecated, but this function helps manage legacy
+ * event handling by predicting its behavior.
  *
- * Accoridng to MSDN [1] IE only fires keypress events for the following keys:
- * - Letters: A - Z (uppercase and lowercase)
- * - Numerals: 0 - 9
- * - Symbols: ! @ # $ % ^ & * ( ) _ - + = < [ ] { } , . / ? \ | ' ` " ~
- * - System: ESC, SPACEBAR, ENTER
- *
- * That's not entirely correct though, for instance there's no distinction
- * between upper and lower case letters.
- *
- * [1] http://msdn2.microsoft.com/en-us/library/ms536939(VS.85).aspx)
- *
- * Safari is similar to IE, but does not fire keypress for ESC.
- *
- * Additionally, IE6 does not fire keydown or keypress events for letters when
- * the control or alt keys are held down and the shift key is not. IE7 does
- * fire keydown in these cases, though, but not keypress.
- *
- * @param keyCode A key code.
- * @param opt_heldKeyCode Key code of a currently-held key.
- * @param opt_shiftKey Whether the shift key is held down.
- * @param opt_ctrlKey Whether the control key is held down.
- * @param opt_altKey Whether the alt key is held down.
- * @return Returns YES if it's a key that fires a keypress event.
+ * @param {number} keyCode A key code.
+ * @param {string} key The `key` property from the keyboard event.
+ * @param {number} opt_heldKeyCode Key code of a currently-held key.
+ * @param {boolean} opt_shiftKey Whether the shift key is held down.
+ * @param {boolean} opt_ctrlKey Whether the control key is held down.
+ * @param {boolean} opt_altKey Whether the alt key is held down.
+ * @return {boolean} Returns YES if it's a key that fires a keypress event.
  */
 CPKeyCodes.firesKeyPressEvent = function(keyCode, key, opt_heldKeyCode, opt_shiftKey, opt_ctrlKey, opt_altKey)
 {
-    // The property key from event is one character wide in case of 'regular' keys (as opposed e.g. to arrow keys)
-    // Regular keys all fire the keypress event
+    // Modern approach: Use event.key if available, as it is the most reliable standard.
+    if (key)
+    {
+        // Any key that produces a single, printable character fires a keypress event.
+        if (key.length === 1)
+            return true;
 
-    if (key && key.length == 1)
-        return true;
+        // "Enter" is a special non-printable key that historically fires keypress for compatibility.
+        if (key === "Enter")
+            return true;
+
+        // For all other non-printable keys (e.g., "ArrowLeft", "Escape", "F1"),
+        // modern browsers do not fire a keypress event.
+        return false;
+    }
+
+    // --- Legacy Fallback Logic (for browsers that don't support event.key) ---
 
     if (!CPFeatureIsCompatible(CPJavaScriptRemedialKeySupport))
         return true;
@@ -196,9 +194,11 @@ CPKeyCodes.firesKeyPressEvent = function(keyCode, key, opt_heldKeyCode, opt_shif
 
 /*!
  * Test for whether or not a given keyCode represents a character key.
+ * NOTE: This is a legacy function for browsers that don't support `event.key`.
+ * It is unreliable because `keyCode` represents a physical key, not the character produced.
  *
- * @param keyCode A key code.
- * @return Returns YES if the keyCode is a character key.
+ * @param {number} keyCode A key code.
+ * @return {boolean} Returns YES if the keyCode is a character key.
  */
 CPKeyCodes.isCharacterKey = function(keyCode)
 {

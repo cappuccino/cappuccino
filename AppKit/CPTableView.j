@@ -296,6 +296,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _CPTableDrawView            _tableDrawView;
 
     SEL                         _doubleAction;
+    id                          _doubleClickTarget @accessors(property=doubleClickTarget);
+    id                          _doubleClickArgument @accessors(property=doubleClickArgument);
     CPInteger                   _clickedRow;
     CPInteger                   _clickedColumn;
     unsigned                    _columnAutoResizingStyle;
@@ -3486,13 +3488,73 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 [removeIndexes addIndex:columnIdx];
         }
 
-        var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
-        [self _unloadDataViewsInRows:rowIndexes columns:removeIndexes];
+        if ([removeIndexes count] > 0)
+        {
+            var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
+            [self _unloadDataViewsInRows:rowIndexes columns:removeIndexes];
 
-        [_tableColumns removeObjectsAtIndexes:removeIndexes];
+            [_tableColumns removeObjectsAtIndexes:removeIndexes];
 
-        _dirtyTableColumnRangeIndex = 0;
-        [self _recalculateTableColumnRanges];
+            _dirtyTableColumnRangeIndex = 0;
+            [self _recalculateTableColumnRanges];
+
+            // Shift cached index sets downwards to account for the removed columns
+            var shiftIndexSet = function(indexSet)
+            {
+                var newSet = [CPIndexSet indexSet];
+                [indexSet enumerateIndexesUsingBlock:function(idx, stop)
+                {
+                    if (![removeIndexes containsIndex:idx])
+                    {
+                        var shift = 0,
+                            remIdx = [removeIndexes firstIndex];
+
+                        while (remIdx !== CPNotFound && remIdx < idx)
+                        {
+                            shift++;
+                            remIdx = [removeIndexes indexGreaterThanIndex:remIdx];
+                        }
+
+                        [newSet addIndex:idx - shift];
+                    }
+                }];
+                return newSet;
+            };
+
+            _exposedColumns = shiftIndexSet(_exposedColumns);
+            _selectedColumnIndexes = shiftIndexSet(_selectedColumnIndexes);
+
+            // Shift individual index variables
+            var shiftIndex = function(idx)
+            {
+                if (idx === CPNotFound || idx === -1)
+                    return idx;
+                
+                if ([removeIndexes containsIndex:idx])
+                    return CPNotFound;
+                
+                var shift = 0,
+                    remIdx = [removeIndexes firstIndex];
+
+                while (remIdx !== CPNotFound && remIdx < idx)
+                {
+                    shift++;
+                    remIdx = [removeIndexes indexGreaterThanIndex:remIdx];
+                }
+
+                return idx - shift;
+            };
+
+            _editingColumn = shiftIndex(_editingColumn);
+            
+            _draggedColumnIndex = shiftIndex(_draggedColumnIndex);
+            if (_draggedColumnIndex === CPNotFound)
+                _draggedColumnIndex = -1;
+                
+            _clickedColumn = shiftIndex(_clickedColumn);
+            if (_clickedColumn === CPNotFound)
+                _clickedColumn = -1;
+        }
 
         [_differedColumnDataToRemove removeAllObjects];
         _needsDifferedTableColumnRemove = NO;
@@ -3616,8 +3678,19 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self _setEditingState:NO forView:dataView];
 
     [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
+    [self _applyToolTipToDataView:dataView forTableColumn:tableColumn row:row];
 
     return dataView;
+}
+
+- (void)_applyToolTipToDataView:(CPView)aDataView forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+{
+    var tooltip = nil;
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_toolTipForView_rect_tableColumn_row_mouseLocation_)
+        tooltip = [self _sendDelegateToolTipForView:aDataView rect:[aDataView frame] tableColumn:aTableColumn row:aRow mouseLocation:CGPointMakeZero()];
+
+    [aDataView setToolTip:tooltip];
 }
 
 - (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView
@@ -3627,17 +3700,28 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView useCache:(BOOL)useCache
 {
+    var providedByDataSource = NO;
+
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_)
-        [aDataView setObjectValue:[self _objectValueForTableColumn:aTableColumn row:aRow useCache:useCache]];
+    {
+        var objectValue = [self _objectValueForTableColumn:aTableColumn row:aRow useCache:useCache];
+        [aDataView setObjectValue:objectValue];
+        providedByDataSource = YES;
+    }
 
     // This gives the table column an opportunity to apply its bindings.
-    // It will override the value set above if there is a binding.
+    // It will override the value set above if there is an explicit column binding.
+    var columnHasBindings = [[[CPBinder allBindingsForObject:aTableColumn] allKeys] count] > 0;
 
-    if (_contentBindingExplicitlySet)
-        [self _prepareContentBindedDataView:aDataView forRow:aRow];
-    else
-        // For both cell-based and view-based
+    if (columnHasBindings)
+    {
         [aTableColumn _prepareDataView:aDataView forRow:aRow];
+    }
+    // Only forcefully bind the raw content object if the data source didn't already provide a formatted value
+    else if (_contentBindingExplicitlySet && !providedByDataSource)
+    {
+        [self _prepareContentBindedDataView:aDataView forRow:aRow];
+    }
 }
 
 - (void)_prepareContentBindedDataView:(CPView)dataView forRow:(CPInteger)aRow
@@ -4712,7 +4796,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     //double click actions
     if ([[CPApp currentEvent] clickCount] === 2 && _doubleAction)
-        [self sendAction:_doubleAction to:_target];
+    {
+        var target = _doubleClickTarget || _target,
+            argument = [self infoForBinding:@"doubleClickArgument"] ? _doubleClickArgument : self;
+
+        [CPApp sendAction:_doubleAction to:target from:argument];
+    }
 }
 
 /*
@@ -5958,7 +6047,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 /*!
     @ignore
-    Not yet implemented
 */
 - (CPString)_sendDelegateToolTipForView:(id)aView rect:(CGRect)aRect tableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex mouseLocation:(CGPoint)aPoint
 {
@@ -6077,6 +6165,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     if (aBinding == @"content")
         _contentBindingExplicitlySet = YES;
+    else if (aBinding == @"doubleClickTarget")
+    {
+        if ([options objectForKey:CPSelectorNameBindingOption])
+            [self setDoubleAction:CPSelectorFromString([options objectForKey:CPSelectorNameBindingOption])];
+    }
 
     [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
 }
