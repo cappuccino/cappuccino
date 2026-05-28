@@ -334,6 +334,28 @@
 
     [_correspondingRuleItems setArray:ruleItems];
 
+    // Localize drop-down options in context and reorder/insert intermediate labels natively
+    var localizer = [_ruleEditor standardLocalizer];
+    if (localizer)
+    {
+        [localizer localizeMenuItemsForViews:_ruleOptionViews];
+        _ruleOptionViews = [localizer localizeAndReorderViews:_ruleOptionViews];
+    }
+
+    // Rebuild frame configurations to match the new localized layout order
+    [_ruleOptionFrames removeAllObjects];
+    [_ruleOptionInitialViewFrames removeAllObjects];
+
+    var newCount = [_ruleOptionViews count];
+    for (var i = 0; i < newCount; i++)
+    {
+        var view = [_ruleOptionViews objectAtIndex:i],
+            frame = [view frame];
+
+        [_ruleOptionFrames addObject:frame];
+        [_ruleOptionInitialViewFrames addObject:frame];
+    }
+
     if (!_editable)
         [self _updateEnabledStateForSubviews];
 

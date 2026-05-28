@@ -127,7 +127,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     BOOL                        _isKeyDown;
     BOOL                        _nestingModeDidChange;
 
-    _CPRuleEditorLocalizer      _standardLocalizer @accessors(property=standardLocalizer);
+    _CPRuleEditorLocalizer      _standardLocalizer;
     CPDictionary                _itemsAndValuesToAddForRowType;
 }
 
@@ -384,7 +384,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (CPDictionary)formattingDictionary
 {
-    return [_standardLocalizer dictionary];
+    return [[self standardLocalizer] dictionary];
 }
 
 /*!
@@ -396,6 +396,9 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (void)setFormattingDictionary:(CPDictionary)dictionary
 {
+    if (_standardLocalizer == nil)
+        _standardLocalizer = [_CPRuleEditorLocalizer new];
+
     [_standardLocalizer setDictionary:dictionary];
     _stringsFilename = nil;
 }
@@ -438,6 +441,19 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
                 [_standardLocalizer loadContentOfURL:[CPURL URLWithString:path]];
         }
     }
+}
+
+- (_CPRuleEditorLocalizer)standardLocalizer
+{
+    if (_standardLocalizer == nil)
+        _standardLocalizer = [_CPRuleEditorLocalizer new];
+
+    return _standardLocalizer;
+}
+
+- (void)setStandardLocalizer:(_CPRuleEditorLocalizer)aLocalizer
+{
+    _standardLocalizer = aLocalizer;
 }
 
 /*!
@@ -1924,17 +1940,17 @@ TODO: implement
 
 - (CPString)_toolTipForAddCompoundRowButton
 {
-    return [_standardLocalizer localizedStringForString:@"Add compound row"];
+    return [[self standardLocalizer] localizedStringForString:@"Add compound row"];
 }
 
 - (CPString)_toolTipForAddSimpleRowButton
 {
-    return [_standardLocalizer localizedStringForString:@"Add row"];
+    return [[self standardLocalizer] localizedStringForString:@"Add row"];
 }
 
 - (CPString)_toolTipForDeleteRowButton
 {
-    return [_standardLocalizer localizedStringForString:@"Delete row"];
+    return [[self standardLocalizer] localizedStringForString:@"Delete row"];
 }
 
 - (void)_updateSliceIndentations
