@@ -31,6 +31,7 @@
 @import "CPTextStorage.j"
 @import "CPTextContainer.j"
 @import "CPLayoutManager.j"
+@import "CPParagraphStyle.j"
 
 @import "_CPRTFParser.j"
 @import "_CPRTFProducer.j"

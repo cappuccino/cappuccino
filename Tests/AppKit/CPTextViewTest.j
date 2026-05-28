@@ -1,6 +1,5 @@
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPTextView.j>
-@import <AppKit/CPParagraphStyle.j>
 @import <OJMoq/OJMoq.j>
 
 @implementation CPTextViewTest : OJTestCase
