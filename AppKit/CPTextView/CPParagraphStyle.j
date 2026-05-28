@@ -24,7 +24,7 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPDictionary.j>
 
-var CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
+CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
 
 // Standard Tab Interval (28pts is roughly 4 spaces in standard fonts)
 var kDefaultTabInterval = 28.0;
