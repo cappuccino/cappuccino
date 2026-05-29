@@ -70,7 +70,7 @@ _MidRange = function(a1)
 
 function _isWhitespaceCharacter(chr)
 {
-    return (chr === '\n' || chr === '\r' || chr === ' ' || chr === '\t');
+    return (chr === '\n' || chr === '\r' || chr === ' '); //  || chr === '\t'
 }
 
 _characterTripletFromStringAtIndex = function(string, index)

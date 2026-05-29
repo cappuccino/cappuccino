@@ -26,6 +26,12 @@
 
 CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
 
+// Define missing global tab stop type constants
+CPLeftTabStopType = 0;
+CPRightTabStopType = 1;
+CPCenterTabStopType = 2;
+CPDecimalTabStopType = 3;
+
 // Standard Tab Interval (28pts is roughly 4 spaces in standard fonts)
 var kDefaultTabInterval = 28.0;
 
@@ -201,6 +207,48 @@ var _sharedDefaultParagraphStyle = nil;
 - (id)mutableCopy
 {
     return [[CPMutableParagraphStyle alloc] initWithParagraphStyle:self];
+}
+
+// MARK: - Coding Support
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super init])
+    {
+        _lineSpacing            = [aCoder decodeFloatForKey:@"CPParagraphStyleLineSpacing"];
+        _paragraphSpacing       = [aCoder decodeFloatForKey:@"CPParagraphStyleParagraphSpacing"];
+        _alignment              = [aCoder decodeIntForKey:@"CPParagraphStyleAlignment"];
+        _headIndent             = [aCoder decodeFloatForKey:@"CPParagraphStyleHeadIndent"];
+        _tailIndent             = [aCoder decodeFloatForKey:@"CPParagraphStyleTailIndent"];
+        _firstLineHeadIndent    = [aCoder decodeFloatForKey:@"CPParagraphStyleFirstLineHeadIndent"];
+        _minimumLineHeight      = [aCoder decodeFloatForKey:@"CPParagraphStyleMinimumLineHeight"];
+        _maximumLineHeight      = [aCoder decodeFloatForKey:@"CPParagraphStyleMaximumLineHeight"];
+        _lineBreakMode          = [aCoder decodeIntForKey:@"CPParagraphStyleLineBreakMode"];
+        _baseWritingDirection   = [aCoder decodeIntForKey:@"CPParagraphStyleBaseWritingDirection"];
+        _lineHeightMultiple     = [aCoder decodeFloatForKey:@"CPParagraphStyleLineHeightMultiple"];
+        _paragraphSpacingBefore = [aCoder decodeFloatForKey:@"CPParagraphStyleParagraphSpacingBefore"];
+        _defaultTabInterval     = [aCoder decodeFloatForKey:@"CPParagraphStyleDefaultTabInterval"];
+        _tabStops               = [aCoder decodeObjectForKey:@"CPParagraphStyleTabStops"];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeFloat:_lineSpacing forKey:@"CPParagraphStyleLineSpacing"];
+    [aCoder encodeFloat:_paragraphSpacing forKey:@"CPParagraphStyleParagraphSpacing"];
+    [aCoder encodeInt:_alignment forKey:@"CPParagraphStyleAlignment"];
+    [aCoder encodeFloat:_headIndent forKey:@"CPParagraphStyleHeadIndent"];
+    [aCoder encodeFloat:_tailIndent forKey:@"CPParagraphStyleTailIndent"];
+    [aCoder encodeFloat:_firstLineHeadIndent forKey:@"CPParagraphStyleFirstLineHeadIndent"];
+    [aCoder encodeFloat:_minimumLineHeight forKey:@"CPParagraphStyleMinimumLineHeight"];
+    [aCoder encodeFloat:_maximumLineHeight forKey:@"CPParagraphStyleMaximumLineHeight"];
+    [aCoder encodeInt:_lineBreakMode forKey:@"CPParagraphStyleLineBreakMode"];
+    [aCoder encodeInt:_baseWritingDirection forKey:@"CPParagraphStyleBaseWritingDirection"];
+    [aCoder encodeFloat:_lineHeightMultiple forKey:@"CPParagraphStyleLineHeightMultiple"];
+    [aCoder encodeFloat:_paragraphSpacingBefore forKey:@"CPParagraphStyleParagraphSpacingBefore"];
+    [aCoder encodeFloat:_defaultTabInterval forKey:@"CPParagraphStyleDefaultTabInterval"];
+    [aCoder encodeObject:_tabStops forKey:@"CPParagraphStyleTabStops"];
 }
 
 // MARK: - Equality
