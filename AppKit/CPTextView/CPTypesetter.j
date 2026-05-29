@@ -144,27 +144,25 @@ var CPSystemTypesetterFactory,
         tabStops = [[CPParagraphStyle defaultParagraphStyle] tabStops];
 
     var l = [tabStops count];
+
     if (l === 0)
         return nil;
 
-    var lastTab = [tabStops lastObject];
-    if (aWidth > [lastTab location])
-        return nil;
-
-    for (var i = l - 1; i >= 0; i--)
+    // Find the first tab stop that is strictly greater than the current width
+    for (var i = 0; i < l; i++)
     {
         var tab = [tabStops objectAtIndex:i];
-        if (aWidth > [tab location])
-        {
-            if (i + 1 < l)
-                return [tabStops objectAtIndex:i + 1];
-        }
+
+        if ([tab location] > aWidth)
+            return tab;
     }
 
-    if (i === -1)
-        return [tabStops objectAtIndex:0];
+    // If aWidth exceeds the last tab stop, dynamically calculate the next 
+    // tab location using the default tab interval.
+    var defaultInterval = [_currentParagraph defaultTabInterval] || 28.0;
+    var nextLocation = CEIL((aWidth + 1.0) / defaultInterval) * defaultInterval;
 
-    return nil;
+    return [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:nextLocation];
 }
 
 - (BOOL)_flushRange:(CPRange)lineRange
@@ -268,6 +266,9 @@ var CPSystemTypesetterFactory,
         currentParagraphMaximumLineHeight,
         currentParagraphLineSpacing;
 
+    // Track physical line starts to prevent overwriting lineOrigin.x in tab segments
+    var isStartOfPhysicalLine = YES;
+
     // Track paragraph indents and margins
     var isFirstLineOfLayout = YES,
         isFirstLineOfParagraph = YES,
@@ -308,9 +309,8 @@ var CPSystemTypesetterFactory,
             else
                 rightMargin = containerSizeWidth;
 
-            // If we are at the start of a line (no characters processed yet),
-            // we must update lineOrigin.x to use the newly loaded paragraph style!
-            if (lineRange.length === 0)
+            // If we are at the start of a physical line, we update lineOrigin.x
+            if (isStartOfPhysicalLine)
             {
                 if (glyphIndex > 0)
                 {
@@ -376,6 +376,9 @@ var CPSystemTypesetterFactory,
 
         lineRange.length++;
         measuringRange.length++;
+
+        // We are processing characters, so we are no longer at the start of a physical line
+        isStartOfPhysicalLine = NO;
 
         var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
             rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:currentFont inWidth:NULL].width + currentAnchor;
@@ -461,7 +464,8 @@ var CPSystemTypesetterFactory,
                 {
                     rangeWidth += 28.0; // standard fallback spacer
                 }
-            }  // fallthrough intentional
+                break;
+            }
             case 32: // ' '
                 wrapRange = CPMakeRangeCopy(lineRange);
                 wrapWidth = rangeWidth;
@@ -543,6 +547,7 @@ var CPSystemTypesetterFactory,
                 _lineFragments = [];
                 _lineHeight    = 0;
                 _lineBase      = ascent;
+                isStartOfPhysicalLine = YES;
             }
 
             isTabStop       = NO;
