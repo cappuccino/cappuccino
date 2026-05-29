@@ -3049,7 +3049,8 @@ var _CPCopyPlaceholder = '-';
     // Intercept problematic keys before the browser acts.
     _CPNativeInputField.addEventListener('keydown', function(e) {
 
-        if (e.key === 'Tab' || e.key === 'Enter' || (e.key === 'Backspace' && _CPNativeInputField.innerHTML === '')) {
+        if (e.key === 'Tab' || e.key === 'Enter' || (e.key === 'Backspace' && _CPNativeInputField.innerHTML === ''))
+        {
             // Prevent browser default action:
             // - 'Tab': Prevents browser focus navigation, allowing Cappuccino key bindings (like option-tab or tab) to work.
             // - 'Enter': Prevents inserting <div><br></div>.
