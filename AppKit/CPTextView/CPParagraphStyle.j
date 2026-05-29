@@ -56,6 +56,12 @@ var kDefaultTabInterval = 28.0;
     return [self initWithTextAlignment:aType location:aLocation options:nil];
 }
 
+// Added to resolve the unrecognized selector exception in the RTF producer
+- (CPTabStopType)tabStopType
+{
+    return _alignment;
+}
+
 - (BOOL)isEqual:(id)other
 {
     if (self === other) return YES;
@@ -216,8 +222,6 @@ var _sharedDefaultParagraphStyle = nil;
 
 @end
 
-
-// MARK: - CPMutableParagraphStyle Implementation
 
 // MARK: - CPMutableParagraphStyle Implementation
 

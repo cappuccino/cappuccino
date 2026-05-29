@@ -287,7 +287,7 @@
     var elegantForeground = [CPColor colorWithRed:0.18 green:0.24 blue:0.35 alpha:1.0]; // Slate Blue
     var elegantBackground = [CPColor colorWithRed:0.92 green:0.95 blue:0.98 alpha:1.0]; // Soft Sky Blue tint
     
-    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"
+    [_textView insertText:[[CPAttributedString alloc] initWithString:@"My Headline with blue background\n"
                                                           attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:@"Arial" size:18], elegantForeground, elegantBackground]
                                                                                                  forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName, CPBackgroundColorAttributeName]]]];
 
@@ -323,13 +323,6 @@
 
     [theWindow orderFront:self];
     [CPMenu setMenuBarVisible:YES];
-
-    console.log([[CPFont systemFontOfSize:12] cssString])
-    var context = document.createElement("canvas").getContext("2d");
-    context.font = '12px Arial, sans-serif';
-    var testingText = 'A A A A A A A A';
-    console.log(ROUND(context.measureText(testingText).width));
-    console.log(ROUND([CPPlatformString sizeOfString:testingText withFont:[CPFont systemFontOfSize:12] forWidth:NULL].width));
 }
 
 - (void)makeRTF:(id)sender
