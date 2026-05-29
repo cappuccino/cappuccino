@@ -258,12 +258,22 @@
     [mainMenu setSubmenu:editMenu forItem:item];
 
     item = [mainMenu insertItemWithTitle:@"Format" action:nil keyEquivalent:nil atIndex:0];
+    // Format Menu
+    item = [mainMenu insertItemWithTitle:@"Format" action:nil keyEquivalent:nil atIndex:0];
     var formatMenu = [[CPMenu alloc] initWithTitle:@"Format Menu"];
-    [formatMenu addItemWithTitle:@"Font panel" action:@selector(orderFrontFontPanel:) keyEquivalent:@"f"];
+    
+    [formatMenu addItemWithTitle:@"Font panel" action:@selector(orderFrontFontPanel:) keyEquivalent:@"t"];
+    [formatMenu addItem:[CPMenuItem separatorItem]];
+    // Styles
+    [formatMenu addItemWithTitle:@"Bold" action:@selector(bold:) keyEquivalent:@"b"];
+    [formatMenu addItemWithTitle:@"Italic" action:@selector(italic:) keyEquivalent:@"i"];
     [formatMenu addItemWithTitle:@"Underline" action:@selector(underline:) keyEquivalent:@"u"];
+    [formatMenu addItem:[CPMenuItem separatorItem]];
+    // Alignment
     [formatMenu addItemWithTitle:@"Align Left" action:@selector(alignLeft:) keyEquivalent:@"{"];
-    [formatMenu addItemWithTitle:@"Align Center" action:@selector(alignCenter:) keyEquivalent:@"|"];
+    [formatMenu addItemWithTitle:@"Center" action:@selector(alignCenter:) keyEquivalent:@"|"];
     [formatMenu addItemWithTitle:@"Align Right" action:@selector(alignRight:) keyEquivalent:@"}"];
+    [formatMenu addItemWithTitle:@"Justify" action:@selector(alignJustified:) keyEquivalent:@""];
     [mainMenu setSubmenu:formatMenu forItem:item];
 
     // 4. Load Rich Sample Text content
