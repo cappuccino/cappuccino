@@ -240,6 +240,23 @@ CPRulerOrientationVertical = 1
     [_draggingMarker setImageValue:newLocation];
     [self _positionMarker:_draggingMarker];
     
+    // Check if dragged off the ruler (more than 15px off the boundary)
+    var draggedOff = isHorizontal ? (localPoint.y < -15 || localPoint.y > CGRectGetHeight([self bounds]) + 15)
+                                  : (localPoint.x < -15 || localPoint.x > CGRectGetWidth([self bounds]) + 15);
+
+    if (draggedOff)
+    {
+        // Visual feedback: Dim the handle to 40% and turn the triangle icon gray
+        [_draggingMarker setAlphaValue:0.4];
+        [[_draggingMarker label] setTextColor:[CPColor grayColor]];
+    }
+    else
+    {
+        // Restore standard styling when dragged back into the active strip
+        [_draggingMarker setAlphaValue:1.0];
+        [[_draggingMarker label] setTextColor:[CPColor colorWithWhite:0.2 alpha:1.0]];
+    }
+    
     // Notify the CPTextView that the marker coordinates shifted
     var client = [self clientView];
     if (client && [client respondsToSelector:@selector(rulerView:didMoveMarker:)])
@@ -266,10 +283,15 @@ CPRulerOrientationVertical = 1
 
         [self removeMarker:_draggingMarker];
     }
+    else
+    {
+        // Ensure marker style is fully restored if not deleted
+        [_draggingMarker setAlphaValue:1.0];
+        [[_draggingMarker label] setTextColor:[CPColor colorWithWhite:0.2 alpha:1.0]];
+    }
     
     _draggingMarker = nil;
 }
-
 
 #pragma mark -
 #pragma mark DOM Layout Builder
