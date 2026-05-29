@@ -2465,14 +2465,12 @@ Sets the selection to a range of characters in response to user action.
                                                     markerLocation:[paragraphStyle firstLineHeadIndent] 
                                                         imageValue:[paragraphStyle firstLineHeadIndent] 
                                                  representedObject:@"CPFirstLineIndent"];
-    [firstLineMarker._label setStringValue:@"▼"]; // downward arrow styling
     [markers addObject:firstLineMarker];
 
     var headMarker = [[CPRulerMarker alloc] initWithRulerView:ruler 
                                                 markerLocation:[paragraphStyle headIndent] 
                                                     imageValue:[paragraphStyle headIndent] 
                                              representedObject:@"CPHeadIndent"];
-    [headMarker._label setStringValue:@"▼"];
     [markers addObject:headMarker];
 
     [ruler setMarkers:markers];
@@ -2636,6 +2634,45 @@ var compareTabStops = function(obj1, obj2, context) {
         [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
     }
+}
+
+- (void)rulerView:(CPRulerView)rulerView didUpdateMarker:(CPRulerMarker)marker oldTab:(id)oldTab
+{
+    var selectedRange = [self selectedRange];
+    if (selectedRange.length === 0)
+        selectedRange = [self selectionRangeForProposedRange:CPMakeRange(selectedRange.location, 0) granularity:CPSelectByParagraph];
+
+    if (selectedRange.length === 0)
+        return;
+
+    var paragraphStyle = [[self textStorage] attribute:CPParagraphStyleAttributeName atIndex:selectedRange.location effectiveRange:NULL];
+    if (!paragraphStyle)
+        paragraphStyle = [CPParagraphStyle defaultParagraphStyle];
+
+    var mutableStyle = [paragraphStyle mutableCopy],
+        newTab = [marker representedObject],
+        tabs = [[mutableStyle tabStops] mutableCopy];
+
+    [tabs removeObject:oldTab];
+    [tabs addObject:newTab];
+
+    // Sort tabs ascending
+    [tabs sortUsingFunction:compareTabStops context:nil];
+
+    [mutableStyle setTabStops:tabs];
+
+    [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(selectedRange)];
+    
+    [_layoutManager textStorage:_textStorage 
+                         edited:0 
+                          range:CPMakeRangeCopy(selectedRange) 
+                 changeInLength:0 
+               invalidatedRange:CPMakeRangeCopy(selectedRange)];
+
+    // Force layouts and view canvas update
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
 }
 
 @end

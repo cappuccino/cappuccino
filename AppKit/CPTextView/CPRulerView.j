@@ -25,6 +25,8 @@
 @import "CPTextField.j"
 @import "CPColor.j"
 @import "CPFont.j"
+@import "CPMenu.j"
+@import "CPMenuItem.j"
 
 // Orientations matching AppKit standards
 // typedef enum CPRulerOrientation
@@ -36,11 +38,11 @@ CPRulerOrientationVertical = 1
 @class CPRulerView;
 
 
-// MARK: - CPRulerMarker (Interactive High-Res DOM Handle)
+// MARK: - CPRulerMarker (Interactive Handles with Dynamic Alignment Icons)
 
 @implementation CPRulerMarker : CPView
 {
-    CPRulerView         _rulerView              @accessors(readonly, property=rulerView);
+    CPRulerView         _rulerView              @accessors(property=rulerView);
     float               _imageValue             @accessors(property=imageValue);
     id                  _representedObject     @accessors(property=representedObject);
     CPTextField         _label;
@@ -48,22 +50,138 @@ CPRulerOrientationVertical = 1
 
 - (id)initWithRulerView:(CPRulerView)aRulerView markerLocation:(float)aLocation imageValue:(float)anImageValue representedObject:(id)anObject
 {
-    // Render a crisp, resizable 12x12 container for the Unicode indicator
     if (self = [super initWithFrame:CGRectMake(0, 0, 12, 12)])
     {
         _rulerView = aRulerView;
         _imageValue = anImageValue;
         _representedObject = anObject;
         
-        // Beautiful, razor-sharp upward-pointing triangle for high-res screens
         _label = [[CPTextField alloc] initWithFrame:CGRectMake(0, 0, 12, 12)];
-        [_label setStringValue:@"▲"]; 
         [_label setFont:[CPFont systemFontOfSize:10.0]];
         [_label setTextColor:[CPColor colorWithWhite:0.2 alpha:1.0]];
         [_label setAlignment:CPCenterTextAlignment];
         [self addSubview:_label];
+        
+        [self updateMarkerIcon];
     }
     return self;
+}
+
+- (CPTextField)label
+{
+    return _label;
+}
+
+- (void)setRepresentedObject:(id)anObject
+{
+    _representedObject = anObject;
+    [self updateMarkerIcon];
+}
+
+// Dynamically sets the Unicode triangle direction based on the alignment or indent type
+- (void)updateMarkerIcon
+{
+    if ([_representedObject isKindOfClass:[CPTextTab class]])
+    {
+        var align = [_representedObject alignment];
+        if (align === CPLeftTextAlignment)
+            [_label setStringValue:@"▶"]; // Left-aligned points Right
+        else if (align === CPCenterTextAlignment)
+            [_label setStringValue:@"▼"]; // Center-aligned points Down
+        else if (align === CPRightTextAlignment)
+            [_label setStringValue:@"◀"]; // Right-aligned points Left
+    }
+    else
+    {
+        [_label setStringValue:@"▲"]; // Indent markers point Up
+    }
+}
+
+#pragma mark -
+#pragma mark Context Menu Support
+
+- (CPMenu)menuForEvent:(CPEvent)anEvent
+{
+    var menu = [[CPMenu alloc] initWithTitle:@"Marker Context Menu"];
+    
+    // If the marker represents a standard tab stop, allow changing its type
+    if ([_representedObject isKindOfClass:[CPTextTab class]])
+    {
+        var itemLeft = [menu addItemWithTitle:@"Left Tab Stop" action:@selector(changeTypeToLeft:) keyEquivalent:@""],
+            itemCenter = [menu addItemWithTitle:@"Center Tab Stop" action:@selector(changeTypeToCenter:) keyEquivalent:@""],
+            itemRight = [menu addItemWithTitle:@"Right Tab Stop" action:@selector(changeTypeToRight:) keyEquivalent:@""];
+            
+        [itemLeft setTarget:self];
+        [itemCenter setTarget:self];
+        [itemRight setTarget:self];
+        
+        var align = [_representedObject alignment];
+        if (align === CPLeftTextAlignment) [itemLeft setState:CPOnState];
+        else if (align === CPCenterTextAlignment) [itemCenter setState:CPOnState];
+        else if (align === CPRightTextAlignment) [itemRight setState:CPOnState];
+        
+        [menu addItem:[CPMenuItem separatorItem]];
+    }
+    
+    // Determine the context-specific delete title
+    var deleteTitle = @"Delete Tab Stop";
+    if ([_representedObject isKindOfClass:[CPString class]])
+    {
+        if (_representedObject === @"CPFirstLineIndent")
+            deleteTitle = @"Delete 1st line indentation marker";
+        else if (_representedObject === @"CPHeadIndent")
+            deleteTitle = @"Delete head indentation marker";
+        else if (_representedObject === @"CPTailIndent")
+            deleteTitle = @"Delete tail indentation marker";
+    }
+    
+    var itemDelete = [menu addItemWithTitle:deleteTitle action:@selector(deleteMarker:) keyEquivalent:@""];
+    [itemDelete setTarget:self];
+    
+    return menu;
+}
+
+- (void)changeTypeToLeft:(id)sender
+{
+    [self _changeAlignment:CPLeftTextAlignment];
+}
+
+- (void)changeTypeToCenter:(id)sender
+{
+    [self _changeAlignment:CPCenterTextAlignment];
+}
+
+- (void)changeTypeToRight:(id)sender
+{
+    [self _changeAlignment:CPRightTextAlignment];
+}
+
+- (void)_changeAlignment:(CPTextAlignment)alignment
+{
+    if (![_representedObject isKindOfClass:[CPTextTab class]])
+        return;
+        
+    var oldTab = _representedObject;
+    var newTab = [[CPTextTab alloc] initWithType:alignment location:_imageValue];
+    
+    // Using setRepresentedObject: automatically updates the marker triangle direction
+    [self setRepresentedObject:newTab];
+    
+    var client = [_rulerView clientView];
+    if (client && [client respondsToSelector:@selector(rulerView:didUpdateMarker:oldTab:)])
+    {
+        [client rulerView:_rulerView didUpdateMarker:self oldTab:oldTab];
+    }
+}
+
+- (void)deleteMarker:(id)sender
+{
+    var client = [_rulerView clientView];
+    if (client && [client respondsToSelector:@selector(rulerView:didRemoveMarker:)])
+    {
+        [client rulerView:_rulerView didRemoveMarker:self];
+    }
+    [_rulerView removeMarker:self];
 }
 
 @end
@@ -215,11 +333,6 @@ CPRulerOrientationVertical = 1
         _draggingMarker = newMarker;
         _dragStartPoint = localPoint;
         _dragStartLocation = rulerLocation;
-        
-        // NOTIFY CLIENT OF THE NEW MARKER ADDITION
-        var client = [self clientView];
-        if (client && [client respondsToSelector:@selector(rulerView:didAddMarker:)])
-            [client rulerView:self didAddMarker:newMarker];
     }
 }
 
@@ -292,6 +405,7 @@ CPRulerOrientationVertical = 1
     
     _draggingMarker = nil;
 }
+
 
 #pragma mark -
 #pragma mark DOM Layout Builder

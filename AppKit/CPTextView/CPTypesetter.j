@@ -6,7 +6,7 @@
  *  All modifications copyright Daniel Boehringer 2013.
  *  Extensive code formatting and review by Andrew Hankinson
  *  Based on original work by
- *  Emmanuel Maillard on 27/02/2010.
+ *  Created by Emmanuel Maillard on 27/02/2010.
  *  Copyright Emmanuel Maillard 2010.
  *
  * This library is free software; you can redistribute it and/or
@@ -268,6 +268,11 @@ var CPSystemTypesetterFactory,
         currentParagraphMaximumLineHeight,
         currentParagraphLineSpacing;
 
+    // Track paragraph indents and margins
+    var isFirstLineOfLayout = YES,
+        isFirstLineOfParagraph = YES,
+        rightMargin = containerSizeWidth;
+
     if (glyphIndex > 0)
         lineOrigin = CGPointCreateCopy([_layoutManager lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:nil].origin);
     else if ([_layoutManager extraLineFragmentTextContainer])
@@ -293,6 +298,57 @@ var CPSystemTypesetterFactory,
             currentParagraphMinimumLineHeight = [_currentParagraph minimumLineHeight];
             currentParagraphMaximumLineHeight = [_currentParagraph maximumLineHeight];
             currentParagraphLineSpacing = [_currentParagraph lineSpacing];
+
+            // Recalculate right margin on paragraph style change
+            var tailIndent = [_currentParagraph tailIndent];
+            if (tailIndent > 0.0)
+                rightMargin = tailIndent;
+            else if (tailIndent < 0.0)
+                rightMargin = containerSizeWidth + tailIndent;
+            else
+                rightMargin = containerSizeWidth;
+
+            // If we are at the start of a line (no characters processed yet),
+            // we must update lineOrigin.x to use the newly loaded paragraph style!
+            if (lineRange.length === 0)
+            {
+                if (glyphIndex > 0)
+                {
+                    var prevChar = theString.charCodeAt(glyphIndex - 1);
+                    isFirstLineOfParagraph = (prevChar === 10 || prevChar === 13);
+                }
+                else
+                {
+                    isFirstLineOfParagraph = YES;
+                }
+                lineOrigin.x = isFirstLineOfParagraph ? [_currentParagraph firstLineHeadIndent] : [_currentParagraph headIndent];
+                isFirstLineOfLayout = NO;
+            }
+        
+            // Calculate the right wrapping margin based on tail indent
+            var tailIndent = [_currentParagraph tailIndent];
+            if (tailIndent > 0.0)
+                rightMargin = tailIndent;
+            else if (tailIndent < 0.0)
+                rightMargin = containerSizeWidth + tailIndent;
+            else
+                rightMargin = containerSizeWidth;
+
+            // Handle the layout's very first line indentation
+            if (isFirstLineOfLayout)
+            {
+                if (glyphIndex > 0)
+                {
+                    var prevChar = theString.charCodeAt(glyphIndex - 1);
+                    isFirstLineOfParagraph = (prevChar === 10 || prevChar === 13);
+                }
+                else
+                {
+                    isFirstLineOfParagraph = YES;
+                }
+                lineOrigin.x = isFirstLineOfParagraph ? [_currentParagraph firstLineHeadIndent] : [_currentParagraph headIndent];
+                isFirstLineOfLayout = NO;
+            }
 
             if (!currentFont)
                 currentFont = [_textStorage font] || [CPFont systemFontOfSize:12.0];
@@ -432,7 +488,8 @@ var CPSystemTypesetterFactory,
         advancements.push({width: rangeWidth - prevRangeWidth, height: ascent, descent: descent});
         prevRangeWidth = _lineWidth = rangeWidth;
 
-        if (lineOrigin.x + rangeWidth > containerSizeWidth)
+        // Wrap lines against the tail indent (rightMargin) instead of container boundaries
+        if (lineOrigin.x + rangeWidth > rightMargin)
         {
             if (wrapWidth)
             {
@@ -476,7 +533,11 @@ var CPSystemTypesetterFactory,
                     containerSizeHeight = containerSize.height;
                 }
 
-                lineOrigin.x = 0;
+                // If this is a soft wrap (isWordWrapped), next line gets headIndent. 
+                // If it was a paragraph return, it gets firstLineHeadIndent.
+                isFirstLineOfParagraph = !isWordWrapped;
+                lineOrigin.x = isFirstLineOfParagraph ? [_currentParagraph firstLineHeadIndent] : [_currentParagraph headIndent];
+
                 numLines++;
                 isNewline = NO;
                 _lineFragments = [];
