@@ -29,6 +29,7 @@
 @import "CPClipView.j"
 @import "CPScroller.j"
 @import "CPView.j"
+@import "CPRulerView.j"
 
 @class CPTableView
 @class CPRulerView
@@ -824,7 +825,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     if (_hasHorizontalRuler && !_horizontalRuler)
     {
-        _horizontalRuler = [[CPRulerView alloc] initWithScrollView:self orientation:CPHorizontalRuler];
+        _horizontalRuler = [[CPRulerView alloc] initWithScrollView:self orientation:CPRulerOrientationHorizontal];
     }
 
     [self tile];
@@ -844,7 +845,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     if (_hasVerticalRuler && !_verticalRuler)
     {
-        _verticalRuler = [[CPRulerView alloc] initWithScrollView:self orientation:CPVerticalRuler];
+        _verticalRuler = [[CPRulerView alloc] initWithScrollView:self orientation:CPRulerOrientationVertical];
     }
 
     [self tile];
@@ -1428,7 +1429,11 @@ Notifies the delegate when the scroll view has finished scrolling.
             CGRectGetWidth(contentFrame), 
             horizRulerThickness
         )];
-        [_horizontalRuler setNeedsDisplay:YES];
+        
+        if ([_horizontalRuler respondsToSelector:@selector(updateRuler)])
+            [_horizontalRuler updateRuler];
+        else
+            [_horizontalRuler setNeedsDisplay:YES];
     }
 
     if (showVerticalRuler)
@@ -1439,7 +1444,11 @@ Notifies the delegate when the scroll view has finished scrolling.
             vertRulerThickness, 
             CGRectGetHeight(contentFrame)
         )];
-        [_verticalRuler setNeedsDisplay:YES];
+        
+        if ([_verticalRuler respondsToSelector:@selector(updateRuler)])
+            [_verticalRuler updateRuler];
+        else
+            [_verticalRuler setNeedsDisplay:YES];
     }
 
     --_recursionCount;

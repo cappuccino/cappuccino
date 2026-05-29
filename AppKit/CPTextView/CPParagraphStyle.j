@@ -219,106 +219,116 @@ var _sharedDefaultParagraphStyle = nil;
 
 // MARK: - CPMutableParagraphStyle Implementation
 
+// MARK: - CPMutableParagraphStyle Implementation
+
 @implementation CPMutableParagraphStyle : CPParagraphStyle
 {
 }
 
+- (id)initWithParagraphStyle:(CPParagraphStyle)other
+{
+    if (self = [super initWithParagraphStyle:other])
+    {
+        // Ensure our tab stops array is mutable in the mutable subclass
+        _tabStops = [[other tabStops] mutableCopy];
+    }
+    return self;
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+        _tabStops = [_tabStops mutableCopy];
+    }
+    return self;
+}
+
+- (void)setLineSpacing:(float)aLineSpacing
+{
+    _lineSpacing = aLineSpacing;
+}
+
+- (void)setParagraphSpacing:(float)aParagraphSpacing
+{
+    _paragraphSpacing = aParagraphSpacing;
+}
+
+- (void)setAlignment:(CPTextAlignment)anAlignment
+{
+    _alignment = anAlignment;
+}
+
+- (void)setHeadIndent:(float)aHeadIndent
+{
+    _headIndent = aHeadIndent;
+}
+
+- (void)setTailIndent:(float)aTailIndent
+{
+    _tailIndent = aTailIndent;
+}
+
+- (void)setFirstLineHeadIndent:(float)aFirstLineHeadIndent
+{
+    _firstLineHeadIndent = aFirstLineHeadIndent;
+}
+
+- (void)setMinimumLineHeight:(float)aMinimumLineHeight
+{
+    _minimumLineHeight = aMinimumLineHeight;
+}
+
+- (void)setMaximumLineHeight:(float)aMaximumLineHeight
+{
+    _maximumLineHeight = aMaximumLineHeight;
+}
+
+- (void)setLineBreakMode:(CPLineBreakMode)aLineBreakMode
+{
+    _lineBreakMode = aLineBreakMode;
+}
+
+- (void)setBaseWritingDirection:(CPWritingDirection)aBaseWritingDirection
+{
+    _baseWritingDirection = aBaseWritingDirection;
+}
+
+- (void)setLineHeightMultiple:(float)aLineHeightMultiple
+{
+    _lineHeightMultiple = aLineHeightMultiple;
+}
+
+- (void)setParagraphSpacingBefore:(float)aParagraphSpacingBefore
+{
+    _paragraphSpacingBefore = aParagraphSpacingBefore;
+}
+
+- (void)setDefaultTabInterval:(float)aDefaultTabInterval
+{
+    _defaultTabInterval = aDefaultTabInterval;
+}
 
 - (void)addTabStop:(CPTextTab)aTabStop
 {
-    // Copy on write logic would go here if we shared structure, 
-    // but here we just mutate the array.
     [_tabStops addObject:aTabStop];
+}
+
+- (void)removeTabStop:(CPTextTab)aTabStop
+{
+    [_tabStops removeObject:aTabStop];
 }
 
 - (void)setTabStops:(CPArray)newTabStops
 {
     if (_tabStops === newTabStops) return;
-    _tabStops = [newTabStops copy];
+    _tabStops = [newTabStops mutableCopy];
 }
 
 - (id)copyWithZone:(CPZone)aZone
 {
     // Return an immutable copy
     return [[CPParagraphStyle alloc] initWithParagraphStyle:self];
-}
-
-@end
-
-
-// MARK: - CPCoding
-
-var CPParagraphStyleLineSpacingKey              = @"CPParagraphStyleLineSpacingKey",
-    CPParagraphStyleParagraphSpacingKey         = @"CPParagraphStyleParagraphSpacingKey",
-    CPParagraphStyleAlignmentKey                = @"CPParagraphStyleAlignmentKey",
-    CPParagraphStyleHeadIndentKey               = @"CPParagraphStyleHeadIndentKey",
-    CPParagraphStyleTailIndentKey               = @"CPParagraphStyleTailIndentKey",
-    CPParagraphStyleFirstLineHeadIndentKey      = @"CPParagraphStyleFirstLineHeadIndentKey",
-    CPParagraphStyleMinimumLineHeightKey        = @"CPParagraphStyleMinimumLineHeightKey",
-    CPParagraphStyleMaximumLineHeightKey        = @"CPParagraphStyleMaximumLineHeightKey",
-    CPParagraphStyleLineBreakModeKey            = @"CPParagraphStyleLineBreakModeKey",
-    CPParagraphStyleTabStopsKey                 = @"CPParagraphStyleTabStopsKey",
-    CPParagraphStyleBaseWritingDirectionKey     = @"CPParagraphStyleBaseWritingDirectionKey",
-    CPParagraphStyleLineHeightMultipleKey       = @"CPParagraphStyleLineHeightMultipleKey",
-    CPParagraphStyleParagraphSpacingBeforeKey   = @"CPParagraphStyleParagraphSpacingBeforeKey",
-    CPParagraphStyleDefaultTabIntervalKey       = @"CPParagraphStyleDefaultTabIntervalKey";
-
-@implementation CPParagraphStyle (CPCoding)
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    if (self = [super init])
-    {
-        _lineSpacing            = [aCoder decodeFloatForKey:CPParagraphStyleLineSpacingKey];
-        _paragraphSpacing       = [aCoder decodeFloatForKey:CPParagraphStyleParagraphSpacingKey];
-        _alignment              = [aCoder decodeIntForKey:CPParagraphStyleAlignmentKey];
-        _headIndent             = [aCoder decodeFloatForKey:CPParagraphStyleHeadIndentKey];
-        _tailIndent             = [aCoder decodeFloatForKey:CPParagraphStyleTailIndentKey];
-        _firstLineHeadIndent    = [aCoder decodeFloatForKey:CPParagraphStyleFirstLineHeadIndentKey];
-        _minimumLineHeight      = [aCoder decodeFloatForKey:CPParagraphStyleMinimumLineHeightKey];
-        _maximumLineHeight      = [aCoder decodeFloatForKey:CPParagraphStyleMaximumLineHeightKey];
-        _lineBreakMode          = [aCoder decodeIntForKey:CPParagraphStyleLineBreakModeKey];
-        _tabStops               = [aCoder decodeObjectForKey:CPParagraphStyleTabStopsKey];
-        
-        // Handle potential missing keys for backward compatibility or new properties
-        if ([aCoder containsValueForKey:CPParagraphStyleBaseWritingDirectionKey])
-            _baseWritingDirection = [aCoder decodeIntForKey:CPParagraphStyleBaseWritingDirectionKey];
-        else
-            _baseWritingDirection = CPWritingDirectionNatural;
-            
-        if ([aCoder containsValueForKey:CPParagraphStyleLineHeightMultipleKey])
-            _lineHeightMultiple = [aCoder decodeFloatForKey:CPParagraphStyleLineHeightMultipleKey];
-            
-        if ([aCoder containsValueForKey:CPParagraphStyleParagraphSpacingBeforeKey])
-            _paragraphSpacingBefore = [aCoder decodeFloatForKey:CPParagraphStyleParagraphSpacingBeforeKey];
-            
-        if ([aCoder containsValueForKey:CPParagraphStyleDefaultTabIntervalKey])
-            _defaultTabInterval = [aCoder decodeFloatForKey:CPParagraphStyleDefaultTabIntervalKey];
-        else
-            _defaultTabInterval = kDefaultTabInterval;
-            
-        if (!_tabStops) _tabStops = [];
-    }
-    return self;
-}
-
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    [aCoder encodeFloat:_lineSpacing forKey:CPParagraphStyleLineSpacingKey];
-    [aCoder encodeFloat:_paragraphSpacing forKey:CPParagraphStyleParagraphSpacingKey];
-    [aCoder encodeInt:_alignment forKey:CPParagraphStyleAlignmentKey];
-    [aCoder encodeFloat:_headIndent forKey:CPParagraphStyleHeadIndentKey];
-    [aCoder encodeFloat:_tailIndent forKey:CPParagraphStyleTailIndentKey];
-    [aCoder encodeFloat:_firstLineHeadIndent forKey:CPParagraphStyleFirstLineHeadIndentKey];
-    [aCoder encodeFloat:_minimumLineHeight forKey:CPParagraphStyleMinimumLineHeightKey];
-    [aCoder encodeFloat:_maximumLineHeight forKey:CPParagraphStyleMaximumLineHeightKey];
-    [aCoder encodeInt:_lineBreakMode forKey:CPParagraphStyleLineBreakModeKey];
-    [aCoder encodeObject:_tabStops forKey:CPParagraphStyleTabStopsKey];
-    
-    [aCoder encodeInt:_baseWritingDirection forKey:CPParagraphStyleBaseWritingDirectionKey];
-    [aCoder encodeFloat:_lineHeightMultiple forKey:CPParagraphStyleLineHeightMultipleKey];
-    [aCoder encodeFloat:_paragraphSpacingBefore forKey:CPParagraphStyleParagraphSpacingBeforeKey];
-    [aCoder encodeFloat:_defaultTabInterval forKey:CPParagraphStyleDefaultTabIntervalKey];
 }
 
 @end

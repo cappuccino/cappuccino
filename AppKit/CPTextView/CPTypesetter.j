@@ -135,29 +135,34 @@ var CPSystemTypesetterFactory,
     return [_layoutManager textContainers];
 }
 
+// Retrieves correct CPTextTab stop accounting for CPArray properties
 - (CPTextTab)textTabForWidth:(double)aWidth writingDirection:(CPWritingDirection)direction
 {
     var tabStops = [_currentParagraph tabStops];
 
     if (!tabStops)
-        tabStops = [CPParagraphStyle _defaultTabStops];
+        tabStops = [[CPParagraphStyle defaultParagraphStyle] tabStops];
 
-    var l = tabStops.length;
+    var l = [tabStops count];
+    if (l === 0)
+        return nil;
 
-    if (aWidth > tabStops[l - 1]._location)
+    var lastTab = [tabStops lastObject];
+    if (aWidth > [lastTab location])
         return nil;
 
     for (var i = l - 1; i >= 0; i--)
     {
-        if (aWidth > tabStops[i]._location)
+        var tab = [tabStops objectAtIndex:i];
+        if (aWidth > [tab location])
         {
             if (i + 1 < l)
-                return tabStops[i + 1];
+                return [tabStops objectAtIndex:i + 1];
         }
     }
 
     if (i === -1)
-        return tabStops[0];
+        return [tabStops objectAtIndex:0];
 
     return nil;
 }
@@ -356,9 +361,50 @@ var CPSystemTypesetterFactory,
                 isTabStop = YES;
 
                 if (nextTab)
-                    rangeWidth = nextTab._location - lineOrigin.x;
+                {
+                    // Look-ahead to measure the width of the incoming text segment for alignment
+                    var nextSegmentWidth = 0.0,
+                        tempIndex = glyphIndex + 1,
+                        segmentString = "";
+
+                    while (tempIndex < numberOfGlyphs)
+                    {
+                        var nextCharCode = theString.charCodeAt(tempIndex);
+                        if (nextCharCode === 9 || nextCharCode === 10 || nextCharCode === 13)
+                            break;
+                        segmentString += theString.charAt(tempIndex);
+                        tempIndex++;
+                    }
+
+                    if (segmentString.length > 0)
+                        nextSegmentWidth = [segmentString sizeWithFont:currentFont inWidth:NULL].width;
+
+                    var tabLocation = [nextTab location],
+                        tabAlignment = [nextTab alignment];
+
+                    // Mathematically offset the tab character's right boundary
+                    if (tabAlignment === CPCenterTextAlignment)
+                    {
+                        rangeWidth = (tabLocation - nextSegmentWidth / 2.0) - lineOrigin.x;
+                    }
+                    else if (tabAlignment === CPRightTextAlignment)
+                    {
+                        rangeWidth = (tabLocation - nextSegmentWidth) - lineOrigin.x;
+                    }
+                    else // Left align tab stop
+                    {
+                        rangeWidth = tabLocation - lineOrigin.x;
+                    }
+
+                    // Enforce a minimum safety spacer width to avoid character overlapping
+                    var minRangeWidth = prevRangeWidth + 5.0;
+                    if (rangeWidth < minRangeWidth)
+                        rangeWidth = minRangeWidth;
+                }
                 else
-                    rangeWidth += 28;   //FIXME
+                {
+                    rangeWidth += 28.0; // standard fallback spacer
+                }
             }  // fallthrough intentional
             case 32: // ' '
                 wrapRange = CPMakeRangeCopy(lineRange);

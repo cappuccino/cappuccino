@@ -75,6 +75,21 @@
     [_textView alignJustified:self];
 }
 
+- (void)insertAttachment:(id)sender
+{
+    // Insert modern spinner image attachment
+    var tempImageView = [[CPImageView alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [tempImageView setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(32, 32)]];
+    [_textView insertText:[CPTextStorage attributedStringWithAttachment:tempImageView]];
+    [_textView insertText:@" "];
+
+    // Insert an interactive button attachment
+    var tempButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 80, 28)];
+    [tempButton setTitle:@"Click Me"];
+    [_textView insertText:[CPTextStorage attributedStringWithAttachment:tempButton]];
+    [_textView insertText:@" "];
+}
+
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
@@ -112,7 +127,7 @@
     [rulerButton setTarget:self];
     [rulerButton setAction:@selector(toggleRuler:)];
     [toolbarView addSubview:rulerButton];
-    currentX += 140;
+    currentX += 130;
 
     // RTF Roundtrip Trigger
     var rtfButton = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 150, 30)];
@@ -120,7 +135,15 @@
     [rtfButton setTarget:self];
     [rtfButton setAction:@selector(makeRTF:)];
     [toolbarView addSubview:rtfButton];
-    currentX += 165;
+    currentX += 160;
+
+    // Insert Attachment Trigger
+    var attachButton = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 140, 30)];
+    [attachButton setTitle:@"Insert Attachment"];
+    [attachButton setTarget:self];
+    [attachButton setAction:@selector(insertAttachment:)];
+    [toolbarView addSubview:attachButton];
+    currentX += 150;
 
     // Text Alignment Group
     var labelAlign = [[CPTextField alloc] initWithFrame:CGRectMake(currentX, 22, 45, 20)];
@@ -129,34 +152,34 @@
     [toolbarView addSubview:labelAlign];
     currentX += 45;
 
-    var alignLeftBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 30, 30)];
-    [alignLeftBtn setTitle:@"⃔"]; // Left-align symbol
+    var alignLeftBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 50, 30)];
+    [alignLeftBtn setTitle:@"Left"];
     [alignLeftBtn setTarget:self];
     [alignLeftBtn setAction:@selector(alignLeft:)];
     [toolbarView addSubview:alignLeftBtn];
-    currentX += 32;
+    currentX += 55;
 
-    var alignCenterBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 30, 30)];
-    [alignCenterBtn setTitle:@"↔"]; // Center-align symbol
+    var alignCenterBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 60, 30)];
+    [alignCenterBtn setTitle:@"Center"];
     [alignCenterBtn setTarget:self];
     [alignCenterBtn setAction:@selector(alignCenter:)];
     [toolbarView addSubview:alignCenterBtn];
-    currentX += 32;
+    currentX += 65;
 
-    var alignRightBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 30, 30)];
-    [alignRightBtn setTitle:@"⃕"]; // Right-align symbol
+    var alignRightBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 55, 30)];
+    [alignRightBtn setTitle:@"Right"];
     [alignRightBtn setTarget:self];
     [alignRightBtn setAction:@selector(alignRight:)];
     [toolbarView addSubview:alignRightBtn];
-    currentX += 32;
+    currentX += 60;
 
-    var alignJustifyBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 30, 30)];
-    [alignJustifyBtn setTitle:@"≡"]; // Justify-align symbol
+    var alignJustifyBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 65, 30)];
+    [alignJustifyBtn setTitle:@"Justify"];
     [alignJustifyBtn setTarget:self];
     [alignJustifyBtn setAction:@selector(alignJustified:)];
     [toolbarView addSubview:alignJustifyBtn];
 
-    // Default return key target test (as defined in original source)
+    // Default return key target test
     var returnButton = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth([contentView bounds]) - 270, 15, 250, 30)];
     [returnButton setAutoresizingMask:CPViewMinXMargin];
     [returnButton setTitle:@"Key Return Target"];
@@ -244,44 +267,41 @@
     [mainMenu setSubmenu:formatMenu forItem:item];
 
     // 4. Load Rich Sample Text content
-    [_textView insertText:@"123"];
-    var tempImageView = [[CPImageView alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
-    [tempImageView setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(32, 32)]];
+    [_textView insertText:@"123 456 "];
 
-    [_textView insertText:[CPTextStorage attributedStringWithAttachment:tempImageView]];
-    [_textView insertText:@" 456 "];
-
-    var tempButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 64, 28)];
-    [_textView insertText:[CPTextStorage attributedStringWithAttachment:tempButton]];
-
-    // Centered paragraph text block
-    var centeredParagraph = [CPParagraphStyle new];
+    // Elegant Slate-Blue & Soft Light Blue paragraph
+    var centeredParagraph = [CPMutableParagraphStyle new];
     [centeredParagraph setAlignment:CPCenterTextAlignment];
     [_textView insertText:@"\n"];
+    
+    var elegantForeground = [CPColor colorWithRed:0.18 green:0.24 blue:0.35 alpha:1.0]; // Slate Blue
+    var elegantBackground = [CPColor colorWithRed:0.92 green:0.95 blue:0.98 alpha:1.0]; // Soft Sky Blue tint
+    
     [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"
-                                                          attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:@"Arial" size:18], [CPColor redColor], [CPColor yellowColor]]
+                                                          attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:@"Arial" size:18], elegantForeground, elegantBackground]
                                                                                                  forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName, CPBackgroundColorAttributeName]]]];
 
-    // Highlighted Heading
+    // Highlighted Heading - Pine & Sage Green tones
     [_textView insertText:@"\n"];
+    var showcaseForeground = [CPColor colorWithRed:0.15 green:0.25 blue:0.15 alpha:1.0]; // Forest Green
+    var showcaseBackground = [CPColor colorWithRed:0.94 green:0.97 blue:0.92 alpha:1.0]; // Light Sage Green
+    
     [_textView insertText:[[CPAttributedString alloc] initWithString:@"Interactive Ruler Showcase\n"
-                                                          attributes:[CPDictionary dictionaryWithObjects:[[CPFont boldFontWithName:@"Arial" size:22], [CPColor yellowColor]]
-                                                                                                 forKeys:[CPFontAttributeName, CPBackgroundColorAttributeName]]]];
+                                                          attributes:[CPDictionary dictionaryWithObjects:[[CPFont boldFontWithName:@"Arial" size:22], showcaseForeground, showcaseBackground]
+                                                                                                 forKeys:[CPFontAttributeName, CPForegroundColorAttributeName, CPBackgroundColorAttributeName]]]];
 
     // DEMONSTRATION OF CPRULERVIEW TAB MARKERS
-    // Creating left, center, and right tabs to showcase the ruler markers dynamically
     var tabParagraph = [[CPParagraphStyle defaultParagraphStyle] mutableCopy];
-    var tab1 = [[CPTextTab alloc] initWithType:CPLeftTabStopType location:100.0];
-    var tab2 = [[CPTextTab alloc] initWithType:CPCenterTabStopType location:220.0];
-    var tab3 = [[CPTextTab alloc] initWithType:CPRightTabStopType location:340.0];
+    var tab1 = [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:100.0];
+    var tab2 = [[CPTextTab alloc] initWithType:CPCenterTextAlignment location:220.0];
+    var tab3 = [[CPTextTab alloc] initWithType:CPRightTextAlignment location:340.0];
     [tabParagraph setTabStops:[tab1, tab2, tab3]];
 
     [_textView insertText:@"\n"];
-    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Tab1\tTab2\tTab3\nLeftAlign\tCenterAlign\tRightAlign\n"
-                                                          attributes:[CPDictionary dictionaryWithObject:tabParagraph forKey:CPParagraphStyleAttributeName]]];
+    [_textView insertText:[[CPAttributedString alloc] initWithString:@"\tTab1\tTab2\tTab3\n\tLeftAlign\tCenterAlign\tRightAlign\n"
+                                                      attributes:[CPDictionary dictionaryWithObject:tabParagraph forKey:CPParagraphStyleAttributeName]]];
 
     // DEMONSTRATION OF INDENTATION MARKERS
-    // Creating custom margin and indentation settings
     var indentParagraph = [[CPParagraphStyle defaultParagraphStyle] mutableCopy];
     [indentParagraph setFirstLineHeadIndent:30.0];
     [indentParagraph setHeadIndent:50.0];
