@@ -29,8 +29,10 @@
 @import "CPClipView.j"
 @import "CPScroller.j"
 @import "CPView.j"
+@import "CPRulerView.j"
 
 @class CPTableView
+@class CPRulerView
 
 #define SHOULD_SHOW_CORNER_VIEW() (_scrollerStyle === CPScrollerStyleLegacy && _verticalScroller && ![_verticalScroller isHidden])
 
@@ -140,6 +142,14 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
     int                         _scrollerStyle;
     int                         _scrollerKnobStyle;
+
+    // Ruler Support
+    BOOL                        _hasVerticalRuler;
+    BOOL                        _hasHorizontalRuler;
+    BOOL                        _rulersVisible;
+
+    CPRulerView                 _verticalRuler;
+    CPRulerView                 _horizontalRuler;
 }
 
 
@@ -305,6 +315,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         [self setHasHorizontalScroller:YES];
         _scrollerKnobStyle = CPScrollerKnobStyleDefault;
         [self setScrollerStyle:CPScrollerStyleGlobal];
+
+        _hasVerticalRuler = NO;
+        _hasHorizontalRuler = NO;
+        _rulersVisible = NO;
 
         _delegate = nil;
         _scrollTimer = nil;
@@ -795,6 +809,103 @@ Notifies the delegate when the scroll view has finished scrolling.
 
 
 #pragma mark -
+#pragma mark Rulers
+
+- (BOOL)hasHorizontalRuler
+{
+    return _hasHorizontalRuler;
+}
+
+- (void)setHasHorizontalRuler:(BOOL)shouldHaveHorizontalRuler
+{
+    if (_hasHorizontalRuler === shouldHaveHorizontalRuler)
+        return;
+
+    _hasHorizontalRuler = shouldHaveHorizontalRuler;
+
+    if (_hasHorizontalRuler && !_horizontalRuler)
+    {
+        _horizontalRuler = [[CPRulerView alloc] initWithScrollView:self orientation:CPRulerOrientationHorizontal];
+    }
+
+    [self tile];
+}
+
+- (BOOL)hasVerticalRuler
+{
+    return _hasVerticalRuler;
+}
+
+- (void)setHasVerticalRuler:(BOOL)shouldHaveVerticalRuler
+{
+    if (_hasVerticalRuler === shouldHaveVerticalRuler)
+        return;
+
+    _hasVerticalRuler = shouldHaveVerticalRuler;
+
+    if (_hasVerticalRuler && !_verticalRuler)
+    {
+        _verticalRuler = [[CPRulerView alloc] initWithScrollView:self orientation:CPRulerOrientationVertical];
+    }
+
+    [self tile];
+}
+
+- (BOOL)rulersVisible
+{
+    return _rulersVisible;
+}
+
+- (void)setRulersVisible:(BOOL)areRulersVisible
+{
+    if (_rulersVisible === areRulersVisible)
+        return;
+
+    _rulersVisible = areRulersVisible;
+
+    [self tile];
+}
+
+- (CPRulerView)horizontalRulerView
+{
+    return _horizontalRuler;
+}
+
+- (void)setHorizontalRulerView:(CPRulerView)aRulerView
+{
+    if (_horizontalRuler === aRulerView)
+        return;
+
+    [_horizontalRuler removeFromSuperview];
+    _horizontalRuler = aRulerView;
+
+    if (_horizontalRuler)
+        [self addSubview:_horizontalRuler];
+
+    [self tile];
+}
+
+- (CPRulerView)verticalRulerView
+{
+    return _verticalRuler;
+}
+
+- (void)setVerticalRulerView:(CPRulerView)aRulerView
+{
+    if (_verticalRuler === aRulerView)
+        return;
+
+    [_verticalRuler removeFromSuperview];
+    _verticalRuler = aRulerView;
+
+    if (_verticalRuler)
+        [self addSubview:_verticalRuler];
+
+    [self tile];
+}
+
+
+#pragma mark -
 #pragma mark Privates
 
 /* @ignore */
@@ -1123,10 +1234,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 */
 - (void)tile
 {
-    // yuck.
-    // RESIZE: tile->setHidden AND refl
-    // Outside Change: refl->tile->setHidden AND refl
-    // scroll: refl.
+    [self reflectScrolledClipView:_contentView];
 }
 
 /*!
@@ -1169,6 +1277,41 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     contentFrame.origin.y += headerClipViewHeight;
     contentFrame.size.height -= headerClipViewHeight;
+
+    // Adjust content view based on horizontal / vertical ruler presence
+    var showHorizontalRuler = _rulersVisible && _hasHorizontalRuler && _horizontalRuler,
+        showVerticalRuler = _rulersVisible && _hasVerticalRuler && _verticalRuler;
+
+    var horizRulerThickness = showHorizontalRuler ? ([_horizontalRuler respondsToSelector:@selector(ruleThickness)] ? [_horizontalRuler ruleThickness] : 16.0) : 0.0,
+        vertRulerThickness = showVerticalRuler ? ([_verticalRuler respondsToSelector:@selector(ruleThickness)] ? [_verticalRuler ruleThickness] : 24.0) : 0.0;
+
+    if (showHorizontalRuler)
+    {
+        if ([_horizontalRuler superview] !== self)
+            [self addSubview:_horizontalRuler];
+        [_horizontalRuler setHidden:NO];
+    }
+    else if (_horizontalRuler)
+    {
+        [_horizontalRuler setHidden:YES];
+    }
+
+    if (showVerticalRuler)
+    {
+        if ([_verticalRuler superview] !== self)
+            [self addSubview:_verticalRuler];
+        [_verticalRuler setHidden:NO];
+    }
+    else if (_verticalRuler)
+    {
+        [_verticalRuler setHidden:YES];
+    }
+
+    contentFrame.origin.y += horizRulerThickness;
+    contentFrame.size.height -= horizRulerThickness;
+
+    contentFrame.origin.x += vertRulerThickness;
+    contentFrame.size.width -= vertRulerThickness;
 
     var difference = CGSizeMake(CGRectGetWidth(documentFrame) - CGRectGetWidth(contentFrame), CGRectGetHeight(documentFrame) - CGRectGetHeight(contentFrame)),
         verticalScrollerWidth = [_verticalScroller scrollerWidth],
@@ -1262,6 +1405,7 @@ Notifies the delegate when the scroll view has finished scrolling.
     [_contentView setFrame:contentFrame];
     [_headerClipView setFrame:[self _headerClipViewFrame]];
     [[_headerClipView documentView] setNeedsDisplay:YES];
+    
     if (SHOULD_SHOW_CORNER_VIEW())
     {
         [_cornerView setFrame:[self _cornerViewFrame]];
@@ -1274,6 +1418,37 @@ Notifies the delegate when the scroll view has finished scrolling.
     {
         [[self bottomCornerView] setFrame:[self _bottomCornerViewFrame]];
         [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
+    }
+
+    // Position and redraw rulers to track viewport updates
+    if (showHorizontalRuler)
+    {
+        [_horizontalRuler setFrame:CGRectMake(
+            CGRectGetMinX(contentFrame), 
+            CGRectGetMinY(contentFrame) - horizRulerThickness, 
+            CGRectGetWidth(contentFrame), 
+            horizRulerThickness
+        )];
+        
+        if ([_horizontalRuler respondsToSelector:@selector(updateRuler)])
+            [_horizontalRuler updateRuler];
+        else
+            [_horizontalRuler setNeedsDisplay:YES];
+    }
+
+    if (showVerticalRuler)
+    {
+        [_verticalRuler setFrame:CGRectMake(
+            CGRectGetMinX(contentFrame) - vertRulerThickness, 
+            CGRectGetMinY(contentFrame), 
+            vertRulerThickness, 
+            CGRectGetHeight(contentFrame)
+        )];
+        
+        if ([_verticalRuler respondsToSelector:@selector(updateRuler)])
+            [_verticalRuler updateRuler];
+        else
+            [_verticalRuler setNeedsDisplay:YES];
     }
 
     --_recursionCount;
@@ -1438,8 +1613,8 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     y = maxY - 1.5;
 
-    CGContextMoveToPoint(context, maxX - 1.0, y);
-    CGContextAddLineToPoint(context, minX + 2.0, y);
+    CGContextMoveToPoint(maxX - 1.0, y);
+    CGContextAddLineToPoint(minX + 2.0, y);
 
     x = minX + 0.5;
 
@@ -1618,7 +1793,14 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
     CPScrollViewBottomCornerViewKey     = @"CPScrollViewBottomCornerViewKey",
     CPScrollViewBorderTypeKey           = @"CPScrollViewBorderTypeKey",
     CPScrollViewScrollerStyleKey        = @"CPScrollViewScrollerStyleKey",
-    CPScrollViewScrollerKnobStyleKey    = @"CPScrollViewScrollerKnobStyleKey";
+    CPScrollViewScrollerKnobStyleKey    = @"CPScrollViewScrollerKnobStyleKey",
+
+    // Ruler Coding Keys
+    CPScrollViewHasVRulerKey            = @"CPScrollViewHasVRuler",
+    CPScrollViewHasHRulerKey            = @"CPScrollViewHasHRuler",
+    CPScrollViewRulersVisibleKey        = @"CPScrollViewRulersVisible",
+    CPScrollViewVRulerKey               = @"CPScrollViewVRuler",
+    CPScrollViewHRulerKey               = @"CPScrollViewHRuler";
 
 @implementation CPScrollView (CPCoding)
 
@@ -1652,6 +1834,14 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
 
         _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
         _bottomCornerView       = [aCoder decodeObjectForKey:CPScrollViewBottomCornerViewKey];
+
+        // Ruler decoding
+        _hasVerticalRuler       = [aCoder decodeBoolForKey:CPScrollViewHasVRulerKey];
+        _hasHorizontalRuler     = [aCoder decodeBoolForKey:CPScrollViewHasHRulerKey];
+        _rulersVisible          = [aCoder decodeBoolForKey:CPScrollViewRulersVisibleKey];
+
+        _verticalRuler          = [aCoder decodeObjectForKey:CPScrollViewVRulerKey];
+        _horizontalRuler        = [aCoder decodeObjectForKey:CPScrollViewHRulerKey];
 
         _delegate = nil;
         _scrollTimer = nil;
@@ -1706,6 +1896,14 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
 
     [aCoder encodeInt:_scrollerStyle            forKey:CPScrollViewScrollerStyleKey];
     [aCoder encodeInt:_scrollerKnobStyle        forKey:CPScrollViewScrollerKnobStyleKey];
+
+    // Ruler encoding
+    [aCoder encodeBool:_hasVerticalRuler        forKey:CPScrollViewHasVRulerKey];
+    [aCoder encodeBool:_hasHorizontalRuler      forKey:CPScrollViewHasHRulerKey];
+    [aCoder encodeBool:_rulersVisible           forKey:CPScrollViewRulersVisibleKey];
+
+    [aCoder encodeObject:_verticalRuler         forKey:CPScrollViewVRulerKey];
+    [aCoder encodeObject:_horizontalRuler       forKey:CPScrollViewHRulerKey];
 }
 
 @end
