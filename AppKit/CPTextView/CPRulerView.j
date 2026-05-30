@@ -79,6 +79,7 @@ CPRulerOrientationVertical = 1
 }
 
 // Dynamically sets the Unicode triangle direction based on the alignment or indent type
+// Dynamically sets the Unicode arrow direction/type based on the alignment or indent type
 - (void)updateMarkerIcon
 {
     if ([_representedObject isKindOfClass:[CPTextTab class]])
@@ -91,12 +92,22 @@ CPRulerOrientationVertical = 1
         else if (align === CPRightTextAlignment)
             [_label setStringValue:@"◀"]; // Right-aligned points Left
     }
+    else if ([_representedObject isKindOfClass:[CPString class]])
+    {
+        if (_representedObject === @"CPFirstLineIndent")
+            [_label setStringValue:@"⥔"]; // Dotted shaft arrow pointing down for first-line indent
+        else if (_representedObject === @"CPHeadIndent")
+            [_label setStringValue:@"⥜"]; // Solid shaft arrow pointing down for following-lines (head) indent
+        else if (_representedObject === @"CPTailIndent")
+            [_label setStringValue:@"⥘"]; // Solid downward triangle for tail indent
+        else
+            [_label setStringValue:@"⇡"]; // Fallback standard up marker
+    }
     else
     {
-        [_label setStringValue:@"▲"]; // Indent markers point Up
+        [_label setStringValue:@"⇡"]; // Fallback standard up marker
     }
 }
-
 #pragma mark -
 #pragma mark Context Menu Support
 
@@ -288,12 +299,24 @@ CPRulerOrientationVertical = 1
         var x = markerLocation - scrollPoint.x - 6.0, // Center the 12px wide marker
             y = rulerHeight - 11.0;                  // Sit perfectly above bottom border
             
+        // Keep horizontal marker within the bounds of the ruler to prevent clipping
+        if (x < 0.0)
+            x = 0.0;
+        else if (x + 12.0 > rulerWidth)
+            x = rulerWidth - 12.0;
+            
         [aMarker setFrame:CGRectMake(x, y, 12.0, 12.0)];
     }
     else
     {
         var x = rulerWidth - 11.0,
             y = markerLocation - scrollPoint.y - 6.0;
+            
+        // Keep vertical marker within the bounds of the ruler to prevent clipping
+        if (y < 0.0)
+            y = 0.0;
+        else if (y + 12.0 > rulerHeight)
+            y = rulerHeight - 12.0;
             
         [aMarker setFrame:CGRectMake(x, y, 12.0, 12.0)];
     }
@@ -433,10 +456,11 @@ CPRulerOrientationVertical = 1
     {
         var start = Math.floor(scrollPoint.x / 10) * 10,
             end = scrollPoint.x + visibleSize.width,
-            rulerHeight = CGRectGetHeight([self bounds]);
+            rulerHeight = CGRectGetHeight([self bounds]),
+            rulerWidth = CGRectGetWidth([self bounds]);
 
         // Draw solid horizontal bottom border (pure, razor-sharp CSS DOM view)
-        var bottomBorder = [[CPView alloc] initWithFrame:CGRectMake(0, rulerHeight - 1, visibleSize.width, 1)];
+        var bottomBorder = [[CPView alloc] initWithFrame:CGRectMake(0, rulerHeight - 1, rulerWidth, 1)];
         [bottomBorder setBackgroundColor:[CPColor colorWithWhite:0.75 alpha:1.0]];
         [self addSubview:bottomBorder];
 
@@ -457,11 +481,26 @@ CPRulerOrientationVertical = 1
             // Unit label
             if (isMajor)
             {
-                var label = [[CPTextField alloc] initWithFrame:CGRectMake(screenX - 20.0, 1.0, 40.0, 12.0)];
+                var labelX = screenX - 20.0,
+                    alignment = CPCenterTextAlignment;
+
+                // Adjust label frame and alignment if it lands near left/right bounds
+                if (labelX < 0.0)
+                {
+                    labelX = Math.max(0.0, screenX);
+                    alignment = CPLeftTextAlignment;
+                }
+                else if (labelX + 40.0 > rulerWidth)
+                {
+                    labelX = rulerWidth - 40.0;
+                    alignment = CPRightTextAlignment;
+                }
+
+                var label = [[CPTextField alloc] initWithFrame:CGRectMake(labelX, 1.0, 40.0, 12.0)];
                 [label setStringValue:[CPString stringWithFormat:@"%d", val]];
                 [label setFont:[CPFont systemFontOfSize:8.0]];
                 [label setTextColor:[CPColor colorWithWhite:0.4 alpha:1.0]];
-                [label setAlignment:CPCenterTextAlignment];
+                [label setAlignment:alignment];
                 [self addSubview:label];
             }
         }
@@ -471,10 +510,11 @@ CPRulerOrientationVertical = 1
         // Vertical Ruler
         var start = Math.floor(scrollPoint.y / 10) * 10,
             end = scrollPoint.y + visibleSize.height,
+            rulerHeight = CGRectGetHeight([self bounds]),
             rulerWidth = CGRectGetWidth([self bounds]);
 
         // Draw solid vertical right border (pure DOM)
-        var rightBorder = [[CPView alloc] initWithFrame:CGRectMake(rulerWidth - 1, 0, 1, visibleSize.height)];
+        var rightBorder = [[CPView alloc] initWithFrame:CGRectMake(rulerWidth - 1, 0, 1, rulerHeight)];
         [rightBorder setBackgroundColor:[CPColor colorWithWhite:0.75 alpha:1.0]];
         [self addSubview:rightBorder];
 
@@ -495,7 +535,15 @@ CPRulerOrientationVertical = 1
             // Unit label
             if (isMajor)
             {
-                var label = [[CPTextField alloc] initWithFrame:CGRectMake(1.0, screenY - 6.0, rulerWidth - 12.0, 12.0)];
+                var labelY = screenY - 6.0;
+
+                // Adjust label frame if it lands near top/bottom bounds
+                if (labelY < 0.0)
+                    labelY = 0.0;
+                else if (labelY + 12.0 > rulerHeight)
+                    labelY = rulerHeight - 12.0;
+
+                var label = [[CPTextField alloc] initWithFrame:CGRectMake(1.0, labelY, rulerWidth - 12.0, 12.0)];
                 [label setStringValue:[CPString stringWithFormat:@"%d", val]];
                 [label setFont:[CPFont systemFontOfSize:8.0]];
                 [label setTextColor:[CPColor colorWithWhite:0.4 alpha:1.0]];
