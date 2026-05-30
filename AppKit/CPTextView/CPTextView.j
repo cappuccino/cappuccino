@@ -2492,8 +2492,19 @@ var compareTabStops = function(obj1, obj2, context) {
         paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
         currentAttributes = _typingAttributes;
 
-    if (selectedRange.length > 0)
-        currentAttributes = [_textStorage attributesAtIndex:selectedRange.location effectiveRange:nil];
+    // Retrieve active attributes at the cursor position if there is no selection
+    var textLength = [_textStorage length],
+        charIndex = selectedRange.location;
+
+    if (textLength > 0)
+    {
+        if (charIndex >= textLength)
+            charIndex = textLength - 1;
+        if (charIndex < 0)
+            charIndex = 0;
+
+        currentAttributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
+    }
 
     if ([currentAttributes objectForKey:CPParagraphStyleAttributeName])
         paragraphStyle = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
@@ -2512,17 +2523,23 @@ var compareTabStops = function(obj1, obj2, context) {
     [mutableStyle setTabStops:tabs];
     [marker setRepresentedObject:newTab];
 
-    if (selectedRange.length > 0)
+    // Find the target text range to modify (selection or containing paragraph)
+    var targetRange = selectedRange;
+    if (targetRange.length === 0)
+        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
+
+    if (targetRange.length > 0)
     {
-        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(selectedRange)];
+        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
         
         [_layoutManager textStorage:_textStorage 
                              edited:0 
-                              range:CPMakeRangeCopy(selectedRange) 
+                              range:CPMakeRangeCopy(targetRange) 
                      changeInLength:0 
-                   invalidatedRange:CPMakeRangeCopy(selectedRange)];
+                   invalidatedRange:CPMakeRangeCopy(targetRange)];
     }
-    else
+
+    if (selectedRange.length === 0)
     {
         [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
@@ -2538,8 +2555,18 @@ var compareTabStops = function(obj1, obj2, context) {
         paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
         currentAttributes = _typingAttributes;
 
-    if (selectedRange.length > 0)
-        currentAttributes = [_textStorage attributesAtIndex:selectedRange.location effectiveRange:nil];
+    var textLength = [_textStorage length],
+        charIndex = selectedRange.location;
+
+    if (textLength > 0)
+    {
+        if (charIndex >= textLength)
+            charIndex = textLength - 1;
+        if (charIndex < 0)
+            charIndex = 0;
+
+        currentAttributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
+    }
 
     if ([currentAttributes objectForKey:CPParagraphStyleAttributeName])
         paragraphStyle = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
@@ -2576,17 +2603,23 @@ var compareTabStops = function(obj1, obj2, context) {
             [mutableStyle setTailIndent:[marker imageValue]];
     }
 
-    if (selectedRange.length > 0)
+    // Find the target text range to modify (selection or containing paragraph)
+    var targetRange = selectedRange;
+    if (targetRange.length === 0)
+        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
+
+    if (targetRange.length > 0)
     {
-        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(selectedRange)];
+        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
         
         [_layoutManager textStorage:_textStorage 
                              edited:0 
-                              range:CPMakeRangeCopy(selectedRange) 
+                              range:CPMakeRangeCopy(targetRange) 
                      changeInLength:0 
-                   invalidatedRange:CPMakeRangeCopy(selectedRange)];
+                   invalidatedRange:CPMakeRangeCopy(targetRange)];
     }
-    else
+
+    if (selectedRange.length === 0)
     {
         [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
@@ -2602,8 +2635,18 @@ var compareTabStops = function(obj1, obj2, context) {
         paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
         currentAttributes = _typingAttributes;
 
-    if (selectedRange.length > 0)
-        currentAttributes = [_textStorage attributesAtIndex:selectedRange.location effectiveRange:nil];
+    var textLength = [_textStorage length],
+        charIndex = selectedRange.location;
+
+    if (textLength > 0)
+    {
+        if (charIndex >= textLength)
+            charIndex = textLength - 1;
+        if (charIndex < 0)
+            charIndex = 0;
+
+        currentAttributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
+    }
 
     if ([currentAttributes objectForKey:CPParagraphStyleAttributeName])
         paragraphStyle = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
@@ -2619,17 +2662,24 @@ var compareTabStops = function(obj1, obj2, context) {
 
     [mutableStyle setTabStops:tabs];
 
-    if (selectedRange.length > 0)
+    // Find the target text range to modify (selection or containing paragraph)
+    var targetRange = selectedRange;
+    
+    if (targetRange.length === 0)
+        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
+
+    if (targetRange.length > 0)
     {
-        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(selectedRange)];
+        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
         
         [_layoutManager textStorage:_textStorage 
                              edited:0 
-                              range:CPMakeRangeCopy(selectedRange) 
+                              range:CPMakeRangeCopy(targetRange) 
                      changeInLength:0 
-                   invalidatedRange:CPMakeRangeCopy(selectedRange)];
+                   invalidatedRange:CPMakeRangeCopy(targetRange)];
     }
-    else
+
+    if (selectedRange.length === 0)
     {
         [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
@@ -2638,14 +2688,16 @@ var compareTabStops = function(obj1, obj2, context) {
 
 - (void)rulerView:(CPRulerView)rulerView didUpdateMarker:(CPRulerMarker)marker oldTab:(id)oldTab
 {
-    var selectedRange = [self selectedRange];
-    if (selectedRange.length === 0)
-        selectedRange = [self selectionRangeForProposedRange:CPMakeRange(selectedRange.location, 0) granularity:CPSelectByParagraph];
+    var selectedRange = [self selectedRange],
+        targetRange = selectedRange;
 
-    if (selectedRange.length === 0)
+    if (targetRange.length === 0)
+        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
+
+    if (targetRange.length === 0)
         return;
 
-    var paragraphStyle = [[self textStorage] attribute:CPParagraphStyleAttributeName atIndex:selectedRange.location effectiveRange:NULL];
+    var paragraphStyle = [[self textStorage] attribute:CPParagraphStyleAttributeName atIndex:targetRange.location effectiveRange:NULL];
     if (!paragraphStyle)
         paragraphStyle = [CPParagraphStyle defaultParagraphStyle];
 
@@ -2661,13 +2713,19 @@ var compareTabStops = function(obj1, obj2, context) {
 
     [mutableStyle setTabStops:tabs];
 
-    [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(selectedRange)];
+    [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
     
     [_layoutManager textStorage:_textStorage 
                          edited:0 
-                          range:CPMakeRangeCopy(selectedRange) 
+                          range:CPMakeRangeCopy(targetRange) 
                  changeInLength:0 
-               invalidatedRange:CPMakeRangeCopy(selectedRange)];
+               invalidatedRange:CPMakeRangeCopy(targetRange)];
+
+    if (selectedRange.length === 0)
+    {
+        [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+    }
 
     // Force layouts and view canvas update
     [_layoutManager _validateLayoutAndGlyphs];
