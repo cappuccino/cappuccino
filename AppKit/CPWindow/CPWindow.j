@@ -1954,7 +1954,8 @@ CPTexturedBackgroundWindowMask
             return [[self firstResponder] keyUp:anEvent];
 
         case CPKeyDown:
-            if ([anEvent charactersIgnoringModifiers] === CPTabCharacter)
+            if ([anEvent charactersIgnoringModifiers] === CPTabCharacter &&
+                !([anEvent modifierFlags] & (CPAlternateKeyMask | CPCommandKeyMask)))
             {
                 if ([anEvent modifierFlags] & CPShiftKeyMask)
                     [self selectPreviousKeyView:self];

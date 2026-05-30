@@ -6,7 +6,7 @@
  *  All modifications copyright Daniel Boehringer 2013.
  *  Extensive code formatting and review by Andrew Hankinson
  *  Based on original work by
- *  Emmanuel Maillard on 27/02/2010.
+ *  Created by Emmanuel Maillard on 27/02/2010.
  *  Copyright Emmanuel Maillard 2010.
  *
  * This library is free software; you can redistribute it and/or
@@ -135,31 +135,34 @@ var CPSystemTypesetterFactory,
     return [_layoutManager textContainers];
 }
 
+// Retrieves correct CPTextTab stop accounting for CPArray properties
 - (CPTextTab)textTabForWidth:(double)aWidth writingDirection:(CPWritingDirection)direction
 {
     var tabStops = [_currentParagraph tabStops];
 
     if (!tabStops)
-        tabStops = [CPParagraphStyle _defaultTabStops];
+        tabStops = [[CPParagraphStyle defaultParagraphStyle] tabStops];
 
-    var l = tabStops.length;
+    var l = [tabStops count];
 
-    if (aWidth > tabStops[l - 1]._location)
+    if (l === 0)
         return nil;
 
-    for (var i = l - 1; i >= 0; i--)
+    // Find the first tab stop that is strictly greater than the current width
+    for (var i = 0; i < l; i++)
     {
-        if (aWidth > tabStops[i]._location)
-        {
-            if (i + 1 < l)
-                return tabStops[i + 1];
-        }
+        var tab = [tabStops objectAtIndex:i];
+
+        if ([tab location] > aWidth)
+            return tab;
     }
 
-    if (i === -1)
-        return tabStops[0];
+    // If aWidth exceeds the last tab stop, dynamically calculate the next
+    // tab location using the default tab interval.
+    var defaultInterval = [_currentParagraph defaultTabInterval] || 28.0;
+    var nextLocation = CEIL((aWidth + 1.0) / defaultInterval) * defaultInterval;
 
-    return nil;
+    return [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:nextLocation];
 }
 
 - (BOOL)_flushRange:(CPRange)lineRange
@@ -263,6 +266,14 @@ var CPSystemTypesetterFactory,
         currentParagraphMaximumLineHeight,
         currentParagraphLineSpacing;
 
+    // Track physical line starts to prevent overwriting lineOrigin.x in tab segments
+    var isStartOfPhysicalLine = YES;
+
+    // Track paragraph indents and margins
+    var isFirstLineOfLayout = YES,
+        isFirstLineOfParagraph = YES,
+        rightMargin = containerSizeWidth;
+
     if (glyphIndex > 0)
         lineOrigin = CGPointCreateCopy([_layoutManager lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:nil].origin);
     else if ([_layoutManager extraLineFragmentTextContainer])
@@ -288,6 +299,56 @@ var CPSystemTypesetterFactory,
             currentParagraphMinimumLineHeight = [_currentParagraph minimumLineHeight];
             currentParagraphMaximumLineHeight = [_currentParagraph maximumLineHeight];
             currentParagraphLineSpacing = [_currentParagraph lineSpacing];
+
+            // Recalculate right margin on paragraph style change
+            var tailIndent = [_currentParagraph tailIndent];
+            if (tailIndent > 0.0)
+                rightMargin = tailIndent;
+            else if (tailIndent < 0.0)
+                rightMargin = containerSizeWidth + tailIndent;
+            else
+                rightMargin = containerSizeWidth;
+
+            // If we are at the start of a physical line, we update lineOrigin.x
+            if (isStartOfPhysicalLine)
+            {
+                if (glyphIndex > 0)
+                {
+                    var prevChar = theString.charCodeAt(glyphIndex - 1);
+                    isFirstLineOfParagraph = (prevChar === 10 || prevChar === 13);
+                }
+                else
+                {
+                    isFirstLineOfParagraph = YES;
+                }
+                lineOrigin.x = isFirstLineOfParagraph ? [_currentParagraph firstLineHeadIndent] : [_currentParagraph headIndent];
+                isFirstLineOfLayout = NO;
+            }
+        
+            // Calculate the right wrapping margin based on tail indent
+            var tailIndent = [_currentParagraph tailIndent];
+            if (tailIndent > 0.0)
+                rightMargin = tailIndent;
+            else if (tailIndent < 0.0)
+                rightMargin = containerSizeWidth + tailIndent;
+            else
+                rightMargin = containerSizeWidth;
+
+            // Handle the layout's very first line indentation
+            if (isFirstLineOfLayout)
+            {
+                if (glyphIndex > 0)
+                {
+                    var prevChar = theString.charCodeAt(glyphIndex - 1);
+                    isFirstLineOfParagraph = (prevChar === 10 || prevChar === 13);
+                }
+                else
+                {
+                    isFirstLineOfParagraph = YES;
+                }
+                lineOrigin.x = isFirstLineOfParagraph ? [_currentParagraph firstLineHeadIndent] : [_currentParagraph headIndent];
+                isFirstLineOfLayout = NO;
+            }
 
             if (!currentFont)
                 currentFont = [_textStorage font] || [CPFont systemFontOfSize:12.0];
@@ -315,6 +376,9 @@ var CPSystemTypesetterFactory,
 
         lineRange.length++;
         measuringRange.length++;
+
+        // We are processing characters, so we are no longer at the start of a physical line
+        isStartOfPhysicalLine = NO;
 
         var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
             rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:currentFont inWidth:NULL].width + currentAnchor;
@@ -356,10 +420,52 @@ var CPSystemTypesetterFactory,
                 isTabStop = YES;
 
                 if (nextTab)
-                    rangeWidth = nextTab._location - lineOrigin.x;
+                {
+                    // Look-ahead to measure the width of the incoming text segment for alignment
+                    var nextSegmentWidth = 0.0,
+                        tempIndex = glyphIndex + 1,
+                        segmentString = "";
+
+                    while (tempIndex < numberOfGlyphs)
+                    {
+                        var nextCharCode = theString.charCodeAt(tempIndex);
+                        if (nextCharCode === 9 || nextCharCode === 10 || nextCharCode === 13)
+                            break;
+                        segmentString += theString.charAt(tempIndex);
+                        tempIndex++;
+                    }
+
+                    if (segmentString.length > 0)
+                        nextSegmentWidth = [segmentString sizeWithFont:currentFont inWidth:NULL].width;
+
+                    var tabLocation = [nextTab location],
+                        tabAlignment = [nextTab alignment];
+
+                    // Mathematically offset the tab character's right boundary
+                    if (tabAlignment === CPCenterTextAlignment)
+                    {
+                        rangeWidth = (tabLocation - nextSegmentWidth / 2.0) - lineOrigin.x;
+                    }
+                    else if (tabAlignment === CPRightTextAlignment)
+                    {
+                        rangeWidth = (tabLocation - nextSegmentWidth) - lineOrigin.x;
+                    }
+                    else // Left align tab stop
+                    {
+                        rangeWidth = tabLocation - lineOrigin.x;
+                    }
+
+                    // Enforce a minimum safety spacer width to avoid character overlapping
+                    var minRangeWidth = prevRangeWidth + 5.0;
+                    if (rangeWidth < minRangeWidth)
+                        rangeWidth = minRangeWidth;
+                }
                 else
-                    rangeWidth += 28;   //FIXME
-            }  // fallthrough intentional
+                {
+                    rangeWidth += 28.0; // standard fallback spacer
+                }
+                break;
+            }
             case 32: // ' '
                 wrapRange = CPMakeRangeCopy(lineRange);
                 wrapWidth = rangeWidth;
@@ -386,7 +492,8 @@ var CPSystemTypesetterFactory,
         advancements.push({width: rangeWidth - prevRangeWidth, height: ascent, descent: descent});
         prevRangeWidth = _lineWidth = rangeWidth;
 
-        if (lineOrigin.x + rangeWidth > containerSizeWidth)
+        // Wrap lines against the tail indent (rightMargin) instead of container boundaries
+        if (lineOrigin.x + rangeWidth > rightMargin)
         {
             if (wrapWidth)
             {
@@ -430,12 +537,17 @@ var CPSystemTypesetterFactory,
                     containerSizeHeight = containerSize.height;
                 }
 
-                lineOrigin.x = 0;
+                // If this is a soft wrap (isWordWrapped), next line gets headIndent. 
+                // If it was a paragraph return, it gets firstLineHeadIndent.
+                isFirstLineOfParagraph = !isWordWrapped;
+                lineOrigin.x = isFirstLineOfParagraph ? [_currentParagraph firstLineHeadIndent] : [_currentParagraph headIndent];
+
                 numLines++;
                 isNewline = NO;
                 _lineFragments = [];
                 _lineHeight    = 0;
                 _lineBase      = ascent;
+                isStartOfPhysicalLine = YES;
             }
 
             isTabStop       = NO;
