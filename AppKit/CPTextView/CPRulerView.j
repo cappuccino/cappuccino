@@ -330,6 +330,11 @@ CPRulerOrientationVertical = 1
                                                representedObject:nil];
         [self addMarker:newMarker];
         
+        // Notify the client view (e.g., CPTextView) that a new marker was added
+        var client = [self clientView];
+        if (client && [client respondsToSelector:@selector(rulerView:didAddMarker:)])
+            [client rulerView:self didAddMarker:newMarker];
+        
         _draggingMarker = newMarker;
         _dragStartPoint = localPoint;
         _dragStartLocation = rulerLocation;
