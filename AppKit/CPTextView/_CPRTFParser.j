@@ -4,11 +4,6 @@
 
    Copyright (C) 2014 Daniel Boehringer
 
-FIXME: this class should be redone using a 'real' parser
-
- * all paragraph spacing information is currently not parsed
-
-
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -37,6 +32,13 @@ FIXME: this class should be redone using a 'real' parser
 
 @global CPFontAttributeName
 @global CPForegroundColorAttributeName
+@global CPBackgroundColorAttributeName
+@global CPParagraphStyleAttributeName
+
+@global CPLeftTabStopType
+@global CPRightTabStopType
+@global CPCenterTabStopType
+@global CPDecimalTabStopType
 
 var hexTable = [];
 
@@ -65,6 +67,7 @@ var cp1252Map = {
     BOOL                strikethrough;
     BOOL                script;
     BOOL                _tabChanged;
+    CPTabStopType       _nextTabType;
 }
 
 - (id)init
@@ -74,6 +77,7 @@ var cp1252Map = {
         [self resetFont];
         [self resetParagraphStyle];
         _range = CPMakeRange(0, 0);
+        _nextTabType = CPLeftTabStopType;
     }
 
     return self;
@@ -83,11 +87,19 @@ var cp1252Map = {
 {
     var mynew =  [_RTFAttribute new];
 
-    mynew.paragraph = [paragraph copy];
+    mynew.paragraph = [paragraph mutableCopy];
     mynew.fontName = fontName;
+    mynew.fontSize = fontSize;
+    mynew.bold = bold;
+    mynew.italic = italic;
+    mynew.underline = underline;
+    mynew.strikethrough = strikethrough;
+    mynew.script = script;
     mynew.fgColour = fgColour;
     mynew.bgColour = bgColour;
     mynew.ulColour = ulColour;
+    mynew._tabChanged = _tabChanged;
+    mynew._nextTabType = _nextTabType;
 
     return mynew;
 }
@@ -143,7 +155,9 @@ var cp1252Map = {
 
 - (void)resetParagraphStyle
 {
-    paragraph = [[CPParagraphStyle defaultParagraphStyle] copy];
+    paragraph = [[CPParagraphStyle defaultParagraphStyle] mutableCopy];
+    _tabChanged = NO;
+    _nextTabType = CPLeftTabStopType;
 }
 
 - (void)resetFont
@@ -161,7 +175,7 @@ var cp1252Map = {
 
 - (void)addTab:(float)location type:(CPTextTabType)type
 {
-    var tab = [[CPTextTab alloc] initWithType:CPLeftTabStopType
+    var tab = [[CPTextTab alloc] initWithType:type
                                      location:location];
 
     if (!_tabChanged)
@@ -173,6 +187,8 @@ var cp1252Map = {
     {
         [paragraph addTabStop: tab];
     }
+
+    _nextTabType = CPLeftTabStopType;
 }
 
 - (CPDictionary)dictionary
@@ -183,6 +199,9 @@ var cp1252Map = {
 
     if (fgColour)
         [ret setObject:fgColour forKey:CPForegroundColorAttributeName];
+
+    if (bgColour)
+        [ret setObject:bgColour forKey:CPBackgroundColorAttributeName];
 
     return ret;
 }
@@ -202,7 +221,7 @@ var kRgsymRtf = {
         "b"                                  : [ "b",        1,        false,     kRTFParserType_prop,    "propBold"],
         "ul"                                 : [ "ul",       1,        false,     kRTFParserType_prop,    "propUnderline"],
         "i"                                  : [ "i",        1,        false,     kRTFParserType_prop,    "propItalic"],
-        "li"                                 : [ "li",       0,        false,     kRTFParserType_prop,    "propPgnFormat"],
+//      "li"                                 : [ "li",       0,        false,     kRTFParserType_prop,    "propPgnFormat"],
         "pgnucltr"                           : [ "pgnucltr", "pgULtr", true,      kRTFParserType_prop,    "propPgnFormat"],
         "pgnlcltr"                           : [ "pgnlcltr", "pgLLtr", true,      kRTFParserType_prop,    "propPgnFormat"],
         "qc"                                 : [ "qc",       "justC",  true,      kRTFParserType_prop,    "propJust"],
@@ -330,7 +349,11 @@ var kRgsymRtf = {
 
 - (BOOL)pushState
 {
-    _states.push(_curState);
+    // Push stack as an object containing scoping context
+    _states.push({
+        curState: _curState,
+        run: [_currentRun copy]
+    });
     return YES;
 }
 
@@ -338,7 +361,12 @@ var kRgsymRtf = {
 {
     if (_states.length > 0)
     {
-        _curState = _states.pop();
+        var state = _states.pop();
+        _curState = state.curState;
+
+        [self _flushCurrentRun];
+        _currentRun = state.run;
+        _currentRun._range = CPMakeRange([_result length], 0);
     }
     return YES;
 }
@@ -412,10 +440,14 @@ var kRgsymRtf = {
         var dict = [_currentRun dictionary];
 
         [_result setAttributes:dict range:_currentRun._range];  // flush previous run
-        _currentRun.fgColour = [CPColor blackColor];
+        
+        // Deep copy the current run style for the next sequence of characters
+        _currentRun = [_currentRun copy];
     }
     else
+    {
         _currentRun = [_RTFAttribute new];
+    }
 
     _currentRun._range = CPMakeRange(newOffset, 0);  // open a new one
 }
@@ -428,6 +460,7 @@ var kRgsymRtf = {
     {
         case "pard":
             [self _flushCurrentRun];
+            [_currentRun resetParagraphStyle];
             break;
 
         case "b": // bold
@@ -436,7 +469,7 @@ var kRgsymRtf = {
                 if (_currentRun && _currentRun.bold)
                    [self _flushCurrentRun];
 
-                _currentRun.bold = NO
+                _currentRun.bold = NO;
             }
             else
             {
@@ -454,7 +487,7 @@ var kRgsymRtf = {
                 if (_currentRun && _currentRun.italic)
                    [self _flushCurrentRun];
 
-                _currentRun.italic = NO
+                _currentRun.italic = NO;
             }
             else
             {
@@ -468,6 +501,18 @@ var kRgsymRtf = {
 
         case "qc":  // paragraph center
             [_currentRun.paragraph setAlignment:CPCenterTextAlignment];
+            break;
+
+        case "ql":  // paragraph left
+            [_currentRun.paragraph setAlignment:CPLeftTextAlignment];
+            break;
+
+        case "qr":  // paragraph right
+            [_currentRun.paragraph setAlignment:CPRightTextAlignment];
+            break;
+
+        case "qj":  // paragraph justified
+            [_currentRun.paragraph setAlignment:CPJustifiedTextAlignment];
             break;
 
         case "paperw":
@@ -576,6 +621,20 @@ var kRgsymRtf = {
 
                 break;
 
+            case "cb":  // change background color
+            case "highlight":
+                 [self _flushCurrentRun];
+                 var colorIndex = parseInt(param) - 1;
+
+                 if (_currentRun)
+                 {
+                     if (colorIndex >= 0 && colorIndex < _colorArray.length)
+                         _currentRun.bgColour = _colorArray[colorIndex];
+                     else
+                         _currentRun.bgColour = nil;
+                 }
+                 break;
+
             case "f":  // change font
                  [self _flushCurrentRun];
                  var fontIndex = parseInt(param);
@@ -589,11 +648,41 @@ var kRgsymRtf = {
                  _currentRun.fontSize = parseInt(param) / 2;
                  break;
 
-            case "tx":  // tabstop
+            case "fi":  // first line indent
+                 if (_currentRun)
+                     [_currentRun.paragraph setFirstLineHeadIndent:parseInt(param) / 20.0];
+                 break;
+
+            case "li":  // left indent / head indent
+                 if (_currentRun)
+                     [_currentRun.paragraph setHeadIndent:parseInt(param) / 20.0];
+                 break;
+
+            case "ri":  // right indent / tail indent
+                 if (_currentRun)
+                     [_currentRun.paragraph setTailIndent:parseInt(param) / 20.0];
+                 break;
+
+            case "tqc": // center tab stop style flag
+                 if (_currentRun)
+                     _currentRun._nextTabType = CPCenterTabStopType;
+                 break;
+
+            case "tqr": // right tab stop style flag
+                 if (_currentRun)
+                     _currentRun._nextTabType = CPRightTabStopType;
+                 break;
+
+            case "tqdec": // decimal tab stop style flag
+                 if (_currentRun)
+                     _currentRun._nextTabType = CPDecimalTabStopType;
+                 break;
+
+            case "tx":  // tabstop location definition
                  var location = parseInt(param) / 20;
 
                  if (_currentRun)
-                     [_currentRun addTab:location type:CPLeftTabStopType];
+                     [_currentRun addTab:location type:_currentRun._nextTabType];
 
                  break;
 
@@ -739,12 +828,12 @@ var kRgsymRtf = {
                     {
                         var byteVal = parseInt(ch, 16);
                         var unicodeVal = byteVal;
-                        
+
                         // Windows-1252 Mapping für den Bereich 0x80 - 0x9F anwenden
                         if (byteVal >= 0x80 && byteVal <= 0x9F) {
                             unicodeVal = cp1252Map[byteVal] || byteVal;
                         }
-                        
+
                         [self _appendPlainString: String.fromCharCode(unicodeVal)];
                     }
                     _hexreturn = NO;
