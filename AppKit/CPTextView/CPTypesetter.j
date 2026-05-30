@@ -135,33 +135,35 @@ var CPSystemTypesetterFactory,
     return [_layoutManager textContainers];
 }
 
+// Retrieves correct CPTextTab stop accounting for CPArray properties
 - (CPTextTab)textTabForWidth:(double)aWidth writingDirection:(CPWritingDirection)direction
 {
     var tabStops = [_currentParagraph tabStops];
 
     if (!tabStops)
-        tabStops = [CPParagraphStyle _defaultTabStops];
+        tabStops = [[CPParagraphStyle defaultParagraphStyle] tabStops];
 
-    var l = tabStops.length;
+    var l = [tabStops count];
 
-    if (aWidth > tabStops[l - 1]._location)
+    if (l === 0)
         return nil;
 
-    for (var i = l - 1; i >= 0; i--)
+    // Find the first tab stop that is strictly greater than the current width
+    for (var i = 0; i < l; i++)
     {
-        if (aWidth > tabStops[i]._location)
-        {
-            if (i + 1 < l)
-                return tabStops[i + 1];
-        }
+        var tab = [tabStops objectAtIndex:i];
+
+        if ([tab location] > aWidth)
+            return tab;
     }
 
-    if (i === -1)
-        return tabStops[0];
+    // If aWidth exceeds the last tab stop, dynamically calculate the next
+    // tab location using the default tab interval.
+    var defaultInterval = [_currentParagraph defaultTabInterval] || 28.0;
+    var nextLocation = CEIL((aWidth + 1.0) / defaultInterval) * defaultInterval;
 
-    return nil;
+    return [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:nextLocation];
 }
-
 
 - (BOOL)_flushRange:(CPRange)lineRange
          lineOrigin:(CGPoint)lineOrigin
