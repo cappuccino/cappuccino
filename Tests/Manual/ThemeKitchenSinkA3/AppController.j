@@ -680,7 +680,9 @@
     var textScroll = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), splitHeight / 2.0)];
     [textScroll setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [textScroll setAutohidesScrollers:YES];
-    
+    [textScroll setHasHorizontalRuler:YES];
+    [textScroll setRulersVisible:YES];
+
     var textView = [[CPTextView alloc] initWithFrame:[textScroll bounds]];
     [textView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [textView setEditable:YES];
