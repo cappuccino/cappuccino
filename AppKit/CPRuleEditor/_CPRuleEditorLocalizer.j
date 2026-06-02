@@ -94,9 +94,8 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     return aString;
 }
 
-#pragma mark - Whole Sentence Formatting & Reordering Helpers
+#pragma mark - Formatting & Reordering Helpers
 
-// Constructs the English-matching format representation of a single view
 - (CPString)_englishRepresentationForView:(id)aView
 {
     if ([aView isKindOfClass:[CPPopUpButton class]])
@@ -104,14 +103,32 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
         var selectedItem = [aView selectedItem];
         if (selectedItem)
         {
-            var originalTitle = [selectedItem representedObject] || selectedItem._originalTitle || [selectedItem title];
+            var originalTitle = selectedItem._originalTitle;
+            
+            // Fallback: If not cached directly, inspect representedObject payload dictionary
+            if (!originalTitle)
+            {
+                var rep = [selectedItem representedObject];
+                if (rep && typeof rep === "object" && typeof rep.objectForKey === "function")
+                {
+                    originalTitle = [rep objectForKey:@"value"];
+                }
+                else if (rep && typeof rep === "string")
+                {
+                    originalTitle = rep;
+                }
+            }
+            if (!originalTitle)
+            {
+                originalTitle = [selectedItem title];
+            }
             return "%[" + originalTitle + "]@";
         }
         return "%[]@";
     }
     else if ([aView isKindOfClass:[CPTextField class]] && ![aView isEditable])
     {
-        return [aView stringValue];
+        return aView._originalText || [aView stringValue];
     }
     else
     {
@@ -119,7 +136,6 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     }
 }
 
-// Builds the current formatting lookup key (e.g. "%[property]@ %[is]@ %@")
 - (CPString)formattingKeyForViews:(CPArray)views
 {
     var keyParts = [];
@@ -132,7 +148,6 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     return [keyParts componentsJoinedByString:@" "];
 }
 
-// Localizes all popup menu options within the row under their proper context
 - (void)localizeMenuItemsForViews:(CPArray)views
 {
     var count = [views count];
@@ -151,10 +166,18 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
                 
                 if (!item._originalTitle)
                 {
-                    item._originalTitle = [item title];
+                    var rep = [item representedObject];
+                    if (rep && typeof rep === "object" && typeof rep.objectForKey === "function")
+                    {
+                        item._originalTitle = [rep objectForKey:@"value"];
+                    }
+                    else
+                    {
+                        item._originalTitle = [item title];
+                    }
                 }
 
-                // Temporarily select item to formulate the unique localization key
+                // Temporarily select item to generate formatting key context
                 [view selectItem:item];
 
                 var tempKey = [self formattingKeyForViews:views];
@@ -162,7 +185,6 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 
                 if (tempPattern !== tempKey)
                 {
-                    // Search for this view position's translation inside the pattern (e.g. %2$[son iguales]@)
                     var regex = /%(\d+)\$(?:\[([^\]]+)\])?@/g;
                     var match;
                     while ((match = regex.exec(tempPattern)) !== null)
@@ -179,7 +201,6 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
                 }
             }
 
-            // Restore initial selection
             if (selectedItem)
             {
                 [view selectItem:selectedItem];
@@ -188,7 +209,6 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     }
 }
 
-// Translates labels and reorders the active subviews based on positional formatting string
 - (CPArray)localizeAndReorderViews:(CPArray)views
 {
     var key = [self formattingKeyForViews:views];
@@ -200,23 +220,19 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     }
 
     var newViews = [CPMutableArray array];
-    
-    // Pattern to extract index and translation: %1$[translation]@ or %1$@
     var regex = /%(\d+)\$(?:\[([^\]]+)\])?@/g;
     var lastIndex = 0;
     var match;
 
     while ((match = regex.exec(localizedPattern)) !== null)
     {
-        // 1. Insert any leading static text (e.g. " y ")
         var literalText = localizedPattern.substring(lastIndex, match.index);
         if (literalText.length > 0)
         {
-            var label = [CPTextField labelWithString:literalText];
+            var label = [CPTextField labelWithTitle:literalText];
             [newViews addObject:label];
         }
 
-        // 2. Identify the original view corresponding to the positional index
         var position = parseInt(match[1], 10) - 1;
         var translatedValue = match[2];
 
@@ -250,13 +266,12 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
         lastIndex = regex.lastIndex;
     }
 
-    // 3. Append trailing static text
     if (lastIndex < localizedPattern.length)
     {
         var literalText = localizedPattern.substring(lastIndex);
         if (literalText.length > 0)
         {
-            var label = [CPTextField labelWithString:literalText];
+            var label = [CPTextField labelWithTitle:literalText];
             [newViews addObject:label];
         }
     }

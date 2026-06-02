@@ -114,8 +114,32 @@
 
 - (CPMenuItem)_createMenuItemWithTitle:(CPString )title
 {
-    title = [[_ruleEditor standardLocalizer] localizedStringForString:title];
-    return [[CPMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""];
+    var originalTitle = title;
+    var localizedTitle = [[_ruleEditor standardLocalizer] localizedStringForString:title];
+    var item = [[CPMenuItem alloc] initWithTitle:localizedTitle action:nil keyEquivalent:@""];
+    
+    // Cache the raw English title for pattern-matching
+    item._originalTitle = originalTitle;
+    return item;
+}
+
+- (CPTextField)_createStaticTextFieldWithStringValue:(CPString)text
+{
+    var textField       = [[CPTextField alloc] initWithFrame:CGRectMakeZero()],
+        ruleEditorFont  = [_ruleEditor font],
+        font            = [CPFont fontWithName:[ruleEditorFont familyName] size:[ruleEditorFont size] + 2],
+        localizedText   = [[_ruleEditor standardLocalizer] localizedStringForString:text],
+        size            = [localizedText sizeWithFont:font];
+
+    [textField setFrameSize:CGSizeMake(size.width + 4, [_ruleEditor rowHeight])];
+    [textField setValue:font forThemeAttribute:@"font"];
+    [textField setValue:[_ruleEditor _verticalAlignment] forThemeAttribute:@"vertical-alignment"];
+    [textField setStringValue:localizedText];
+    
+    // Cache the raw English text for pattern-matching
+    textField._originalText = text;
+
+    return textField;
 }
 
 - (CPPopUpButton)_createPopUpButtonWithItems:(CPArray)itemsArray selectedItemIndex:(int)index
@@ -140,22 +164,6 @@
 - (CPMenuItem)_createMenuSeparatorItem
 {
     return [CPMenuItem separatorItem];
-}
-
-- (CPTextField)_createStaticTextFieldWithStringValue:(CPString)text
-{
-    var textField       = [[CPTextField alloc] initWithFrame:CGRectMakeZero()],
-        ruleEditorFont  = [_ruleEditor font],
-        font            = [CPFont fontWithName:[ruleEditorFont familyName] size:[ruleEditorFont size] + 2],
-        localizedText   = [[_ruleEditor standardLocalizer] localizedStringForString:text],
-        size            = [localizedText sizeWithFont:font];
-
-    [textField setFrameSize:CGSizeMake(size.width + 4, [_ruleEditor rowHeight])];
-    [textField setValue:font forThemeAttribute:@"font"];
-    [textField setValue:[_ruleEditor _verticalAlignment] forThemeAttribute:@"vertical-alignment"];
-    [textField setStringValue:localizedText];
-
-    return textField;
 }
 
 - (void)_addOption:(id)sender
