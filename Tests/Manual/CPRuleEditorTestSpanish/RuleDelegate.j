@@ -17,7 +17,8 @@
     
     if ([criterion isEqualToString:@"firstName"] || [criterion isEqualToString:@"lastName"])
     {
-        return [@[@"contains", @"is equal to"] objectAtIndex:index];
+        // "is equal to" is placed at index 0 so that the reordered Spanish sentence layout loads automatically on startup
+        return [@[@"is equal to", @"contains"] objectAtIndex:index];
     }
     
     if ([criterion isEqualToString:@"age"])
@@ -54,7 +55,7 @@
     
     if ([criterion isEqualToString:@"contains"] || [criterion isEqualToString:@"is equal to"])
     {
-        // Operators have one child representing the input field value
+        // Operators have 1 child representing the value node
         return 1;
     }
     
@@ -104,7 +105,30 @@
     }
     else if ([criterion isEqualToString:@"value"])
     {
-        [parts setObject:[CPExpression expressionForConstantValue:[value stringValue]] forKey:CPRuleEditorPredicateRightExpression];
+        // Resolve the correct active text field from the slice row on screen
+        var activeValue = value;
+        var slices = [editor valueForKey:@"_slices"];
+        
+        if (slices && row < [slices count])
+        {
+            var slice = [slices objectAtIndex:row];
+            var optionViews = [slice valueForKey:@"_ruleOptionViews"];
+            if (optionViews)
+            {
+                var count = [optionViews count];
+                for (var i = 0; i < count; i++)
+                {
+                    var view = [optionViews objectAtIndex:i];
+                    if ([view isKindOfClass:[CPTextField class]] && [view isEditable])
+                    {
+                        activeValue = view;
+                        break;
+                    }
+                }
+            }
+        }
+
+        [parts setObject:[CPExpression expressionForConstantValue:[activeValue stringValue]] forKey:CPRuleEditorPredicateRightExpression];
     }
     
     return parts;

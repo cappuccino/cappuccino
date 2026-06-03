@@ -207,8 +207,28 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 
     [self registerForDraggedTypes:[CPArray arrayWithObjects:CPRuleEditorItemPBoardType,nil]];
     [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_ruleEditorLocalizerDidLoad:)
+                                                 name:@"_CPRuleEditorLocalizerDidLoadNotification"
+                                               object:nil];
 }
 
+- (void)_ruleEditorLocalizerDidLoad:(CPNotification)aNotification
+{
+    if ([aNotification object] === [self standardLocalizer])
+    {
+        // Defer execution to the next run loop cycle so that any active slice 
+        // insertions have fully completed and are present in the `_slices` array.
+        [[CPRunLoop mainRunLoop] performBlock:function() {
+            var count = [_slices count];
+            for (var i = 0; i < count; i++)
+            {
+                [[_slices objectAtIndex:i] _reconfigureSubviews];
+            }
+        } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+    }
+}
 /*! @endcond */
 
 /*!

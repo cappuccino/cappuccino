@@ -77,6 +77,9 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     }
 
     _dictionary = [CPDictionary dictionaryWithDictionary:dict];
+
+    // Post notification to let the rule editor know the translation dictionary is ready
+    [[CPNotificationCenter defaultCenter] postNotificationName:@"_CPRuleEditorLocalizerDidLoadNotification" object:self];
 }
 
 - (CPString)localizedStringForString:(CPString)aString
