@@ -2,6 +2,10 @@
 @import <AppKit/CPRuleEditor.j>
 @import <AppKit/CPTextField.j>
 
+// Ensure the standard operator constants are explicitly defined
+var CPEqualToPredicateOperatorType = 4,
+    CPContainsPredicateOperatorType = 99;
+
 @implementation RuleDelegate : CPObject
 {
 }
@@ -11,13 +15,11 @@
 {
     if (criterion == nil)
     {
-        // Root criteria
         return [@[@"firstName", @"lastName", @"age"] objectAtIndex:index];
     }
     
     if ([criterion isEqualToString:@"firstName"] || [criterion isEqualToString:@"lastName"])
     {
-        // "is equal to" is placed at index 0 so that the reordered Spanish sentence layout loads automatically on startup
         return [@[@"is equal to", @"contains"] objectAtIndex:index];
     }
     
@@ -28,41 +30,39 @@
     
     if ([criterion isEqualToString:@"contains"] || [criterion isEqualToString:@"is equal to"])
     {
-        // The child of an operator is the leaf value node
         return @"value";
     }
     
     return nil;
 }
 
-// 2. Number of children for a given criterion
+// 2. Number of children
 - (CPInteger)ruleEditor:(CPRuleEditor)editor numberOfChildrenForCriterion:(id)criterion withRowType:(CPRuleEditorRowType)rowType
 {
     if (criterion == nil)
     {
-        return 3; // firstName, lastName, age
+        return 3;
     }
     
     if ([criterion isEqualToString:@"firstName"] || [criterion isEqualToString:@"lastName"])
     {
-        return 2; // contains, is equal to
+        return 2;
     }
     
     if ([criterion isEqualToString:@"age"])
     {
-        return 1; // is equal to
+        return 1;
     }
     
     if ([criterion isEqualToString:@"contains"] || [criterion isEqualToString:@"is equal to"])
     {
-        // Operators have 1 child representing the value node
         return 1;
     }
     
-    return 0; // Leaf nodes return 0
+    return 0;
 }
 
-// 3. Display values (labels, popup titles, or text input fields)
+// 3. Display values
 - (id)ruleEditor:(CPRuleEditor)editor displayValueForCriterion:(id)criterion inRow:(CPInteger)row
 {
     if ([criterion isEqualToString:@"firstName"]) return @"firstName";
@@ -74,7 +74,6 @@
     
     if ([criterion isEqualToString:@"value"])
     {
-        // Return the actual editable text field view for the leaf node
         var textField = [[CPTextField alloc] initWithFrame:CGRectMake(0, 0, 120, 24)];
         [textField setBezeled:YES];
         [textField setBezelStyle:CPTextFieldSquareBezel];
@@ -86,7 +85,7 @@
     return nil;
 }
 
-// 4. Predicate parts mapping
+// 4. Predicate parts
 - (CPDictionary)ruleEditor:(CPRuleEditor)editor predicatePartsForCriterion:(id)criterion withDisplayValue:(id)value inRow:(CPInteger)row
 {
     var parts = @{};
@@ -105,7 +104,6 @@
     }
     else if ([criterion isEqualToString:@"value"])
     {
-        // Resolve the correct active text field from the slice row on screen
         var activeValue = value;
         var slices = [editor valueForKey:@"_slices"];
         

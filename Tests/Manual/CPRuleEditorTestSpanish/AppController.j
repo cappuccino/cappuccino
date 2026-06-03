@@ -35,6 +35,7 @@
     [ruleEditor setAutoresizingMask:CPViewWidthSizable];
     [ruleEditor setDelegate:ruleDelegate];
     [ruleEditor setEditable:YES];
+    [ruleEditor setNestingMode:CPRuleEditorNestingModeList];
     [ruleEditor setRowHeight:28];
     [ruleEditor setTarget:self];
     [ruleEditor setAction:@selector(ruleEditorAction:)];
@@ -72,6 +73,12 @@
     [addBtn setAction:@selector(addRow:)];
     [contentView addSubview:addBtn];
 
+
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(ruleEditorRowsDidChange:)
+                                                 name:CPRuleEditorRowsDidChangeNotification
+                                               object:ruleEditor];
+
     [theWindow orderFront:self];
     [self ruleEditorAction:nil];
 }
@@ -86,6 +93,20 @@
     else
     {
         [predicateField setStringValue:@"(No predicate evaluated)"];
+    }
+}
+
+- (void)ruleEditorRowsDidChange:(CPNotification)note
+{
+    var predicate = [ruleEditor predicate];
+
+    if (predicate)
+    {
+        [predicateField setStringValue:[predicate predicateFormat]];
+    }
+    else
+    {
+        [predicateField setStringValue:@"(Incomplete Predicate)"];
     }
 }
 

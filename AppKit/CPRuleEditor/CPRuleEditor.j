@@ -226,6 +226,9 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
             {
                 [[_slices objectAtIndex:i] _reconfigureSubviews];
             }
+            
+            [self _updatePredicate];
+            [self _sendRuleAction];
         } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
     }
 }
@@ -574,7 +577,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
         if ([self rowTypeForRow:current_index] === CPRuleEditorRowTypeCompound)
         {
             var candidate = [[self _rowCacheForIndex:current_index] rowObject],
-                subObjects = [[self _subrowObjectsOfObject:candidate] _representedObject];
+                subObjects = [self _subrowObjectsOfObject:candidate]; // Standard direct array query
 
             if ([subObjects indexOfObjectIdenticalTo:targetObject] !== CPNotFound)
                 return current_index;
@@ -641,7 +644,7 @@ TODO: implement
     for (var i = rowIndex + 1; i < count; i++)
     {
         var candidate = [[self _rowCacheForIndex:i] rowObject],
-            indexInSubrows = [[subobjects _representedObject] indexOfObjectIdenticalTo:candidate];
+            indexInSubrows = [subobjects indexOfObjectIdenticalTo:candidate]; // Standard direct array query
 
         if (indexInSubrows !== CPNotFound)
         {
@@ -810,7 +813,7 @@ TODO: implement
     while (current_index !== CPNotFound)
     {
         var rowObject = [[self _rowCacheForIndex:current_index] rowObject],
-            relativeChildIndex = [[subrows _representedObject] indexOfObjectIdenticalTo:rowObject];
+            relativeChildIndex = [subrows indexOfObjectIdenticalTo:rowObject]; // Standard direct array query
 
         if (relativeChildIndex !== CPNotFound)
             [childsIndexes addIndex:relativeChildIndex];
@@ -867,7 +870,6 @@ TODO: implement
     for (i = 0; i < count; i++)
     {
         var item = [items objectAtIndex:i],
-        //var displayValue = [self _queryValueForItem:item inRow:aRow]; Ask the delegate or get cached value ?.
             displayValue = [[self displayValuesForRow:aRow] objectAtIndex:i],
             predpart = [self _sendDelegateRuleEditorPredicatePartsForCriterion:item withDisplayValue:displayValue inRow:aRow];
 
@@ -885,6 +887,7 @@ TODO: implement
             return nil;
 
         var current_index = [subrowsIndexes firstIndex];
+
         while (current_index !== CPNotFound)
         {
             var subpredicate = [self predicateForRow:current_index];
@@ -1392,8 +1395,25 @@ TODO: implement
 
         if ([self rowTypeForRow:row] === type && itemIndex < [aCriteria count])
         {
-            var crit = [aCriteria objectAtIndex:itemIndex];
-            [current_criterions addObject:crit];
+            // Verify that this row's parent path matches the path currently being built
+            var pathMatches = true;
+            for (var p = 0; p < itemIndex; p++)
+            {
+                var criterionA = [aCriteria objectAtIndex:p],
+                    criterionB = [items objectAtIndex:p];
+
+                if (criterionA !== criterionB && (typeof criterionA.isEqual !== "function" || ![criterionA isEqual:criterionB]))
+                {
+                    pathMatches = false;
+                    break;
+                }
+            }
+
+            if (pathMatches)
+            {
+                var crit = [aCriteria objectAtIndex:itemIndex];
+                [current_criterions addObject:crit];
+            }
         }
     }
 

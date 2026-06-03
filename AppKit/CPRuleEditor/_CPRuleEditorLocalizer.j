@@ -112,7 +112,7 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
             if (!originalTitle)
             {
                 var rep = [selectedItem representedObject];
-                if (rep && typeof rep === "object" && typeof rep.objectForKey === "function")
+                if (rep && typeof rep === "object" && [rep respondsToSelector:@selector(objectForKey:)])
                 {
                     originalTitle = [rep objectForKey:@"value"];
                 }
@@ -170,7 +170,7 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
                 if (!item._originalTitle)
                 {
                     var rep = [item representedObject];
-                    if (rep && typeof rep === "object" && typeof rep.objectForKey === "function")
+                    if (rep && typeof rep === "object" && [rep respondsToSelector:@selector(objectForKey:)])
                     {
                         item._originalTitle = [rep objectForKey:@"value"];
                     }
@@ -230,7 +230,9 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     while ((match = regex.exec(localizedPattern)) !== null)
     {
         var literalText = localizedPattern.substring(lastIndex, match.index);
-        if (literalText.length > 0)
+        
+        // Only add a label if there are actual non-whitespace characters (like 'y')
+        if (literalText.length > 0 && /\S/.test(literalText))
         {
             var label = [CPTextField labelWithTitle:literalText];
             [newViews addObject:label];
@@ -257,9 +259,17 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
                         [selectedItem setTitle:translatedValue];
                     }
                 }
-                else if (typeof originalView.setStringValue === "function")
+                else if ([originalView respondsToSelector:@selector(setStringValue:)])
                 {
                     [originalView setStringValue:translatedValue];
+
+                    // Recalculate frame size if it is a static CPTextField to avoid visual clipping
+                    if ([originalView isKindOfClass:[CPTextField class]] && ![originalView isEditable])
+                    {
+                        var font = [originalView font] || [CPFont systemFontOfSize:[CPFont systemFontSize]],
+                            size = [translatedValue sizeWithFont:font];
+                        [originalView setFrameSize:CGSizeMake(size.width + 4, CGRectGetHeight([originalView frame]))];
+                    }
                 }
             }
 
@@ -272,7 +282,9 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     if (lastIndex < localizedPattern.length)
     {
         var literalText = localizedPattern.substring(lastIndex);
-        if (literalText.length > 0)
+        
+        // Only add a label if there are actual non-whitespace characters
+        if (literalText.length > 0 && /\S/.test(literalText))
         {
             var label = [CPTextField labelWithTitle:literalText];
             [newViews addObject:label];
