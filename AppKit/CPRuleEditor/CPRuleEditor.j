@@ -127,7 +127,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     BOOL                        _isKeyDown;
     BOOL                        _nestingModeDidChange;
 
-    _CPRuleEditorLocalizer      _standardLocalizer @accessors(property=standardLocalizer);
+    _CPRuleEditorLocalizer      _standardLocalizer;
     CPDictionary                _itemsAndValuesToAddForRowType;
 }
 
@@ -207,8 +207,34 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 
     [self registerForDraggedTypes:[CPArray arrayWithObjects:CPRuleEditorItemPBoardType,nil]];
     [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_ruleEditorLocalizerDidLoad:)
+                                                 name:@"_CPRuleEditorLocalizerDidLoadNotification"
+                                               object:nil];
 }
 
+
+- (void)_ruleEditorLocalizerDidLoad:(CPNotification)aNotification
+{
+    if ([aNotification object] === [self standardLocalizer])
+    {
+        // Defer execution to the next run loop cycle so that any active slice 
+        // insertions have fully completed and are present in the `_slices` array.
+        [[CPRunLoop mainRunLoop] performBlock:function() {
+            var count = [_slices count];
+            for (var i = 0; i < count; i++)
+            {
+                var slice = [_slices objectAtIndex:i];
+                [slice _reconfigureSubviews];
+                [slice _updateButtonVisibilities]; // Force updates on row button tooltips
+            }
+            
+            [self _updatePredicate];
+            [self _sendRuleAction];
+        } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+    }
+}
 /*! @endcond */
 
 /*!
@@ -384,7 +410,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (CPDictionary)formattingDictionary
 {
-    return [_standardLocalizer dictionary];
+    return [[self standardLocalizer] dictionary];
 }
 
 /*!
@@ -396,6 +422,9 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (void)setFormattingDictionary:(CPDictionary)dictionary
 {
+    if (_standardLocalizer == nil)
+        _standardLocalizer = [_CPRuleEditorLocalizer new];
+
     [_standardLocalizer setDictionary:dictionary];
     _stringsFilename = nil;
 }
@@ -438,6 +467,19 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
                 [_standardLocalizer loadContentOfURL:[CPURL URLWithString:path]];
         }
     }
+}
+
+- (_CPRuleEditorLocalizer)standardLocalizer
+{
+    if (_standardLocalizer == nil)
+        _standardLocalizer = [_CPRuleEditorLocalizer new];
+
+    return _standardLocalizer;
+}
+
+- (void)setStandardLocalizer:(_CPRuleEditorLocalizer)aLocalizer
+{
+    _standardLocalizer = aLocalizer;
 }
 
 /*!
@@ -538,7 +580,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
         if ([self rowTypeForRow:current_index] === CPRuleEditorRowTypeCompound)
         {
             var candidate = [[self _rowCacheForIndex:current_index] rowObject],
-                subObjects = [[self _subrowObjectsOfObject:candidate] _representedObject];
+                subObjects = [self _subrowObjectsOfObject:candidate]; // Standard direct array query
 
             if ([subObjects indexOfObjectIdenticalTo:targetObject] !== CPNotFound)
                 return current_index;
@@ -605,7 +647,7 @@ TODO: implement
     for (var i = rowIndex + 1; i < count; i++)
     {
         var candidate = [[self _rowCacheForIndex:i] rowObject],
-            indexInSubrows = [[subobjects _representedObject] indexOfObjectIdenticalTo:candidate];
+            indexInSubrows = [subobjects indexOfObjectIdenticalTo:candidate]; // Standard direct array query
 
         if (indexInSubrows !== CPNotFound)
         {
@@ -774,7 +816,7 @@ TODO: implement
     while (current_index !== CPNotFound)
     {
         var rowObject = [[self _rowCacheForIndex:current_index] rowObject],
-            relativeChildIndex = [[subrows _representedObject] indexOfObjectIdenticalTo:rowObject];
+            relativeChildIndex = [subrows indexOfObjectIdenticalTo:rowObject]; // Standard direct array query
 
         if (relativeChildIndex !== CPNotFound)
             [childsIndexes addIndex:relativeChildIndex];
@@ -831,7 +873,6 @@ TODO: implement
     for (i = 0; i < count; i++)
     {
         var item = [items objectAtIndex:i],
-        //var displayValue = [self _queryValueForItem:item inRow:aRow]; Ask the delegate or get cached value ?.
             displayValue = [[self displayValuesForRow:aRow] objectAtIndex:i],
             predpart = [self _sendDelegateRuleEditorPredicatePartsForCriterion:item withDisplayValue:displayValue inRow:aRow];
 
@@ -849,6 +890,7 @@ TODO: implement
             return nil;
 
         var current_index = [subrowsIndexes firstIndex];
+
         while (current_index !== CPNotFound)
         {
             var subpredicate = [self predicateForRow:current_index];
@@ -1278,23 +1320,28 @@ TODO: implement
 
     while (current_index !== CPNotFound)
     {
-        var parentIndex = [self parentRowForRow:current_index],
-            subrowsIndexes = [self subrowIndexesForRow:parentIndex];
-
-        if ([subrowsIndexes count] === 1)
+        var parentIndex = [self parentRowForRow:current_index];
+        
+        // If the row has a valid parent in the editor (i.e. not a root row)
+        if (parentIndex !== -1)
         {
-            if (parentIndex !== -1)
-                return [CPIndexSet indexSetWithIndex:0];
+            var subrowsIndexes = [self subrowIndexesForRow:parentIndex];
 
-            var childlessGranPa = [self _childlessParentsIfSlicesWereDeletedAtIndexes:[CPIndexSet indexSetWithIndex:parentIndex]];
-            [childlessParents addIndexes:childlessGranPa];
+            // If deleting this row leaves the parent with no remaining child rows
+            if ([subrowsIndexes count] === 1)
+            {
+                [childlessParents addIndex:parentIndex];
+
+                // Recursively check if deleting this parent row leaves the grandparent childless
+                var childlessGranPa = [self _childlessParentsIfSlicesWereDeletedAtIndexes:[CPIndexSet indexSetWithIndex:parentIndex]];
+                [childlessParents addIndexes:childlessGranPa];
+            }
         }
 
         current_index = [indexes indexGreaterThanIndex:current_index];
     }
 
     return childlessParents;
-    // (id)-[RuleEditor _includeSubslicesForSlicesAtIndexes:]
 }
 
 - (CPIndexSet)_includeSubslicesForSlicesAtIndexes:(CPIndexSet)indexes
@@ -1356,8 +1403,25 @@ TODO: implement
 
         if ([self rowTypeForRow:row] === type && itemIndex < [aCriteria count])
         {
-            var crit = [aCriteria objectAtIndex:itemIndex];
-            [current_criterions addObject:crit];
+            // Verify that this row's parent path matches the path currently being built
+            var pathMatches = true;
+            for (var p = 0; p < itemIndex; p++)
+            {
+                var criterionA = [aCriteria objectAtIndex:p],
+                    criterionB = [items objectAtIndex:p];
+
+                if (criterionA !== criterionB && (typeof criterionA.isEqual !== "function" || ![criterionA isEqual:criterionB]))
+                {
+                    pathMatches = false;
+                    break;
+                }
+            }
+
+            if (pathMatches)
+            {
+                var crit = [aCriteria objectAtIndex:itemIndex];
+                [current_criterions addObject:crit];
+            }
         }
     }
 
@@ -1924,17 +1988,17 @@ TODO: implement
 
 - (CPString)_toolTipForAddCompoundRowButton
 {
-    return [_standardLocalizer localizedStringForString:@"Add compound row"];
+    return [[self standardLocalizer] localizedStringForString:@"Add compound row"];
 }
 
 - (CPString)_toolTipForAddSimpleRowButton
 {
-    return [_standardLocalizer localizedStringForString:@"Add row"];
+    return [[self standardLocalizer] localizedStringForString:@"Add row"];
 }
 
 - (CPString)_toolTipForDeleteRowButton
 {
-    return [_standardLocalizer localizedStringForString:@"Delete row"];
+    return [[self standardLocalizer] localizedStringForString:@"Delete row"];
 }
 
 - (void)_updateSliceIndentations
