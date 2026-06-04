@@ -80,6 +80,35 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     @n      An ordered to-many relation containing the display values for the row.
     @n@n @c @@"criteria"
     @n      An ordered to-many relation containing the criteria for the row.
+    @n@n
+    Localization & Positional Reordering
+    @n
+    CPRuleEditor supports complete localization of menu items and grammatical positional reordering (sentence structure layout adjustment) via strings resource files (.strings) or custom programmatic CPDictionary tables.
+    @n@n
+    Since sentence structures vary significantly across languages, the editor can dynamically reposition views (such as popups, static labels, and text fields) from left to right to form grammatically correct sentences.
+    @n@n
+    Formatting Keys (English representation):
+    @n @c %[%]@@
+    @n      Represents a popup button displaying its selected value (e.g. @c %[firstName]@@).
+    @n @c %@@
+    @n      Represents an editable text input field.
+    @n Static text represents a literal label placed directly inside the formatting key.
+    @n@n
+    Example English format key:
+    @n @c "%[firstName]@ %[is equal to]@ %@"
+    @n@n
+    Translation Patterns (Target language):
+    @n Positional specifiers such as @c %1$@@, @c %2$@@, @c %3$@@ dictate the visual order of views from left to right.
+    @n Bracketed values inside positional specifiers (e.g. @c %1$[Nombre]@@) define the localized title for popup selection items.
+    @n Literal text outside the specifiers (such as @c "y" or @c "und") is automatically instantiated as static text labels positioned between controls.
+    @n@n
+    Example translations:
+    @n@n
+    Spanish (Reorders to: [1: Name] y [3: Value] [2: are equal]):
+    @n @c "%[firstName]@ %[is equal to]@ %@" = "%1$[Nombre]@ y %3$@ %2$[son iguales]@";
+    @n@n
+    German (Reorders to: [1: First Name] und [3: Value] [2: are equal]):
+    @n @c "%[firstName]@ %[is equal to]@ %@" = "%1$[Vorname]@ und %3$@ %2$[sind gleich]@";
 */
 
 @implementation CPRuleEditor : CPControl
