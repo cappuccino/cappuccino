@@ -202,6 +202,10 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
                         }
                     }
                 }
+                else
+                {
+                    [item setTitle:item._originalTitle];
+                }
             }
 
             if (selectedItem)
@@ -219,6 +223,32 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 
     if (localizedPattern === key)
     {
+        var count = [views count];
+
+        for (var i = 0; i < count; i++)
+        {
+            var originalView = [views objectAtIndex:i];
+            if ([originalView isKindOfClass:[CPPopUpButton class]])
+            {
+                var selectedItem = [originalView selectedItem];
+                if (selectedItem && selectedItem._originalTitle)
+                {
+                    [selectedItem setTitle:selectedItem._originalTitle];
+                }
+            }
+            else if ([originalView respondsToSelector:@selector(setStringValue:)] && originalView._originalText)
+            {
+                [originalView setStringValue:originalView._originalText];
+                
+                if ([originalView isKindOfClass:[CPTextField class]] && ![originalView isEditable])
+                {
+                    var font = [originalView font] || [CPFont systemFontOfSize:[CPFont systemFontSize]],
+                        size = [originalView._originalText sizeWithFont:font];
+                    [originalView setFrameSize:CGSizeMake(size.width + 4, CGRectGetHeight([originalView frame]))];
+                }
+            }
+        }
+
         return views;
     }
 

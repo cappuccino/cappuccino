@@ -214,6 +214,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
                                                object:nil];
 }
 
+
 - (void)_ruleEditorLocalizerDidLoad:(CPNotification)aNotification
 {
     if ([aNotification object] === [self standardLocalizer])
@@ -224,7 +225,9 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
             var count = [_slices count];
             for (var i = 0; i < count; i++)
             {
-                [[_slices objectAtIndex:i] _reconfigureSubviews];
+                var slice = [_slices objectAtIndex:i];
+                [slice _reconfigureSubviews];
+                [slice _updateButtonVisibilities]; // Force updates on row button tooltips
             }
             
             [self _updatePredicate];

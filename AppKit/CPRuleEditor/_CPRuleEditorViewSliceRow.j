@@ -440,6 +440,9 @@
 {
     [_addButton setHidden:[_ruleEditor _shouldHideAddButtonForSlice:self]];
     [_subtractButton setHidden:[_ruleEditor _shouldHideSubtractButtonForSlice:self]];
+
+    [_addButton setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
+    [_subtractButton setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
 }
 
 - (void)_configurePlusButtonByRowType:(CPRuleEditorRowType)type
