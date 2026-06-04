@@ -1320,23 +1320,28 @@ TODO: implement
 
     while (current_index !== CPNotFound)
     {
-        var parentIndex = [self parentRowForRow:current_index],
-            subrowsIndexes = [self subrowIndexesForRow:parentIndex];
-
-        if ([subrowsIndexes count] === 1)
+        var parentIndex = [self parentRowForRow:current_index];
+        
+        // If the row has a valid parent in the editor (i.e. not a root row)
+        if (parentIndex !== -1)
         {
-            if (parentIndex !== -1)
-                return [CPIndexSet indexSetWithIndex:0];
+            var subrowsIndexes = [self subrowIndexesForRow:parentIndex];
 
-            var childlessGranPa = [self _childlessParentsIfSlicesWereDeletedAtIndexes:[CPIndexSet indexSetWithIndex:parentIndex]];
-            [childlessParents addIndexes:childlessGranPa];
+            // If deleting this row leaves the parent with no remaining child rows
+            if ([subrowsIndexes count] === 1)
+            {
+                [childlessParents addIndex:parentIndex];
+
+                // Recursively check if deleting this parent row leaves the grandparent childless
+                var childlessGranPa = [self _childlessParentsIfSlicesWereDeletedAtIndexes:[CPIndexSet indexSetWithIndex:parentIndex]];
+                [childlessParents addIndexes:childlessGranPa];
+            }
         }
 
         current_index = [indexes indexGreaterThanIndex:current_index];
     }
 
     return childlessParents;
-    // (id)-[RuleEditor _includeSubslicesForSlicesAtIndexes:]
 }
 
 - (CPIndexSet)_includeSubslicesForSlicesAtIndexes:(CPIndexSet)indexes
