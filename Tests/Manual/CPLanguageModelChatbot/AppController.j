@@ -6,6 +6,7 @@
 @import <AppKit/AppKit.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPLanguageModel.j>
+@import "MarkdownParser.j" 
 
 // --- SUBCLASS: SPEECH BUBBLE VIEW ---
 @implementation SpeechBubbleBox : CPView
@@ -307,25 +308,72 @@
     [self appendMessage:@"Session initialized.\n\nEnter a query below to begin." isUser:NO];
 }
 
-// Append a formatted message using SpeechBubbleBox and sizeToFit calculation
 - (void)appendMessage:(CPString)text isUser:(BOOL)isUser
 {
     var docWidth = CGRectGetWidth([_chatScrollView bounds]) - 50;
     
     var textView = [[CPTextView alloc] initWithFrame:CGRectMake(15, 10, docWidth - 30, 20)];
-    [textView insertText:text];
-    [textView setTextColor:[CPColor blackColor]];
-    [textView setFont:[CPFont systemFontOfSize:11.0]];
     [textView setEditable:YES];
-    [textView setRichText:NO];
+    [textView setRichText:YES];
+    [textView setSelectable:YES];
     [textView setBackgroundColor:[CPColor clearColor]];
     [textView setAutoresizingMask:CPViewWidthSizable];
     
-    [textView sizeToFit];
-    var textHeight = CGRectGetHeight([textView frame]);
+    [textView setVerticallyResizable:YES];
+    [textView setHorizontallyResizable:NO];
+    [[textView textContainer] setWidthTracksTextView:YES];
     
-    var cardHeight = textHeight + 20; // 10px spacing top/bottom
-    var bubbleHeight = cardHeight + 10; // Extra 10px spacing for the bottom triangle pointer [1]
+    var textHeight = 20;
+
+    try {
+        var parsedAttrStr = [MarkdownParser attributedStringFromMarkdown:text];
+        [textView insertText:parsedAttrStr];
+        
+        var length = [parsedAttrStr length];
+        var searchRange = CPMakeRange(0, 0);
+        var layoutManager = [textView layoutManager];
+        var textContainer = [textView textContainer];
+        var textViewWidth = CGRectGetWidth([textView bounds]);
+
+        while (searchRange.location < length)
+        {
+            var attrs = [parsedAttrStr attributesAtIndex:searchRange.location effectiveRange:searchRange];
+            var tableAttachment = [attrs objectForKey:@"TableAttachmentAttribute"];
+            if (tableAttachment) {
+                var rect = [layoutManager boundingRectForGlyphRange:searchRange inTextContainer:textContainer];
+                var inset = [textView textContainerInset];
+                var totalWidth = textViewWidth - 40; 
+                
+                if (totalWidth < 100)
+                    totalWidth = 100;
+
+                rect.origin.x += inset.width;
+                rect.origin.y += inset.height;
+                rect.size.width = totalWidth;
+
+                [tableAttachment resizeToWidth:totalWidth];
+                [tableAttachment setFrame:rect];
+
+                [textView addSubview:tableAttachment];
+            }
+            searchRange.location = CPMaxRange(searchRange);
+        }
+        
+        var usedRect = [layoutManager usedRectForTextContainer:textContainer];
+        textHeight = CGRectGetHeight(usedRect);
+        if (textHeight < 20) {
+            textHeight = 20;
+        }
+    } catch (e) {
+        // Fallback bei Parsing-Fehler
+        console.error("Markdown append failure: ", e);
+        [textView setString:text];
+        [textView sizeToFit];
+        textHeight = CGRectGetHeight([textView frame]);
+    }
+    
+    var cardHeight = textHeight + 20; 
+    var bubbleHeight = cardHeight + 10; 
     
     var fillColor = isUser ? [CPColor colorWithRed:0.90 green:0.93 blue:1.0 alpha:1.0] : [CPColor colorWithWhite:0.96 alpha:1.0];
     var cardBox = [[SpeechBubbleBox alloc] initWithFrame:CGRectMake(15, _currentChatY, docWidth, bubbleHeight) 
@@ -339,7 +387,7 @@
         _currentStreamingTextView = textView;
     }
     
-    _currentChatY += bubbleHeight + 15; // 15px gap between consecutive messages
+    _currentChatY += bubbleHeight + 15; 
     [_chatDocumentView setFrameSize:CGSizeMake(CGRectGetWidth([_chatScrollView bounds]), _currentChatY + 20)];
     
     var boundsHeight = CGRectGetHeight([_chatScrollView bounds]);
@@ -348,28 +396,106 @@
     }
 }
 
-// Updates the placeholder message with the final generated response
 - (void)updateMessage:(CPString)newText
 {
     if (!_currentStreamingTextView)
         return;
 
-    [_currentStreamingTextView setString:newText];
+    try {
+        // 1. Alte TableMatrixView Subviews entfernen
+        var subviews = [_currentStreamingTextView subviews];
+        if (subviews) {
+            for (var i = [subviews count] - 1; i >= 0; i--) {
+                var sub = [subviews objectAtIndex:i];
+                if (sub && [sub isKindOfClass:[TableMatrixView class]]) {
+                    [sub removeFromSuperview];
+                }
+            }
+        }
 
-    var textHeight = CGRectGetHeight([_currentStreamingTextView frame]);
-    var cardHeight = textHeight + 20;
-    var bubbleHeight = cardHeight + 10;
+        // 2. Text über Standard-Zuweisung neu setzen
+        var parsedAttrStr = [MarkdownParser attributedStringFromMarkdown:newText];
+        
+        [_currentStreamingTextView setEditable:YES];
+        [_currentStreamingTextView setString:@""];
+        [_currentStreamingTextView insertText:parsedAttrStr];
+        [_currentStreamingTextView setEditable:NO];
 
-    var container = [_currentStreamingTextView superview]; // Resolves the SpeechBubbleBox
-    var oldBubbleHeight = CGRectGetHeight([container frame]);
+        // 3. Tabellen-Layout berechnen
+        var length = [parsedAttrStr length];
+        var searchRange = CPMakeRange(0, 0);
+        var layoutManager = [_currentStreamingTextView layoutManager];
+        var textContainer = [_currentStreamingTextView textContainer];
+        var textViewWidth = CGRectGetWidth([_currentStreamingTextView bounds]);
 
-    [container setFrameSize:CGSizeMake(CGRectGetWidth([container frame]), bubbleHeight)];
-    [_currentStreamingTextView setFrameSize:CGSizeMake(CGRectGetWidth([_currentStreamingTextView frame]), textHeight)];
-    [container setNeedsDisplay:YES];
-    [_currentStreamingTextView setNeedsDisplay:YES];
+        while (searchRange.location < length)
+        {
+            var attrs = [parsedAttrStr attributesAtIndex:searchRange.location effectiveRange:searchRange];
+            var tableAttachment = [attrs objectForKey:@"TableAttachmentAttribute"];
+            if (tableAttachment) {
+                var rect = [layoutManager boundingRectForGlyphRange:searchRange inTextContainer:textContainer];
+                var inset = [_currentStreamingTextView textContainerInset];
+                var totalWidth = textViewWidth - 40; 
 
-    var diffHeight = bubbleHeight - oldBubbleHeight;
-    _currentChatY += diffHeight;
+                if (totalWidth < 100)
+                    totalWidth = 100;
+
+                rect.origin.x += inset.width;
+                rect.origin.y += inset.height;
+                rect.size.width = totalWidth;
+
+                [tableAttachment resizeToWidth:totalWidth];
+                [tableAttachment setFrame:rect];
+
+                [_currentStreamingTextView addSubview:tableAttachment];
+            }
+            searchRange.location = CPMaxRange(searchRange);
+        }
+
+        // 4. Container-Größen anpassen
+        var usedRect = [layoutManager usedRectForTextContainer:textContainer];
+        var textHeight = CGRectGetHeight(usedRect);
+        if (textHeight < 20) {
+            textHeight = 20;
+        }
+
+        var cardHeight = textHeight + 20;
+        var bubbleHeight = cardHeight + 10;
+
+        var container = [_currentStreamingTextView superview]; 
+        if (container) {
+            var oldBubbleHeight = CGRectGetHeight([container frame]);
+
+            [container setFrameSize:CGSizeMake(CGRectGetWidth([container frame]), bubbleHeight)];
+            [_currentStreamingTextView setFrameSize:CGSizeMake(CGRectGetWidth([_currentStreamingTextView frame]), textHeight)];
+            [container setNeedsDisplay:YES];
+            [_currentStreamingTextView setNeedsDisplay:YES];
+
+            var diffHeight = bubbleHeight - oldBubbleHeight;
+            _currentChatY += diffHeight;
+        }
+
+    } catch (e) {
+        console.error("Markdown rendering failure: ", e);
+        
+        [_currentStreamingTextView setEditable:YES];
+        [_currentStreamingTextView setString:newText];
+        [_currentStreamingTextView setEditable:NO];
+        
+        [_currentStreamingTextView sizeToFit];
+        var textHeight = CGRectGetHeight([_currentStreamingTextView frame]);
+        
+        var container = [_currentStreamingTextView superview];
+        if (container) {
+            var oldBubbleHeight = CGRectGetHeight([container frame]);
+            var bubbleHeight = textHeight + 30;
+            [container setFrameSize:CGSizeMake(CGRectGetWidth([container frame]), bubbleHeight)];
+            [container setNeedsDisplay:YES];
+            
+            var diffHeight = bubbleHeight - oldBubbleHeight;
+            _currentChatY += diffHeight;
+        }
+    }
 
     [_chatDocumentView setFrameSize:CGSizeMake(CGRectGetWidth([_chatScrollView bounds]), _currentChatY + 20)];
 
@@ -405,7 +531,6 @@
         if (error) {
             [selfRef updateMessage:@"Error: " + [error localizedDescription]];
         } else {
-            debugger
             [selfRef updateMessage:finalText];
         }
     }];
