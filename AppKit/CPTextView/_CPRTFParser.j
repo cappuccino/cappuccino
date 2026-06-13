@@ -23,6 +23,7 @@
 @import <Foundation/CPGeometry.j>
 @import "CPFontManager.j"
 @import "CPParagraphStyle.j"
+@import "_CPTableTextAttachment.j"
 
 @global CPLeftTextAlignment
 @global CPRightTextAlignment
@@ -34,6 +35,7 @@
 @global CPForegroundColorAttributeName
 @global CPBackgroundColorAttributeName
 @global CPParagraphStyleAttributeName
+@global CPAttachmentAttributeName
 
 @global CPLeftTabStopType
 @global CPRightTabStopType
@@ -289,7 +291,12 @@ var kRgsymRtf = {
         "]"                                  : [ "]",        0,        false,     kRTFParserType_char,    ']'],
         "{"                                  : [ "{",        0,        false,     kRTFParserType_char,    '{'],
         "}"                                  : [ "}",        0,        false,     kRTFParserType_char,    '}'],
-        "\\"                                 : [ "\\",       0,        false,     kRTFParserType_char,    '\\']
+        "\\"                                 : [ "\\",       0,        false,     kRTFParserType_char,    '\\'],
+        "trowd"                              : [ "trowd",    0,        false,     kRTFParserType_spec,    "ipfnTrowd"],
+        "cell"                               : [ "cell",     0,        false,     kRTFParserType_spec,    "ipfnCell"],
+        "row"                                : [ "row",      0,        false,     kRTFParserType_spec,    "ipfnRow"],
+        "cellx"                              : [ "cellx",    0,        false,     kRTFParserType_spec,    "ipfnCellx"],
+        "intbl"                              : [ "intbl",    0,        false,     kRTFParserType_spec,    "ipfnIntbl"]
     };
 
 @implementation _CPRTFParser : CPObject
@@ -307,6 +314,13 @@ var kRgsymRtf = {
     CPArray             _fontArray;
     CPString            _freename;
     BOOL                _parsingFontTable;
+
+    // Table parsing state
+    BOOL                _inTableActive;
+    BOOL                _waitingForNextRow;
+    CPMutableArray      _tableRows;
+    CPMutableArray      _currentRow;
+    CPString            _currentCellText;
 }
 
 - (id)init
@@ -324,6 +338,12 @@ var kRgsymRtf = {
         _fontArray          = ['Arial'];   // FIXME: should be name of system font
         _freename           = "";
         _parsingFontTable   = NO;
+
+        _inTableActive      = NO;
+        _waitingForNextRow  = NO;
+        _tableRows          = nil;
+        _currentRow         = nil;
+        _currentCellText    = "";
     }
 
     return self;
@@ -420,9 +440,89 @@ var kRgsymRtf = {
              _codePage = code;
              _currentParseIndex--;
              break;
+
+         case "ipfnTrowd":
+             if (_waitingForNextRow)
+             {
+                 _waitingForNextRow = NO;
+             }
+             if (!_inTableActive)
+             {
+                 _inTableActive = YES;
+                 _tableRows = [CPMutableArray array];
+                 _currentRow = [CPMutableArray array];
+                 _currentCellText = "";
+             }
+             else
+             {
+                 _currentRow = [CPMutableArray array];
+             }
+             return '';
+
+         case "ipfnIntbl":
+             return '';
+
+         case "ipfnCell":
+             if (_inTableActive)
+             {
+                 if (!_currentRow)
+                     _currentRow = [CPMutableArray array];
+                 [_currentRow addObject:_currentCellText];
+                 _currentCellText = "";
+             }
+             return '';
+
+         case "ipfnRow":
+             if (_inTableActive)
+             {
+                 if (!_currentRow)
+                     _currentRow = [CPMutableArray array];
+                 [_tableRows addObject:_currentRow];
+                 _waitingForNextRow = YES;
+             }
+             return '';
+
+         case "ipfnCellx":
+             return '';
     }
 
     return '';
+}
+
+- (void)_flushTableIfAny
+{
+    if (_tableRows && [_tableRows count] > 0)
+    {
+        var headers = [_tableRows objectAtIndex:0];
+        var rows = [CPMutableArray array];
+        for (var idx = 1; idx < [_tableRows count]; idx++)
+        {
+            [rows addObject:[_tableRows objectAtIndex:idx]];
+        }
+        
+        var attachment = [[_CPTableTextAttachment alloc] initWithHeaders:headers rows:rows width:500.0];
+        
+        // Linear height allocation estimation
+        var numCols = [headers count];
+        var estimatedHeight = 36.0 + ([rows count] * 28.0);
+        var lineCount = Math.ceil(estimatedHeight / 16.0) + 1;
+        var newlineStr = "";
+        for (var nl = 0; nl < lineCount; nl++) {
+            newlineStr += "\n";
+        }
+        
+        var tableAttrStr = [[CPMutableAttributedString alloc] initWithString:newlineStr];
+        [tableAttrStr addAttribute:@"TableAttachmentAttribute" value:attachment range:CPMakeRange(0, [tableAttrStr length])];
+        [tableAttrStr addAttribute:CPAttachmentAttributeName value:attachment range:CPMakeRange(0, [tableAttrStr length])];
+        
+        [_result appendAttributedString:tableAttrStr];
+        
+        _tableRows = nil;
+        _currentRow = nil;
+        _currentCellText = "";
+        _inTableActive = NO;
+        _waitingForNextRow = NO;
+    }
 }
 
 - (void)_flushCurrentRun
@@ -552,6 +652,14 @@ var kRgsymRtf = {
 
 - (CPString)_translateKeyword:(CPString)keyword parameter:(CPString)param fParameter:(BOOL)fParam
 {
+    if (_waitingForNextRow)
+    {
+        if (keyword !== "trowd" && keyword !== "cell" && keyword !== "row" && keyword !== "intbl" && keyword !== "cellx")
+        {
+            [self _flushTableIfAny];
+        }
+    }
+
     if (kRgsymRtf[keyword] !== undefined)
     {
         var sym = kRgsymRtf[keyword];
@@ -744,9 +852,16 @@ var kRgsymRtf = {
 
 - (void)_appendPlainString:(CPString) aString
 {
-    [_result replaceCharactersInRange:CPMakeRange([_result length], 0) withString:aString];
-
+    if (_inTableActive)
+    {
+        _currentCellText += aString;
+    }
+    else
+    {
+        [_result replaceCharactersInRange:CPMakeRange([_result length], 0) withString:aString];
+    }
 }
+
 - (CPAttributedString)parseRTF:(CPString)rtf
 {
     rtf = rtf.replace(/\\\n/g, "\\par\n");
@@ -765,6 +880,11 @@ var kRgsymRtf = {
     while (_currentParseIndex < len)
     {
         tmp = rtf.charAt(++_currentParseIndex);
+
+        if (_waitingForNextRow && tmp !== "\\" && tmp !== " " && tmp !== "\n" && tmp !== "\r" && tmp !== "\t")
+        {
+            [self _flushTableIfAny];
+        }
 
         if (tmp !== "\\" && hex.length > 0)
         {
@@ -788,12 +908,18 @@ var kRgsymRtf = {
                 break;
 
             case "{":
+                if (_waitingForNextRow)
+                    [self _flushTableIfAny];
+
                 if ([self pushState])
                     CPLogConsole("push");
 
                 break;
 
             case "}":
+                if (_waitingForNextRow)
+                    [self _flushTableIfAny];
+
                 if ([self popState])
                     CPLogConsole("pop");
 
@@ -862,6 +988,8 @@ var kRgsymRtf = {
                 break;
         }
     }
+
+    [self _flushTableIfAny];
 
     return _result;
 }

@@ -1,7 +1,7 @@
 /*
    _CPRTFProducer.j
 
-   Serialize CPAttributedString to an RTF String
+   Serialize CPAttributedString to a RTF String
 
    Copyright (C) 2014 Daniel Boehringer
    This file is based on the RTFProducer from GNUStep
@@ -27,6 +27,7 @@
 @import "CPColor.j"
 @import "CPGraphics.j"
 @import "CPFontManager.j"
+@import "_CPTableTextAttachment.j"
 
 @global CPForegroundColorAttributeName
 @global CPBackgroundColorAttributeName
@@ -42,6 +43,11 @@
 @global CPCenterTextAlignment
 @global CPJustifiedTextAlignment
 @global CPNaturalTextAlignment
+
+@global CPLeftTabStopType
+@global CPRightTabStopType
+@global CPCenterTabStopType
+@global CPDecimalTabStopType
 
 var PAPERSIZE = @"PaperSize",
     LEFTMARGIN = @"LeftMargin",
@@ -77,30 +83,28 @@ function _points2twips(a) { return (a) * 20.0; }
 
 
 #pragma mark -
-#pragma mark Init methods
+#pragma mark init methods
 
 - (id)init
 {
     if (self = [super init])
     {
-        // Maintain a dictionary for the used colors
-        // (for RTF-header generation)
+        // maintain a dictionary for the used colours
+        // (for rtf-header generation)
         colorDict = [CPMutableDictionary new];
 
-        // Maintain a dictionary for the used fonts
-        // (for RTF-header generation)
+        //maintain a dictionary for the used fonts
+        //(for rtf-header generation)
         fontDict = [CPMutableDictionary new];
 
         fgColor = [CPColor blackColor];
-        bgColor = [CPColor whiteColor];
+        bgColor= [CPColor whiteColor];
     }
 
     return self;
 }
 
-#pragma mark -
-#pragma mark Header & Formatting Support
-
+// private stuff follows
 - (CPString)fontTable
 {
     if (![fontDict count])
@@ -315,7 +319,7 @@ function _points2twips(a) { return (a) * 20.0; }
             break;
     }
 
-    // Write first line indent and left indent
+    // write first line indent and left indent
     var twips = _points2twips([paraStyle firstLineHeadIndent]);
 
     if (twips != 0.0)
@@ -356,162 +360,96 @@ function _points2twips(a) { return (a) * 20.0; }
         switch ([tab tabStopType])
         {
             case CPLeftTabStopType:
-            // No tabkind emission needed
                 break;
-/*              case NSRightTabStopType:
+            case CPRightTabStopType:
                 headerString += @"\\tqr";
-            break;
-            case NSCenterTabStopType:
-               headerString += @"\\tqc";
-            break;
-            case NSDecimalTabStopType:
+                break;
+            case CPCenterTabStopType:
+                headerString += @"\\tqc";
+                break;
+            case CPDecimalTabStopType:
                 headerString += @"\\tqdec";
-            break;
-            default:
-                NSLog(@"Unknown tab stop type.");
-*/
-          }
+                break;
+        }
 
-          headerString += [CPString stringWithFormat:@"\\tx%d",_points2twips([tab location])];
+        headerString += [CPString stringWithFormat:@"\\tx%d",_points2twips([tab location])];
     }
 
     return headerString;
 }
 
-#pragma mark -
-#pragma mark Duck-Typed Table Engine
-
-/**
- * Generates a native RTF table row structure from a conforming table data object.
- * This helper isolates the native RTF grid structure to ensure decoupling.
- *
- * @param tableObject An object implementing the dynamic getters `headers` and `rows`.
- * @return A raw RTF CPString containing cell bounds, row boundaries, and escaped strings.
- */
-- (CPString)rtfStringForTable:(id)tableObject
-{
-    var headers = [tableObject headers],
-        rows = [tableObject rows];
-
-    var numCols = [headers count];
-    if (numCols == 0 && [rows count] > 0)
-    {
-        numCols = [[rows objectAtIndex:0] count];
-    }
-
-    if (numCols == 0)
-    {
-        return @"";
-    }
-
-    var rtf = @"";
-    
-    // Divide printable horizontal space evenly (approx. 5.5 inches or 7920 Twips total)
-    var totalWidthTwips = 7920,
-        colWidth = Math.floor(totalWidthTwips / numCols);
-
-    var makeRowRTF = function(cells, isHeader) {
-        // \trowd clears existing cell definitions. 
-        // \trleft360 applies an indent matching a standard page margin.
-        var rowStr = @"\\trowd\\trgaph108\\trleft360";
-        
-        // 1. Declare row boundaries and configure cell border widths
-        var currentX = 360;
-        for (var c = 0; c < numCols; c++) {
-            currentX += colWidth;
-            rowStr += @"\\clbrdrt\\brdrs\\brdrw10\\clbrdrb\\brdrs\\brdrw10";
-            rowStr += @"\\clbrdrl\\brdrs\\brdrw10\\clbrdrr\\brdrs\\brdrw10";
-            rowStr += [CPString stringWithFormat:@"\\cellx%d", currentX];
-        }
-        
-        // 2. Escape, format, and serialize cell text content
-        for (var c = 0; c < numCols; c++) {
-            var textVal = @"";
-            if (c < [cells count]) {
-                textVal = [cells objectAtIndex:c];
-            }
-            
-            // Core RTF escaping (Backslashes escaped first to preserve subsequent tokens)
-            textVal = textVal.replace(/\\/g, '\\\\');
-            textVal = textVal.replace(/{/g, '\\{');
-            textVal = textVal.replace(/}/g, '\\}');
-            textVal = textVal.replace(/\n/g, '\\par ');
-            
-            // Standard visual inline Markdown conversions for cellular parity
-            textVal = textVal.replace(/\*\*([^*]+)\*\*/g, '\\b $1\\b0 ');
-            textVal = textVal.replace(/\*([^*]+)\*/g, '\\i $1\\i0 ');
-            
-            rowStr += @"\\intbl ";
-            if (isHeader) {
-                rowStr += @"\\b ";
-            }
-            rowStr += textVal;
-            if (isHeader) {
-                rowStr += @"\\b0 ";
-            }
-            rowStr += @"\\cell ";
-        }
-        
-        rowStr += @"\\row\n";
-        return rowStr;
-    };
-
-    // Construct headers
-    if ([headers count] > 0) {
-        rtf += makeRowRTF(headers, YES);
-    }
-
-    // Construct content rows
-    for (var r = 0; r < [rows count]; r++) {
-        var rowData = [rows objectAtIndex:r];
-        rtf += makeRowRTF(rowData, NO);
-    }
-
-    // Explicitly restore standard paragraph attributes to escape table scope
-    rtf += @"\\pard\n";
-
-    return rtf;
-}
-
-#pragma mark -
-#pragma mark Attribute Processing
-
 - (CPString)runStringForString:(CPString) substring
                     attributes:(CPDictionary) attributes
                 paragraphStart:(BOOL) first
 {
+    var tableAttachment = [attributes objectForKey:CPAttachmentAttributeName];
+    if (!tableAttachment)
+        tableAttachment = [attributes objectForKey:@"TableAttachmentAttribute"];
+
+    if (tableAttachment && [tableAttachment isKindOfClass:[_CPTableTextAttachment class]])
+    {
+        var headers = [tableAttachment headers],
+            rows = [tableAttachment rows];
+
+        var numCols = [headers count];
+        if (numCols == 0 && [rows count] > 0)
+            numCols = [[rows objectAtIndex:0] count];
+
+        if (numCols > 0)
+        {
+            var totalWidthTwips = 10000;
+            var colWidthTwips = Math.floor(totalWidthTwips / numCols);
+            var cellBoundaries = [];
+            var currentBoundary = 0;
+            for (var i = 0; i < numCols; i++)
+            {
+                currentBoundary += colWidthTwips;
+                cellBoundaries.push(currentBoundary);
+            }
+
+            var tableRTF = "";
+            var writeRow = function(rowData, isHeaderRow) {
+                var rowRTF = "\\trowd\\trgaph115\\trleft0";
+                for (var c = 0; c < numCols; c++) {
+                    rowRTF += "\\clbrdrt\\brdrs\\brdrw10\\clbrdrb\\brdrs\\brdrw10\\clbrdrl\\brdrs\\brdrw10\\clbrdrr\\brdrs\\brdrw10";
+                    rowRTF += "\\cellx" + cellBoundaries[c];
+                }
+                for (var c = 0; c < numCols; c++) {
+                    var cellText = "";
+                    if (c < [rowData count]) {
+                        cellText = [rowData objectAtIndex:c];
+                    }
+                    cellText = cellText.replace(/\\/g, '\\\\');
+                    cellText = cellText.replace(/{/g, '\\{');
+                    cellText = cellText.replace(/}/g, '\\}');
+                    cellText = cellText.replace(/\n/g, '\\line ');
+
+                    if (isHeaderRow) {
+                        rowRTF += "{\\intbl\\b " + cellText + "\\b0\\cell}";
+                    } else {
+                        rowRTF += "{\\intbl " + cellText + "\\cell}";
+                    }
+                }
+                rowRTF += "\\row\n";
+                return rowRTF;
+            };
+
+            if ([headers count] > 0) {
+                tableRTF += writeRow(headers, YES);
+            }
+            for (var r = 0; r < [rows count]; r++) {
+                tableRTF += writeRow([rows objectAtIndex:r], NO);
+            }
+
+            return tableRTF;
+        }
+    }
+
     var result = "",
         headerString = "",
         trailerString = "",
         attribEnum,
         currAttrib;
-
-    // --- DUCK-TYPING PROTOCOL DETECTION ---
-    // Safely scan all incoming attributes for an object supporting headers & rows.
-    // If found, completely divert processing to native RTF table construction.
-    var keys = [attributes allKeys],
-        count = [keys count],
-        tableObject = nil;
-
-    for (var i = 0; i < count; i++)
-    {
-        var key = [keys objectAtIndex:i],
-            val = [attributes objectForKey:key];
-
-        if (val && typeof val.respondsToSelector === "function" && 
-            [val respondsToSelector:@selector(headers)] && 
-            [val respondsToSelector:@selector(rows)])
-        {
-            tableObject = val;
-            break;
-        }
-    }
-
-    if (tableObject)
-    {
-        return [self rtfStringForTable:tableObject];
-    }
-    // --------------------------------------
 
     if (first)
     {
@@ -520,10 +458,10 @@ function _points2twips(a) { return (a) * 20.0; }
     }
 
   /*
-   * Analyze attributes of current run
+   * analyze attributes of current run
    *
    * FIXME: All the character attributes should be output relative to the font
-   * attributes of the paragraph. So if the paragraph has underline on, it should
+   * attributes of the paragraph. So if the paragraph has underline on it should
    * still be possible to switch it off for some characters, which currently is
    * not possible.
    */
@@ -534,7 +472,7 @@ function _points2twips(a) { return (a) * 20.0; }
         if ([currAttrib isEqualToString:CPFontAttributeName])
         {
           /*
-           * Handle fonts
+           * handle fonts
            */
             var font,
                 fontName,
@@ -545,13 +483,13 @@ function _points2twips(a) { return (a) * 20.0; }
             traits = [[CPFontManager sharedFontManager] traitsOfFont:font];
 
           /*
-           * Font name
+           * font name
            */
             if (currentFont == nil || ![fontName isEqualToString:[currentFont familyName]])
                 headerString += [self fontToken:fontName];
 
           /*
-           * Font size
+           * font size
            */
             if (currentFont == nil || [font size] != [currentFont size])
             {
@@ -562,7 +500,7 @@ function _points2twips(a) { return (a) * 20.0; }
                 headerString += pString;
             }
           /*
-           * Font attributes
+           * font attributes
            */
             if (traits & CPItalicFontMask)
             {
@@ -652,8 +590,6 @@ function _points2twips(a) { return (a) * 20.0; }
     substring = substring.replace(/\t/g, '\\tab');
     substring = substring.replace(/{/g, '\\{');
     substring = substring.replace(/}/g, '\\}');
-    // FIXME: All characters not in the standard encoding must be
-    // replaced by \'xx
 
     if (!first)
     {
@@ -691,8 +627,7 @@ function _points2twips(a) { return (a) * 20.0; }
         completeRange = CPMakeRange(0, length),
         first = YES;
 
-    // FIXME <!> split along newline characters and run as outer loop
-    while (CPMaxRange(currRange) < CPMaxRange(completeRange))  // Save all "runs"
+    while (CPMaxRange(currRange) < CPMaxRange(completeRange))  // save all "runs"
     {
         var attributes,
             substring,
@@ -725,9 +660,6 @@ function _points2twips(a) { return (a) * 20.0; }
     text = aText;
     docDict = dict;
 
-  /*
-   * Do not change order! (esp. body has to be generated first; builds context)
-   */
     bodyString = [self bodyString];
     trailerString = [self trailerString];
     headerString = [self headerString];
@@ -737,5 +669,4 @@ function _points2twips(a) { return (a) * 20.0; }
     output += trailerString;
     return output;
 }
-
 @end
