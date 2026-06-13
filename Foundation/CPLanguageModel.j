@@ -35,7 +35,7 @@ var CPLanguageModelSessionFallbackServiceType            = @"ollama",
     @class CPSystemLanguageModel
 
     CPSystemLanguageModel provides a standard query interface to inspect the 
-    availability of client-side, on-device large language models (such as Gemini Nano) 
+    availability of client-side, on-device large language models (such as Gemma Nano on Chrome) 
     in the active web browser runtime.
 */
 @implementation CPSystemLanguageModel : CPObject
