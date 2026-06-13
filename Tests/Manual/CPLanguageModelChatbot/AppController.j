@@ -443,41 +443,35 @@
         [_servicePopUp setAction:@selector(serviceTypeDidChange:)];
         [sheetContentView addSubview:_servicePopUp];
 
-        var endpointLabel = [[CPTextField alloc] initWithFrame:CGRectMake(15, 65, 110, 20)];
+        var endpointLabel = [[CPTextField alloc] initWithFrame:CGRectMake(15, 67, 110, 20)];
         [endpointLabel setStringValue:@"Endpoint URL:"];
-        [endpointLabel setFont:[CPFont systemFontOfSize:12.0]];
         [endpointLabel setAlignment:CPRightTextAlignment];
         [sheetContentView addSubview:endpointLabel];
 
-        _endpointField = [[CPTextField alloc] initWithFrame:CGRectMake(135, 62, CGRectGetWidth(sheetBounds) - 155, 24)];
+        _endpointField = [[CPTextField alloc] initWithFrame:CGRectMake(135, 62, CGRectGetWidth(sheetBounds) - 155, 27)];
         [_endpointField setEditable:YES];
         [_endpointField setBezeled:YES];
-        [_endpointField setFont:[CPFont systemFontOfSize:12.0]];
         [sheetContentView addSubview:_endpointField];
 
-        var modelLabel = [[CPTextField alloc] initWithFrame:CGRectMake(15, 105, 110, 20)];
+        var modelLabel = [[CPTextField alloc] initWithFrame:CGRectMake(15, 107, 110, 20)];
         [modelLabel setStringValue:@"Model Name:"];
-        [modelLabel setFont:[CPFont systemFontOfSize:12.0]];
         [modelLabel setAlignment:CPRightTextAlignment];
         [sheetContentView addSubview:modelLabel];
 
-        _modelField = [[CPTextField alloc] initWithFrame:CGRectMake(135, 102, CGRectGetWidth(sheetBounds) - 155, 24)];
+        _modelField = [[CPTextField alloc] initWithFrame:CGRectMake(135, 102, CGRectGetWidth(sheetBounds) - 155, 27)];
         [_modelField setEditable:YES];
         [_modelField setBezeled:YES];
-        [_modelField setFont:[CPFont systemFontOfSize:12.0]];
         [sheetContentView addSubview:_modelField];
 
-        var apiKeyLabel = [[CPTextField alloc] initWithFrame:CGRectMake(15, 145, 110, 20)];
+        var apiKeyLabel = [[CPTextField alloc] initWithFrame:CGRectMake(15, 147, 110, 20)];
         [apiKeyLabel setStringValue:@"API Key:"];
-        [apiKeyLabel setFont:[CPFont systemFontOfSize:12.0]];
         [apiKeyLabel setAlignment:CPRightTextAlignment];
         [sheetContentView addSubview:apiKeyLabel];
 
-        _apiKeyField = [[CPTextField alloc] initWithFrame:CGRectMake(135, 142, CGRectGetWidth(sheetBounds) - 155, 24)];
+        _apiKeyField = [[CPTextField alloc] initWithFrame:CGRectMake(135, 142, CGRectGetWidth(sheetBounds) - 155, 27)];
         [_apiKeyField setEditable:YES];
         [_apiKeyField setBezeled:YES];
         [_apiKeyField setSecure:YES];
-        [_apiKeyField setFont:[CPFont systemFontOfSize:12.0]];
         [sheetContentView addSubview:_apiKeyField];
 
         var btnY = CGRectGetHeight(sheetBounds) - 45;
