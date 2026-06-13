@@ -135,8 +135,32 @@
 
 - (CPMenuItem)_createMenuItemWithTitle:(CPString )title
 {
-    title = [[_ruleEditor standardLocalizer] localizedStringForString:title];
-    return [[CPMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""];
+    var originalTitle = title;
+    var localizedTitle = [[_ruleEditor standardLocalizer] localizedStringForString:title];
+    var item = [[CPMenuItem alloc] initWithTitle:localizedTitle action:nil keyEquivalent:@""];
+    
+    // Cache the raw English title for pattern-matching
+    item._originalTitle = originalTitle;
+    return item;
+}
+
+- (CPTextField)_createStaticTextFieldWithStringValue:(CPString)text
+{
+    var textField       = [[CPTextField alloc] initWithFrame:CGRectMakeZero()],
+        ruleEditorFont  = [_ruleEditor font],
+        font            = [CPFont fontWithName:[ruleEditorFont familyName] size:[ruleEditorFont size] + 2],
+        localizedText   = [[_ruleEditor standardLocalizer] localizedStringForString:text],
+        size            = [localizedText sizeWithFont:font];
+
+    [textField setFrameSize:CGSizeMake(size.width + 4, [_ruleEditor rowHeight])];
+    [textField setValue:font forThemeAttribute:@"font"];
+    [textField setValue:[_ruleEditor _verticalAlignment] forThemeAttribute:@"vertical-alignment"];
+    [textField setStringValue:localizedText];
+    
+    // Cache the raw English text for pattern-matching
+    textField._originalText = text;
+
+    return textField;
 }
 
 - (CPPopUpButton)_createPopUpButtonWithItems:(CPArray)itemsArray selectedItemIndex:(int)index
@@ -161,22 +185,6 @@
 - (CPMenuItem)_createMenuSeparatorItem
 {
     return [CPMenuItem separatorItem];
-}
-
-- (CPTextField)_createStaticTextFieldWithStringValue:(CPString)text
-{
-    var textField       = [[CPTextField alloc] initWithFrame:CGRectMakeZero()],
-        ruleEditorFont  = [_ruleEditor font],
-        font            = [CPFont fontWithName:[ruleEditorFont familyName] size:[ruleEditorFont size] + 2],
-        localizedText   = [[_ruleEditor standardLocalizer] localizedStringForString:text],
-        size            = [localizedText sizeWithFont:font];
-
-    [textField setFrameSize:CGSizeMake(size.width + 4, [_ruleEditor rowHeight])];
-    [textField setValue:font forThemeAttribute:@"font"];
-    [textField setValue:[_ruleEditor _verticalAlignment] forThemeAttribute:@"vertical-alignment"];
-    [textField setStringValue:localizedText];
-
-    return textField;
 }
 
 - (void)_addOption:(id)sender
@@ -355,6 +363,28 @@
 
     [_correspondingRuleItems setArray:ruleItems];
 
+    // Localize drop-down options in context and reorder/insert intermediate labels natively
+    var localizer = [_ruleEditor standardLocalizer];
+    if (localizer)
+    {
+        [localizer localizeMenuItemsForViews:_ruleOptionViews];
+        _ruleOptionViews = [localizer localizeAndReorderViews:_ruleOptionViews];
+    }
+
+    // Rebuild frame configurations to match the new localized layout order
+    [_ruleOptionFrames removeAllObjects];
+    [_ruleOptionInitialViewFrames removeAllObjects];
+
+    var newCount = [_ruleOptionViews count];
+    for (var i = 0; i < newCount; i++)
+    {
+        var view = [_ruleOptionViews objectAtIndex:i],
+            frame = [view frame];
+
+        [_ruleOptionFrames addObject:frame];
+        [_ruleOptionInitialViewFrames addObject:frame];
+    }
+
     if (!_editable)
         [self _updateEnabledStateForSubviews];
 
@@ -431,6 +461,9 @@
 {
     [_addButton setHidden:[_ruleEditor _shouldHideAddButtonForSlice:self]];
     [_subtractButton setHidden:[_ruleEditor _shouldHideSubtractButtonForSlice:self]];
+
+    [_addButton setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
+    [_subtractButton setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
 }
 
 - (void)_configurePlusButtonByRowType:(CPRuleEditorRowType)type
