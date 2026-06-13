@@ -348,35 +348,31 @@
     }
 }
 
-// Dynamically resize the SpeechBubbleBox to match updated streaming text changes
-- (void)updateStreamingMessage:(CPString)newText
+// Updates the placeholder message with the final generated response
+- (void)updateMessage:(CPString)newText
 {
     if (!_currentStreamingTextView)
         return;
 
-    if (newText == "\n\n")
-        newText = ' ';
-
-    [_currentStreamingTextView setString:[_currentStreamingTextView._textStorage string] + newText];
-    //[_currentStreamingTextView sizeToFit];
+    [_currentStreamingTextView setString:newText];
 
     var textHeight = CGRectGetHeight([_currentStreamingTextView frame]);
     var cardHeight = textHeight + 20;
     var bubbleHeight = cardHeight + 10;
-    
+
     var container = [_currentStreamingTextView superview]; // Resolves the SpeechBubbleBox
     var oldBubbleHeight = CGRectGetHeight([container frame]);
-    
+
     [container setFrameSize:CGSizeMake(CGRectGetWidth([container frame]), bubbleHeight)];
     [_currentStreamingTextView setFrameSize:CGSizeMake(CGRectGetWidth([_currentStreamingTextView frame]), textHeight)];
-    [container setNeedsDisplay:YES]; // Instructs the canvas to clear and redraw paths
-    [_currentStreamingTextView setNeedsDisplay:YES]; // Instructs the canvas to clear and redraw paths
-    
+    [container setNeedsDisplay:YES];
+    [_currentStreamingTextView setNeedsDisplay:YES];
+
     var diffHeight = bubbleHeight - oldBubbleHeight;
     _currentChatY += diffHeight;
-    
+
     [_chatDocumentView setFrameSize:CGSizeMake(CGRectGetWidth([_chatScrollView bounds]), _currentChatY + 20)];
-    
+
     var boundsHeight = CGRectGetHeight([_chatScrollView bounds]);
     if (_currentChatY > boundsHeight) {
         [[_chatScrollView contentView] scrollToPoint:CGPointMake(0, _currentChatY - boundsHeight + 40)];
@@ -400,20 +396,19 @@
     var selfRef = self;
 
     [_session respondToPrompt:prompt
-              onChunkReceived:function(chunk) {
-                  [selfRef updateStreamingMessage:chunk];
-              }
-                    completed:function(finalText, error) {
-                        [selfRef._chatInputField setEnabled:YES];
-                        [selfRef._chatInputField becomeFirstResponder];
-                        [selfRef._chatSendButton setEnabled:YES];
+                      options:nil
+            completionHandler:function(finalText, error) {
+        [selfRef._chatInputField setEnabled:YES];
+        [selfRef._chatInputField becomeFirstResponder];
+        [selfRef._chatSendButton setEnabled:YES];
 
-                        if (error) {
-                            [selfRef updateStreamingMessage:@"Error: " + [error localizedDescription]];
-                        } else {
-                            [selfRef updateStreamingMessage:finalText];
-                        }
-                    }];
+        if (error) {
+            [selfRef updateMessage:@"Error: " + [error localizedDescription]];
+        } else {
+            debugger
+            [selfRef updateMessage:finalText];
+        }
+    }];
 }
 
 // --- CONFIGURATION POPUP SHEETS ---
