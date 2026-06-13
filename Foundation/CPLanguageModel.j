@@ -115,7 +115,7 @@ var sharedInstance = nil;
 
     @discussion
     CPLanguageModelSession handles text generation prompts. If on-device AI
-    (like Gemini Nano) is supported by the browser, it is utilized directly. 
+    (like Gemma Nano) is supported by the browser, it is utilized directly. 
     Otherwise, or if CPLanguageModelSessionEndorsesFallback is configured to YES,
     the session automatically falls back to configured network-based providers 
     (such as local Ollama, Groq, or OpenRouter).
