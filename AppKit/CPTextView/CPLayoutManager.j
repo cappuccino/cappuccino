@@ -1373,12 +1373,11 @@ var _objectsInRange = function(aList, aRange)
     {
         _runs[i]._range.location += rangeOffset;
 
-        if (verticalOffset && _runs[i].elem)
+        if (verticalOffset)
         {
             if (_runs[i].view)
                 _runs[i].view._frame.origin.y += verticalOffset;
 
-            _runs[i].elem.top = (_runs[i].elem.top + verticalOffset) + 'px';
             _runs[i].DOMpatched = YES;
         }
     }
