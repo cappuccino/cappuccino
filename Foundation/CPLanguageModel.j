@@ -358,6 +358,8 @@ var sharedInstance = nil;
                 if (!err && chunkHandler)
                     chunkHandler(res);
                 completionHandler(res, err);
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode]; // pump run loop to force GUI update
+
             }];
             return;
         }
@@ -378,7 +380,11 @@ var sharedInstance = nil;
             [selfRef _executeRemoteFallbackWithPrompt:prompt options:nil completionHandler:function(res, err) {
                 if (!err && chunkHandler)
                     chunkHandler(res);
+
                 completionHandler(res, err);
+
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode]; // pump run loop to force GUI update
+
             }];
         });
     }];
@@ -422,11 +428,13 @@ var sharedInstance = nil;
 
     promptPromise.then(function(result) {
         completionHandler(result, nil);
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode]; // pump run loop to force GUI update
     }).catch(function(err) {
         var cpError = [CPError errorWithDomain:@"CPLanguageModelErrorDomain" 
                                           code:2 
                                       userInfo:[CPDictionary dictionaryWithObject:err.message forKey:CPLocalizedDescriptionKey]];
         completionHandler(nil, cpError);
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode]; // pump run loop to force GUI update
     });
 }
 
@@ -549,12 +557,14 @@ var sharedInstance = nil;
         }
 
         completionHandler(responseText, nil);
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode]; // pump run loop to force GUI update
     })
     .catch(function(err) {
         var cpError = [CPError errorWithDomain:@"CPLanguageModelErrorDomain" 
                                           code:4 
                                       userInfo:[CPDictionary dictionaryWithObject:err.message forKey:CPLocalizedDescriptionKey]];
         completionHandler(nil, cpError);
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode]; // pump run loop to force GUI update
     });
 }
 
@@ -571,6 +581,7 @@ var sharedInstance = nil;
                                               code:3 
                                           userInfo:[CPDictionary dictionaryWithObject:err.message forKey:CPLocalizedDescriptionKey]];
         completionHandler(nil, cpError);
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode]; // pump run loop to force GUI update
         return;
     }
 
