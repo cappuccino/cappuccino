@@ -14,12 +14,12 @@
  * Lesser General Public License for more details.
  */
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPString.j>
-@import <Foundation/CPError.j>
-@import <Foundation/CPDictionary.j>
-@import <Foundation/CPBundle.j>
-@import <Foundation/CPUserDefaults.j>
+@import "CPObject.j"
+@import "CPString.j"
+@import "CPError.j"
+@import "CPDictionary.j"
+@import "CPBundle.j"
+@import "CPUserDefaults.j"
 
 // File-scoped fallback configuration parameters
 var CPLanguageModelSessionFallbackServiceType            = @"ollama",
