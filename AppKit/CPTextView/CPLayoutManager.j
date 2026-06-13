@@ -1378,7 +1378,7 @@ var _objectsInRange = function(aList, aRange)
             if (_runs[i].view)
                 _runs[i].view._frame.origin.y += verticalOffset;
 
-            _runs[i].elem.top = (_runs[i].elem.top + verticalOffset) + 'px';
+            _runs[i].elem.style.top = parseFloat(_runs[i].elem.style.top + verticalOffset) + 'px';
             _runs[i].DOMpatched = YES;
         }
     }
