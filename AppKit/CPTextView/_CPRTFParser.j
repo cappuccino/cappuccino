@@ -205,8 +205,12 @@ var cp1252Map = {
     if (bgColour)
         [ret setObject:bgColour forKey:CPBackgroundColorAttributeName];
 
+    if (underline)
+        [ret setObject:[CPNumber numberWithInt:1] forKey:CPUnderlineStyleAttributeName];
+
     return ret;
 }
+
 @end
 
 
@@ -387,7 +391,13 @@ var kRgsymRtf = {
         [self _flushCurrentRun];
         _currentRun = state.run;
         _currentRun._range = CPMakeRange([_result length], 0);
+
+        if (_curState == 0)
+        {
+            _parsingFontTable = NO;
+        }
     }
+
     return YES;
 }
 
@@ -621,6 +631,23 @@ var kRgsymRtf = {
 
         case "paperh":
             _paper.height = param;
+            break;
+
+        case "ul": // underline
+            if (param === 0)
+            {
+                if (_currentRun && _currentRun.underline)
+                   [self _flushCurrentRun];
+
+                _currentRun.underline = NO;
+            }
+            else
+            {
+                if (_currentRun && !_currentRun.underline)
+                    [self _flushCurrentRun];
+
+               _currentRun.underline = YES;
+            }
             break;
     }
 
@@ -981,11 +1008,32 @@ var kRgsymRtf = {
                 lastchar = 0;
 
                 if (_curState == 0)
+                {
                     [self _appendPlainString:tmp];
-                else if (tmp !== ';')
-                    _freename += tmp;
-
-                break;
+                }
+                else
+                {
+                    if (tmp === ';')
+                    {
+                        if (_parsingFontTable && _freename)
+                        {
+                            var cleanFontName = _freename.trim();
+                            // strip family name prefix if present (e.g., "swiss Helvetica" -> "Helvetica")
+                            var lastSpaceIdx = cleanFontName.lastIndexOf(' ');
+                            if (lastSpaceIdx !== -1)
+                            {
+                                cleanFontName = cleanFontName.substring(lastSpaceIdx + 1);
+                            }
+                            _fontArray.push(cleanFontName);
+                            _freename = "";
+                        }
+                    }
+                    else
+                    {
+                        _freename += tmp;
+                    }
+                }
+            break;
         }
     }
 

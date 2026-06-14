@@ -1,12 +1,12 @@
 /*
-   _CPRTFProducer.j
-
-   Serialize CPAttributedString to a RTF String
-
-   Copyright (C) 2014 Daniel Boehringer
-   This file is based on the RTFProducer from GNUStep
-   (which I co-authored with Fred Kiefer in 1999)
-
+ *  _CPRTFProducer.j
+ *
+ *  Serialize CPAttributedString to a RTF String
+ *
+ *  Copyright (C) 2014 Daniel Boehringer
+ *  This file is based on the RTFProducer from GNUStep
+ *  (which I co-authored with Fred Kiefer in 1999)
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -382,18 +382,104 @@ function _points2twips(a) { return (a) * 20.0; }
                     attributes:(CPDictionary) attributes
                 paragraphStart:(BOOL) first
 {
-    var tableAttachment = [attributes objectForKey:CPAttachmentAttributeName];
-    if (!tableAttachment)
+    var unwrap = function(obj) {
+        if (!obj) return null;
+        var unwrapped = null;
+        if (typeof obj.respondsToSelector === "function") {
+            if ([obj respondsToSelector:@selector(attachmentCell)]) {
+                unwrapped = [obj attachmentCell];
+            } else if ([obj respondsToSelector:@selector(content)]) {
+                unwrapped = [obj content];
+            } else if ([obj respondsToSelector:@selector(view)]) {
+                unwrapped = [obj view];
+            }
+        }
+        if (!unwrapped) {
+            unwrapped = obj._attachmentCell || obj._content || obj._view || obj.attachmentCell || obj.content || obj.view;
+        }
+        return unwrapped ? unwrapped : obj;
+    };
+
+    var tableAttachment = null;
+    
+    if (typeof CPAttachmentAttributeName !== "undefined") {
+        tableAttachment = [attributes objectForKey:CPAttachmentAttributeName];
+    }
+    if (!tableAttachment) {
+        tableAttachment = [attributes objectForKey:@"CPAttachmentAttributeName"];
+    }
+    if (!tableAttachment) {
         tableAttachment = [attributes objectForKey:@"TableAttachmentAttribute"];
+    }
+    if (!tableAttachment) {
+        tableAttachment = [attributes objectForKey:@"_CPAttachmentView"];
+    }
+    if (!tableAttachment && typeof _CPAttachmentView !== "undefined") {
+        tableAttachment = [attributes objectForKey:_CPAttachmentView];
+    }
 
-    if (tableAttachment && [tableAttachment isKindOfClass:[_CPTableTextAttachment class]])
+    tableAttachment = unwrap(tableAttachment);
+
+    // Ultimate fallback scanner for layout character placeholder sequences
+    if (!tableAttachment && (substring === "\uFFFC" || substring === "￼"))
     {
-        var headers = [tableAttachment headers],
-            rows = [tableAttachment rows];
+        var keys = [attributes allKeys],
+            count = [keys count];
 
-        var numCols = [headers count];
-        if (numCols == 0 && [rows count] > 0)
-            numCols = [[rows objectAtIndex:0] count];
+        for (var i = 0; i < count; i++)
+        {
+            var key = [keys objectAtIndex:i],
+                val = unwrap([attributes objectForKey:key]);
+
+            if (val && (
+                (typeof val.respondsToSelector === "function" && [val respondsToSelector:@selector(headers)]) || 
+                val._headers || 
+                val.headers ||
+                (typeof _CPTableTextAttachment !== "undefined" && [val isKindOfClass:[_CPTableTextAttachment class]])
+            )) {
+                tableAttachment = val;
+                break;
+            }
+        }
+    }
+
+    if (tableAttachment)
+    {
+        var headers = null,
+            rows = null;
+
+        if (typeof tableAttachment.respondsToSelector === "function") {
+            if ([tableAttachment respondsToSelector:@selector(headers)]) {
+                headers = [tableAttachment headers];
+            }
+            if ([tableAttachment respondsToSelector:@selector(rows)]) {
+                rows = [tableAttachment rows];
+            }
+        }
+        
+        if (!headers) {
+            headers = tableAttachment._headers || tableAttachment.headers;
+        }
+        if (!rows) {
+            rows = tableAttachment._rows || tableAttachment.rows;
+        }
+
+        var getCount = function(arr) {
+            if (!arr) return 0;
+            if (typeof arr.count === "function") return [arr count];
+            return arr.length;
+        };
+
+        var getObjectAtIndex = function(arr, idx) {
+            if (!arr) return null;
+            if (typeof arr.objectAtIndex === "function") return [arr objectAtIndex:idx];
+            return arr[idx];
+        };
+
+        var numCols = getCount(headers);
+        if (numCols == 0 && getCount(rows) > 0) {
+            numCols = getCount(getObjectAtIndex(rows, 0));
+        }
 
         if (numCols > 0)
         {
@@ -416,9 +502,14 @@ function _points2twips(a) { return (a) * 20.0; }
                 }
                 for (var c = 0; c < numCols; c++) {
                     var cellText = "";
-                    if (c < [rowData count]) {
-                        cellText = [rowData objectAtIndex:c];
+                    if (c < getCount(rowData)) {
+                        cellText = getObjectAtIndex(rowData, c);
                     }
+                    if (cellText === null || cellText === undefined) {
+                        cellText = "";
+                    }
+                    
+                    cellText = String(cellText);
                     cellText = cellText.replace(/\\/g, '\\\\');
                     cellText = cellText.replace(/{/g, '\\{');
                     cellText = cellText.replace(/}/g, '\\}');
@@ -434,11 +525,12 @@ function _points2twips(a) { return (a) * 20.0; }
                 return rowRTF;
             };
 
-            if ([headers count] > 0) {
+            if (getCount(headers) > 0) {
                 tableRTF += writeRow(headers, YES);
             }
-            for (var r = 0; r < [rows count]; r++) {
-                tableRTF += writeRow([rows objectAtIndex:r], NO);
+            var rowCount = getCount(rows);
+            for (var r = 0; r < rowCount; r++) {
+                tableRTF += writeRow(getObjectAtIndex(rows, r), NO);
             }
 
             return tableRTF;
@@ -625,7 +717,7 @@ function _points2twips(a) { return (a) * 20.0; }
         length = [string length],
         currRange = CPMakeRange(loc, 0),
         completeRange = CPMakeRange(0, length),
-        first = YES;
+        paragraphStart = YES;
 
     while (CPMaxRange(currRange) < CPMaxRange(completeRange))  // save all "runs"
     {
@@ -639,10 +731,15 @@ function _points2twips(a) { return (a) * 20.0; }
         substring = [string substringWithRange:currRange];
         runString = [self runStringForString:substring
                                   attributes:attributes
-                              paragraphStart:YES];
+                              paragraphStart:paragraphStart];
 
         result += runString;
-        first = NO;
+        
+        // Dynamically compute paragraph boundaries based on standard line feeds
+        if (substring.length > 0 && substring.charAt(substring.length - 1) === '\n')
+            paragraphStart = YES;
+        else
+            paragraphStart = NO;
     }
 
     return result;
