@@ -154,7 +154,7 @@
     var rtfButton = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 150, 30)];
     [rtfButton setTitle:@"RTF Round-trip ➔"];
     [rtfButton setTarget:self];
-    [rtfButton setAction:@selector(makeRTF:)];
+    [rtfButton setAction:@selector(rtfRoundTrip:)];
     [toolbarView addSubview:rtfButton];
     currentX += 160;
 
@@ -366,4 +366,44 @@
     [_textView insertText: mystr];
 }
 
+// Action tied to the "RTF Round-trip ->" button in the demo app
+- (void)rtfRoundTrip:(id)sender
+{
+    // 1. Retrieve the rich text storage from the editor on the left
+    var textStorage = [_textView textStorage];
+    if (!textStorage || [textStorage length] == 0)
+    {
+        return;
+    }
+
+    // 2. Serialize the CPAttributedString into an RTF string
+    var docAttributes = @{ @"PaperSize": CPMakeSize(612, 792) };
+    var generatedRTF = [_CPRTFProducer produceRTF:textStorage documentAttributes:docAttributes];
+
+    // 3. Set the generated RTF string into the raw output pane on the right
+    [_textView2 setString:generatedRTF];
+
+    // 4. Parse that exact RTF text back into a new CPAttributedString
+    var parser = [[_CPRTFParser alloc] init];
+    var roundTrippedString = [parser parseRTF:generatedRTF];
+
+    // 5. Replace the editor's text storage with the round-tripped version
+    var editorStorage = [_textView textStorage];
+    if (editorStorage && [editorStorage respondsToSelector:@selector(setAttributedString:)])
+    {
+        [editorStorage setAttributedString:roundTrippedString];
+    }
+    else
+    {
+        // Safe fallback sequence
+        [_textView setEditable:YES];
+        [_textView setString:@""];
+        [_textView insertText:roundTrippedString];
+        [_textView setEditable:NO];
+    }
+
+    // 6. Force a layout pass and render update
+    [_textView setNeedsDisplay:YES];
+    [_textView2 setNeedsDisplay:YES];
+}
 @end

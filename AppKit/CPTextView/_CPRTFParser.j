@@ -36,6 +36,7 @@
 @global CPBackgroundColorAttributeName
 @global CPParagraphStyleAttributeName
 @global CPAttachmentAttributeName
+@global CPUnderlineStyleAttributeName
 
 @global CPLeftTabStopType
 @global CPRightTabStopType
@@ -210,7 +211,6 @@ var cp1252Map = {
 
     return ret;
 }
-
 @end
 
 
@@ -348,6 +348,9 @@ var kRgsymRtf = {
         _tableRows          = nil;
         _currentRow         = nil;
         _currentCellText    = "";
+
+        // Safe Initialization
+        _currentRun         = [_RTFAttribute new];
     }
 
     return self;
@@ -390,6 +393,13 @@ var kRgsymRtf = {
 
         [self _flushCurrentRun];
         _currentRun = state.run;
+
+        // Safety guard to prevent setting properties on null
+        if (!_currentRun)
+        {
+            _currentRun = [_RTFAttribute new];
+        }
+
         _currentRun._range = CPMakeRange([_result length], 0);
 
         if (_curState == 0)
@@ -397,7 +407,6 @@ var kRgsymRtf = {
             _parsingFontTable = NO;
         }
     }
-
     return YES;
 }
 
@@ -609,6 +618,23 @@ var kRgsymRtf = {
 
             break;
 
+        case "ul": // underline
+            if (param === 0)
+            {
+                if (_currentRun && _currentRun.underline)
+                   [self _flushCurrentRun];
+
+                _currentRun.underline = NO;
+            }
+            else
+            {
+                if (_currentRun && !_currentRun.underline)
+                    [self _flushCurrentRun];
+
+               _currentRun.underline = YES;
+            }
+            break;
+
         case "qc":  // paragraph center
             [_currentRun.paragraph setAlignment:CPCenterTextAlignment];
             break;
@@ -631,23 +657,6 @@ var kRgsymRtf = {
 
         case "paperh":
             _paper.height = param;
-            break;
-
-        case "ul": // underline
-            if (param === 0)
-            {
-                if (_currentRun && _currentRun.underline)
-                   [self _flushCurrentRun];
-
-                _currentRun.underline = NO;
-            }
-            else
-            {
-                if (_currentRun && !_currentRun.underline)
-                    [self _flushCurrentRun];
-
-               _currentRun.underline = YES;
-            }
             break;
     }
 
@@ -1033,7 +1042,8 @@ var kRgsymRtf = {
                         _freename += tmp;
                     }
                 }
-            break;
+
+                break;
         }
     }
 
