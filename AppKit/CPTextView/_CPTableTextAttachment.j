@@ -16,8 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-
-*/
+ */
 
 @import "CPView.j"
 @import "CPTextView.j"
@@ -28,6 +27,7 @@
 {
     CPArray _headers;
     CPArray _rows;
+    BOOL    _isResizing;
 }
 
 - (id)initWithHeaders:(CPArray)headers rows:(CPArray)rows
@@ -42,30 +42,41 @@
     {
         _headers = headers;
         _rows = rows;
+        _isResizing = NO;
         
-        var numCols = [headers count];
+        [self _rebuildTableWithWidth:totalWidth];
+    }
 
-        if (numCols == 0 && [rows count] > 0)
-            numCols = [[rows objectAtIndex:0] count];
+    return self;
+}
 
-        // Apply borders on the outer left and top container edges
-        if (self._DOMElement) {
-            self._DOMElement.style.borderTop = "1px solid #e0e0e0";
-            self._DOMElement.style.borderLeft = "1px solid #e0e0e0";
+- (void)_rebuildTableWithWidth:(float)totalWidth
+{
+    var numCols = _headers ? [_headers count] : 0;
+
+    if (numCols == 0 && _rows && [_rows count] > 0)
+        numCols = [[_rows objectAtIndex:0] count];
+
+    // Apply borders on the outer left and top container edges
+    if (self._DOMElement) {
+        self._DOMElement.style.borderTop = "1px solid #e0e0e0";
+        self._DOMElement.style.borderLeft = "1px solid #e0e0e0";
+        self._DOMElement.style.boxSizing = "border-box";
+    }
+
+    // Initialize header cells
+    if (_headers && [_headers count] > 0) {
+        for (var c = 0; c < numCols; c++) {
+            var headerText = [_headers objectAtIndex:c];
+            var cellView = [self createCellWithText:headerText frame:CGRectMakeZero() isHeader:YES];
+            [self addSubview:cellView];
         }
-
-        // Initialize header cells
-        if ([headers count] > 0) {
-            for (var c = 0; c < numCols; c++) {
-                var headerText = [headers objectAtIndex:c];
-                var cellView = [self createCellWithText:headerText frame:CGRectMakeZero() isHeader:YES];
-                [self addSubview:cellView];
-            }
-        }
-        
-        // Initialize body rows
-        for (var r = 0; r < [rows count]; r++) {
-            var rowData = [rows objectAtIndex:r];
+    }
+    
+    // Initialize body rows
+    if (_rows) {
+        for (var r = 0; r < [_rows count]; r++) {
+            var rowData = [_rows objectAtIndex:r];
             for (var c = 0; c < numCols; c++) {
                 var cellText = @"";
 
@@ -76,10 +87,53 @@
                 [self addSubview:cellView];
             }
         }
-        
-        [self resizeToWidth:totalWidth];
     }
-    return self;
+    
+    [self resizeToWidth:totalWidth];
+
+    // Trigger a parent layout manager re-layout once the table is fully reconstructed and sized.
+    var textView = [self superview];
+    if (textView && [textView isKindOfClass:[CPTextView class]])
+    {
+        var layoutManager = [textView layoutManager];
+        if (layoutManager)
+        {
+            var charRange = [self _findCharacterRangeInLayoutManager:layoutManager];
+            if (charRange && charRange.location !== CPNotFound)
+            {
+                [layoutManager invalidateLayoutForCharacterRange:charRange isSoft:NO actualCharacterRange:nil];
+                [layoutManager invalidateDisplayForGlyphRange:charRange];
+                [layoutManager _validateLayoutAndGlyphs];
+                [textView sizeToFit];
+            }
+        }
+    }
+}
+
+- (CPRange)_findCharacterRangeInLayoutManager:(CPLayoutManager)layoutManager
+{
+    var lineFragments = layoutManager._lineFragments;
+    if (lineFragments)
+    {
+        var l = lineFragments.length;
+        for (var i = 0; i < l; i++)
+        {
+            var fragment = lineFragments[i];
+            var runs = fragment._runs;
+            if (runs)
+            {
+                var rc = runs.length;
+                for (var j = 0; j < rc; j++)
+                {
+                    if (runs[j].view === self)
+                    {
+                        return runs[j]._range;
+                    }
+                }
+            }
+        }
+    }
+    return CPMakeRange(CPNotFound, 0);
 }
 
 - (CPArray)headers
@@ -94,6 +148,7 @@
 
 - (CPView)viewForWidth:(float)width
 {
+    // Always call resize to ensure cell views are constructed, but do not guard here
     [self resizeToWidth:width];
     return self;
 }
@@ -110,7 +165,9 @@
     var borderView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, initialWidth, initialHeight)];
     [borderView setBackgroundColor:[CPColor clearColor]];
     [borderView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    if (borderView._DOMElement) {
+
+    if (borderView._DOMElement)
+    {
         borderView._DOMElement.style.borderBottom = "1px solid #e0e0e0";
         borderView._DOMElement.style.borderRight = "1px solid #e0e0e0";
         borderView._DOMElement.style.boxSizing = "border-box";
@@ -119,29 +176,18 @@
     
     var textContainer = [[CPTextContainer alloc] initWithContainerSize:CGSizeMake(initialWidth - 8, 1e7)];
     var textView = [[CPTextView alloc] initWithFrame:CGRectMake(4, 2, initialWidth - 8, initialHeight - 4) textContainer:textContainer];
-    [textView setEditable:NO];
+    [textView setEditable:YES];
     [textView setSelectable:YES];
     [textView setBackgroundColor:[CPColor clearColor]];
     [textView setVerticallyResizable:YES];
     [textView setHorizontallyResizable:NO];
     [[textView textContainer] setWidthTracksTextView:YES];
     
-    // Construct cell text using standard fonts
+    // Configure cell text style using standard CPTextView APIs
     var cellFont = isHeader ? [CPFont boldSystemFontOfSize:11.0] : [CPFont systemFontOfSize:11.0];
-    var parsedText = [[CPAttributedString alloc] initWithString:text attributes:@{
-        CPFontAttributeName: cellFont,
-        CPForegroundColorAttributeName: [CPColor blackColor]
-    }];
-    
-    var storage = [textView textStorage];
-    if (storage && [storage respondsToSelector:@selector(setAttributedString:)]) {
-        [storage setAttributedString:parsedText];
-    } else {
-        [textView setEditable:YES];
-        [textView setString:@""];
-        [textView insertText:parsedText];
-        [textView setEditable:NO];
-    }
+    [textView setFont:cellFont];
+    [textView setTextColor:[CPColor blackColor]];
+    [textView setString:text];
     
     [cellContainer addSubview:textView];
     return cellContainer;
@@ -161,11 +207,19 @@
 
 - (void)resizeToWidth:(float)newWidth
 {
-    var numCols = [_headers count];
-    if (numCols == 0 && [_rows count] > 0) {
+    if (_isResizing)
+        return;
+
+    _isResizing = YES;
+
+    var numCols = _headers ? [_headers count] : 0;
+    if (numCols == 0 && _rows && [_rows count] > 0) {
         numCols = [[_rows objectAtIndex:0] count];
     }
-    if (numCols == 0) return;
+    if (numCols == 0) {
+        _isResizing = NO;
+        return;
+    }
     
     var subviews = [self subviews];
     var colNaturalWidths = [];
@@ -206,18 +260,22 @@
         }
     };
     
-    for (var c = 0; c < [_headers count]; c++) {
-        measureCell([_headers objectAtIndex:c], YES, c);
+    if (_headers) {
+        for (var c = 0; c < [_headers count]; c++) {
+            measureCell([_headers objectAtIndex:c], YES, c);
+        }
     }
     
-    for (var r = 0; r < [_rows count]; r++) {
-        var rowData = [_rows objectAtIndex:r];
-        for (var c = 0; c < numCols; c++) {
-            var cellText = @"";
-            if (c < [rowData count]) {
-                cellText = [rowData objectAtIndex:c];
+    if (_rows) {
+        for (var r = 0; r < [_rows count]; r++) {
+            var rowData = [_rows objectAtIndex:r];
+            for (var c = 0; c < numCols; c++) {
+                var cellText = @"";
+                if (c < [rowData count]) {
+                    cellText = [rowData objectAtIndex:c];
+                }
+                measureCell(cellText, NO, c);
             }
-            measureCell(cellText, NO, c);
         }
     }
     
@@ -279,8 +337,9 @@
                     var targetWidth = Math.max(10.0, colWidths[c] - 8);
                     [[textView textContainer] setContainerSize:CGSizeMake(targetWidth, 1e7)];
                     
-                    var usedRect = [[textView layoutManager] usedRectForTextContainer:[textView textContainer]];
-                    var wrappedHeight = CGRectGetHeight(usedRect) + 12.0; 
+                    var layoutManager = [textView layoutManager];
+                    var usedRect = layoutManager ? [layoutManager usedRectForTextContainer:[textView textContainer]] : nil;
+                    var wrappedHeight = (usedRect ? CGRectGetHeight(usedRect) : 0.0) + 12.0; 
                     if (wrappedHeight > maxCellHeight) {
                         maxCellHeight = wrappedHeight;
                     }
@@ -314,19 +373,29 @@
         return maxCellHeight;
     };
     
-    if ([_headers count] > 0) {
+    if (_headers && [_headers count] > 0) {
         var headerHeight = layoutRow(cellIndex);
         cellIndex += numCols;
         currentY += headerHeight;
     }
     
-    for (var r = 0; r < [_rows count]; r++) {
-        var rowHeight = layoutRow(cellIndex);
-        cellIndex += numCols;
-        currentY += rowHeight;
+    if (_rows) {
+        for (var r = 0; r < [_rows count]; r++) {
+            var rowHeight = layoutRow(cellIndex);
+            cellIndex += numCols;
+            currentY += rowHeight;
+        }
     }
     
-    [self setFrameSize:CGSizeMake(newWidth, currentY)];
+    // GUARD FRAME SIZE MUTATIONS: Only execute setFrameSize if dimensions actually change.
+    // This stops infinite layout passes while ensuring subviews are laid out.
+    var currentSize = [self frame].size;
+    if (ABS(currentSize.width - newWidth) > 0.1 || ABS(currentSize.height - currentY) > 0.1)
+    {
+        [self setFrameSize:CGSizeMake(newWidth, currentY)];
+    }
+
+    _isResizing = NO;
 }
 
 @end

@@ -14,6 +14,8 @@
 @import <AppKit/CPTextField.j>
 @import <AppKit/CPScrollView.j>
 @import <AppKit/CPParagraphStyle.j>
+@import <AppKit/CPTextStorage.j>
+@import <AppKit/_CPTableTextAttachment.j>
 
 @implementation AppController : CPObject
 {
@@ -90,6 +92,25 @@
     [_textView insertText:@" "];
 }
 
+- (void)insertTable:(id)sender
+{
+    var headers = [@"Item Description", @"Quantity", @"Unit Price"];
+    var rows = [
+        [@"Cappuccino Web Framework Lic.", @"2", @"$199.00"],
+        [@"Objective-J Development Support", @"5", @"$150.00"],
+        [@"Cloud Compilation VM Server", @"1", @"$49.00"]
+    ];
+    
+    var tableAttachment = [[_CPTableTextAttachment alloc] initWithHeaders:headers rows:rows width:500.0];
+    
+    // Insert single-character atomic text attachment
+    var tableAttrStr = [CPTextStorage attributedStringWithAttachment:tableAttachment];
+
+    [_textView insertText:@"\ntable (own line)\n"];
+    [_textView insertText:tableAttrStr];
+    [_textView insertText:@"\nend table"];
+}
+
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
@@ -144,6 +165,14 @@
     [attachButton setAction:@selector(insertAttachment:)];
     [toolbarView addSubview:attachButton];
     currentX += 150;
+
+    // Add Table Trigger
+    var tableButton = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 100, 30)];
+    [tableButton setTitle:@"Add Table"];
+    [tableButton setTarget:self];
+    [tableButton setAction:@selector(insertTable:)];
+    [toolbarView addSubview:tableButton];
+    currentX += 110;
 
     // Text Alignment Group
     var labelAlign = [[CPTextField alloc] initWithFrame:CGRectMake(currentX, 22, 45, 20)];
@@ -210,9 +239,10 @@
     [leftLabel setAutoresizingMask:CPViewWidthSizable];
     [leftContainer addSubview:leftLabel];
 
-    _textView = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([leftContainer bounds]) - 30, CGRectGetHeight([leftContainer bounds]) - 70)];
+    _textView = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([leftContainer bounds]) - 30, 0)];
     [_textView setRichText:YES];
     [_textView setBackgroundColor:[CPColor whiteColor]];
+    [[_textView textContainer] setWidthTracksTextView:YES];
 
     _scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(15, 40, CGRectGetWidth([leftContainer bounds]) - 30, CGRectGetHeight([leftContainer bounds]) - 65)];
     [_scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -320,6 +350,8 @@
     [_textView insertText:@"\n"];
     [_textView insertText:[[CPAttributedString alloc] initWithString:@"This paragraph has a first-line indent of 30pt, a head indent of 50pt, and a tail indent of -30pt. Check the horizontal ruler above to see how the indent markers align with this paragraph, and adjust them directly!\n"
                                                           attributes:[CPDictionary dictionaryWithObject:indentParagraph forKey:CPParagraphStyleAttributeName]]];
+
+    [_textView insertText:@"\n"];
 
     [theWindow orderFront:self];
     [CPMenu setMenuBarVisible:YES];
