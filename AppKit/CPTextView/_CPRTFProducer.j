@@ -357,14 +357,21 @@ function _points2twips(a) { return (a) * 20.0; }
 
     while ((tab = [enumerator nextObject]))
     {
-        switch ([tab tabStopType])
+        var tabType = [tab respondsToSelector:@selector(tabStopType)] ? [tab tabStopType] : nil;
+        if (tabType === nil && [tab respondsToSelector:@selector(alignment)])
+            tabType = [tab alignment];
+
+        switch (tabType)
         {
             case CPLeftTabStopType:
+            case CPLeftTextAlignment:
                 break;
             case CPRightTabStopType:
+            case CPRightTextAlignment:
                 headerString += @"\\tqr";
                 break;
             case CPCenterTabStopType:
+            case CPCenterTextAlignment:
                 headerString += @"\\tqc";
                 break;
             case CPDecimalTabStopType:
@@ -384,6 +391,13 @@ function _points2twips(a) { return (a) * 20.0; }
 {
     var unwrap = function(obj) {
         if (!obj) return null;
+
+        // If the object contains the table structures, bypass unwrapping
+        if ((typeof obj.respondsToSelector === "function" && ([obj respondsToSelector:@selector(headers)] || [obj respondsToSelector:@selector(rows)])) ||
+            obj.headers || obj._headers || obj.rows || obj._rows) {
+            return obj;
+        }
+
         var unwrapped = null;
         if (typeof obj.respondsToSelector === "function") {
             if ([obj respondsToSelector:@selector(attachmentCell)]) {
@@ -679,7 +693,7 @@ function _points2twips(a) { return (a) * 20.0; }
 
     substring = substring.replace(/\\/g, '\\\\');
     substring = substring.replace(/\n/g, '\\par\n');
-    substring = substring.replace(/\t/g, '\\tab');
+    substring = substring.replace(/\t/g, '\\tab ');
     substring = substring.replace(/{/g, '\\{');
     substring = substring.replace(/}/g, '\\}');
 

@@ -178,7 +178,15 @@ var cp1252Map = {
 
 - (void)addTab:(float)location type:(CPTextTabType)type
 {
-    var tab = [[CPTextTab alloc] initWithType:type
+    var alignment = CPLeftTextAlignment;
+    if (type === CPCenterTabStopType || type === CPCenterTextAlignment)
+        alignment = CPCenterTextAlignment;
+    else if (type === CPRightTabStopType || type === CPRightTextAlignment)
+        alignment = CPRightTextAlignment;
+    else if (type === CPDecimalTabStopType)
+        alignment = CPRightTextAlignment; // Fallback alignment for decimal tab
+
+    var tab = [[CPTextTab alloc] initWithType:alignment
                                      location:location];
 
     if (!_tabChanged)
@@ -512,6 +520,9 @@ var kRgsymRtf = {
 {
     if (_tableRows && [_tableRows count] > 0)
     {
+        // Flush active character styling runs before appending table layout changes
+        [self _flushCurrentRun];
+
         var headers = [_tableRows objectAtIndex:0];
         var rows = [CPMutableArray array];
         for (var idx = 1; idx < [_tableRows count]; idx++)
@@ -536,6 +547,12 @@ var kRgsymRtf = {
         
         [_result appendAttributedString:tableAttrStr];
         
+        // Update range offset of active attributes tracker
+        if (_currentRun)
+        {
+            _currentRun._range = CPMakeRange([_result length], 0);
+        }
+
         _tableRows = nil;
         _currentRow = nil;
         _currentCellText = "";

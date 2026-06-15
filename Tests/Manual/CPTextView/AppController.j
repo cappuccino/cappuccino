@@ -406,20 +406,11 @@
     var parser = [[_CPRTFParser alloc] init];
     var roundTrippedString = [parser parseRTF:generatedRTF];
 
-    // 5. Replace the editor's text storage with the round-tripped version
-    var editorStorage = [_textView textStorage];
-    if (editorStorage && [editorStorage respondsToSelector:@selector(setAttributedString:)])
-    {
-        [editorStorage setAttributedString:roundTrippedString];
-    }
-    else
-    {
-        // Safe fallback sequence
-        [_textView setEditable:YES];
-        [_textView setString:@""];
-        [_textView insertText:roundTrippedString];
-        [_textView setEditable:NO];
-    }
+    // Safe fallback sequence
+    [_textView setEditable:YES];
+    [_textView setString:@""];
+    [_textView insertText:roundTrippedString];
+    [_textView setEditable:NO];
 
     // 6. Force a layout pass and render update
     [_textView setNeedsDisplay:YES];
