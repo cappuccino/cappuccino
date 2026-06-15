@@ -2,7 +2,7 @@
  * AppController.j
  *
  *  Manual test application for the cappuccino text system
- *  Copyright (C) 2014 Daniel Boehringer
+ *  Copyright (C) 2026 Daniel Boehringer
  */
 
 @import <Foundation/Foundation.j>
@@ -158,6 +158,14 @@
     [toolbarView addSubview:rtfButton];
     currentX += 160;
 
+    // NEW: Markdown Converter Trigger
+    var mdButton = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 120, 30)];
+    [mdButton setTitle:@"← Markdown"];
+    [mdButton setTarget:self];
+    [mdButton setAction:@selector(convertMarkdownToRichText:)];
+    [toolbarView addSubview:mdButton];
+    currentX += 130;
+
     // Insert Attachment Trigger
     var attachButton = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 140, 30)];
     [attachButton setTitle:@"Insert Attachment"];
@@ -255,7 +263,7 @@
 
     // Right Container: RTF Plain-Text Source and Parser Window
     var rightLabel = [[CPTextField alloc] initWithFrame:CGRectMake(15, 10, CGRectGetWidth([rightContainer bounds]) - 30, 20)];
-    [rightLabel setStringValue:@"RTF Raw Output & Source Parser Window"];
+    [rightLabel setStringValue:@"Markdown Source & RTF Source Code Window"];
     [rightLabel setFont:[CPFont boldSystemFontOfSize:14]];
     [rightLabel setAutoresizingMask:CPViewWidthSizable];
     [rightContainer addSubview:rightLabel];
@@ -287,8 +295,6 @@
     [editMenu addItemWithTitle:@"Redo" action:@selector(redo:) keyEquivalent:@"Z"];
     [mainMenu setSubmenu:editMenu forItem:item];
 
-    item = [mainMenu insertItemWithTitle:@"Format" action:nil keyEquivalent:nil atIndex:0];
-    // Format Menu
     item = [mainMenu insertItemWithTitle:@"Format" action:nil keyEquivalent:nil atIndex:0];
     var formatMenu = [[CPMenu alloc] initWithTitle:@"Format Menu"];
     
@@ -353,6 +359,19 @@
 
     [_textView insertText:@"\n"];
 
+    // 5. Pre-populate Markdown editor with rich table sample content
+    [_textView2 setString:@"# Markdown Parser Output\n\n" +
+                          "You can type markdown directly in this side panel and click **← Markdown** above to convert it!\n\n" +
+                          "## Inline styling showcase\n\n" +
+                          "• Combine ***bold and italic*** styles.\n" +
+                          "• Monospaced `code elements` represent code blocks.\n\n" +
+                          "## Data Table\n\n" +
+                          "| Item Description | Quantity | Unit Price |\n" +
+                          "| :--- | :---: | :---: |\n" +
+                          "| Cappuccino Web Framework Lic. | 2 | $199.00 |\n" +
+                          "| Objective-J Development Support | 5 | $150.00 |\n" +
+                          "| Cloud Compilation VM Server | 1 | $49.00 |"];
+
     [theWindow orderFront:self];
     [CPMenu setMenuBarVisible:YES];
 }
@@ -406,4 +425,24 @@
     [_textView setNeedsDisplay:YES];
     [_textView2 setNeedsDisplay:YES];
 }
+
+// Action tied to the "Markdown ->" button to generate rich text
+- (void)convertMarkdownToRichText:(id)sender
+{
+    // 1. Retrieve markdown string from the right pane
+    var markdownInput = [_textView2 string];
+    if (!markdownInput || [markdownInput length] == 0)
+    {
+        return;
+    }
+
+    // 2. Parse the markdown using the updated MarkdownParser class
+    var parsedAttrStr = [CPMarkdownParser attributedStringFromMarkdown:markdownInput];
+
+    [_textView setEditable:YES];
+    [_textView setString:@""];
+    [_textView insertText:parsedAttrStr];
+    [_textView setEditable:NO];
+}
+
 @end

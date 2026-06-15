@@ -1053,3 +1053,296 @@ var kRgsymRtf = {
 }
 
 @end
+
+/*
+ * CPMarkdownParser.j
+ *
+ * Parse a Markdown string into a CPAttributedString with inline style attributes
+ * and embedded _CPTableTextAttachment objects.
+ *
+ * Copyright (C) 2026 by Daniel Böhringer
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ */
+
+@implementation CPMarkdownParser : CPObject
+
++ (CPAttributedString)attributedStringFromMarkdown:(CPString)markdown
+{
+    if (!markdown) {
+        return [[CPAttributedString alloc] initWithString:@""];
+    }
+
+    var result = [[CPMutableAttributedString alloc] initWithString:@""];
+    var lines = markdown.split(/\r?\n/);
+    
+    var i = 0;
+    while (i < lines.length) {
+        var line = lines[i];
+        
+        // Tabellen-Erkennung
+        if ([self isTableHeaderLine:line] && i + 1 < lines.length && [self isTableSeparatorLine:lines[i+1]]) {
+            var headers = [self parseTableCells:line];
+            var separatorLine = lines[i+1];
+            var rows = [CPMutableArray array];
+            
+            i += 2;
+            while (i < lines.length && [self isTableRowLine:lines[i]]) {
+                [rows addObject:[self parseTableCells:lines[i]]];
+                i++;
+            }
+            
+            var numCols = [headers count];
+            if (numCols == 0 && [rows count] > 0) {
+                numCols = [[rows objectAtIndex:0] count];
+            }
+            
+            // 1. Zuerst die absolute Summe der Natural-Breiten zur Spalten-Proportionsbestimmung ermitteln
+            var totalNaturalW = 0.0;
+            var colNaturalWidths = [];
+            var measureTextField = [[CPTextField alloc] initWithFrame:CGRectMake(0, 0, 10000.0, 24.0)];
+            [measureTextField setFont:[CPFont systemFontOfSize:11.0]];
+            
+            for (var c = 0; c < numCols; c++) {
+                var cellW = 80.0;
+                
+                // Headers prüfen
+                if (c < headers.length) {
+                    var parsedText = [self parseInlineMarkdown:headers[c] isHeader:YES headerLevel:3];
+                    [measureTextField setStringValue:[parsedText string]];
+                    [measureTextField sizeToFit];
+                    cellW = Math.max(cellW, CGRectGetWidth([measureTextField frame]) + 24.0);
+                }
+                
+                // Reihen prüfen
+                for (var r = 0; r < [rows count]; r++) {
+                    var rowData = [rows objectAtIndex:r];
+                    if (c < [rowData count]) {
+                        var parsedText = [self parseInlineMarkdown:rowData[c] isHeader:NO headerLevel:3];
+                        [measureTextField setStringValue:[parsedText string]];
+                        [measureTextField sizeToFit];
+                        cellW = Math.max(cellW, CGRectGetWidth([measureTextField frame]) + 24.0);
+                    }
+                }
+                colNaturalWidths[c] = cellW;
+                totalNaturalW += cellW;
+            }
+            
+            // 2. Präzise adaptive Zeilenhöhen-Schätzung für das Newline-Sizing (Verhindert zu große Abstände)
+            var estimatedHeight = 36.0; // Startwert für Header-Zeile mit Padding
+            for (var r = 0; r < [rows count]; r++) {
+                var rowData = [rows objectAtIndex:r];
+                var maxCellHeight = 28.0;
+                
+                for (var c = 0; c < numCols; c++) {
+                    var cellText = @"";
+                    if (c < [rowData count]) {
+                        cellText = [rowData objectAtIndex:c];
+                    }
+                    var charCount = cellText.length;
+                    
+                    // Schätzung basierend auf realistischer Spaltenbreitenverteilung
+                    var proportion = totalNaturalW > 0 ? (colNaturalWidths[c] / totalNaturalW) : (1.0 / numCols);
+                    var estimatedColWidth = proportion * 500.0;
+                    var charsPerLine = Math.max(10.0, Math.floor(estimatedColWidth / 6.5)); // ca. 6.5px pro Zeichen
+                    
+                    var estimatedLines = Math.ceil(charCount / charsPerLine);
+                    if (estimatedLines < 1) estimatedLines = 1;
+                    
+                    var cellHeight = (estimatedLines * 16.0) + 12.0;
+                    if (cellHeight > maxCellHeight) {
+                        maxCellHeight = cellHeight;
+                    }
+                }
+                estimatedHeight += maxCellHeight;
+            }
+            
+            // Berechne die benötigten Leerzeilen (\n Zeilenhöhe ist ca. 16px)
+            var lineCount = Math.ceil(estimatedHeight / 16.0) + 1; // Minimaler Sicherheitsabstand (+1)
+            var newlineStr = "";
+            for (var nl = 0; nl < lineCount; nl++) {
+                newlineStr += "\n";
+            }
+            
+            var tableAttrStr = [[CPMutableAttributedString alloc] initWithString:newlineStr];
+            var matrixView = [[_CPTableTextAttachment alloc] initWithHeaders:headers rows:rows width:500.0];
+            
+            [tableAttrStr addAttribute:@"TableAttachmentAttribute" value:matrixView range:CPMakeRange(0, [tableAttrStr length])];
+            [tableAttrStr addAttribute:CPAttachmentAttributeName value:matrixView range:CPMakeRange(0, [tableAttrStr length])];
+            [result appendAttributedString:tableAttrStr];
+            continue;
+        }
+        
+        var isHeader = false;
+        var headerLevel = 0;
+        
+        // Überschriften (#)
+        var headerMatch = line.match(/^(#{1,6})\s+(.*)$/);
+        if (headerMatch) {
+            headerLevel = headerMatch[1].length;
+            line = headerMatch[2];
+            isHeader = true;
+        }
+        
+        // Listenpunkte (- oder *)
+        var isListItem = false;
+        var listMatch = line.match(/^(\*|-)\s+(.*)$/);
+        if (listMatch) {
+            line = "  • " + listMatch[2];
+            isListItem = true;
+        }
+        
+        var parsedLine = [self parseInlineMarkdown:line isHeader:isHeader headerLevel:headerLevel];
+        [result appendAttributedString:parsedLine];
+        
+        if (i < lines.length - 1) {
+            [result appendAttributedString:[[CPAttributedString alloc] initWithString:@"\n"]];
+        }
+        
+        i++;
+    }
+    
+    return result;
+}
+
++ (BOOL)isTableHeaderLine:(CPString)line
+{
+    var trimmed = line.trim();
+    return trimmed.indexOf('|') !== -1;
+}
+
++ (BOOL)isTableSeparatorLine:(CPString)line
+{
+    var trimmed = line.trim();
+    if (trimmed.indexOf('|') === -1) return NO;
+    var stripped = trimmed.replace(/[\s|:\-]/g, '');
+    return stripped.length === 0;
+}
+
++ (BOOL)isTableRowLine:(CPString)line
+{
+    var trimmed = line.trim();
+    return trimmed.indexOf('|') !== -1;
+}
+
++ (CPArray)parseTableCells:(CPString)line
+{
+    var parts = line.split('|');
+    var cells = [CPMutableArray array];
+    var startIdx = 0;
+    var endIdx = parts.length;
+    if (parts[0].trim() === "") startIdx = 1;
+    if (parts[parts.length - 1].trim() === "") endIdx = parts.length - 1;
+    
+    for (var j = startIdx; j < endIdx; j++) {
+        [cells addObject:parts[j].trim()];
+    }
+    return cells;
+}
+
++ (CPAttributedString)parseInlineMarkdown:(CPString)text isHeader:(BOOL)isHeader headerLevel:(int)level
+{
+    var baseFontSize = 11.0;
+    var fontSize = baseFontSize;
+    var isBold = isHeader;
+    var isItalic = NO;
+    
+    if (isHeader) {
+        if (level == 1) fontSize = 15.0;
+        else if (level == 2) fontSize = 13.0;
+        else fontSize = 12.0;
+    }
+    
+    var result = [[CPMutableAttributedString alloc] initWithString:@""];
+    var currentSegment = "";
+    var i = 0;
+    var len = text.length;
+    
+    var defaultFont = [CPFont systemFontOfSize:fontSize];
+    if (isBold) {
+        defaultFont = [CPFont boldSystemFontOfSize:fontSize];
+    }
+    
+    while (i < len) {
+        if (i + 2 < len && text.substr(i, 3) === "***") {
+            if (currentSegment.length > 0) {
+                [result appendAttributedString:[self attributedStringWithText:currentSegment font:defaultFont bold:isBold italic:isItalic code:NO]];
+                currentSegment = "";
+            }
+            isBold = !isBold;
+            isItalic = !isItalic;
+            i += 3;
+            continue;
+        }
+        if (i + 1 < len && text.substr(i, 2) === "**") {
+            if (currentSegment.length > 0) {
+                [result appendAttributedString:[self attributedStringWithText:currentSegment font:defaultFont bold:isBold italic:isItalic code:NO]];
+                currentSegment = "";
+            }
+            isBold = !isBold;
+            i += 2;
+            continue;
+        }
+        if (text.charAt(i) === "*") {
+            if (currentSegment.length > 0) {
+                [result appendAttributedString:[self attributedStringWithText:currentSegment font:defaultFont bold:isBold italic:isItalic code:NO]];
+                currentSegment = "";
+            }
+            isItalic = !isItalic;
+            i++;
+            continue;
+        }
+        if (text.charAt(i) === "`") {
+            if (currentSegment.length > 0) {
+                [result appendAttributedString:[self attributedStringWithText:currentSegment font:defaultFont bold:isBold italic:isItalic code:NO]];
+                currentSegment = "";
+            }
+            var codeText = "";
+            i++;
+            while (i < len && text.charAt(i) !== "`") {
+                codeText += text.charAt(i);
+                i++;
+            }
+            [result appendAttributedString:[self attributedStringWithText:codeText font:defaultFont bold:NO italic:NO code:YES]];
+            i++;
+            continue;
+        }
+        
+        currentSegment += text.charAt(i);
+        i++;
+    }
+    
+    if (currentSegment.length > 0) {
+        [result appendAttributedString:[self attributedStringWithText:currentSegment font:defaultFont bold:isBold italic:isItalic code:NO]];
+    }
+    
+    return result;
+}
+
++ (CPAttributedString)attributedStringWithText:(CPString)text font:(CPFont)baseFont bold:(BOOL)b italic:(BOOL)it code:(BOOL)c
+{
+    var fontName = [baseFont familyName];
+    var fontSize = [baseFont size]; 
+    var finalFont = baseFont;
+    
+    if (c) {
+        finalFont = [CPFont fontWithName:@"Courier" size:fontSize];
+    } else {
+        finalFont = [CPFont _fontWithName:fontName size:fontSize bold:b italic:it];
+    }
+    
+    if (!finalFont) {
+        finalFont = [CPFont systemFontOfSize:fontSize];
+    }
+    
+    var dict = [CPDictionary dictionaryWithObjectsAndKeys:
+        finalFont, CPFontAttributeName,
+        [CPColor blackColor], CPForegroundColorAttributeName
+    ];
+    return [[CPAttributedString alloc] initWithString:text attributes:dict];
+}
+
+@end
