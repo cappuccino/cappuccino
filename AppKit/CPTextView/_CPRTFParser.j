@@ -21,6 +21,7 @@
 
 @import <Foundation/CPAttributedString.j>
 @import <Foundation/CPGeometry.j>
+@import "CPTextStorage.j"
 @import "CPFontManager.j"
 @import "CPParagraphStyle.j"
 @import "_CPTableTextAttachment.j"
@@ -114,11 +115,6 @@ var cp1252Map = {
     if (font)
         return font;
 
-    //Before giving up and using a default font, we try if this is
-    //not the case of a font with a composite name, such as
-    //'Helvetica-Light'.  In that case, even if we don't have
-    //exactly an 'Helvetica-Light' font family, we might have an
-    //'Helvetica' one.
     var range = [fontName rangeOfString:@"-"];
 
     if (range.location != CPNotFound)
@@ -128,7 +124,6 @@ var cp1252Map = {
         font = [CPFont fontWithName:fontFamily size:fontSize];
     }
 
-    /* Last resort, default font.  :-(  */
     if (font == nil)
         font = [CPFont systemFontOfSize:fontSize];
 
@@ -184,7 +179,7 @@ var cp1252Map = {
     else if (type === CPRightTabStopType || type === CPRightTextAlignment)
         alignment = CPRightTextAlignment;
     else if (type === CPDecimalTabStopType)
-        alignment = CPRightTextAlignment; // Fallback alignment for decimal tab
+        alignment = CPRightTextAlignment;
 
     var tab = [[CPTextTab alloc] initWithType:alignment
                                      location:location];
@@ -222,20 +217,15 @@ var cp1252Map = {
 @end
 
 
-// based on https://github.com/lazygyu/RTF-parser
-
 var kRTFParserType_char = 0,
     kRTFParserType_dest = 1,
     kRTFParserType_prop = 2,
     kRTFParserType_spec = 3;
 
-// Keyword descriptions
 var kRgsymRtf = {
-                                             //  keyword     dflt    fPassDflt    kwd                        idx
         "b"                                  : [ "b",        1,        false,     kRTFParserType_prop,    "propBold"],
         "ul"                                 : [ "ul",       1,        false,     kRTFParserType_prop,    "propUnderline"],
         "i"                                  : [ "i",        1,        false,     kRTFParserType_prop,    "propItalic"],
-//      "li"                                 : [ "li",       0,        false,     kRTFParserType_prop,    "propPgnFormat"],
         "pgnucltr"                           : [ "pgnucltr", "pgULtr", true,      kRTFParserType_prop,    "propPgnFormat"],
         "pgnlcltr"                           : [ "pgnlcltr", "pgLLtr", true,      kRTFParserType_prop,    "propPgnFormat"],
         "qc"                                 : [ "qc",       "justC",  true,      kRTFParserType_prop,    "propJust"],
@@ -277,9 +267,7 @@ var kRgsymRtf = {
         "ftnsep"                             : [ "ftnsep",   0,        false,     kRTFParserType_dest,    "destSkip"],
         "ftnsepc"                            : [ "ftnsepc",  0,        false,     kRTFParserType_dest,    "destSkip"],
         "fprq"                               : [ "fprq",     0,        false,     kRTFParserType_dest,    "destSkip"],
-//      "fcharset"                           : [ "fcharset", 0,        false,     kRTFParserType_dest,    "destSkip"],
         "rquote"                             : [ "rquote",   0,        false,     kRTFParserType_char,    "'"],
-//      "s"                                  : [ "s",        0,        false,     kRTFParserType_dest,    "destSkip"],
         "header"                             : [ "header",   0,        false,     kRTFParserType_dest,    "destSkip"],
         "headerf"                            : [ "headerf",  0,        false,     kRTFParserType_dest,    "destSkip"],
         "headerl"                            : [ "headerl",  0,        false,     kRTFParserType_dest,    "destSkip"],
@@ -373,7 +361,6 @@ var kRgsymRtf = {
                 return sym[4];
 
         case 1:
-            // CPLogConsole("skipped : " + sym[4]);
             return '';
 
         default:
@@ -384,7 +371,6 @@ var kRgsymRtf = {
 
 - (BOOL)pushState
 {
-    // Push stack as an object containing scoping context
     _states.push({
         curState: _curState,
         run: [_currentRun copy]
@@ -402,7 +388,6 @@ var kRgsymRtf = {
         [self _flushCurrentRun];
         _currentRun = state.run;
 
-        // Safety guard to prevent setting properties on null
         if (!_currentRun)
         {
             _currentRun = [_RTFAttribute new];
@@ -430,7 +415,6 @@ var kRgsymRtf = {
 
         case "ipfnHex":
             var hex = '';
-            // Konsumiere exakt 2 Zeichen nach dem \'
             for (var i = 0; i < 2; i++)
             {
                 var nextCh = _rtf.charAt(++_currentParseIndex);
@@ -520,7 +504,6 @@ var kRgsymRtf = {
 {
     if (_tableRows && [_tableRows count] > 0)
     {
-        // Flush active character styling runs before appending table layout changes
         [self _flushCurrentRun];
 
         var headers = [_tableRows objectAtIndex:0];
@@ -532,27 +515,16 @@ var kRgsymRtf = {
         
         var attachment = [[_CPTableTextAttachment alloc] initWithHeaders:headers rows:rows width:500.0];
         
-        // Linear height allocation estimation
-        var numCols = [headers count];
-        var estimatedHeight = 36.0 + ([rows count] * 28.0);
-        var lineCount = Math.ceil(estimatedHeight / 16.0) + 1;
-        var newlineStr = "";
-        for (var nl = 0; nl < lineCount; nl++) {
-            newlineStr += "\n";
-        }
-        
-        var tableAttrStr = [[CPMutableAttributedString alloc] initWithString:newlineStr];
-        [tableAttrStr addAttribute:@"TableAttachmentAttribute" value:attachment range:CPMakeRange(0, [tableAttrStr length])];
-        [tableAttrStr addAttribute:CPAttachmentAttributeName value:attachment range:CPMakeRange(0, [tableAttrStr length])];
+        // Use standard Cocoa/Cappuccino NSAttachmentCharacter creation method
+        var tableAttrStr = [CPTextStorage attributedStringWithAttachment:attachment];
         
         [_result appendAttributedString:tableAttrStr];
         
-        // Update range offset of active attributes tracker
         if (_currentRun)
         {
             _currentRun._range = CPMakeRange([_result length], 0);
         }
-
+        
         _tableRows = nil;
         _currentRow = nil;
         _currentCellText = "";
@@ -577,7 +549,6 @@ var kRgsymRtf = {
 
         [_result setAttributes:dict range:_currentRun._range];  // flush previous run
         
-        // Deep copy the current run style for the next sequence of characters
         _currentRun = [_currentRun copy];
     }
     else
@@ -590,8 +561,6 @@ var kRgsymRtf = {
 
 - (CPString)_applyPropChange:sym parameter:param
 {
-    //console.log("prop : " + sym[0] + " / param : " + param+ ' ');
-
     switch (sym[0])
     {
         case "pard":
@@ -696,7 +665,6 @@ var kRgsymRtf = {
 
     if (sym[4] == "destSkip")
     {
-        CPLogConsole("Dest skip start : [" + sym[0] + "]");
         _curState++;
     }
 
@@ -848,8 +816,7 @@ var kRgsymRtf = {
                  break;
 
             default:
-               CPLogConsole("skip : " + keyword + " param: " + param);
-
+               break;
         }
 
         return '';
@@ -965,8 +932,7 @@ var kRgsymRtf = {
                     [self _flushTableIfAny];
 
                 if ([self pushState])
-                    CPLogConsole("push");
-
+                
                 break;
 
             case "}":
@@ -974,12 +940,9 @@ var kRgsymRtf = {
                     [self _flushTableIfAny];
 
                 if ([self popState])
-                    CPLogConsole("pop");
 
                 if (_freename)
                 {
-                    CPLogConsole(_freename);
-
                     if (_parsingFontTable)
                     {
                          _fontArray.push(_freename);
@@ -1008,7 +971,6 @@ var kRgsymRtf = {
                         var byteVal = parseInt(ch, 16);
                         var unicodeVal = byteVal;
 
-                        // Windows-1252 Mapping für den Bereich 0x80 - 0x9F anwenden
                         if (byteVal >= 0x80 && byteVal <= 0x9F) {
                             unicodeVal = cp1252Map[byteVal] || byteVal;
                         }
@@ -1044,7 +1006,6 @@ var kRgsymRtf = {
                         if (_parsingFontTable && _freename)
                         {
                             var cleanFontName = _freename.trim();
-                            // strip family name prefix if present (e.g., "swiss Helvetica" -> "Helvetica")
                             var lastSpaceIdx = cleanFontName.lastIndexOf(' ');
                             if (lastSpaceIdx !== -1)
                             {
@@ -1100,7 +1061,6 @@ var kRgsymRtf = {
     while (i < lines.length) {
         var line = lines[i];
         
-        // Tabellen-Erkennung
         if ([self isTableHeaderLine:line] && i + 1 < lines.length && [self isTableSeparatorLine:lines[i+1]]) {
             var headers = [self parseTableCells:line];
             var separatorLine = lines[i+1];
@@ -1117,7 +1077,6 @@ var kRgsymRtf = {
                 numCols = [[rows objectAtIndex:0] count];
             }
             
-            // 1. Zuerst die absolute Summe der Natural-Breiten zur Spalten-Proportionsbestimmung ermitteln
             var totalNaturalW = 0.0;
             var colNaturalWidths = [];
             var measureTextField = [[CPTextField alloc] initWithFrame:CGRectMake(0, 0, 10000.0, 24.0)];
@@ -1126,7 +1085,6 @@ var kRgsymRtf = {
             for (var c = 0; c < numCols; c++) {
                 var cellW = 80.0;
                 
-                // Headers prüfen
                 if (c < headers.length) {
                     var parsedText = [self parseInlineMarkdown:headers[c] isHeader:YES headerLevel:3];
                     [measureTextField setStringValue:[parsedText string]];
@@ -1134,7 +1092,6 @@ var kRgsymRtf = {
                     cellW = Math.max(cellW, CGRectGetWidth([measureTextField frame]) + 24.0);
                 }
                 
-                // Reihen prüfen
                 for (var r = 0; r < [rows count]; r++) {
                     var rowData = [rows objectAtIndex:r];
                     if (c < [rowData count]) {
@@ -1148,47 +1105,10 @@ var kRgsymRtf = {
                 totalNaturalW += cellW;
             }
             
-            // 2. Präzise adaptive Zeilenhöhen-Schätzung für das Newline-Sizing (Verhindert zu große Abstände)
-            var estimatedHeight = 36.0; // Startwert für Header-Zeile mit Padding
-            for (var r = 0; r < [rows count]; r++) {
-                var rowData = [rows objectAtIndex:r];
-                var maxCellHeight = 28.0;
-                
-                for (var c = 0; c < numCols; c++) {
-                    var cellText = @"";
-                    if (c < [rowData count]) {
-                        cellText = [rowData objectAtIndex:c];
-                    }
-                    var charCount = cellText.length;
-                    
-                    // Schätzung basierend auf realistischer Spaltenbreitenverteilung
-                    var proportion = totalNaturalW > 0 ? (colNaturalWidths[c] / totalNaturalW) : (1.0 / numCols);
-                    var estimatedColWidth = proportion * 500.0;
-                    var charsPerLine = Math.max(10.0, Math.floor(estimatedColWidth / 6.5)); // ca. 6.5px pro Zeichen
-                    
-                    var estimatedLines = Math.ceil(charCount / charsPerLine);
-                    if (estimatedLines < 1) estimatedLines = 1;
-                    
-                    var cellHeight = (estimatedLines * 16.0) + 12.0;
-                    if (cellHeight > maxCellHeight) {
-                        maxCellHeight = cellHeight;
-                    }
-                }
-                estimatedHeight += maxCellHeight;
-            }
-            
-            // Berechne die benötigten Leerzeilen (\n Zeilenhöhe ist ca. 16px)
-            var lineCount = Math.ceil(estimatedHeight / 16.0) + 1; // Minimaler Sicherheitsabstand (+1)
-            var newlineStr = "";
-            for (var nl = 0; nl < lineCount; nl++) {
-                newlineStr += "\n";
-            }
-            
-            var tableAttrStr = [[CPMutableAttributedString alloc] initWithString:newlineStr];
             var matrixView = [[_CPTableTextAttachment alloc] initWithHeaders:headers rows:rows width:500.0];
             
-            [tableAttrStr addAttribute:@"TableAttachmentAttribute" value:matrixView range:CPMakeRange(0, [tableAttrStr length])];
-            [tableAttrStr addAttribute:CPAttachmentAttributeName value:matrixView range:CPMakeRange(0, [tableAttrStr length])];
+            // Render utilizing the correct atomic attachment character string
+            var tableAttrStr = [CPTextStorage attributedStringWithAttachment:matrixView];
             [result appendAttributedString:tableAttrStr];
             continue;
         }
@@ -1196,7 +1116,6 @@ var kRgsymRtf = {
         var isHeader = false;
         var headerLevel = 0;
         
-        // Überschriften (#)
         var headerMatch = line.match(/^(#{1,6})\s+(.*)$/);
         if (headerMatch) {
             headerLevel = headerMatch[1].length;
@@ -1204,7 +1123,6 @@ var kRgsymRtf = {
             isHeader = true;
         }
         
-        // Listenpunkte (- oder *)
         var isListItem = false;
         var listMatch = line.match(/^(\*|-)\s+(.*)$/);
         if (listMatch) {

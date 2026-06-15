@@ -410,11 +410,6 @@
     [_textView setEditable:YES];
     [_textView setString:@""];
     [_textView insertText:roundTrippedString];
-    [_textView setEditable:NO];
-
-    // 6. Force a layout pass and render update
-    [_textView setNeedsDisplay:YES];
-    [_textView2 setNeedsDisplay:YES];
 }
 
 // Action tied to the "Markdown ->" button to generate rich text
@@ -433,7 +428,6 @@
     [_textView setEditable:YES];
     [_textView setString:@""];
     [_textView insertText:parsedAttrStr];
-    [_textView setEditable:NO];
 }
 
 @end
