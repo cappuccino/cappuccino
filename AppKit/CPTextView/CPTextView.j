@@ -1660,7 +1660,10 @@ Sets the selection to a range of characters in response to user action.
 - (void)moveRight:(id)sender
 {
     if ([self isSelectable])
+    {
         [self _establishSelection:CPMakeRange(CPMaxRange(_selectionRange) + (_selectionRange.length ? 0 : 1), 0) byExtending:NO];
+        [self scrollRangeToVisible:_selectionRange];
+    }
 }
 
 - (void)_deleteForRange:(CPRange)changedRange
