@@ -6,7 +6,6 @@
 @import <AppKit/AppKit.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPLanguageModel.j>
-@import "MarkdownParser.j" 
 
 // --- SUBCLASS: SPEECH BUBBLE VIEW ---
 @implementation SpeechBubbleBox : CPView
@@ -267,13 +266,12 @@
     var systemModel = [CPSystemLanguageModel defaultModel];
     [_statusLabel setStringValue:@"Checking capability..."];
     
-    var selfRef = self;
     [systemModel supportsLocaleWithCompletionHandler:function(supported) {
-        if (supported) {
-            [selfRef._statusLabel setStringValue:@"On-Device LLM: Supported"];
-        } else {
-            [selfRef._statusLabel setStringValue:@"On-Device LLM: Not available. Using fallback."];
-        }
+
+        if (supported)
+            [_statusLabel setStringValue:@"On-Device LLM: Supported"];
+        else
+            [_statusLabel setStringValue:@"On-Device LLM: Not available. Using fallback."];
     }];
 }
 
@@ -324,47 +322,22 @@
     [[textView textContainer] setWidthTracksTextView:YES];
     
     var textHeight = 20;
+    var layoutManager = [textView layoutManager];
+    var textContainer = [textView textContainer];
 
     try {
-        var parsedAttrStr = [MarkdownParser attributedStringFromMarkdown:text];
+        var parsedAttrStr = [CPMarkdownParser attributedStringFromMarkdown:text];
         [textView insertText:parsedAttrStr];
-        
-        var length = [parsedAttrStr length];
-        var searchRange = CPMakeRange(0, 0);
-        var layoutManager = [textView layoutManager];
-        var textContainer = [textView textContainer];
-        var textViewWidth = CGRectGetWidth([textView bounds]);
 
-        while (searchRange.location < length)
-        {
-            var attrs = [parsedAttrStr attributesAtIndex:searchRange.location effectiveRange:searchRange];
-            var tableAttachment = [attrs objectForKey:@"TableAttachmentAttribute"];
-            if (tableAttachment) {
-                var rect = [layoutManager boundingRectForGlyphRange:searchRange inTextContainer:textContainer];
-                var inset = [textView textContainerInset];
-                var totalWidth = textViewWidth - 40; 
-                
-                if (totalWidth < 100)
-                    totalWidth = 100;
-
-                rect.origin.x += inset.width;
-                rect.origin.y += inset.height;
-                rect.size.width = totalWidth;
-
-                [tableAttachment resizeToWidth:totalWidth];
-                [tableAttachment setFrame:rect];
-
-                [textView addSubview:tableAttachment];
-            }
-            searchRange.location = CPMaxRange(searchRange);
-        }
-        
         var usedRect = [layoutManager usedRectForTextContainer:textContainer];
         textHeight = CGRectGetHeight(usedRect);
+
         if (textHeight < 20) {
             textHeight = 20;
         }
-    } catch (e) {
+    }
+    catch (e)
+    {
         // Fallback bei Parsing-Fehler
         console.error("Markdown append failure: ", e);
         [textView setString:text];
@@ -391,6 +364,7 @@
     [_chatDocumentView setFrameSize:CGSizeMake(CGRectGetWidth([_chatScrollView bounds]), _currentChatY + 20)];
     
     var boundsHeight = CGRectGetHeight([_chatScrollView bounds]);
+
     if (_currentChatY > boundsHeight) {
         [[_chatScrollView contentView] scrollToPoint:CGPointMake(0, _currentChatY - boundsHeight + 40)];
     }
@@ -402,57 +376,22 @@
         return;
 
     try {
-        // 1. Alte TableMatrixView Subviews entfernen
-        var subviews = [_currentStreamingTextView subviews];
-        if (subviews) {
-            for (var i = [subviews count] - 1; i >= 0; i--) {
-                var sub = [subviews objectAtIndex:i];
-                if (sub && [sub isKindOfClass:[TableMatrixView class]]) {
-                    [sub removeFromSuperview];
-                }
-            }
-        }
+        // 1. Text über Standard-Zuweisung neu setzen
+        var parsedAttrStr = [CPMarkdownParser attributedStringFromMarkdown:newText];
 
-        // 2. Text über Standard-Zuweisung neu setzen
-        var parsedAttrStr = [MarkdownParser attributedStringFromMarkdown:newText];
-        
         [_currentStreamingTextView setEditable:YES];
         [_currentStreamingTextView setString:@""];
         [_currentStreamingTextView insertText:parsedAttrStr];
         [_currentStreamingTextView setEditable:NO];
 
-        // 3. Tabellen-Layout berechnen
+        // 2. Tabellen-Layout berechnen
         var length = [parsedAttrStr length];
         var searchRange = CPMakeRange(0, 0);
         var layoutManager = [_currentStreamingTextView layoutManager];
         var textContainer = [_currentStreamingTextView textContainer];
         var textViewWidth = CGRectGetWidth([_currentStreamingTextView bounds]);
 
-        while (searchRange.location < length)
-        {
-            var attrs = [parsedAttrStr attributesAtIndex:searchRange.location effectiveRange:searchRange];
-            var tableAttachment = [attrs objectForKey:@"TableAttachmentAttribute"];
-            if (tableAttachment) {
-                var rect = [layoutManager boundingRectForGlyphRange:searchRange inTextContainer:textContainer];
-                var inset = [_currentStreamingTextView textContainerInset];
-                var totalWidth = textViewWidth - 40; 
-
-                if (totalWidth < 100)
-                    totalWidth = 100;
-
-                rect.origin.x += inset.width;
-                rect.origin.y += inset.height;
-                rect.size.width = totalWidth;
-
-                [tableAttachment resizeToWidth:totalWidth];
-                [tableAttachment setFrame:rect];
-
-                [_currentStreamingTextView addSubview:tableAttachment];
-            }
-            searchRange.location = CPMaxRange(searchRange);
-        }
-
-        // 4. Container-Größen anpassen
+        // 3. Container-Größen anpassen
         var usedRect = [layoutManager usedRectForTextContainer:textContainer];
         var textHeight = CGRectGetHeight(usedRect);
         if (textHeight < 20) {
@@ -475,7 +414,9 @@
             _currentChatY += diffHeight;
         }
 
-    } catch (e) {
+    }
+    catch (e)
+    {
         console.error("Markdown rendering failure: ", e);
         
         [_currentStreamingTextView setEditable:YES];
@@ -508,6 +449,7 @@
 - (void)submitPromptAction:(id)sender
 {
     var prompt = [_chatInputField stringValue];
+
     if (!prompt || [prompt stringByTrimmingWhitespace] === @"") {
         return;
     }
@@ -519,20 +461,17 @@
     [self appendMessage:prompt isUser:YES];
     [self appendMessage:@"Generating response..." isUser:NO];
 
-    var selfRef = self;
-
     [_session respondToPrompt:prompt
                       options:nil
             completionHandler:function(finalText, error) {
-        [selfRef._chatInputField setEnabled:YES];
-        [selfRef._chatInputField becomeFirstResponder];
-        [selfRef._chatSendButton setEnabled:YES];
+        [_chatInputField setEnabled:YES];
+        [_chatInputField becomeFirstResponder];
+        [_chatSendButton setEnabled:YES];
 
-        if (error) {
-            [selfRef updateMessage:@"Error: " + [error localizedDescription]];
-        } else {
-            [selfRef updateMessage:finalText];
-        }
+        if (error)
+            [self updateMessage:@"Error: " + [error localizedDescription]];
+        else
+            [self updateMessage:finalText];
     }];
 }
 
