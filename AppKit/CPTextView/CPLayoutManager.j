@@ -292,7 +292,6 @@ _oncontextmenuhandler = function () { return false; };
     // We erased all lines
     if (!startIndex)
         [self setExtraLineFragmentRect:CGRectMake(0, 0) usedRect:CGRectMake(0, 0) textContainer:nil];
-    // document.title=startIndex;
 
     [_typesetter layoutGlyphsInLayoutManager:self startingAtGlyphIndex:startIndex maxNumberOfLineFragments:-1 nextGlyphIndex:nil];
 
@@ -532,20 +531,26 @@ _oncontextmenuhandler = function () { return false; };
             var frames = [fragment glyphFrames],
                 len = fragment._range.length;
 
-            for (var j = 0; j < len; j++)
+            if (frames)
             {
-                if (CGRectContainsPoint(frames[j], point))
-                {
-                    if (partialFraction)
-                        partialFraction[0] = (point.x - frames[j].origin.x) / frames[j].size.width;
+                var maxLen = MIN(len, frames.length);
 
-                    return fragment._range.location + j;
+                for (var j = 0; j < maxLen; j++)
+                {
+                    var frame = frames[j];
+
+                    if (frame && CGRectContainsPoint(frame, point))
+                    {
+                        if (partialFraction)
+                            partialFraction[0] = (point.x - frame.origin.x) / frame.size.width;
+
+                        return fragment._range.location + j;
+                    }
                 }
             }
         }
     }
 
-    // Not found, maybe a point left to the last character was clicked -> search again with broader constraints
     if ([[_textStorage string] length])
     {
         for (var i = 0; i < c; i++)
@@ -554,30 +559,33 @@ _oncontextmenuhandler = function () { return false; };
 
             if (fragment._textContainer === container)
             {
-                    // Within the horizontal territory of the current (not-empty) line?
-                    if (fragment._range.length > 0 && point.y > fragment._fragmentRect.origin.y &&
-                        point.y <= fragment._fragmentRect.origin.y + fragment._fragmentRect.size.height)
+                if (fragment._range.length > 0 && point.y > fragment._fragmentRect.origin.y &&
+                    point.y <= fragment._fragmentRect.origin.y + fragment._fragmentRect.size.height)
+                {
+                    if (i < c - 1 && _lineFragments[i + 1]._fragmentRect.origin.y === fragment._fragmentRect.origin.y)
+                       continue;
+
+                    var nlLoc = CPMaxRange(fragment._range),
+                        frames = [fragment glyphFrames];
+
+                    if (frames && frames.length > 0)
                     {
-                        // Skip tabs and move on the last fragment in this line
-                        if (i < c - 1 && _lineFragments[i + 1]._fragmentRect.origin.y === fragment._fragmentRect.origin.y)
-                           continue;
+                        var lastFrame = frames[frames.length - 1],
+                            firstFrame = frames[0];
 
-                        var nlLoc = CPMaxRange(fragment._range),
-                            lastFrame = [fragment glyphFrames][fragment._range.length - 1],
-                            firstFrame = [fragment glyphFrames][0];
+                        if (lastFrame && firstFrame)
+                        {
+                            if (_isNewlineCharacter([[_textStorage string] characterAtIndex:nlLoc > 0 ? nlLoc - 1 : 0]))
+                                nlLoc--;
 
-                        // stay on the line the newline character belongs to
-                        if (_isNewlineCharacter([[_textStorage string] characterAtIndex:nlLoc > 0 ? nlLoc - 1 : 0]))
-                            nlLoc--;
-
-                        // Clicked right to the last character
-                        if (point.x > CGRectGetMaxX(lastFrame))
-                            return nlLoc;
-                        // Clicked left to the last character
-                        else if (point.x <= CGRectGetMinX(firstFrame))
-                            return fragment._range.location;
-                        else
-                            return nlLoc;
+                            if (point.x > CGRectGetMaxX(lastFrame))
+                                return nlLoc;
+                            else if (point.x <= CGRectGetMinX(firstFrame))
+                                return fragment._range.location;
+                            else
+                                return nlLoc;
+                        }
+                    }
                 }
             }
         }
@@ -707,7 +715,11 @@ _oncontextmenuhandler = function () { return false; };
 
     var index = location - lineFragment._range.location;
 
-    return lineFragment._glyphsOffsets[index];
+    if (index < 0 || !lineFragment._glyphsOffsets || index >= lineFragment._glyphsOffsets.length)
+        return 0.0;
+
+    var offset = lineFragment._glyphsOffsets[index];
+    return (offset === undefined) ? 0.0 : offset;
 }
 
 - (double)_descentAtLocation:(unsigned)location
@@ -719,7 +731,11 @@ _oncontextmenuhandler = function () { return false; };
 
     var index = location - lineFragment._range.location;
 
-    return lineFragment._glyphsFrames[index]._descent;
+    if (index < 0 || !lineFragment._glyphsFrames || index >= lineFragment._glyphsFrames.length)
+        return 0.0;
+
+    var frame = lineFragment._glyphsFrames[index];
+    return (frame && frame._descent !== undefined) ? frame._descent : 0.0;
 }
 
 - (void)setLineFragmentRect:(CGRect)fragmentRect forGlyphRange:(CPRange)glyphRange usedRect:(CGRect)usedRect
@@ -843,11 +859,16 @@ _oncontextmenuhandler = function () { return false; };
 {
     if (_lineFragments.length > 0 && index >= [self numberOfGlyphs] - 1)
     {
-        var lineFragment= _lineFragments[_lineFragments.length - 1],
+        var lineFragment = _lineFragments[_lineFragments.length - 1],
             glyphFrames = [lineFragment glyphFrames];
 
-        if (glyphFrames.length > 0)
-            return CGPointCreateCopy(glyphFrames[glyphFrames.length - 1].origin);
+        if (glyphFrames && glyphFrames.length > 0)
+        {
+            var frame = glyphFrames[glyphFrames.length - 1];
+
+            if (frame)
+                return CGPointCreateCopy(frame.origin);
+        }
     }
 
     var lineFragment = _objectWithLocationInRange(_lineFragments, index);
@@ -858,8 +879,17 @@ _oncontextmenuhandler = function () { return false; };
             return CGPointCreateCopy(lineFragment._location);
 
         var glyphFrames = [lineFragment glyphFrames];
+        var relativeIndex = index - lineFragment._range.location;
 
-        return CGPointCreateCopy(glyphFrames[index - lineFragment._range.location].origin);
+        if (glyphFrames && relativeIndex >= 0 && relativeIndex < glyphFrames.length)
+        {
+            var frame = glyphFrames[relativeIndex];
+
+            if (frame)
+                return CGPointCreateCopy(frame.origin);
+        }
+
+        return CGPointCreateCopy(lineFragment._location);
     }
 
     return CGPointMakeZero();
@@ -905,7 +935,6 @@ _oncontextmenuhandler = function () { return false; };
                       inTextContainer:(CPTextContainer)container
                             rectCount:(CGRectPointer)rectCount
 {
-
     var rectArray = [],
         lineFragments = _objectsInRange(_lineFragments, selectedCharRange);
 
@@ -924,21 +953,29 @@ _oncontextmenuhandler = function () { return false; };
                 rect = nil,
                 len = fragment._range.length;
 
-            for (var j = 0; j < len; j++)
+            if (frames)
             {
-                if (CPLocationInRange(fragment._range.location + j, selectedCharRange))
+                for (var j = 0; j < len; j++)
                 {
-                    var correctedRect = CGRectCreateCopy(frames[j]);
-                    correctedRect.size.height -= frames[j]._descent;
-                    correctedRect.origin.y -= frames[j]._descent;
+                    if (j < frames.length && CPLocationInRange(fragment._range.location + j, selectedCharRange))
+                    {
+                        var frame = frames[j];
 
-                    if (!rect)
-                        rect = CGRectCreateCopy(correctedRect);
-                    else
-                        rect = CGRectUnion(rect, correctedRect);
+                        if (frame)
+                        {
+                            var correctedRect = CGRectCreateCopy(frame);
+                            correctedRect.size.height -= frame._descent;
+                            correctedRect.origin.y -= frame._descent;
 
-                    if (_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, CPMaxRange(selectedCharRange) - 1)]))
-                         rect.size.width = containerSize.width - rect.origin.x;
+                            if (!rect)
+                                rect = CGRectCreateCopy(correctedRect);
+                            else
+                                rect = CGRectUnion(rect, correctedRect);
+
+                            if (_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, CPMaxRange(selectedCharRange) - 1)]))
+                                 rect.size.width = containerSize.width - rect.origin.x;
+                        }
+                    }
                 }
             }
 
@@ -949,7 +986,7 @@ _oncontextmenuhandler = function () { return false; };
 
     var len = rectArray.length;
 
-    for (var i = 0; i < len - 1; i++) // extend the width of all but the last one
+    for (var i = 0; i < len - 1; i++)
     {
         if (FLOOR(CGRectGetMaxY(rectArray[i])) == FLOOR(CGRectGetMaxY(rectArray[i + 1])))
             continue;
@@ -1095,6 +1132,10 @@ var _objectsInRange = function(aList, aRange)
 
 - (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)fgColor andBackgroundColor:(CPColor)bgColor andUnderline:(CPUnderlineStyle)aUnderline
 {
+
+    if (!aString || aString.length === 0)
+        return nil;
+
 #if PLATFORM(DOM)
     var style,
         span = document.createElement("span");
@@ -1175,18 +1216,16 @@ var _objectsInRange = function(aList, aRange)
             effectiveRange = attributes ? CPIntersectionRange(aRange, effectiveRange) : aRange;
 
             var string = [textStorage._string substringWithRange:effectiveRange],
-                underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone;
+                underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone,
+                paragraphStyle = [attributes objectForKey:CPParagraphStyleAttributeName] || [CPParagraphStyle defaultParagraphStyle];
 
             // this is an attachment -> create a run for it
             if (string === _CPAttachmentCharacterAsString)
             {
                 if (![attributes objectForKey:_CPAttachmentInvisible])
                 {
-                    var view = [attributes objectForKey:_CPAttachmentView],
-                        viewCopy = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:view]],
-                        elem = viewCopy._DOMElement,
-                        run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:elem, string:nil, view:viewCopy};
-
+                    var view = [attributes objectForKey:_CPAttachmentView];
+                    var run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:nil, string:nil, view:view, paragraphStyle:paragraphStyle};
                     _runs.push(run);
                 }
             }
@@ -1194,10 +1233,63 @@ var _objectsInRange = function(aList, aRange)
             {
                 var color = [attributes objectForKey:CPForegroundColorAttributeName],
                     bgcolor = [attributes objectForKey:CPBackgroundColorAttributeName],
-                    font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0],
-                    run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string, bgcolor:bgcolor};
+                    font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0];
 
-                _runs.push(run);
+                var currentLoc = effectiveRange.location,
+                    strLen = string.length,
+                    startIdx = 0;
+
+                for (var i = 0; i < strLen; i++)
+                {
+                    if (string.charCodeAt(i) === 9) // Tabulator-Zeichen '\t'
+                    {
+                        if (i > startIdx)
+                        {
+                            var subString = string.substring(startIdx, i),
+                                subRange = CPMakeRange(currentLoc + startIdx, i - startIdx),
+                                run = {
+                                    _range: subRange,
+                                    color: color,
+                                    font: font,
+                                    elem: nil,
+                                    string: subString,
+                                    bgcolor: bgcolor,
+                                    paragraphStyle: paragraphStyle
+                                };
+                            _runs.push(run);
+                        }
+
+                        var tabRange = CPMakeRange(currentLoc + i, 1),
+                            tabRun = {
+                                _range: tabRange,
+                                color: nil,
+                                font: nil,
+                                elem: nil,
+                                string: nil,
+                                bgcolor: nil,
+                                paragraphStyle: paragraphStyle
+                            };
+                        _runs.push(tabRun);
+
+                        startIdx = i + 1;
+                    }
+                }
+
+                if (startIdx < strLen)
+                {
+                    var subString = string.substring(startIdx, strLen),
+                        subRange = CPMakeRange(currentLoc + startIdx, strLen - startIdx),
+                        run = {
+                            _range: subRange,
+                            color: color,
+                            font: font,
+                            elem: nil,
+                            string: subString,
+                            bgcolor: bgcolor,
+                            paragraphStyle: paragraphStyle
+                        };
+                    _runs.push(run);
+                }
             }
 
             if (!CPMaxRange(effectiveRange))
@@ -1269,13 +1361,11 @@ var _objectsInRange = function(aList, aRange)
 
     for (var i = 0; i < l; i++)
     {
+        if (_runs[i].view && _runs[i].DOMactive)
+           [_runs[i].view removeFromSuperview];
+
         if (_runs[i].elem && _runs[i].DOMactive)
-        {
-            if (_runs[i].view)
-                [_runs[i].view removeFromSuperview];
-            else
-                _textContainer._textView._DOMElement.removeChild(_runs[i].elem);
-        }
+            _textContainer._textView._DOMElement.removeChild(_runs[i].elem);
 
         _runs[i].elem = nil;
         _runs[i].DOMactive = NO;
@@ -1287,6 +1377,9 @@ var _objectsInRange = function(aList, aRange)
     var runs = _objectsInRange(_runs, aRange),
         c = runs.length,
         orig = CGPointMake(_fragmentRect.origin.x, _fragmentRect.origin.y);
+
+    if (_runs.length === 0)
+        return;
 
     for (var i = 0; i < c; i++)
     {
@@ -1302,13 +1395,21 @@ var _objectsInRange = function(aList, aRange)
             continue;
 
         var loc = run._range.location - _runs[0]._range.location;
+        
+        // Safety bounds check to protect against uninitialized/empty glyph frames or offsets
+        if (loc < 0 || loc >= _glyphsFrames.length || !_glyphsFrames[loc] || !_glyphsOffsets || loc >= _glyphsOffsets.length)
+            continue;
+
         orig.x = _glyphsFrames[loc].origin.x + aPoint.x;
         orig.y = _glyphsFrames[loc].origin.y + aPoint.y + _glyphsOffsets[loc];
 
-        if(run.elem)
+        if(run.elem || run.view)
         {
-            run.elem.style.left = (orig.x) + "px";
-            run.elem.style.top = (orig.y) + "px";
+            if (run.elem)
+            {
+                run.elem.style.left = (orig.x) + "px";
+                run.elem.style.top = (orig.y) + "px";
+            }
 
             if (run.view)
                 [run.view setFrameOrigin:orig];
@@ -1316,8 +1417,9 @@ var _objectsInRange = function(aList, aRange)
             if (!run.DOMactive)
             {
                 if (run.view)
-                    [self._textContainer._textView addSubview:run.view];
-                else
+                    [_textContainer._textView addSubview:run.view];
+
+                if (run.elem)
                     _textContainer._textView._DOMElement.appendChild(run.elem);
             }
 
@@ -1358,6 +1460,12 @@ var _objectsInRange = function(aList, aRange)
 
         if (newFragmentRuns[i].color !== oldFragmentRuns[i].color || newFragmentRuns[i].bgcolor !== oldFragmentRuns[i].bgcolor || newFragmentRuns[i].font !== oldFragmentRuns[i].font)
             return NO;
+
+        var oldStyle = oldFragmentRuns[i].paragraphStyle || [CPParagraphStyle defaultParagraphStyle],
+            newStyle = newFragmentRuns[i].paragraphStyle || [CPParagraphStyle defaultParagraphStyle];
+
+        if (![oldStyle isEqual:newStyle])
+            return NO;
     }
 
     return YES;
@@ -1377,6 +1485,9 @@ var _objectsInRange = function(aList, aRange)
         {
             if (_runs[i].view)
                 _runs[i].view._frame.origin.y += verticalOffset;
+
+            if (_runs[i].elem)
+                _runs[i].elem.top = (_runs[i].elem.top + verticalOffset) + 'px';
 
             _runs[i].DOMpatched = YES;
         }
