@@ -2648,6 +2648,10 @@ var compareTabStops = function(obj1, obj2, context) {
         [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
     }
+
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
 }
 
 - (void)rulerView:(CPRulerView)rulerView didRemoveMarker:(CPRulerMarker)marker

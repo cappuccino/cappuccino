@@ -1132,6 +1132,10 @@ var _objectsInRange = function(aList, aRange)
 
 - (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)fgColor andBackgroundColor:(CPColor)bgColor andUnderline:(CPUnderlineStyle)aUnderline
 {
+
+    if (!aString || aString.length === 0)
+        return nil;
+
 #if PLATFORM(DOM)
     var style,
         span = document.createElement("span");
@@ -1212,7 +1216,8 @@ var _objectsInRange = function(aList, aRange)
             effectiveRange = attributes ? CPIntersectionRange(aRange, effectiveRange) : aRange;
 
             var string = [textStorage._string substringWithRange:effectiveRange],
-                underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone;
+                underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone,
+                paragraphStyle = [attributes objectForKey:CPParagraphStyleAttributeName] || [CPParagraphStyle defaultParagraphStyle];
 
             // this is an attachment -> create a run for it
             if (string === _CPAttachmentCharacterAsString)
@@ -1220,17 +1225,71 @@ var _objectsInRange = function(aList, aRange)
                 if (![attributes objectForKey:_CPAttachmentInvisible])
                 {
                     var view = [attributes objectForKey:_CPAttachmentView];
-                    var run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:nil, string:nil, view:view};                }
+                    var run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:nil, string:nil, view:view, paragraphStyle:paragraphStyle};
                     _runs.push(run);
+                }
             }
             else
             {
                 var color = [attributes objectForKey:CPForegroundColorAttributeName],
                     bgcolor = [attributes objectForKey:CPBackgroundColorAttributeName],
-                    font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0],
-                    run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string, bgcolor:bgcolor};
+                    font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0];
 
-                _runs.push(run);
+                var currentLoc = effectiveRange.location,
+                    strLen = string.length,
+                    startIdx = 0;
+
+                for (var i = 0; i < strLen; i++)
+                {
+                    if (string.charCodeAt(i) === 9) // Tabulator-Zeichen '\t'
+                    {
+                        if (i > startIdx)
+                        {
+                            var subString = string.substring(startIdx, i),
+                                subRange = CPMakeRange(currentLoc + startIdx, i - startIdx),
+                                run = {
+                                    _range: subRange,
+                                    color: color,
+                                    font: font,
+                                    elem: nil,
+                                    string: subString,
+                                    bgcolor: bgcolor,
+                                    paragraphStyle: paragraphStyle
+                                };
+                            _runs.push(run);
+                        }
+
+                        var tabRange = CPMakeRange(currentLoc + i, 1),
+                            tabRun = {
+                                _range: tabRange,
+                                color: nil,
+                                font: nil,
+                                elem: nil,
+                                string: nil,
+                                bgcolor: nil,
+                                paragraphStyle: paragraphStyle
+                            };
+                        _runs.push(tabRun);
+
+                        startIdx = i + 1;
+                    }
+                }
+
+                if (startIdx < strLen)
+                {
+                    var subString = string.substring(startIdx, strLen),
+                        subRange = CPMakeRange(currentLoc + startIdx, strLen - startIdx),
+                        run = {
+                            _range: subRange,
+                            color: color,
+                            font: font,
+                            elem: nil,
+                            string: subString,
+                            bgcolor: bgcolor,
+                            paragraphStyle: paragraphStyle
+                        };
+                    _runs.push(run);
+                }
             }
 
             if (!CPMaxRange(effectiveRange))
@@ -1400,6 +1459,12 @@ var _objectsInRange = function(aList, aRange)
             return NO;
 
         if (newFragmentRuns[i].color !== oldFragmentRuns[i].color || newFragmentRuns[i].bgcolor !== oldFragmentRuns[i].bgcolor || newFragmentRuns[i].font !== oldFragmentRuns[i].font)
+            return NO;
+
+        var oldStyle = oldFragmentRuns[i].paragraphStyle || [CPParagraphStyle defaultParagraphStyle],
+            newStyle = newFragmentRuns[i].paragraphStyle || [CPParagraphStyle defaultParagraphStyle];
+
+        if (![oldStyle isEqual:newStyle])
             return NO;
     }
 
