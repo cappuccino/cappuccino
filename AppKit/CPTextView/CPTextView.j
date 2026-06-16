@@ -2074,8 +2074,16 @@ Sets the selection to a range of characters in response to user action.
     [self setFrameSize:[self frameSize]];
 }
 
+- (void)setBoundsSize:(CGSize)aSize
+{
+    _exposedRect = nil; // Clear the cached visible rect when bounds change
+    [super setBoundsSize:aSize];
+}
+
 - (void)setFrameSize:(CGSize)aSize
 {
+    _exposedRect = nil; // Clear the cached visible rect so it gets recalculated at the new size
+
     var desiredSize = CGSizeCreateCopy(aSize);
 
     if (_isHorizontallyResizable || _isVerticallyResizable)
