@@ -294,12 +294,11 @@ var sharedInstance = nil;
         return;
     }
 
-    var selfRef = self,
-        instructions = [self instructions];
+    var instructions = [self instructions];
 
     [CPLanguageModelSession _getChromeFactoryWithCompletionHandler:function(factory, error) {
         if (error) {
-            [selfRef _executeRemoteFallbackWithPrompt:prompt options:options completionHandler:completionHandler];
+            [self _executeRemoteFallbackWithPrompt:prompt options:options completionHandler:completionHandler];
             return;
         }
 
@@ -313,10 +312,10 @@ var sharedInstance = nil;
         }
 
         factory.create(sessionOptions).then(function(session) {
-            [selfRef setChromeSession:session];
-            [selfRef _executePrompt:prompt options:options completionHandler:completionHandler];
+            [self setChromeSession:session];
+            [self _executePrompt:prompt options:options completionHandler:completionHandler];
         }).catch(function(err) {
-            [selfRef _executeRemoteFallbackWithPrompt:prompt options:options completionHandler:completionHandler];
+            [self _executeRemoteFallbackWithPrompt:prompt options:options completionHandler:completionHandler];
         });
     }];
 }
@@ -349,12 +348,11 @@ var sharedInstance = nil;
         return;
     }
 
-    var selfRef = self,
-        instructions = [self instructions];
+    var instructions = [self instructions];
 
     [CPLanguageModelSession _getChromeFactoryWithCompletionHandler:function(factory, error) {
         if (error) {
-            [selfRef _executeRemoteFallbackWithPrompt:prompt options:nil completionHandler:function(res, err) {
+            [self _executeRemoteFallbackWithPrompt:prompt options:nil completionHandler:function(res, err) {
                 if (!err && chunkHandler)
                     chunkHandler(res);
                 completionHandler(res, err);
@@ -369,15 +367,16 @@ var sharedInstance = nil;
             expectedInputs: [{ type: "text", languages: ["en"] }],
             expectedOutputs: [{ type: "text", languages: ["en"] }]
         };
-        if (instructions) {
+
+        if (instructions)
             options.systemPrompt = instructions;
-        }
 
         factory.create(options).then(function(session) {
-            [selfRef setChromeSession:session];
-            [selfRef _executePromptStreaming:prompt onChunkReceived:chunkHandler completed:completionHandler];
-        }).catch(function(err) {
-            [selfRef _executeRemoteFallbackWithPrompt:prompt options:nil completionHandler:function(res, err) {
+            [self setChromeSession:session];
+            [self _executePromptStreaming:prompt onChunkReceived:chunkHandler completed:completionHandler];
+        }).catch(function(err)
+        {
+            [self _executeRemoteFallbackWithPrompt:prompt options:nil completionHandler:function(res, err) {
                 if (!err && chunkHandler)
                     chunkHandler(res);
 
