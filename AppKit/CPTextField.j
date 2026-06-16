@@ -2004,6 +2004,43 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _setCSSStyleForInputElement];
 }
 
+#pragma mark Overrides
+
+/*!
+    Sets the font of the receiver.
+
+    @param aFont - A CPFont object.
+*/
+- (void)setFont:(CPFont)aFont
+{
+    if ([self currentValueForThemeAttribute:@"font"] === aFont)
+        return;
+
+    // Apply the font to the default/normal state
+    [self setValue:aFont forThemeAttribute:@"font"];
+    
+    // Apply to standard editing and border states
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateEditing];
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateBezeled];
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateBordered];
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPTextFieldStateRounded];
+    
+    // Use CPThemeState() function to create composite states instead of array literals
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeState(CPTextFieldStateRounded, CPThemeStateEditing)];
+    
+    // Apply across all standard control size states
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateControlSizeRegular];
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateControlSizeSmall];
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateControlSizeMini];
+
+    // Apply to table data view states (ensuring Interface Builder-style lists respect the font)
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateTableDataView];
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView)];
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow)];
+
+    [self layoutSubviews];
+}
+
 - (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
 {
     var count = objects.length,

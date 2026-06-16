@@ -401,6 +401,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)superviewFrameChanged:(CPNotification)aNotification
 {
     _exposedRect = nil;
+    [self sizeToFit];
 }
 
 - (void)viewWillMoveToSuperview:(CPView)aView
@@ -1397,7 +1398,10 @@ Sets the selection to a range of characters in response to user action.
 - (void)moveLeftAndModifySelection:(id)sender
 {
     if ([self isSelectable])
+    {
        [self _extendSelectionIntoDirection:-1 granularity:CPSelectByCharacter];
+       [self scrollRangeToVisible:_selectionRange];
+    }
 }
 
 - (void)moveBackward:(id)sender
@@ -1419,7 +1423,10 @@ Sets the selection to a range of characters in response to user action.
 - (void)moveLeft:(id)sender
 {
     if ([self isSelectable])
+    {
         [self _establishSelection:CPMakeRange(_selectionRange.location - (_selectionRange.length ? 0 : 1), 0) byExtending:NO];
+        [self scrollRangeToVisible:_selectionRange];
+    }
 }
 
 - (void)moveToEndOfParagraph:(id)sender
@@ -1653,7 +1660,10 @@ Sets the selection to a range of characters in response to user action.
 - (void)moveRight:(id)sender
 {
     if ([self isSelectable])
+    {
         [self _establishSelection:CPMakeRange(CPMaxRange(_selectionRange) + (_selectionRange.length ? 0 : 1), 0) byExtending:NO];
+        [self scrollRangeToVisible:_selectionRange];
+    }
 }
 
 - (void)_deleteForRange:(CPRange)changedRange
@@ -2134,9 +2144,15 @@ Sets the selection to a range of characters in response to user action.
     if (CPEmptyRange(aRange))
     {
         if (aRange.location >= [_layoutManager numberOfCharacters])
-            rect = [_layoutManager extraLineFragmentRect];
+        {
+            rect = CGRectCreateCopy([_layoutManager extraLineFragmentRect]);
+            rect.size.width = 1.0;
+        }
         else
-            rect = [_layoutManager lineFragmentRectForGlyphAtIndex:aRange.location effectiveRange:nil];
+        {
+            rect = CGRectCreateCopy([_layoutManager boundingRectForGlyphRange:CPMakeRange(aRange.location, 1) inTextContainer:_textContainer]);
+            rect.size.width = 1.0;
+        }
     }
     else
     {
@@ -2632,6 +2648,10 @@ var compareTabStops = function(obj1, obj2, context) {
         [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
     }
+
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
 }
 
 - (void)rulerView:(CPRulerView)rulerView didRemoveMarker:(CPRulerMarker)marker
@@ -2851,11 +2871,16 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
         _typingAttributes = [[_textStorage attributesAtIndex:0 effectiveRange:nil] copy];
 
+        if (!_typingAttributes)
+            _typingAttributes = [CPMutableDictionary dictionary];
+
         if (![_typingAttributes valueForKey:CPForegroundColorAttributeName])
             [_typingAttributes setObject:[CPColor blackColor] forKey:CPForegroundColorAttributeName];
 
         _textColor = [_typingAttributes valueForKey:CPForegroundColorAttributeName];
-        [self setFont:[_typingAttributes valueForKey:CPFontAttributeName]];
+
+        var decodedFont = [_typingAttributes valueForKey:CPFontAttributeName] || [CPFont systemFontOfSize:12.0];
+        [self setFont:decodedFont];
 
         [self setString:[_textStorage string]];
 
