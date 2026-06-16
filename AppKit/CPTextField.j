@@ -2024,7 +2024,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateBezeled];
     [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateBordered];
     [self setValue:aFont forThemeAttribute:@"font" inState:CPTextFieldStateRounded];
-    [self setValue:aFont forThemeAttribute:@"font" inState:[CPTextFieldStateRounded, CPThemeStateEditing]];
+    
+    // Use CPThemeState() function to create composite states instead of array literals
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeState(CPTextFieldStateRounded, CPThemeStateEditing)];
     
     // Apply across all standard control size states
     [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateControlSizeRegular];
@@ -2033,8 +2035,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     // Apply to table data view states (ensuring Interface Builder-style lists respect the font)
     [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeStateTableDataView];
-    [self setValue:aFont forThemeAttribute:@"font" inState:[CPThemeStateTableDataView, CPThemeStateSelectedDataView]];
-    [self setValue:aFont forThemeAttribute:@"font" inState:[CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]];
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView)];
+    [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow)];
 
     [self layoutSubviews];
 }
