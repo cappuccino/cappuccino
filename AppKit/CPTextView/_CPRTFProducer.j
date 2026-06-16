@@ -89,12 +89,7 @@ function _points2twips(a) { return (a) * 20.0; }
 {
     if (self = [super init])
     {
-        // maintain a dictionary for the used colours
-        // (for rtf-header generation)
         colorDict = [CPMutableDictionary new];
-
-        //maintain a dictionary for the used fonts
-        //(for rtf-header generation)
         fontDict = [CPMutableDictionary new];
 
         fgColor = [CPColor blackColor];
@@ -104,7 +99,6 @@ function _points2twips(a) { return (a) * 20.0; }
     return self;
 }
 
-// private stuff follows
 - (CPString)fontTable
 {
     if (![fontDict count])
@@ -319,7 +313,6 @@ function _points2twips(a) { return (a) * 20.0; }
             break;
     }
 
-    // write first line indent and left indent
     var twips = _points2twips([paraStyle firstLineHeadIndent]);
 
     if (twips != 0.0)
@@ -392,7 +385,6 @@ function _points2twips(a) { return (a) * 20.0; }
     var unwrap = function(obj) {
         if (!obj) return null;
 
-        // If the object contains the table structures, bypass unwrapping
         if ((typeof obj.respondsToSelector === "function" && ([obj respondsToSelector:@selector(headers)] || [obj respondsToSelector:@selector(rows)])) ||
             obj.headers || obj._headers || obj.rows || obj._rows) {
             return obj;
@@ -434,7 +426,6 @@ function _points2twips(a) { return (a) * 20.0; }
 
     tableAttachment = unwrap(tableAttachment);
 
-    // Ultimate fallback scanner for layout character placeholder sequences
     if (!tableAttachment && (substring === "\uFFFC" || substring === "￼"))
     {
         var keys = [attributes allKeys],
@@ -462,20 +453,48 @@ function _points2twips(a) { return (a) * 20.0; }
         var headers = null,
             rows = null;
 
-        if (typeof tableAttachment.respondsToSelector === "function") {
-            if ([tableAttachment respondsToSelector:@selector(headers)]) {
-                headers = [tableAttachment headers];
+        // Try to fetch from the active live view of the attachment first to capture user edits
+        var activeView = null;
+        if (typeof tableAttachment.respondsToSelector === "function" && [tableAttachment respondsToSelector:@selector(view)]) {
+            activeView = [tableAttachment view];
+        }
+        if (!activeView) {
+            activeView = tableAttachment._view || tableAttachment.view;
+        }
+
+        if (activeView) {
+            if (typeof activeView.respondsToSelector === "function") {
+                if ([activeView respondsToSelector:@selector(headers)]) {
+                    headers = [activeView headers];
+                }
+                if ([activeView respondsToSelector:@selector(rows)]) {
+                    rows = [activeView rows];
+                }
             }
-            if ([tableAttachment respondsToSelector:@selector(rows)]) {
-                rows = [tableAttachment rows];
+            if (!headers) {
+                headers = activeView._headers || activeView.headers;
+            }
+            if (!rows) {
+                rows = activeView._rows || activeView.rows;
             }
         }
-        
-        if (!headers) {
-            headers = tableAttachment._headers || tableAttachment.headers;
-        }
-        if (!rows) {
-            rows = tableAttachment._rows || tableAttachment.rows;
+
+        // Fall back to the attachment's parsed properties if the view is nil or lacks the properties
+        if (!headers || !rows) {
+            if (typeof tableAttachment.respondsToSelector === "function") {
+                if ([tableAttachment respondsToSelector:@selector(headers)]) {
+                    headers = [tableAttachment headers];
+                }
+                if ([tableAttachment respondsToSelector:@selector(rows)]) {
+                    rows = [tableAttachment rows];
+                }
+            }
+            if (!headers) {
+                headers = tableAttachment._headers || tableAttachment.headers;
+            }
+            if (!rows) {
+                rows = tableAttachment._rows || tableAttachment.rows;
+            }
         }
 
         var getCount = function(arr) {
@@ -563,23 +582,12 @@ function _points2twips(a) { return (a) * 20.0; }
         headerString += [self paragraphStyle:paraStyle];
     }
 
-  /*
-   * analyze attributes of current run
-   *
-   * FIXME: All the character attributes should be output relative to the font
-   * attributes of the paragraph. So if the paragraph has underline on it should
-   * still be possible to switch it off for some characters, which currently is
-   * not possible.
-   */
     attribEnum = [attributes keyEnumerator];
 
     while ((currAttrib = [attribEnum nextObject]) != nil)
     {
         if ([currAttrib isEqualToString:CPFontAttributeName])
         {
-          /*
-           * handle fonts
-           */
             var font,
                 fontName,
                 traits;
@@ -588,15 +596,9 @@ function _points2twips(a) { return (a) * 20.0; }
             fontName = [font familyName];
             traits = [[CPFontManager sharedFontManager] traitsOfFont:font];
 
-          /*
-           * font name
-           */
             if (currentFont == nil || ![fontName isEqualToString:[currentFont familyName]])
                 headerString += [self fontToken:fontName];
 
-          /*
-           * font size
-           */
             if (currentFont == nil || [font size] != [currentFont size])
             {
                 var points = [font size] * 2,
@@ -605,9 +607,7 @@ function _points2twips(a) { return (a) * 20.0; }
                 pString = [CPString stringWithFormat:@"\\fs%d", points];
                 headerString += pString;
             }
-          /*
-           * font attributes
-           */
+
             if (traits & CPItalicFontMask)
             {
                 headerString += @"\\i";
@@ -713,7 +713,7 @@ function _points2twips(a) { return (a) * 20.0; }
         var nobraces;
 
         if ([headerString length])
-            nobraces = [CPString stringWithFormat:@"%@ %@", headerString, substring];
+            nobraces = [CPString stringWithFormat:@"%@ %@}", headerString, substring];
         else
             nobraces = substring;
 
@@ -733,7 +733,7 @@ function _points2twips(a) { return (a) * 20.0; }
         completeRange = CPMakeRange(0, length),
         paragraphStart = YES;
 
-    while (CPMaxRange(currRange) < CPMaxRange(completeRange))  // save all "runs"
+    while (CPMaxRange(currRange) < CPMaxRange(completeRange))
     {
         var attributes,
             substring,
@@ -749,7 +749,6 @@ function _points2twips(a) { return (a) * 20.0; }
 
         result += runString;
         
-        // Dynamically compute paragraph boundaries based on standard line feeds
         if (substring.length > 0 && substring.charAt(substring.length - 1) === '\n')
             paragraphStart = YES;
         else
