@@ -1,12 +1,12 @@
 /*
-   _CPRTFProducer.j
-
-   Serialize CPAttributedString to a RTF String
-
-   Copyright (C) 2014 Daniel Boehringer
-   This file is based on the RTFProducer from GNUStep
-   (which i co-authored with Fred Kiefer in 1999)
-
+ *  _CPRTFProducer.j
+ *
+ *  Serialize CPAttributedString to a RTF String
+ *
+ *  Copyright (C) 2014 Daniel Boehringer
+ *  This file is based on the RTFProducer from GNUStep
+ *  (which I co-authored with Fred Kiefer in 1999)
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -27,6 +27,7 @@
 @import "CPColor.j"
 @import "CPGraphics.j"
 @import "CPFontManager.j"
+@import "_CPTableTextAttachment.j"
 
 @global CPForegroundColorAttributeName
 @global CPBackgroundColorAttributeName
@@ -42,6 +43,11 @@
 @global CPCenterTextAlignment
 @global CPJustifiedTextAlignment
 @global CPNaturalTextAlignment
+
+@global CPLeftTabStopType
+@global CPRightTabStopType
+@global CPCenterTabStopType
+@global CPDecimalTabStopType
 
 var PAPERSIZE = @"PaperSize",
     LEFTMARGIN = @"LeftMargin",
@@ -83,12 +89,7 @@ function _points2twips(a) { return (a) * 20.0; }
 {
     if (self = [super init])
     {
-        // maintain a dictionary for the used colours
-        // (for rtf-header generation)
         colorDict = [CPMutableDictionary new];
-
-        //maintain a dictionary for the used fonts
-        //(for rtf-header generation)
         fontDict = [CPMutableDictionary new];
 
         fgColor = [CPColor blackColor];
@@ -98,7 +99,6 @@ function _points2twips(a) { return (a) * 20.0; }
     return self;
 }
 
-// private stuff follows
 - (CPString)fontTable
 {
     if (![fontDict count])
@@ -313,7 +313,6 @@ function _points2twips(a) { return (a) * 20.0; }
             break;
     }
 
-    // write first line indent and left indent
     var twips = _points2twips([paraStyle firstLineHeadIndent]);
 
     if (twips != 0.0)
@@ -351,26 +350,29 @@ function _points2twips(a) { return (a) * 20.0; }
 
     while ((tab = [enumerator nextObject]))
     {
-        switch ([tab tabStopType])
+        var tabType = [tab respondsToSelector:@selector(tabStopType)] ? [tab tabStopType] : nil;
+        if (tabType === nil && [tab respondsToSelector:@selector(alignment)])
+            tabType = [tab alignment];
+
+        switch (tabType)
         {
             case CPLeftTabStopType:
-            // no tabkind emission needed
+            case CPLeftTextAlignment:
                 break;
-/*              case NSRightTabStopType:
+            case CPRightTabStopType:
+            case CPRightTextAlignment:
                 headerString += @"\\tqr";
-            break;
-            case NSCenterTabStopType:
-               headerString += @"\\tqc";
-            break;
-            case NSDecimalTabStopType:
+                break;
+            case CPCenterTabStopType:
+            case CPCenterTextAlignment:
+                headerString += @"\\tqc";
+                break;
+            case CPDecimalTabStopType:
                 headerString += @"\\tqdec";
-            break;
-            default:
-                NSLog(@"Unknown tab stop type.");
-*/
-          }
+                break;
+        }
 
-          headerString += [CPString stringWithFormat:@"\\tx%d",_points2twips([tab location])];
+        headerString += [CPString stringWithFormat:@"\\tx%d",_points2twips([tab location])];
     }
 
     return headerString;
@@ -380,6 +382,194 @@ function _points2twips(a) { return (a) * 20.0; }
                     attributes:(CPDictionary) attributes
                 paragraphStart:(BOOL) first
 {
+    var unwrap = function(obj) {
+        if (!obj) return null;
+
+        if ((typeof obj.respondsToSelector === "function" && ([obj respondsToSelector:@selector(headers)] || [obj respondsToSelector:@selector(rows)])) ||
+            obj.headers || obj._headers || obj.rows || obj._rows) {
+            return obj;
+        }
+
+        var unwrapped = null;
+        if (typeof obj.respondsToSelector === "function") {
+            if ([obj respondsToSelector:@selector(attachmentCell)]) {
+                unwrapped = [obj attachmentCell];
+            } else if ([obj respondsToSelector:@selector(content)]) {
+                unwrapped = [obj content];
+            } else if ([obj respondsToSelector:@selector(view)]) {
+                unwrapped = [obj view];
+            }
+        }
+        if (!unwrapped) {
+            unwrapped = obj._attachmentCell || obj._content || obj._view || obj.attachmentCell || obj.content || obj.view;
+        }
+        return unwrapped ? unwrapped : obj;
+    };
+
+    var tableAttachment = null;
+    
+    if (typeof CPAttachmentAttributeName !== "undefined") {
+        tableAttachment = [attributes objectForKey:CPAttachmentAttributeName];
+    }
+    if (!tableAttachment) {
+        tableAttachment = [attributes objectForKey:@"CPAttachmentAttributeName"];
+    }
+    if (!tableAttachment) {
+        tableAttachment = [attributes objectForKey:@"TableAttachmentAttribute"];
+    }
+    if (!tableAttachment) {
+        tableAttachment = [attributes objectForKey:@"_CPAttachmentView"];
+    }
+    if (!tableAttachment && typeof _CPAttachmentView !== "undefined") {
+        tableAttachment = [attributes objectForKey:_CPAttachmentView];
+    }
+
+    tableAttachment = unwrap(tableAttachment);
+
+    if (!tableAttachment && (substring === "\uFFFC" || substring === "￼"))
+    {
+        var keys = [attributes allKeys],
+            count = [keys count];
+
+        for (var i = 0; i < count; i++)
+        {
+            var key = [keys objectAtIndex:i],
+                val = unwrap([attributes objectForKey:key]);
+
+            if (val && (
+                (typeof val.respondsToSelector === "function" && [val respondsToSelector:@selector(headers)]) || 
+                val._headers || 
+                val.headers ||
+                (typeof _CPTableTextAttachment !== "undefined" && [val isKindOfClass:[_CPTableTextAttachment class]])
+            )) {
+                tableAttachment = val;
+                break;
+            }
+        }
+    }
+
+    if (tableAttachment)
+    {
+        var headers = null,
+            rows = null;
+
+        // Try to fetch from the active live view of the attachment first to capture user edits
+        var activeView = null;
+        if (typeof tableAttachment.respondsToSelector === "function" && [tableAttachment respondsToSelector:@selector(view)]) {
+            activeView = [tableAttachment view];
+        }
+        if (!activeView) {
+            activeView = tableAttachment._view || tableAttachment.view;
+        }
+
+        if (activeView) {
+            if (typeof activeView.respondsToSelector === "function") {
+                if ([activeView respondsToSelector:@selector(headers)]) {
+                    headers = [activeView headers];
+                }
+                if ([activeView respondsToSelector:@selector(rows)]) {
+                    rows = [activeView rows];
+                }
+            }
+            if (!headers) {
+                headers = activeView._headers || activeView.headers;
+            }
+            if (!rows) {
+                rows = activeView._rows || activeView.rows;
+            }
+        }
+
+        // Fall back to the attachment's parsed properties if the view is nil or lacks the properties
+        if (!headers || !rows) {
+            if (typeof tableAttachment.respondsToSelector === "function") {
+                if ([tableAttachment respondsToSelector:@selector(headers)]) {
+                    headers = [tableAttachment headers];
+                }
+                if ([tableAttachment respondsToSelector:@selector(rows)]) {
+                    rows = [tableAttachment rows];
+                }
+            }
+            if (!headers) {
+                headers = tableAttachment._headers || tableAttachment.headers;
+            }
+            if (!rows) {
+                rows = tableAttachment._rows || tableAttachment.rows;
+            }
+        }
+
+        var getCount = function(arr) {
+            if (!arr) return 0;
+            if (typeof arr.count === "function") return [arr count];
+            return arr.length;
+        };
+
+        var getObjectAtIndex = function(arr, idx) {
+            if (!arr) return null;
+            if (typeof arr.objectAtIndex === "function") return [arr objectAtIndex:idx];
+            return arr[idx];
+        };
+
+        var numCols = getCount(headers);
+        if (numCols == 0 && getCount(rows) > 0) {
+            numCols = getCount(getObjectAtIndex(rows, 0));
+        }
+
+        if (numCols > 0)
+        {
+            var totalWidthTwips = 10000;
+            var colWidthTwips = Math.floor(totalWidthTwips / numCols);
+            var cellBoundaries = [];
+            var currentBoundary = 0;
+            for (var i = 0; i < numCols; i++)
+            {
+                currentBoundary += colWidthTwips;
+                cellBoundaries.push(currentBoundary);
+            }
+
+            var tableRTF = "";
+            var writeRow = function(rowData, isHeaderRow) {
+                var rowRTF = "\\trowd\\trgaph115\\trleft0";
+                for (var c = 0; c < numCols; c++) {
+                    rowRTF += "\\clbrdrt\\brdrs\\brdrw10\\clbrdrb\\brdrs\\brdrw10\\clbrdrl\\brdrs\\brdrw10\\clbrdrr\\brdrs\\brdrw10";
+                    rowRTF += "\\cellx" + cellBoundaries[c];
+                }
+                for (var c = 0; c < numCols; c++) {
+                    var cellText = "";
+                    if (c < getCount(rowData)) {
+                        cellText = getObjectAtIndex(rowData, c);
+                    }
+                    if (cellText === null || cellText === undefined) {
+                        cellText = "";
+                    }
+                    
+                    cellText = String(cellText);
+                    cellText = cellText.replace(/\\/g, '\\\\');
+                    cellText = cellText.replace(/{/g, '\\{');
+                    cellText = cellText.replace(/}/g, '\\}');
+                    cellText = cellText.replace(/\n/g, '\\line ');
+
+                    if (isHeaderRow) {
+                        rowRTF += "{\\intbl\\b " + cellText + "\\b0\\cell}";
+                    } else {
+                        rowRTF += "{\\intbl " + cellText + "\\cell}";
+                    }
+                }
+                rowRTF += "\\row\n";
+                return rowRTF;
+            };
+
+            if (getCount(headers) > 0) {
+                tableRTF += writeRow(headers, YES);
+            }
+            var rowCount = getCount(rows);
+            for (var r = 0; r < rowCount; r++) {
+                tableRTF += writeRow(getObjectAtIndex(rows, r), NO);
+            }
+
+            return tableRTF;
+        }
+    }
+
     var result = "",
         headerString = "",
         trailerString = "",
@@ -392,23 +582,12 @@ function _points2twips(a) { return (a) * 20.0; }
         headerString += [self paragraphStyle:paraStyle];
     }
 
-  /*
-   * analyze attributes of current run
-   *
-   * FIXME: All the character attributes should be output relative to the font
-   * attributes of the paragraph. So if the paragraph has underline on it should
-   * still be possible to switch it off for some characters, which currently is
-   * not possible.
-   */
     attribEnum = [attributes keyEnumerator];
 
     while ((currAttrib = [attribEnum nextObject]) != nil)
     {
         if ([currAttrib isEqualToString:CPFontAttributeName])
         {
-          /*
-           * handle fonts
-           */
             var font,
                 fontName,
                 traits;
@@ -417,15 +596,9 @@ function _points2twips(a) { return (a) * 20.0; }
             fontName = [font familyName];
             traits = [[CPFontManager sharedFontManager] traitsOfFont:font];
 
-          /*
-           * font name
-           */
             if (currentFont == nil || ![fontName isEqualToString:[currentFont familyName]])
                 headerString += [self fontToken:fontName];
 
-          /*
-           * font size
-           */
             if (currentFont == nil || [font size] != [currentFont size])
             {
                 var points = [font size] * 2,
@@ -434,9 +607,7 @@ function _points2twips(a) { return (a) * 20.0; }
                 pString = [CPString stringWithFormat:@"\\fs%d", points];
                 headerString += pString;
             }
-          /*
-           * font attributes
-           */
+
             if (traits & CPItalicFontMask)
             {
                 headerString += @"\\i";
@@ -522,11 +693,9 @@ function _points2twips(a) { return (a) * 20.0; }
 
     substring = substring.replace(/\\/g, '\\\\');
     substring = substring.replace(/\n/g, '\\par\n');
-    substring = substring.replace(/\t/g, '\\tab');
+    substring = substring.replace(/\t/g, '\\tab ');
     substring = substring.replace(/{/g, '\\{');
     substring = substring.replace(/}/g, '\\}');
-    // FIXME: All characters not in the standard encoding must be
-    // replaced by \'xx
 
     if (!first)
     {
@@ -544,7 +713,7 @@ function _points2twips(a) { return (a) * 20.0; }
         var nobraces;
 
         if ([headerString length])
-            nobraces = [CPString stringWithFormat:@"%@ %@", headerString, substring];
+            nobraces = [CPString stringWithFormat:@"%@ %@}", headerString, substring];
         else
             nobraces = substring;
 
@@ -562,10 +731,9 @@ function _points2twips(a) { return (a) * 20.0; }
         length = [string length],
         currRange = CPMakeRange(loc, 0),
         completeRange = CPMakeRange(0, length),
-        first = YES;
+        paragraphStart = YES;
 
-    // FIXME <!> split along newline characters and run as outer loop
-    while (CPMaxRange(currRange) < CPMaxRange(completeRange))  // save all "runs"
+    while (CPMaxRange(currRange) < CPMaxRange(completeRange))
     {
         var attributes,
             substring,
@@ -577,10 +745,14 @@ function _points2twips(a) { return (a) * 20.0; }
         substring = [string substringWithRange:currRange];
         runString = [self runStringForString:substring
                                   attributes:attributes
-                              paragraphStart:YES];
+                              paragraphStart:paragraphStart];
 
         result += runString;
-        first = NO;
+        
+        if (substring.length > 0 && substring.charAt(substring.length - 1) === '\n')
+            paragraphStart = YES;
+        else
+            paragraphStart = NO;
     }
 
     return result;
@@ -598,9 +770,6 @@ function _points2twips(a) { return (a) * 20.0; }
     text = aText;
     docDict = dict;
 
-  /*
-   * do not change order! (esp. body has to be generated first; builds context)
-   */
     bodyString = [self bodyString];
     trailerString = [self trailerString];
     headerString = [self headerString];

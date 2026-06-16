@@ -2,7 +2,7 @@
  * AppController.j
  *
  *  Manual test application for the cappuccino text system
- *  Copyright (C) 2014 Daniel Boehringer
+ *  Copyright (C) 2026 Daniel Boehringer
  */
 
 @import <Foundation/Foundation.j>
@@ -14,6 +14,8 @@
 @import <AppKit/CPTextField.j>
 @import <AppKit/CPScrollView.j>
 @import <AppKit/CPParagraphStyle.j>
+@import <AppKit/CPTextStorage.j>
+@import <AppKit/_CPTableTextAttachment.j>
 
 @implementation AppController : CPObject
 {
@@ -90,6 +92,25 @@
     [_textView insertText:@" "];
 }
 
+- (void)insertTable:(id)sender
+{
+    var headers = [@"Item Description", @"Quantity", @"Unit Price"];
+    var rows = [
+        [@"Cappuccino Web Framework Lic.", @"2", @"$199.00"],
+        [@"Objective-J Development Support", @"5", @"$150.00"],
+        [@"Cloud Compilation VM Server", @"1", @"$49.00"]
+    ];
+    
+    var tableAttachment = [[_CPTableTextAttachment alloc] initWithHeaders:headers rows:rows width:500.0];
+    
+    // Insert single-character atomic text attachment
+    var tableAttrStr = [CPTextStorage attributedStringWithAttachment:tableAttachment];
+
+    [_textView insertText:@"\ntable (own line)\n"];
+    [_textView insertText:tableAttrStr];
+    [_textView insertText:@"\nend table"];
+}
+
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
@@ -133,9 +154,17 @@
     var rtfButton = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 150, 30)];
     [rtfButton setTitle:@"RTF Round-trip ➔"];
     [rtfButton setTarget:self];
-    [rtfButton setAction:@selector(makeRTF:)];
+    [rtfButton setAction:@selector(rtfRoundTrip:)];
     [toolbarView addSubview:rtfButton];
     currentX += 160;
+
+    // NEW: Markdown Converter Trigger
+    var mdButton = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 120, 30)];
+    [mdButton setTitle:@"← Markdown"];
+    [mdButton setTarget:self];
+    [mdButton setAction:@selector(convertMarkdownToRichText:)];
+    [toolbarView addSubview:mdButton];
+    currentX += 130;
 
     // Insert Attachment Trigger
     var attachButton = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 140, 30)];
@@ -144,6 +173,14 @@
     [attachButton setAction:@selector(insertAttachment:)];
     [toolbarView addSubview:attachButton];
     currentX += 150;
+
+    // Add Table Trigger
+    var tableButton = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 100, 30)];
+    [tableButton setTitle:@"Add Table"];
+    [tableButton setTarget:self];
+    [tableButton setAction:@selector(insertTable:)];
+    [toolbarView addSubview:tableButton];
+    currentX += 110;
 
     // Text Alignment Group
     var labelAlign = [[CPTextField alloc] initWithFrame:CGRectMake(currentX, 22, 45, 20)];
@@ -210,9 +247,10 @@
     [leftLabel setAutoresizingMask:CPViewWidthSizable];
     [leftContainer addSubview:leftLabel];
 
-    _textView = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([leftContainer bounds]) - 30, CGRectGetHeight([leftContainer bounds]) - 70)];
+    _textView = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([leftContainer bounds]) - 30, 0)];
     [_textView setRichText:YES];
     [_textView setBackgroundColor:[CPColor whiteColor]];
+    [[_textView textContainer] setWidthTracksTextView:YES];
 
     _scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(15, 40, CGRectGetWidth([leftContainer bounds]) - 30, CGRectGetHeight([leftContainer bounds]) - 65)];
     [_scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -225,7 +263,7 @@
 
     // Right Container: RTF Plain-Text Source and Parser Window
     var rightLabel = [[CPTextField alloc] initWithFrame:CGRectMake(15, 10, CGRectGetWidth([rightContainer bounds]) - 30, 20)];
-    [rightLabel setStringValue:@"RTF Raw Output & Source Parser Window"];
+    [rightLabel setStringValue:@"Markdown Source & RTF Source Code Window"];
     [rightLabel setFont:[CPFont boldSystemFontOfSize:14]];
     [rightLabel setAutoresizingMask:CPViewWidthSizable];
     [rightContainer addSubview:rightLabel];
@@ -257,8 +295,6 @@
     [editMenu addItemWithTitle:@"Redo" action:@selector(redo:) keyEquivalent:@"Z"];
     [mainMenu setSubmenu:editMenu forItem:item];
 
-    item = [mainMenu insertItemWithTitle:@"Format" action:nil keyEquivalent:nil atIndex:0];
-    // Format Menu
     item = [mainMenu insertItemWithTitle:@"Format" action:nil keyEquivalent:nil atIndex:0];
     var formatMenu = [[CPMenu alloc] initWithTitle:@"Format Menu"];
     
@@ -321,6 +357,21 @@
     [_textView insertText:[[CPAttributedString alloc] initWithString:@"This paragraph has a first-line indent of 30pt, a head indent of 50pt, and a tail indent of -30pt. Check the horizontal ruler above to see how the indent markers align with this paragraph, and adjust them directly!\n"
                                                           attributes:[CPDictionary dictionaryWithObject:indentParagraph forKey:CPParagraphStyleAttributeName]]];
 
+    [_textView insertText:@"\n"];
+
+    // 5. Pre-populate Markdown editor with rich table sample content
+    [_textView2 setString:@"# Markdown Parser Output\n\n" +
+                          "You can type markdown directly in this side panel and click **← Markdown** above to convert it!\n\n" +
+                          "## Inline styling showcase\n\n" +
+                          "• Combine ***bold and italic*** styles.\n" +
+                          "• Monospaced `code elements` represent code blocks.\n\n" +
+                          "## Data Table\n\n" +
+                          "| Item Description | Quantity | Unit Price |\n" +
+                          "| :--- | :---: | :---: |\n" +
+                          "| Cappuccino Web Framework Lic. | 2 | $199.00 |\n" +
+                          "| Objective-J Development Support | 5 | $150.00 |\n" +
+                          "| Cloud Compilation VM Server | 1 | $49.00 |"];
+
     [theWindow orderFront:self];
     [CPMenu setMenuBarVisible:YES];
 }
@@ -332,6 +383,51 @@
     var mystr=[tc parseRTF:[_textView2 stringValue]];
     [_textView selectAll: self];
     [_textView insertText: mystr];
+}
+
+// Action tied to the "RTF Round-trip ->" button in the demo app
+- (void)rtfRoundTrip:(id)sender
+{
+    // 1. Retrieve the rich text storage from the editor on the left
+    var textStorage = [_textView textStorage];
+    if (!textStorage || [textStorage length] == 0)
+    {
+        return;
+    }
+
+    // 2. Serialize the CPAttributedString into an RTF string
+    var docAttributes = @{ @"PaperSize": CPMakeSize(612, 792) };
+    var generatedRTF = [_CPRTFProducer produceRTF:textStorage documentAttributes:docAttributes];
+
+    // 3. Set the generated RTF string into the raw output pane on the right
+    [_textView2 setString:generatedRTF];
+
+    // 4. Parse that exact RTF text back into a new CPAttributedString
+    var parser = [[_CPRTFParser alloc] init];
+    var roundTrippedString = [parser parseRTF:generatedRTF];
+
+    // Safe fallback sequence
+    [_textView setEditable:YES];
+    [_textView setString:@""];
+    [_textView insertText:roundTrippedString];
+}
+
+// Action tied to the "Markdown ->" button to generate rich text
+- (void)convertMarkdownToRichText:(id)sender
+{
+    // 1. Retrieve markdown string from the right pane
+    var markdownInput = [_textView2 string];
+    if (!markdownInput || [markdownInput length] == 0)
+    {
+        return;
+    }
+
+    // 2. Parse the markdown using the updated MarkdownParser class
+    var parsedAttrStr = [CPMarkdownParser attributedStringFromMarkdown:markdownInput];
+
+    [_textView setEditable:YES];
+    [_textView setString:@""];
+    [_textView insertText:parsedAttrStr];
 }
 
 @end
