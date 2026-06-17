@@ -128,6 +128,7 @@
     CPLanguageModelSession _session;
     float               _currentChatY;
     id                  _currentStreamingTextView;
+    CPProgressIndicator _currentSpinner;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -292,6 +293,12 @@
     _currentChatY = 15;
     _currentStreamingTextView = nil;
     
+    if (_currentSpinner) {
+        [_currentSpinner stopAnimation:self];
+        [_currentSpinner removeFromSuperview];
+        _currentSpinner = nil;
+    }
+
     if (_session) {
         [_session destroy];
     }
@@ -310,7 +317,21 @@
 {
     var docWidth = CGRectGetWidth([_chatScrollView bounds]) - 50;
     
-    var textView = [[CPTextView alloc] initWithFrame:CGRectMake(15, 10, docWidth - 30, 20)];
+    var spinner = nil;
+    var textX = 15;
+
+    // Erstelle den Spinner, falls die Generierung beginnt
+    if (!isUser && [text isEqualToString:@"Generating response..."]) {
+        spinner = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(15, 12, 16, 16)];
+        [spinner setStyle:CPProgressIndicatorSpinningStyle];
+        [spinner setControlSize:CPSmallControlSize];
+        [spinner setIndeterminate:YES];
+        [spinner startAnimation:self];
+        _currentSpinner = spinner;
+        textX = 38; // Verschiebe den Text nach rechts, um Platz für den Spinner zu schaffen
+    }
+
+    var textView = [[CPTextView alloc] initWithFrame:CGRectMake(textX, 10, docWidth - 15 - textX, 20)];
     [textView setEditable:YES];
     [textView setRichText:YES];
     [textView setSelectable:YES];
@@ -353,6 +374,10 @@
                                                   isUser:isUser 
                                                fillColor:fillColor];
     
+    if (spinner) {
+        [cardBox addSubview:spinner];
+    }
+
     [cardBox addSubview:textView];
     [_chatDocumentView addSubview:cardBox];
     
@@ -374,6 +399,16 @@
 {
     if (!_currentStreamingTextView)
         return;
+
+    // Falls ein aktiver Spinner läuft, stoppe und entferne ihn, und richte das Textfeld wieder links aus
+    if (_currentSpinner) {
+        [_currentSpinner stopAnimation:self];
+        [_currentSpinner removeFromSuperview];
+        _currentSpinner = nil;
+
+        var docWidth = CGRectGetWidth([_chatScrollView bounds]) - 50;
+        [_currentStreamingTextView setFrame:CGRectMake(15, 10, docWidth - 30, CGRectGetHeight([_currentStreamingTextView frame]))];
+    }
 
     try {
         // 1. Text über Standard-Zuweisung neu setzen
