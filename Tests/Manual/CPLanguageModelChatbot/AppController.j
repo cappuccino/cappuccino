@@ -419,25 +419,22 @@
         [_currentStreamingTextView insertText:parsedAttrStr];
         [_currentStreamingTextView setEditable:NO];
 
-        // 2. Tabellen-Layout berechnen
-        var length = [parsedAttrStr length];
-        var searchRange = CPMakeRange(0, 0);
         var layoutManager = [_currentStreamingTextView layoutManager];
         var textContainer = [_currentStreamingTextView textContainer];
-        var textViewWidth = CGRectGetWidth([_currentStreamingTextView bounds]);
 
-        // 3. Container-Größen anpassen
         var usedRect = [layoutManager usedRectForTextContainer:textContainer];
         var textHeight = CGRectGetHeight(usedRect);
-        if (textHeight < 20) {
+
+        if (textHeight < 20)
             textHeight = 20;
-        }
 
         var cardHeight = textHeight + 20;
         var bubbleHeight = cardHeight + 10;
 
-        var container = [_currentStreamingTextView superview]; 
-        if (container) {
+        var container = [_currentStreamingTextView superview];
+
+        if (container)
+        {
             var oldBubbleHeight = CGRectGetHeight([container frame]);
 
             [container setFrameSize:CGSizeMake(CGRectGetWidth([container frame]), bubbleHeight)];
@@ -462,6 +459,7 @@
         var textHeight = CGRectGetHeight([_currentStreamingTextView frame]);
         
         var container = [_currentStreamingTextView superview];
+
         if (container) {
             var oldBubbleHeight = CGRectGetHeight([container frame]);
             var bubbleHeight = textHeight + 30;
@@ -476,18 +474,17 @@
     [_chatDocumentView setFrameSize:CGSizeMake(CGRectGetWidth([_chatScrollView bounds]), _currentChatY + 20)];
 
     var boundsHeight = CGRectGetHeight([_chatScrollView bounds]);
-    if (_currentChatY > boundsHeight) {
+
+    if (_currentChatY > boundsHeight)
         [[_chatScrollView contentView] scrollToPoint:CGPointMake(0, _currentChatY - boundsHeight + 40)];
-    }
 }
 
 - (void)submitPromptAction:(id)sender
 {
     var prompt = [_chatInputField stringValue];
 
-    if (!prompt || [prompt stringByTrimmingWhitespace] === @"") {
+    if (!prompt || [prompt stringByTrimmingWhitespace] === @"")
         return;
-    }
 
     [_chatInputField setStringValue:@""];
     [_chatInputField setEnabled:NO];
