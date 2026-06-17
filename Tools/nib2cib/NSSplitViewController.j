@@ -3,7 +3,7 @@
  * nib2cib
  *
  * Created by Daniel Boehringer.
- * Copyright 2025 The Cappuccino Project.
+ * Copyright 2026 The Cappuccino Project.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
