@@ -34,7 +34,7 @@ var cpOperationMainQueue = nil;
 // --------------------------------------------------------------------------------
 // _CPOperationAwaiter
 // A private helper class to bridge KVO notifications to a JS Promise.
-// Handles both single operation completion and queue draining.
+// Handles single operation completion.
 // --------------------------------------------------------------------------------
 @implementation _CPOperationAwaiter : CPObject
 {
@@ -58,27 +58,16 @@ var cpOperationMainQueue = nil;
                         change:(CPDictionary)change 
                        context:(id)context
 {
-    // Case 1: Waiting for a specific Operation to finish
     if (keyPath === @"isFinished" && [object isFinished])
     {
         [object removeObserver:self forKeyPath:@"isFinished"];
         
-        // Check for cancellation specifically to reject the promise
         if ([object isCancelled])
         {
             _reject("Operation Cancelled");
         }
         else
         {
-            _resolve(object);
-        }
-    }
-    // Case 2: Waiting for the Queue to empty
-    else if (keyPath === @"operationCount")
-    {
-        if ([object operationCount] == 0)
-        {
-            [object removeObserver:self forKeyPath:@"operationCount"];
             _resolve(object);
         }
     }
@@ -103,6 +92,7 @@ var cpOperationMainQueue = nil;
     BOOL        _isRunScheduled;
     int         _maxConcurrentOperationCount;
     CPString    _name @accessors(property=name);
+    CPArray     _drainResolvers;
 }
 
 - (id)init
@@ -113,15 +103,31 @@ var cpOperationMainQueue = nil;
         _operations = [[CPArray alloc] init];
         _suspended = NO;
         _isRunScheduled = NO;
-        // Default to serial execution (1 at a time). 
-        // Increase this if you want multiple API calls running in parallel.
         _maxConcurrentOperationCount = 1; 
+        _drainResolvers = [[CPArray alloc] init];
     }
     return self;
 }
 
 #pragma mark -
 #pragma mark Execution Engine
+
+- (int)_unfinishedOperationCount
+{
+    var count = 0,
+        i = 0,
+        total = [_operations count];
+        
+    for (; i < total; i++)
+    {
+        var op = [_operations objectAtIndex:i];
+        if (![op isFinished] && ![op isCancelled])
+        {
+            count++;
+        }
+    }
+    return count;
+}
 
 /*!
     Logic to determine if we should start new operations.
@@ -173,8 +179,8 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    Internal KVO handler. When an operation finishes, we remove it from the
-    internal execution array and trigger the queue to look for the next operation.
+    Internal KVO handler. When an operation finishes, we trigger the queue
+    to look for the next operation.
 */
 - (void)observeValueForKeyPath:(CPString)keyPath 
                       ofObject:(id)object 
@@ -186,17 +192,23 @@ var cpOperationMainQueue = nil;
         // Stop observing the finished operation to prevent memory leaks
         [object removeObserver:self forKeyPath:@"isFinished"];
         
-        // Remove the operation from the active operations list
-        [self willChangeValueForKey:@"operations"];
-        [self willChangeValueForKey:@"operationCount"];
-        
-        [_operations removeObject:object];
-        
-        [self didChangeValueForKey:@"operations"];
-        [self didChangeValueForKey:@"operationCount"];
-        
         // Trigger the queue to run the next item
         [self _runNextOpsInQueue];
+
+        // Resolve any pending drain promises if the queue has fully completed
+        if ([self _unfinishedOperationCount] == 0)
+        {
+            var resolvers = [_drainResolvers copy];
+            [_drainResolvers removeAllObjects];
+            
+            var i = 0,
+                count = [resolvers count];
+            for (; i < count; i++)
+            {
+                var resolve = [resolvers objectAtIndex:i];
+                resolve(self);
+            }
+        }
     }
 }
 
@@ -215,11 +227,14 @@ var cpOperationMainQueue = nil;
     [_operations addObject:anOperation];
     [self _sortOpsByPriority:_operations];
     
-    // Observe the operation so we know when to remove it and start the next one.
-    [anOperation addObserver:self 
-                  forKeyPath:@"isFinished" 
-                     options:0 
-                     context:nil];
+    // Only observe the operation if it hasn't finished already
+    if (![anOperation isFinished])
+    {
+        [anOperation addObserver:self 
+                      forKeyPath:@"isFinished" 
+                         options:0 
+                         context:nil];
+    }
 
     [self didChangeValueForKey:@"operations"];
     [self didChangeValueForKey:@"operationCount"];
@@ -231,14 +246,6 @@ var cpOperationMainQueue = nil;
 /*!
     Adds an operation and returns a Promise that resolves when the operation finishes.
     This allows you to 'await' the operation execution in the queue.
-    
-    Usage:
-    try {
-        var resultOp = await [queue addOperationAsync:myOp];
-        console.log([resultOp result]);
-    } catch (e) {
-        console.log("Cancelled");
-    }
 */
 - (async JSObject)addOperationAsync:(CPOperation)anOperation
 {
@@ -263,9 +270,6 @@ var cpOperationMainQueue = nil;
     @param ops The array of CPOperation objects that you want to add to the receiver.
     @param wait If YES, the method only returns once all of the specified operations finish executing. 
                 If NO, the operations are added to the queue and control returns immediately.
-    
-    @warning If `wait` is YES, this blocks synchronously. Do NOT use with async/Promise operations (CPFunctionOperation) 
-             as it will cause a DEADLOCK. Use `addOperationsAsync:waitUntilFinished:` instead.
 */
 - (void)addOperations:(CPArray)ops waitUntilFinished:(BOOL)wait
 {
@@ -291,8 +295,6 @@ var cpOperationMainQueue = nil;
     Asynchronous version of addOperations:waitUntilFinished:.
     Returns a Promise that resolves when all operations are finished.
     Safe to use with Promise-based CPFunctionOperations.
-    
-    Usage: await [queue addOperationsAsync:ops waitUntilFinished:YES];
 */
 - (async JSObject)addOperationsAsync:(CPArray)ops waitUntilFinished:(BOOL)wait
 {
@@ -300,15 +302,12 @@ var cpOperationMainQueue = nil;
     {
         if (wait)
         {
-            // If waiting, we wrap every operation add in a Promise 
-            // and return a Promise.all that waits for them all to finish.
             var promises = [];
-            var i = 0;
-            var count = [ops count];
+            var i = 0,
+                count = [ops count];
             
-            for (i = 0; i < count; i++)
+            for (; i < count; i++)
             {
-                // addOperationAsync adds it to the queue AND returns the promise
                 promises.push([self addOperationAsync:[ops objectAtIndex:i]]);
             }
             
@@ -316,10 +315,9 @@ var cpOperationMainQueue = nil;
         }
         else
         {
-            // If not waiting, just add them normally
-            var i = 0;
-            var count = [ops count];
-            for (i = 0; i < count; i++)
+            var i = 0,
+                count = [ops count];
+            for (; i < count; i++)
             {
                 [self addOperation:[ops objectAtIndex:i]];
             }
@@ -333,7 +331,6 @@ var cpOperationMainQueue = nil;
 /*!
     Wraps the given js function in a CPOperation and adds it to the queue.
     @param aFunction the JS function to add. Can be a synchronous function or a function returning a Promise.
-    @discussion This method automatically supports asynchronous functions/Promises because CPFunctionOperation is Promise-aware.
 */
 - (void)addOperationWithFunction:(JSObject)aFunction
 {
@@ -372,9 +369,6 @@ var cpOperationMainQueue = nil;
 
 /*!
     Blocks until all of the receiver’s queued and executing operations finish executing.
-    @warning This blocks the thread synchronously using a while loop. 
-             It works for Sync operations but WILL FREEZE/DEADLOCK with Promises.
-             Use 'await [queue waitUntilAllOperationsAreFinishedAsync]' instead.
 */
 - (void)waitUntilAllOperationsAreFinished
 {
@@ -382,22 +376,15 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    Waits asynchronously until the queue is completely empty.
-    Usage: await [queue waitUntilAllOperationsAreFinishedAsync];
+    Waits asynchronously until the queue is completely empty of active operations.
 */
 - (async JSObject)waitUntilAllOperationsAreFinishedAsync
 {
-    if ([self operationCount] == 0)
-        return Promise.resolve();
+    if ([self _unfinishedOperationCount] == 0)
+        return Promise.resolve(self);
 
-    return new Promise((resolve, reject) => {
-        
-        var awaiter = [[_CPOperationAwaiter alloc] initWithResolve:resolve reject:reject];
-        
-        [self addObserver:awaiter
-               forKeyPath:@"operationCount" 
-                  options:CPKeyValueObservingOptionNew 
-                  context:nil];
+    return new Promise((resolve) => {
+        [_drainResolvers addObject:resolve];
     });
 }
 
