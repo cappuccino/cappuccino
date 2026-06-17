@@ -39,7 +39,7 @@
 
 - (id)initWithHeaders:(CPArray)headers rows:(CPArray)rows width:(float)totalWidth
 {
-    return [self initWithHeaders:headers rows:rows width:totalWidth isEditable:YES acceptsRichText:NO];
+    return [self initWithHeaders:headers rows:rows width:totalWidth isEditable:YES acceptsRichText:YES];
 }
 
 - (id)initWithHeaders:(CPArray)headers rows:(CPArray)rows width:(float)totalWidth isEditable:(BOOL)isEditable acceptsRichText:(BOOL)acceptsRichText
@@ -246,6 +246,10 @@
     
     var textContainer = [[CPTextContainer alloc] initWithContainerSize:CGSizeMake(initialWidth - 8, 1e7)];
     var textView = [[CPTextView alloc] initWithFrame:CGRectMake(4, 2, initialWidth - 8, initialHeight - 4) textContainer:textContainer];
+    
+    // Set explicit zero margins inside the text view to keep height measurements aligned with usedRect
+    [textView setTextContainerInset:CGSizeMake(0, 0)];
+
     [textView setEditable:_isEditable];
     [textView setSelectable:YES];
     [textView setBackgroundColor:[CPColor clearColor]];
@@ -264,21 +268,11 @@
     [textView setFont:cellFont];
     [textView setTextColor:[CPColor blackColor]];
     
-    // Populate either rich text or plain text safely
-    if (text && [text isKindOfClass:[CPAttributedString class]])
-    {
-        [[textView textStorage] setAttributedString:text];
-    }
-    else if (text)
-    {
-        [textView setString:String(text)];
-    }
-    else
-    {
-        [textView setString:@""];
-    }
-    
+    if (text)
+        [textView insertText:text];
+
     [cellContainer addSubview:textView];
+
     return cellContainer;
 }
 
@@ -441,32 +435,55 @@
         
         for (var c = 0; c < numCols; c++) {
             var idx = startIndex + c;
+
             if (idx < [subviews count]) {
                 var cellView = [subviews objectAtIndex:idx];
                 var textView = [self getTextViewFromCell:cellView];
-                if (textView) {
+
+                if (textView)
+                {
                     var targetWidth = Math.max(10.0, colWidths[c] - 8);
-                    [[textView textContainer] setContainerSize:CGSizeMake(targetWidth, 1e7)];
+                    
+                    // Update frame size directly so that textContainer auto-resizes. 
+                    // Set a large temporary height to allow accurate wrapping measurements.
+                    [textView setFrameSize:CGSizeMake(targetWidth, 1e7)];
                     
                     var layoutManager = [textView layoutManager];
-                    var usedRect = layoutManager ? [layoutManager usedRectForTextContainer:[textView textContainer]] : nil;
-                    var wrappedHeight = (usedRect ? CGRectGetHeight(usedRect) : 0.0) + 12.0; 
-                    if (wrappedHeight > maxCellHeight) {
-                        maxCellHeight = wrappedHeight;
+                    if (layoutManager)
+                    {
+                        // FORCE LAYOUT RECALCULATION:
+                        // Because the width changed, we must force the lazy layout manager
+                        // to synchronously calculate glyphs and wraps at the new width.
+                        [layoutManager glyphRangeForTextContainer:[textView textContainer]];
                     }
+                    
+                    var usedRect = layoutManager ? [layoutManager usedRectForTextContainer:[textView textContainer]] : nil;
+                    var textHeight = usedRect ? CGRectGetHeight(usedRect) : 0.0;
+                    
+                    // Exact height + 8.0px padding (4.0px top, 4.0px bottom margin) inside the cell
+                    var wrappedHeight = textHeight + 8.0;
+
+                    if (wrappedHeight > maxCellHeight)
+                        maxCellHeight = wrappedHeight;
                 }
             }
         }
         
         var currentX = 0;
-        for (var c = 0; c < numCols; c++) {
+
+        for (var c = 0; c < numCols; c++)
+        {
             var idx = startIndex + c;
-            if (idx < [subviews count]) {
+
+            if (idx < [subviews count])
+            {
                 var cellView = [subviews objectAtIndex:idx];
                 [cellView setFrame:CGRectMake(currentX, currentY, colWidths[c], maxCellHeight)];
                 
                 var textView = [self getTextViewFromCell:cellView];
-                if (textView) {
+
+                if (textView)
+                {
                     var targetWidth = Math.max(10.0, colWidths[c] - 8);
                     var textY = 4.0;
                     var finalTextViewHeight = maxCellHeight - 8.0;
@@ -474,9 +491,9 @@
                 }
                 
                 var cellSubviews = [cellView subviews];
-                if ([cellSubviews count] > 0) {
+
+                if ([cellSubviews count] > 0)
                     [[cellSubviews objectAtIndex:0] setFrame:CGRectMake(0, 0, colWidths[c], maxCellHeight)];
-                }
             }
             currentX += colWidths[c];
         }
@@ -484,14 +501,17 @@
         return maxCellHeight;
     };
     
-    if (currentHeaders && [currentHeaders count] > 0) {
+    if (currentHeaders && [currentHeaders count] > 0)
+    {
         var headerHeight = layoutRow(cellIndex);
         cellIndex += numCols;
         currentY += headerHeight;
     }
     
-    if (currentRows) {
-        for (var r = 0; r < [currentRows count]; r++) {
+    if (currentRows)
+    {
+        for (var r = 0; r < [currentRows count]; r++)
+        {
             var rowHeight = layoutRow(cellIndex);
             cellIndex += numCols;
             currentY += rowHeight;
@@ -500,35 +520,10 @@
     
     // GUARD FRAME SIZE MUTATIONS
     var currentSize = [self frame].size;
+
     if (ABS(currentSize.width - newWidth) > 0.1 || ABS(currentSize.height - currentY) > 0.1)
     {
         [self setFrameSize:CGSizeMake(newWidth, currentY)];
-
-        // we need to re-layout the textview here.
-        // but this is not easy as the layout engine is not re-entrant
-        // this does not work: (delay does not matter), layout is always off
-// setTimeout(function() {
-//            var textView = [self superview];
-//
-//            if (textView && [textView isKindOfClass:[CPTextView class]])
-//            {
-//                var layoutManager = [textView layoutManager];
-//
-//                if (layoutManager)
-//                {
-//                    var charRange = [self _findCharacterRangeInLayoutManager:layoutManager];
-//
-//                    if (charRange && charRange.location !== CPNotFound)
-//                    {
-//                        [layoutManager invalidateLayoutForCharacterRange:charRange isSoft:NO actualCharacterRange:nil];
-//                        [layoutManager invalidateDisplayForGlyphRange:charRange];
-//                        [layoutManager _validateLayoutAndGlyphs];
-//                        [textView sizeToFit];
-//                    }
-//                }
-//            }
-//  }, 0);
-
     }
 
     _isResizing = NO;
