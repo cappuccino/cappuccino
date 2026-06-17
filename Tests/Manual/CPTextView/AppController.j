@@ -289,10 +289,6 @@
     [editMenu addItemWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"];
     [editMenu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];
     [editMenu addItemWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"];
-
-    var pasteAsPlainItem = [editMenu addItemWithTitle:@"Paste as Plain Text" action:@selector(pasteAsPlainText:) keyEquivalent:@"v"];
-    [pasteAsPlainItem setKeyEquivalentModifierMask:CPCommandKeyMask | CPAlternateKeyMask | CPShiftKeyMask];
-
     [editMenu addItemWithTitle:@"Delete" action:@selector(delete:) keyEquivalent:@""];
     [editMenu addItemWithTitle:@"Select All" action:@selector(selectAll:) keyEquivalent:@"a"];
     [editMenu addItemWithTitle:@"Undo" action:@selector(undo:) keyEquivalent:@"z"];
