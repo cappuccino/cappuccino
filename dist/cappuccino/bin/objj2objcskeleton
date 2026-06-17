@@ -4,11 +4,14 @@
 
 var fs = require("fs"),
     acorn = require("objj-parser"),
-    walk = require("acorn-walk"),
+    walk = require("objj-parser/util/walk"),
     stream = ObjectiveJ.term;
+
+    debugger;
 
 function main(args)
 {
+    debugger;
     args.shift();
 
     if (args.length < 1)
@@ -36,8 +39,6 @@ function raise(pos, message)
 
     throw syntaxError;
 }
-
-function ignore(_node, _st, _c) {}
 
 var errors = [],
     xcc = walk.make(
@@ -114,18 +115,7 @@ var errors = [],
                 else
                     raise(node.loc.start, "Action methods must have exactly one parameter");
             }
-        },
-        TypeDefStatement: ignore,
-        ClassStatement: ignore,
-        MessageSendExpression: ignore,
-        GlobalStatement: ignore,
-        ProtocolDeclarationStatement: ignore,
-        ArrayLiteral: ignore,
-        Reference: ignore,
-        DictionaryLiteral: ignore,
-        Dereference: ignore,
-        ImportStatement: ignore,
-        SelectorLiteralExpression: ignore
+        }
     }
 );
 
@@ -164,7 +154,7 @@ function parser(args)
             outputHeaderURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilenameWithNoExtension + ".h"]),
             outputImplementationURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilenameWithNoExtension + ".m"]),
             source = fs.readFileSync(sourcePath, { encoding: "utf8" }),
-            tokens = acorn.parse(source, { locations:true, sourceFile:sourcePath, ecmaVersion: 2022 }),
+            tokens = acorn.parse(source, { locations:true, sourceFile:sourcePath }),
             classesInformation = [],
             ObjectiveCSource = "",
             ObjectiveCHeader = "",
