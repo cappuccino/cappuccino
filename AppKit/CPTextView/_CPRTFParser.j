@@ -1076,6 +1076,25 @@ var kRgsymRtf = {
             if (numCols == 0 && [rows count] > 0) {
                 numCols = [[rows objectAtIndex:0] count];
             }
+
+            // Convert raw header strings into CPAttributedStrings
+            var parsedHeaders = [CPMutableArray array];
+            for (var c = 0; c < [headers count]; c++) {
+                var cellText = [headers objectAtIndex:c];
+                [parsedHeaders addObject:[self parseTableCellMarkdown:cellText isHeader:YES]];
+            }
+
+            // Convert raw row strings into CPAttributedStrings
+            var parsedRows = [CPMutableArray array];
+            for (var r = 0; r < [rows count]; r++) {
+                var rowData = [rows objectAtIndex:r];
+                var parsedRow = [CPMutableArray array];
+                for (var c = 0; c < [rowData count]; c++) {
+                    var cellText = [rowData objectAtIndex:c];
+                    [parsedRow addObject:[self parseTableCellMarkdown:cellText isHeader:NO]];
+                }
+                [parsedRows addObject:parsedRow];
+            }
             
             var totalNaturalW = 0.0;
             var colNaturalWidths = [];
@@ -1085,18 +1104,18 @@ var kRgsymRtf = {
             for (var c = 0; c < numCols; c++) {
                 var cellW = 80.0;
                 
-                if (c < headers.length) {
-                    var parsedText = [self parseInlineMarkdown:headers[c] isHeader:YES headerLevel:3];
-                    [measureTextField setStringValue:[parsedText string]];
+                if (c < [parsedHeaders count]) {
+                    var parsedText = [parsedHeaders objectAtIndex:c];
+                    [measureTextField setStringValue:parsedText._string];
                     [measureTextField sizeToFit];
                     cellW = Math.max(cellW, CGRectGetWidth([measureTextField frame]) + 24.0);
                 }
                 
-                for (var r = 0; r < [rows count]; r++) {
-                    var rowData = [rows objectAtIndex:r];
+                for (var r = 0; r < [parsedRows count]; r++) {
+                    var rowData = [parsedRows objectAtIndex:r];
                     if (c < [rowData count]) {
-                        var parsedText = [self parseInlineMarkdown:rowData[c] isHeader:NO headerLevel:3];
-                        [measureTextField setStringValue:[parsedText string]];
+                        var parsedText = [rowData objectAtIndex:c];
+                        [measureTextField setStringValue:parsedText._string];
                         [measureTextField sizeToFit];
                         cellW = Math.max(cellW, CGRectGetWidth([measureTextField frame]) + 24.0);
                     }
@@ -1105,7 +1124,8 @@ var kRgsymRtf = {
                 totalNaturalW += cellW;
             }
             
-            var matrixView = [[_CPTableTextAttachment alloc] initWithHeaders:headers rows:rows width:500.0];
+            // Pass the parsed attributed strings to the attachment
+            var matrixView = [[_CPTableTextAttachment alloc] initWithHeaders:parsedHeaders rows:parsedRows width:500.0];
             
             // Render utilizing the correct atomic attachment character string
             var tableAttrStr = [CPTextStorage attributedStringWithAttachment:matrixView];
@@ -1141,6 +1161,38 @@ var kRgsymRtf = {
     }
     
     return result;
+}
+
+// Parses a single table cell's Markdown, converting HTML breaks and handling list items
++ (CPAttributedString)parseTableCellMarkdown:(CPString)cellText isHeader:(BOOL)isHeader
+{
+    if (!cellText) {
+        return [[CPAttributedString alloc] initWithString:@""];
+    }
+
+    // Convert HTML line breaks to standard newlines
+    var cleanedText = cellText.replace(/<br\s*\/?>/gi, "\n");
+    var lines = cleanedText.split(/\r?\n/);
+    var cellResult = [[CPMutableAttributedString alloc] initWithString:@""];
+    
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        
+        // Convert dash or asterisk lists inside the cell to bullets
+        var listMatch = line.match(/^(\*|-)\s+(.*)$/);
+        if (listMatch) {
+            line = "  • " + listMatch[2];
+        }
+        
+        var parsedLine = [self parseInlineMarkdown:line isHeader:isHeader headerLevel:3];
+        [cellResult appendAttributedString:parsedLine];
+        
+        if (i < lines.length - 1) {
+            [cellResult appendAttributedString:[[CPAttributedString alloc] initWithString:@"\n"]];
+        }
+    }
+    
+    return cellResult;
 }
 
 + (BOOL)isTableHeaderLine:(CPString)line
