@@ -526,6 +526,31 @@
         [self setFrameSize:CGSizeMake(newWidth, currentY)];
     }
 
+        // we need to re-layout the textview here.
+        // but this is not easy as the layout engine is not re-entrant
+        // this does not work: (delay does not matter), layout is always off
+        // setTimeout(function() {
+        //            var textView = [self superview];
+        //
+        //            if (textView && [textView isKindOfClass:[CPTextView class]])
+        //            {
+        //                var layoutManager = [textView layoutManager];
+        //
+        //                if (layoutManager)
+        //                {
+        //                    var charRange = [self _findCharacterRangeInLayoutManager:layoutManager];
+        //
+        //                    if (charRange && charRange.location !== CPNotFound)
+        //                    {
+        //                        [layoutManager invalidateLayoutForCharacterRange:charRange isSoft:NO actualCharacterRange:nil];
+        //                        [layoutManager invalidateDisplayForGlyphRange:charRange];
+        //                        [layoutManager _validateLayoutAndGlyphs];
+        //                        [textView sizeToFit];
+        //                    }
+        //                }
+        //            }
+        //  }, 0);
+
     _isResizing = NO;
 }
 
