@@ -63,7 +63,7 @@ var cpOperationMainQueue = nil;
     {
         [object removeObserver:self forKeyPath:@"isFinished"];
         
-        // Fix: Check for cancellation specifically to reject the promise
+        // Check for cancellation specifically to reject the promise
         if ([object isCancelled])
         {
             _reject("Operation Cancelled");
@@ -100,6 +100,7 @@ var cpOperationMainQueue = nil;
 {
     CPArray     _operations;
     BOOL        _suspended;
+    BOOL        _isRunScheduled;
     int         _maxConcurrentOperationCount;
     CPString    _name @accessors(property=name);
 }
@@ -111,6 +112,7 @@ var cpOperationMainQueue = nil;
     {
         _operations = [[CPArray alloc] init];
         _suspended = NO;
+        _isRunScheduled = NO;
         // Default to serial execution (1 at a time). 
         // Increase this if you want multiple API calls running in parallel.
         _maxConcurrentOperationCount = 1; 
@@ -127,12 +129,15 @@ var cpOperationMainQueue = nil;
 */
 - (void)_runNextOpsInQueue
 {
-    if (_suspended || [_operations count] == 0)
+    if (_suspended || [_operations count] == 0 || _isRunScheduled)
         return;
+
+    _isRunScheduled = YES;
 
     // Use a timeout to break the call stack and let the UI update
     // if many operations finish/start rapidly.
     window.setTimeout(function() {
+        _isRunScheduled = NO;
         
         // Check how many are currently running
         var runningCount = 0;
@@ -168,8 +173,8 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    Internal KVO handler. When an operation finishes, we trigger the queue
-    to look for the next operation.
+    Internal KVO handler. When an operation finishes, we remove it from the
+    internal execution array and trigger the queue to look for the next operation.
 */
 - (void)observeValueForKeyPath:(CPString)keyPath 
                       ofObject:(id)object 
@@ -180,6 +185,15 @@ var cpOperationMainQueue = nil;
     {
         // Stop observing the finished operation to prevent memory leaks
         [object removeObserver:self forKeyPath:@"isFinished"];
+        
+        // Remove the operation from the active operations list
+        [self willChangeValueForKey:@"operations"];
+        [self willChangeValueForKey:@"operationCount"];
+        
+        [_operations removeObject:object];
+        
+        [self didChangeValueForKey:@"operations"];
+        [self didChangeValueForKey:@"operationCount"];
         
         // Trigger the queue to run the next item
         [self _runNextOpsInQueue];
@@ -201,8 +215,7 @@ var cpOperationMainQueue = nil;
     [_operations addObject:anOperation];
     [self _sortOpsByPriority:_operations];
     
-    // IMPORTANT: Observe the operation so we know when to start the next one.
-    // This replaces the old polling timer.
+    // Observe the operation so we know when to remove it and start the next one.
     [anOperation addObserver:self 
                   forKeyPath:@"isFinished" 
                      options:0 
@@ -265,7 +278,7 @@ var cpOperationMainQueue = nil;
             [self _runOpsSynchronously:ops];
         }
 
-        // Add them to the queue (even if finished, consistent with legacy impl)
+        // Add them to the queue
         var i = 0;
         for (; i < [ops count]; i++)
         {
@@ -275,7 +288,7 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    **NEW**: Asynchronous version of addOperations:waitUntilFinished:.
+    Asynchronous version of addOperations:waitUntilFinished:.
     Returns a Promise that resolves when all operations are finished.
     Safe to use with Promise-based CPFunctionOperations.
     
