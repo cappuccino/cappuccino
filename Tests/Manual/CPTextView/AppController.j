@@ -17,6 +17,9 @@
 @import <AppKit/CPTextStorage.j>
 @import <AppKit/_CPTableTextAttachment.j>
 
+@global CPBaselineOffsetAttributeName
+@global CPSuperscriptAttributeName
+
 @implementation AppController : CPObject
 {
     CPTextView      _textView;
@@ -75,6 +78,82 @@
 - (void)alignJustified:(id)sender
 {
     [_textView alignJustified:self];
+}
+
+- (void)makeSuperscript:(id)sender
+{
+    var range = [_textView selectedRange];
+    if (range.length > 0)
+    {
+        var textStorage = [_textView textStorage];
+        [textStorage beginEditing];
+        [textStorage removeAttribute:CPBaselineOffsetAttributeName range:range];
+        [textStorage addAttribute:CPSuperscriptAttributeName value:1 range:range];
+        [textStorage endEditing];
+        [_textView setNeedsDisplay:YES];
+    }
+}
+
+- (void)makeSubscript:(id)sender
+{
+    var range = [_textView selectedRange];
+    if (range.length > 0)
+    {
+        var textStorage = [_textView textStorage];
+        [textStorage beginEditing];
+        [textStorage removeAttribute:CPBaselineOffsetAttributeName range:range];
+        [textStorage addAttribute:CPSuperscriptAttributeName value:-1 range:range];
+        [textStorage endEditing];
+        [_textView setNeedsDisplay:YES];
+    }
+}
+
+- (void)raiseBaseline:(id)sender
+{
+    var range = [_textView selectedRange];
+    if (range.length > 0)
+    {
+        var textStorage = [_textView textStorage];
+        [textStorage beginEditing];
+        
+        var currentOffset = [textStorage attribute:CPBaselineOffsetAttributeName atIndex:range.location effectiveRange:nil] || 0.0;
+        var newOffset = currentOffset + 2.0;
+        
+        [textStorage addAttribute:CPBaselineOffsetAttributeName value:newOffset range:range];
+        [textStorage endEditing];
+        [_textView setNeedsDisplay:YES];
+    }
+}
+
+- (void)lowerBaseline:(id)sender
+{
+    var range = [_textView selectedRange];
+    if (range.length > 0)
+    {
+        var textStorage = [_textView textStorage];
+        [textStorage beginEditing];
+        
+        var currentOffset = [textStorage attribute:CPBaselineOffsetAttributeName atIndex:range.location effectiveRange:nil] || 0.0;
+        var newOffset = currentOffset - 2.0;
+        
+        [textStorage addAttribute:CPBaselineOffsetAttributeName value:newOffset range:range];
+        [textStorage endEditing];
+        [_textView setNeedsDisplay:YES];
+    }
+}
+
+- (void)resetBaseline:(id)sender
+{
+    var range = [_textView selectedRange];
+    if (range.length > 0)
+    {
+        var textStorage = [_textView textStorage];
+        [textStorage beginEditing];
+        [textStorage removeAttribute:CPBaselineOffsetAttributeName range:range];
+        [textStorage removeAttribute:CPSuperscriptAttributeName range:range];
+        [textStorage endEditing];
+        [_textView setNeedsDisplay:YES];
+    }
 }
 
 - (void)insertAttachment:(id)sender
@@ -215,6 +294,48 @@
     [alignJustifyBtn setTarget:self];
     [alignJustifyBtn setAction:@selector(alignJustified:)];
     [toolbarView addSubview:alignJustifyBtn];
+    currentX += 80;
+
+    // Baseline & Script Testing Group
+    var labelBaseline = [[CPTextField alloc] initWithFrame:CGRectMake(currentX, 22, 85, 20)];
+    [labelBaseline setStringValue:@"Baseline:"];
+    [labelBaseline setFont:[CPFont systemFontOfSize:12]];
+    [toolbarView addSubview:labelBaseline];
+    currentX += 85;
+
+    var superBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 45, 30)];
+    [superBtn setTitle:@"x²"];
+    [superBtn setTarget:self];
+    [superBtn setAction:@selector(makeSuperscript:)];
+    [toolbarView addSubview:superBtn];
+    currentX += 50;
+
+    var subBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 45, 30)];
+    [subBtn setTitle:@"x₂"];
+    [subBtn setTarget:self];
+    [subBtn setAction:@selector(makeSubscript:)];
+    [toolbarView addSubview:subBtn];
+    currentX += 50;
+
+    var raiseBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 50, 30)];
+    [raiseBtn setTitle:@"Base+"];
+    [raiseBtn setTarget:self];
+    [raiseBtn setAction:@selector(raiseBaseline:)];
+    [toolbarView addSubview:raiseBtn];
+    currentX += 55;
+
+    var lowerBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 50, 30)];
+    [lowerBtn setTitle:@"Base-"];
+    [lowerBtn setTarget:self];
+    [lowerBtn setAction:@selector(lowerBaseline:)];
+    [toolbarView addSubview:lowerBtn];
+    currentX += 55;
+
+    var normalBtn = [[CPButton alloc] initWithFrame:CGRectMake(currentX, 15, 60, 30)];
+    [normalBtn setTitle:@"Normal"];
+    [normalBtn setTarget:self];
+    [normalBtn setAction:@selector(resetBaseline:)];
+    [toolbarView addSubview:normalBtn];
 
     // Default return key target test
     var returnButton = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth([contentView bounds]) - 270, 15, 250, 30)];
@@ -305,6 +426,13 @@
     [formatMenu addItemWithTitle:@"Italic" action:@selector(italic:) keyEquivalent:@"i"];
     [formatMenu addItemWithTitle:@"Underline" action:@selector(underline:) keyEquivalent:@"u"];
     [formatMenu addItem:[CPMenuItem separatorItem]];
+    // Baseline & Scripts
+    [formatMenu addItemWithTitle:@"Superscript" action:@selector(makeSuperscript:) keyEquivalent:@"="];
+    [formatMenu addItemWithTitle:@"Subscript" action:@selector(makeSubscript:) keyEquivalent:@"-"];
+    [formatMenu addItemWithTitle:@"Raise Baseline" action:@selector(raiseBaseline:) keyEquivalent:@"+"];
+    [formatMenu addItemWithTitle:@"Lower Baseline" action:@selector(lowerBaseline:) keyEquivalent:@"_"];
+    [formatMenu addItemWithTitle:@"Reset Baseline" action:@selector(resetBaseline:) keyEquivalent:@"0"];
+    [formatMenu addItem:[CPMenuItem separatorItem]];
     // Alignment
     [formatMenu addItemWithTitle:@"Align Left" action:@selector(alignLeft:) keyEquivalent:@"{"];
     [formatMenu addItemWithTitle:@"Center" action:@selector(alignCenter:) keyEquivalent:@"|"];
@@ -326,6 +454,51 @@
     [_textView insertText:[[CPAttributedString alloc] initWithString:@"My Headline with blue background\n"
                                                           attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:@"Arial" size:18], elegantForeground, elegantBackground]
                                                                                                  forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName, CPBackgroundColorAttributeName]]]];
+
+    // VISUAL TEST CASES: Baseline, Superscript, and Subscript Features
+    [_textView insertText:@"\n"];
+    var sectionHeaderColor = [CPColor colorWithRed:0.5 green:0.25 blue:0.1 alpha:1.0];
+    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Baseline Shift & Superscript/Subscript Showcase\n"
+                                                          attributes:[CPDictionary dictionaryWithObjects:[[CPFont boldFontWithName:@"Arial" size:16], sectionHeaderColor]
+                                                                                                 forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]]]];
+
+    var normalFont = [CPFont systemFontOfSize:14.0];
+    
+    // Test Case: E = mc² (Superscript)
+    var formulaEnergy = [[CPAttributedString alloc] initWithString:@" • Energy mass equivalence: E = mc" attributes:@{ CPFontAttributeName: normalFont }];
+    var scriptTwo = [[CPAttributedString alloc] initWithString:@"2" attributes:@{ CPFontAttributeName: normalFont, CPSuperscriptAttributeName: 1 }];
+    [_textView insertText:formulaEnergy];
+    [_textView insertText:scriptTwo];
+    [_textView insertText:@"\n"];
+
+    // Test Case: H₂O (Subscript)
+    var formulaWater = [[CPAttributedString alloc] initWithString:@" • Chemical formula: H" attributes:@{ CPFontAttributeName: normalFont }];
+    var scriptSubTwo = [[CPAttributedString alloc] initWithString:@"2" attributes:@{ CPFontAttributeName: normalFont, CPSuperscriptAttributeName: -1 }];
+    var formulaWaterEnd = [[CPAttributedString alloc] initWithString:@"O\n" attributes:@{ CPFontAttributeName: normalFont }];
+    [_textView insertText:formulaWater];
+    [_textView insertText:scriptSubTwo];
+    [_textView insertText:formulaWaterEnd];
+
+    // Test Case: Ordinals
+    var ordText = [[CPAttributedString alloc] initWithString:@" • Ordinals: 1" attributes:@{ CPFontAttributeName: normalFont }];
+    var st = [[CPAttributedString alloc] initWithString:@"st" attributes:@{ CPFontAttributeName: normalFont, CPSuperscriptAttributeName: 1 }];
+    var rdText = [[CPAttributedString alloc] initWithString:@", 3" attributes:@{ CPFontAttributeName: normalFont }];
+    var rd = [[CPAttributedString alloc] initWithString:@"rd" attributes:@{ CPFontAttributeName: normalFont, CPSuperscriptAttributeName: 1 }];
+    [_textView insertText:ordText];
+    [_textView insertText:st];
+    [_textView insertText:rdText];
+    [_textView insertText:rd];
+    [_textView insertText:@"\n"];
+
+    // Test Case: Custom Baseline Offsets
+    var offsetLead = [[CPAttributedString alloc] initWithString:@" • Custom Offsets: " attributes:@{ CPFontAttributeName: normalFont }];
+    var offsetUp = [[CPAttributedString alloc] initWithString:@"Raised " attributes:@{ CPFontAttributeName: normalFont, CPBaselineOffsetAttributeName: 4.0 }];
+    var offsetDown = [[CPAttributedString alloc] initWithString:@"Lowered " attributes:@{ CPFontAttributeName: normalFont, CPBaselineOffsetAttributeName: -4.0 }];
+    var offsetNormal = [[CPAttributedString alloc] initWithString:@"Standard\n" attributes:@{ CPFontAttributeName: normalFont }];
+    [_textView insertText:offsetLead];
+    [_textView insertText:offsetUp];
+    [_textView insertText:offsetDown];
+    [_textView insertText:offsetNormal];
 
     // Highlighted Heading - Pine & Sage Green tones
     [_textView insertText:@"\n"];
