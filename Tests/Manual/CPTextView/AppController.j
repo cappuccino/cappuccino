@@ -8,6 +8,7 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/CPTextView.j>
 @import <AppKit/CPFontPanel.j>
+@import <AppKit/CPColorPanel.j>
 @import <AppKit/CPRulerView.j>
 @import <AppKit/CPSplitView.j>
 @import <AppKit/CPButton.j>
@@ -53,6 +54,11 @@
 - (void)orderFrontFontPanel:(id)sender
 {
    [[CPFontManager sharedFontManager] orderFrontFontPanel:self];
+}
+
+- (void)orderFrontColorPanel:(id)sender
+{
+    [[CPColorPanel sharedColorPanel] orderFront:self];
 }
 
 - (void)toggleRuler:(id)sender
@@ -420,6 +426,7 @@
     var formatMenu = [[CPMenu alloc] initWithTitle:@"Format Menu"];
     
     [formatMenu addItemWithTitle:@"Font panel" action:@selector(orderFrontFontPanel:) keyEquivalent:@"t"];
+    [formatMenu addItemWithTitle:@"Color panel" action:@selector(orderFrontColorPanel:) keyEquivalent:@"C"];
     [formatMenu addItem:[CPMenuItem separatorItem]];
     // Styles
     [formatMenu addItemWithTitle:@"Bold" action:@selector(bold:) keyEquivalent:@"b"];
