@@ -148,27 +148,58 @@ CPLineMovesUp = 4;
 
 - (void)setWidthTracksTextView:(BOOL)flag
 {
-    _widthTracksTextView = flag;
-    [_textView setPostsFrameChangedNotifications:flag];
+    if (_widthTracksTextView === flag)
+        return;
 
-    if (flag && _textView)
-    {
-        [[CPNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(textViewFrameChanged:)
-                                                     name:CPViewFrameDidChangeNotification
-                                                   object:_textView];
-    }
-    else
+    _widthTracksTextView = flag;
+    [self _updateFrameObserver];
+}
+
+// Controls whether the receiver adjusts the height of its bounding rectangle when its text view is resized.
+- (BOOL)heightTracksTextView
+{
+    return _heightTracksTextView;
+}
+
+- (void)setHeightTracksTextView:(BOOL)flag
+{
+    if (_heightTracksTextView === flag)
+        return;
+
+    _heightTracksTextView = flag;
+    [self _updateFrameObserver];
+}
+
+- (void)_updateFrameObserver
+{
+    if (_textView)
     {
         [[CPNotificationCenter defaultCenter] removeObserver:self
                                                         name:CPViewFrameDidChangeNotification
                                                       object:_textView];
+
+        var flag = _widthTracksTextView || _heightTracksTextView;
+        [_textView setPostsFrameChangedNotifications:flag];
+
+        if (flag)
+        {
+            [[CPNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(textViewFrameChanged:)
+                                                         name:CPViewFrameDidChangeNotification
+                                                       object:_textView];
+        }
     }
 }
 
 - (void)textViewFrameChanged:(CPNotification)aNotification
 {
-    var newSize = CGSizeMake([_textView frame].size.width, _size.height);
+    var newSize = CGSizeMake(_size.width, _size.height);
+
+    if (_widthTracksTextView)
+        newSize.width = [_textView frame].size.width;
+
+    if (_heightTracksTextView)
+        newSize.height = [_textView frame].size.height;
 
     [self setContainerSize:newSize];
 }
@@ -177,7 +208,9 @@ CPLineMovesUp = 4;
 {
     if (_textView)
     {
-        [self setWidthTracksTextView:NO];   // We only support width
+        [[CPNotificationCenter defaultCenter] removeObserver:self
+                                                        name:CPViewFrameDidChangeNotification
+                                                      object:_textView];
         [_textView setTextContainer:nil];
     }
 
@@ -185,7 +218,7 @@ CPLineMovesUp = 4;
 
     if (_textView)
     {
-        [self setWidthTracksTextView:_widthTracksTextView];   // We only support width
+        [self _updateFrameObserver];
         [_textView setTextContainer:self];
     }
 
