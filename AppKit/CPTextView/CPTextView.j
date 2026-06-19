@@ -1005,6 +1005,25 @@ Sets the selection to a range of characters in response to user action.
         if (doOverwrite && _placeholderString == nil && isNewSelection)
             [self setTypingAttributes:[_textStorage attributesAtIndex:CPMaxRange(range) effectiveRange:nil]];
 
+        // Update the shared CPColorPanel with the active selection color
+        if ([self _isFirstResponder] && [_textStorage length] > 0)
+        {
+            var currentTextColor = [self textColor] || [CPColor blackColor];
+
+            if ([self isRichText])
+            {
+                var charIndex = _selectionRange.location;
+                if (charIndex >= [_textStorage length])
+                    charIndex = MAX(0, charIndex - 1);
+
+                var attributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
+                if ([attributes objectForKey:CPForegroundColorAttributeName])
+                    currentTextColor = [attributes objectForKey:CPForegroundColorAttributeName];
+            }
+
+            [[CPColorPanel sharedColorPanel] setColor:currentTextColor];
+        }
+
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
     }
 
@@ -1798,6 +1817,13 @@ Sets the selection to a range of characters in response to user action.
 
     // SYNCHRONIZE ACTIVE PARAGRAPH MARKERS ON TYPING ATTRIBUTES CHANGE
     [self updateRuler];
+
+    // Synchronize CPColorPanel if text view is active
+    if ([self _isFirstResponder])
+    {
+        var currentTextColor = [_typingAttributes objectForKey:CPForegroundColorAttributeName] || [self textColor] || [CPColor blackColor];
+        [[CPColorPanel sharedColorPanel] setColor:currentTextColor];
+    }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
 
