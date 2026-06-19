@@ -38,6 +38,8 @@
 @global CPParagraphStyleAttributeName
 @global CPAttachmentAttributeName
 @global CPUnderlineStyleAttributeName
+@global CPBaselineOffsetAttributeName
+@global CPSuperscriptAttributeName
 
 @global CPLeftTabStopType
 @global CPRightTabStopType
@@ -72,6 +74,8 @@ var cp1252Map = {
     BOOL                script;
     BOOL                _tabChanged;
     CPTabStopType       _nextTabType;
+    int                 superscript;
+    float               baselineOffset;
 }
 
 - (id)init
@@ -104,6 +108,8 @@ var cp1252Map = {
     mynew.ulColour = ulColour;
     mynew._tabChanged = _tabChanged;
     mynew._nextTabType = _nextTabType;
+    mynew.superscript = superscript;
+    mynew.baselineOffset = baselineOffset;
 
     return mynew;
 }
@@ -169,6 +175,8 @@ var cp1252Map = {
     underline = 0;
     strikethrough = 0;
     script = 0;
+    superscript = 0;
+    baselineOffset = 0.0;
 }
 
 - (void)addTab:(float)location type:(CPTextTabType)type
@@ -212,6 +220,12 @@ var cp1252Map = {
     if (underline)
         [ret setObject:[CPNumber numberWithInt:1] forKey:CPUnderlineStyleAttributeName];
 
+    if (superscript !== 0)
+        [ret setObject:[CPNumber numberWithInt:superscript] forKey:CPSuperscriptAttributeName];
+
+    if (baselineOffset !== 0.0)
+        [ret setObject:[CPNumber numberWithFloat:baselineOffset] forKey:CPBaselineOffsetAttributeName];
+
     return ret;
 }
 @end
@@ -226,6 +240,12 @@ var kRgsymRtf = {
         "b"                                  : [ "b",        1,        false,     kRTFParserType_prop,    "propBold"],
         "ul"                                 : [ "ul",       1,        false,     kRTFParserType_prop,    "propUnderline"],
         "i"                                  : [ "i",        1,        false,     kRTFParserType_prop,    "propItalic"],
+        "super"                              : [ "super",    1,        true,      kRTFParserType_prop,    "propSuper"],
+        "sub"                                : [ "sub",      1,        true,      kRTFParserType_prop,    "propSub"],
+        "nosupersub"                         : [ "nosupersub",1,       true,      kRTFParserType_prop,    "propNoSuperSub"],
+        "up"                                 : [ "up",       6,        false,     kRTFParserType_prop,    "propUp"],
+        "dn"                                 : [ "dn",       6,        false,     kRTFParserType_prop,    "propDn"],
+        "plain"                              : [ "plain",    0,        false,     kRTFParserType_prop,    "propPlain"],
         "pgnucltr"                           : [ "pgnucltr", "pgULtr", true,      kRTFParserType_prop,    "propPgnFormat"],
         "pgnlcltr"                           : [ "pgnlcltr", "pgLLtr", true,      kRTFParserType_prop,    "propPgnFormat"],
         "qc"                                 : [ "qc",       "justC",  true,      kRTFParserType_prop,    "propJust"],
@@ -619,6 +639,36 @@ var kRgsymRtf = {
 
                _currentRun.underline = YES;
             }
+            break;
+
+        case "super":
+            [self _flushCurrentRun];
+            _currentRun.superscript = 1;
+            break;
+
+        case "sub":
+            [self _flushCurrentRun];
+            _currentRun.superscript = -1;
+            break;
+
+        case "nosupersub":
+            [self _flushCurrentRun];
+            _currentRun.superscript = 0;
+            break;
+
+        case "up":
+            [self _flushCurrentRun];
+            _currentRun.baselineOffset = parseFloat(param) / 2.0;
+            break;
+
+        case "dn":
+            [self _flushCurrentRun];
+            _currentRun.baselineOffset = -parseFloat(param) / 2.0;
+            break;
+
+        case "plain":
+            [self _flushCurrentRun];
+            [_currentRun resetFont];
             break;
 
         case "qc":  // paragraph center

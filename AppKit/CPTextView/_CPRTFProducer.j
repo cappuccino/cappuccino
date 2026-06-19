@@ -646,28 +646,29 @@ function _points2twips(a) { return (a) * 20.0; }
         else if ([currAttrib isEqualToString:CPUnderlineStyleAttributeName])
         {
             headerString += @"\\ul";
-            trailerString += @"\\ulnone";
+            trailerString += @"\\ulnone "; // trailing space important!
         }
         else if ([currAttrib isEqualToString:CPSuperscriptAttributeName])
         {
             var value = [attributes objectForKey:CPSuperscriptAttributeName],
-                svalue = [value intValue] * 6;
+                ivalue = [value intValue];
 
-            if (svalue > 0)
+            if (ivalue > 0)
             {
-                headerString += [CPString stringWithFormat:@"\\up%d", svalue];
-                trailerString += @"\\up0";
+                headerString += @"\\super";
+                trailerString += @"\\nosupersub "; // trailing space important!
             }
-            else if (svalue < 0)
+            else if (ivalue < 0)
             {
-                headerString += [CPString stringWithFormat:@"\\dn-%d", svalue];
-                trailerString += @"\\dn0";
+                headerString += @"\\sub";
+                trailerString += @"\\nosupersub "; // trailing space important!
             }
         }
         else if ([currAttrib isEqualToString:CPBaselineOffsetAttributeName])
         {
             var value = [attributes objectForKey:CPBaselineOffsetAttributeName],
-                svalue = [value floatValue] * 2;
+                fvalue = [value floatValue],
+                svalue = Math.round(fvalue * 2.0); // Convert standard points to RTF half-points
 
             if (svalue > 0)
             {
@@ -676,7 +677,8 @@ function _points2twips(a) { return (a) * 20.0; }
             }
             else if (svalue < 0)
             {
-                headerString += [CPString stringWithFormat:@"\\dn-%d", svalue];
+                // Correct negative formatting using safe positive boundary
+                headerString += [CPString stringWithFormat:@"\\dn%d", Math.abs(svalue)];
                 trailerString += @"\\dn0";
             }
         }
