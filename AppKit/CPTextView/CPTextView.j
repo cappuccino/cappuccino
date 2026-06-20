@@ -2333,22 +2333,22 @@ Sets the selection to a range of characters in response to user action.
     if (_selectionRange.location == numberOfGlyphs && _isNewlineCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]))
         return CGRectCreateCopy([_layoutManager extraLineFragmentRect]);
 
-        var caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
+    var caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
 
-        var loc = (_selectionRange.location == numberOfGlyphs) ? _selectionRange.location - 1 : _selectionRange.location,
-            caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
-            font = [_textStorage attribute:CPFontAttributeName atIndex:loc effectiveRange:nil] || [self font];
+    var loc = (_selectionRange.location == numberOfGlyphs) ? _selectionRange.location - 1 : _selectionRange.location,
+        caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
+        font = [_textStorage attribute:CPFontAttributeName atIndex:loc effectiveRange:nil] || [self font];
 
-        if (caretOffset > 0)
-        {
-            caretRect.origin.y += caretOffset;
-        }
+    if (caretOffset > 0)
+    {
+        caretRect.origin.y += caretOffset;
+    }
 
-        // Set the caret height to match the size of the active font
-        caretRect.size.height = [font size];
+    // Set the caret height to match the size of the active font
+    caretRect.size.height = [font size];
 
-        if (_selectionRange.location == numberOfGlyphs)
-            caretRect.origin.x += caretRect.size.width;
+    if (_selectionRange.location == numberOfGlyphs)
+        caretRect.origin.x += caretRect.size.width;
 
     caretRect.origin.x += _textContainerOrigin.x;
     caretRect.origin.y += _textContainerOrigin.y;
