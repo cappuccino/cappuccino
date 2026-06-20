@@ -1474,18 +1474,24 @@ var CPViewHighDPIDrawingEnabled = YES;
         origin.y *= size.height / frameSize.height;
     }
 
-    [self willChangeValueForKey:@"scaleSize"];
+    var newScaleSize;
 
     if (size && size.width !== 0 && size.height !== 0 && frameSize)
-        _scaleSize = CGSizeMake(frameSize.width / size.width, frameSize.height / size.height);
+        newScaleSize = CGSizeMake(frameSize.width / size.width, frameSize.height / size.height);
     else
-        _scaleSize = CGSizeMake(1.0, 1.0);
+        newScaleSize = CGSizeMake(1.0, 1.0);
 
-    _isScaled = (_scaleSize.width !== 1.0 || _scaleSize.height !== 1.0);
-    [self didChangeValueForKey:@"scaleSize"];
+    // Only update and propagate if the scale factor has actually changed
+    if (!CGSizeEqualToSize(_scaleSize, newScaleSize))
+    {
+        [self willChangeValueForKey:@"scaleSize"];
+        _scaleSize = newScaleSize;
+        _isScaled = (_scaleSize.width !== 1.0 || _scaleSize.height !== 1.0);
+        [self didChangeValueForKey:@"scaleSize"];
 
-    // Recompute hierarchy scale size safely
-    [self _scaleSizeUnitSquareToSize:CGSizeMake(1.0, 1.0)];
+        // Only traverse the view hierarchy if there is a genuine change in the scale state
+        [self _scaleSizeUnitSquareToSize:CGSizeMake(1.0, 1.0)];
+    }
 
     if (_layer)
         [_layer _owningViewBoundsChanged];
