@@ -2337,17 +2337,15 @@ Sets the selection to a range of characters in response to user action.
 
     var loc = (_selectionRange.location == numberOfGlyphs) ? _selectionRange.location - 1 : _selectionRange.location,
         caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
-        oldYPosition = CGRectGetMaxY(caretRect),
-        caretDescend = [_layoutManager _descentAtLocation:loc];
+        font = [_textStorage attribute:CPFontAttributeName atIndex:loc effectiveRange:nil] || [self font];
 
     if (caretOffset > 0)
     {
         caretRect.origin.y += caretOffset;
-        caretRect.size.height = oldYPosition - caretRect.origin.y;
     }
 
-    if (caretDescend < 0)
-        caretRect.size.height -= caretDescend;
+    // Set the caret height to match the size of the active font
+    caretRect.size.height = [font size];
 
     if (_selectionRange.location == numberOfGlyphs)
         caretRect.origin.x += caretRect.size.width;
@@ -2356,7 +2354,7 @@ Sets the selection to a range of characters in response to user action.
     caretRect.origin.y += _textContainerOrigin.y;
 
     caretRect.size.width = MAX(1.0, caretRect.size.width);
-    caretRect.size.height = MAX(1.0, caretRect.size.height);
+    caretRect.size.height = MAX(1.0, caretRect.size.height) + 2;
 
     return caretRect;
 }
