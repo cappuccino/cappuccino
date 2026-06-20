@@ -1475,18 +1475,16 @@ var CPViewHighDPIDrawingEnabled = YES;
     }
 
     [self willChangeValueForKey:@"scaleSize"];
-    if (size.width === 0 || size.height === 0)
-    {
-        _scaleSize = CGSizeMake(1.0, 1.0);
-    }
-    else
-    {
+
+    if (size && size.width !== 0 && size.height !== 0 && frameSize)
         _scaleSize = CGSizeMake(frameSize.width / size.width, frameSize.height / size.height);
-    }
+    else
+        _scaleSize = CGSizeMake(1.0, 1.0);
+
     _isScaled = (_scaleSize.width !== 1.0 || _scaleSize.height !== 1.0);
     [self didChangeValueForKey:@"scaleSize"];
 
-    // Recompute hierarchy scale size for this view and its descendants
+    // Recompute hierarchy scale size safely
     [self _scaleSizeUnitSquareToSize:CGSizeMake(1.0, 1.0)];
 
     if (_layer)
@@ -1501,7 +1499,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_window && !_window._inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
         [self _updateTrackingAreasWithRecursion:YES];
 }
-
 
 /*!
     Notifies subviews that the superview changed size.
