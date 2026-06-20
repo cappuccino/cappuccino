@@ -30,6 +30,9 @@
 @import "CPTextStorage.j"
 @import "CPFont.j"
 
+@global CPBaselineOffsetAttributeName
+@global CPSuperscriptAttributeName
+
 // forward declare these classes for type matching
 @class CPLayoutManager
 @class CPTextContainer
@@ -353,9 +356,41 @@ var CPSystemTypesetterFactory,
             if (!currentFont)
                 currentFont = [_textStorage font] || [CPFont systemFontOfSize:12.0];
 
-            ascent = [currentFont ascender];
-            descent = [currentFont descender];
-            leading = (ascent - descent) * 0.2; // FAKE leading
+            // Safely retrieve and validate CPBaselineOffsetAttributeName
+            var baselineOffset = [_currentAttributes objectForKey:CPBaselineOffsetAttributeName];
+            if (baselineOffset === nil || baselineOffset === undefined || typeof baselineOffset !== "number")
+                baselineOffset = 0.0;
+
+            // Safely retrieve and validate CPSuperscriptAttributeName
+            var superscript = [_currentAttributes objectForKey:CPSuperscriptAttributeName];
+            if (superscript === nil || superscript === undefined || typeof superscript !== "number")
+                superscript = 0;
+
+            if (superscript !== 0)
+            {
+                var size = [currentFont size],
+                    scaledSize = size * 0.65,
+                    fontName = [currentFont familyName],
+                    isBold = [currentFont isBold],
+                    isItalic = [currentFont isItalic];
+
+                currentFont = [CPFont _fontWithName:fontName size:scaledSize bold:isBold italic:isItalic];
+
+                if (baselineOffset === 0.0)
+                {
+                    if (superscript > 0)
+                        baselineOffset = size * 0.35;
+                    else
+                        baselineOffset = -size * 0.15;
+                }
+            }
+
+            var fontAscent = [currentFont ascender] || 0.0,
+                fontDescent = [currentFont descender] || 0.0;
+
+            ascent = fontAscent + baselineOffset;
+            descent = fontDescent + baselineOffset;
+            leading = (fontAscent - fontDescent) * 0.2; // FAKE leading
 
             currentFontLineHeight = ascent - descent + leading;
 
@@ -368,11 +403,15 @@ var CPSystemTypesetterFactory,
 
         }
 
-        if (currentFontLineHeight > _lineHeight)
-            _lineHeight = currentFontLineHeight;
+        // Clean bounds logic to prevent NaN and layout calculation overhead
+        var currentAscent = (ascent === undefined || isNaN(ascent)) ? 0.0 : ascent,
+            currentLineHeight = (currentFontLineHeight === undefined || isNaN(currentFontLineHeight)) ? 12.0 : currentFontLineHeight;
 
-        if (ascent > _lineBase)
-            _lineBase = ascent;
+        if (currentLineHeight > _lineHeight)
+            _lineHeight = currentLineHeight;
+
+        if (currentAscent > _lineBase)
+            _lineBase = currentAscent;
 
         lineRange.length++;
         measuringRange.length++;
@@ -546,7 +585,7 @@ var CPSystemTypesetterFactory,
                 isNewline = NO;
                 _lineFragments = [];
                 _lineHeight    = 0;
-                _lineBase      = ascent;
+                _lineBase      = 0;
                 isStartOfPhysicalLine = YES;
             }
 

@@ -472,9 +472,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         theDocument.addEventListener("touchmove", touchEventCallback, {passive: false});
         theDocument.addEventListener("touchcancel", touchEventCallback, {passive: false});
 
-        _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, NO);
-        _DOMWindow.addEventListener("wheel", scrollEventCallback, NO);
-        _DOMWindow.addEventListener("mousewheel", scrollEventCallback, NO);
+        _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, { passive: false });
+        _DOMWindow.addEventListener("wheel", scrollEventCallback, { passive: false });
+        _DOMWindow.addEventListener("mousewheel", scrollEventCallback, { passive: false });
 
         _DOMWindow.addEventListener("resize", resizeEventCallback, NO);
 
@@ -508,9 +508,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             _DOMWindow.removeEventListener("focus", onFocusEventCallback, NO);
 
             //FIXME: does firefox really need a different value?
-            _DOMWindow.removeEventListener("DOMMouseScroll", scrollEventCallback, NO);
-            _DOMWindow.removeEventListener("wheel", scrollEventCallback, NO);
-            _DOMWindow.removeEventListener("mousewheel", scrollEventCallback, NO);
+            _DOMWindow.removeEventListener("DOMMouseScroll", scrollEventCallback, { passive: false });
+            _DOMWindow.removeEventListener("wheel", scrollEventCallback, { passive: false });
+            _DOMWindow.removeEventListener("mousewheel", scrollEventCallback, { passive: false });
 
             [PlatformWindows removeObject:self];
 

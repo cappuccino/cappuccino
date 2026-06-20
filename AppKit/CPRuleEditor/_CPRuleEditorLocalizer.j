@@ -77,6 +77,9 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     }
 
     _dictionary = [CPDictionary dictionaryWithDictionary:dict];
+
+    // Post notification to let the rule editor know the translation dictionary is ready
+    [[CPNotificationCenter defaultCenter] postNotificationName:@"_CPRuleEditorLocalizerDidLoadNotification" object:self];
 }
 
 - (CPString)localizedStringForString:(CPString)aString
@@ -92,6 +95,233 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     }
 
     return aString;
+}
+
+#pragma mark - Formatting & Reordering Helpers
+
+- (CPString)_englishRepresentationForView:(id)aView
+{
+    if ([aView isKindOfClass:[CPPopUpButton class]])
+    {
+        var selectedItem = [aView selectedItem];
+        if (selectedItem)
+        {
+            var originalTitle = selectedItem._originalTitle;
+            
+            // Fallback: If not cached directly, inspect representedObject payload dictionary
+            if (!originalTitle)
+            {
+                var rep = [selectedItem representedObject];
+                if (rep && typeof rep === "object" && [rep respondsToSelector:@selector(objectForKey:)])
+                {
+                    originalTitle = [rep objectForKey:@"value"];
+                }
+                else if (rep && typeof rep === "string")
+                {
+                    originalTitle = rep;
+                }
+            }
+            if (!originalTitle)
+            {
+                originalTitle = [selectedItem title];
+            }
+            return "%[" + originalTitle + "]@";
+        }
+        return "%[]@";
+    }
+    else if ([aView isKindOfClass:[CPTextField class]] && ![aView isEditable])
+    {
+        return aView._originalText || [aView stringValue];
+    }
+    else
+    {
+        return "%@";
+    }
+}
+
+- (CPString)formattingKeyForViews:(CPArray)views
+{
+    var keyParts = [];
+    var count = [views count];
+    for (var i = 0; i < count; i++)
+    {
+        var view = [views objectAtIndex:i];
+        [keyParts addObject:[self _englishRepresentationForView:view]];
+    }
+    return [keyParts componentsJoinedByString:@" "];
+}
+
+- (void)localizeMenuItemsForViews:(CPArray)views
+{
+    var count = [views count];
+    for (var i = 0; i < count; i++)
+    {
+        var view = [views objectAtIndex:i];
+        if ([view isKindOfClass:[CPPopUpButton class]])
+        {
+            var menuItems = [view itemArray];
+            var menuItemsCount = [menuItems count];
+            var selectedItem = [view selectedItem];
+
+            for (var j = 0; j < menuItemsCount; j++)
+            {
+                var item = [menuItems objectAtIndex:j];
+                
+                if (!item._originalTitle)
+                {
+                    var rep = [item representedObject];
+                    if (rep && typeof rep === "object" && [rep respondsToSelector:@selector(objectForKey:)])
+                    {
+                        item._originalTitle = [rep objectForKey:@"value"];
+                    }
+                    else
+                    {
+                        item._originalTitle = [item title];
+                    }
+                }
+
+                // Temporarily select item to generate formatting key context
+                [view selectItem:item];
+
+                var tempKey = [self formattingKeyForViews:views];
+                var tempPattern = [self localizedStringForString:tempKey];
+
+                if (tempPattern !== tempKey)
+                {
+                    var regex = /%(\d+)\$(?:\[([^\]]+)\])?@/g;
+                    var match;
+                    while ((match = regex.exec(tempPattern)) !== null)
+                    {
+                        var position = parseInt(match[1], 10) - 1;
+                        var translatedValue = match[2];
+
+                        if (position === i && translatedValue)
+                        {
+                            [item setTitle:translatedValue];
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    [item setTitle:item._originalTitle];
+                }
+            }
+
+            if (selectedItem)
+            {
+                [view selectItem:selectedItem];
+            }
+        }
+    }
+}
+
+- (CPArray)localizeAndReorderViews:(CPArray)views
+{
+    var key = [self formattingKeyForViews:views];
+    var localizedPattern = [self localizedStringForString:key];
+
+    if (localizedPattern === key)
+    {
+        var count = [views count];
+
+        for (var i = 0; i < count; i++)
+        {
+            var originalView = [views objectAtIndex:i];
+            if ([originalView isKindOfClass:[CPPopUpButton class]])
+            {
+                var selectedItem = [originalView selectedItem];
+                if (selectedItem && selectedItem._originalTitle)
+                {
+                    [selectedItem setTitle:selectedItem._originalTitle];
+                }
+            }
+            else if ([originalView respondsToSelector:@selector(setStringValue:)] && originalView._originalText)
+            {
+                [originalView setStringValue:originalView._originalText];
+                
+                if ([originalView isKindOfClass:[CPTextField class]] && ![originalView isEditable])
+                {
+                    var font = [originalView font] || [CPFont systemFontOfSize:[CPFont systemFontSize]],
+                        size = [originalView._originalText sizeWithFont:font];
+                    [originalView setFrameSize:CGSizeMake(size.width + 4, CGRectGetHeight([originalView frame]))];
+                }
+            }
+        }
+
+        return views;
+    }
+
+    var newViews = [CPMutableArray array];
+    var regex = /%(\d+)\$(?:\[([^\]]+)\])?@/g;
+    var lastIndex = 0;
+    var match;
+
+    while ((match = regex.exec(localizedPattern)) !== null)
+    {
+        var literalText = localizedPattern.substring(lastIndex, match.index);
+        
+        // Only add a label if there are actual non-whitespace characters (like 'y')
+        if (literalText.length > 0 && /\S/.test(literalText))
+        {
+            var label = [CPTextField labelWithTitle:literalText];
+            [newViews addObject:label];
+        }
+
+        var position = parseInt(match[1], 10) - 1;
+        var translatedValue = match[2];
+
+        if (position >= 0 && position < [views count])
+        {
+            var originalView = [views objectAtIndex:position];
+
+            if (translatedValue !== undefined && translatedValue !== null)
+            {
+                if ([originalView isKindOfClass:[CPPopUpButton class]])
+                {
+                    var selectedItem = [originalView selectedItem];
+                    if (selectedItem)
+                    {
+                        if (!selectedItem._originalTitle)
+                        {
+                            selectedItem._originalTitle = [selectedItem title];
+                        }
+                        [selectedItem setTitle:translatedValue];
+                    }
+                }
+                else if ([originalView respondsToSelector:@selector(setStringValue:)])
+                {
+                    [originalView setStringValue:translatedValue];
+
+                    // Recalculate frame size if it is a static CPTextField to avoid visual clipping
+                    if ([originalView isKindOfClass:[CPTextField class]] && ![originalView isEditable])
+                    {
+                        var font = [originalView font] || [CPFont systemFontOfSize:[CPFont systemFontSize]],
+                            size = [translatedValue sizeWithFont:font];
+                        [originalView setFrameSize:CGSizeMake(size.width + 4, CGRectGetHeight([originalView frame]))];
+                    }
+                }
+            }
+
+            [newViews addObject:originalView];
+        }
+
+        lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < localizedPattern.length)
+    {
+        var literalText = localizedPattern.substring(lastIndex);
+        
+        // Only add a label if there are actual non-whitespace characters
+        if (literalText.length > 0 && /\S/.test(literalText))
+        {
+            var label = [CPTextField labelWithTitle:literalText];
+            [newViews addObject:label];
+        }
+    }
+
+    return newViews;
 }
 
 @end

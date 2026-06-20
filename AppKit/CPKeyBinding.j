@@ -30,6 +30,7 @@ CPStandardKeyBindings = {
     @"@.": @"cancelOperation:",
 
     @"@a": @"selectAll:",
+    @"@~$v": @"pasteAsPlainText:",
     @"^a": @"moveToBeginningOfParagraph:",
     @"^$a": @"moveToBeginningOfParagraphAndModifySelection:",
     @"^b": @"moveBackward:",

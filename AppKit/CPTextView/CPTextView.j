@@ -401,6 +401,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)superviewFrameChanged:(CPNotification)aNotification
 {
     _exposedRect = nil;
+    [self sizeToFit];
 }
 
 - (void)viewWillMoveToSuperview:(CPView)aView
@@ -1004,6 +1005,25 @@ Sets the selection to a range of characters in response to user action.
         if (doOverwrite && _placeholderString == nil && isNewSelection)
             [self setTypingAttributes:[_textStorage attributesAtIndex:CPMaxRange(range) effectiveRange:nil]];
 
+        // Update the shared CPColorPanel with the active selection color
+        if ([self _isFirstResponder] && [_textStorage length] > 0)
+        {
+            var currentTextColor = [self textColor] || [CPColor blackColor];
+
+            if ([self isRichText])
+            {
+                var charIndex = _selectionRange.location;
+                if (charIndex >= [_textStorage length])
+                    charIndex = MAX(0, charIndex - 1);
+
+                var attributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
+                if ([attributes objectForKey:CPForegroundColorAttributeName])
+                    currentTextColor = [attributes objectForKey:CPForegroundColorAttributeName];
+            }
+
+            [[CPColorPanel sharedColorPanel] setColor:currentTextColor];
+        }
+
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
     }
 
@@ -1397,7 +1417,10 @@ Sets the selection to a range of characters in response to user action.
 - (void)moveLeftAndModifySelection:(id)sender
 {
     if ([self isSelectable])
+    {
        [self _extendSelectionIntoDirection:-1 granularity:CPSelectByCharacter];
+       [self scrollRangeToVisible:_selectionRange];
+    }
 }
 
 - (void)moveBackward:(id)sender
@@ -1419,7 +1442,10 @@ Sets the selection to a range of characters in response to user action.
 - (void)moveLeft:(id)sender
 {
     if ([self isSelectable])
+    {
         [self _establishSelection:CPMakeRange(_selectionRange.location - (_selectionRange.length ? 0 : 1), 0) byExtending:NO];
+        [self scrollRangeToVisible:_selectionRange];
+    }
 }
 
 - (void)moveToEndOfParagraph:(id)sender
@@ -1653,7 +1679,10 @@ Sets the selection to a range of characters in response to user action.
 - (void)moveRight:(id)sender
 {
     if ([self isSelectable])
+    {
         [self _establishSelection:CPMakeRange(CPMaxRange(_selectionRange) + (_selectionRange.length ? 0 : 1), 0) byExtending:NO];
+        [self scrollRangeToVisible:_selectionRange];
+    }
 }
 
 - (void)_deleteForRange:(CPRange)changedRange
@@ -1788,6 +1817,13 @@ Sets the selection to a range of characters in response to user action.
 
     // SYNCHRONIZE ACTIVE PARAGRAPH MARKERS ON TYPING ATTRIBUTES CHANGE
     [self updateRuler];
+
+    // Synchronize CPColorPanel if text view is active
+    if ([self _isFirstResponder])
+    {
+        var currentTextColor = [_typingAttributes objectForKey:CPForegroundColorAttributeName] || [self textColor] || [CPColor blackColor];
+        [[CPColorPanel sharedColorPanel] setColor:currentTextColor];
+    }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
 
@@ -2069,8 +2105,16 @@ Sets the selection to a range of characters in response to user action.
     [self setFrameSize:[self frameSize]];
 }
 
+- (void)setBoundsSize:(CGSize)aSize
+{
+    _exposedRect = nil; // Clear the cached visible rect when bounds change
+    [super setBoundsSize:aSize];
+}
+
 - (void)setFrameSize:(CGSize)aSize
 {
+    _exposedRect = nil; // Clear the cached visible rect so it gets recalculated at the new size
+
     var desiredSize = CGSizeCreateCopy(aSize);
 
     if (_isHorizontallyResizable || _isVerticallyResizable)
@@ -2126,9 +2170,15 @@ Sets the selection to a range of characters in response to user action.
     if (CPEmptyRange(aRange))
     {
         if (aRange.location >= [_layoutManager numberOfCharacters])
-            rect = [_layoutManager extraLineFragmentRect];
+        {
+            rect = CGRectCreateCopy([_layoutManager extraLineFragmentRect]);
+            rect.size.width = 1.0;
+        }
         else
-            rect = [_layoutManager lineFragmentRectForGlyphAtIndex:aRange.location effectiveRange:nil];
+        {
+            rect = CGRectCreateCopy([_layoutManager boundingRectForGlyphRange:CPMakeRange(aRange.location, 1) inTextContainer:_textContainer]);
+            rect.size.width = 1.0;
+        }
     }
     else
     {
@@ -2287,17 +2337,15 @@ Sets the selection to a range of characters in response to user action.
 
     var loc = (_selectionRange.location == numberOfGlyphs) ? _selectionRange.location - 1 : _selectionRange.location,
         caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
-        oldYPosition = CGRectGetMaxY(caretRect),
-        caretDescend = [_layoutManager _descentAtLocation:loc];
+        font = [_textStorage attribute:CPFontAttributeName atIndex:loc effectiveRange:nil] || [self font];
 
     if (caretOffset > 0)
     {
         caretRect.origin.y += caretOffset;
-        caretRect.size.height = oldYPosition - caretRect.origin.y;
     }
 
-    if (caretDescend < 0)
-        caretRect.size.height -= caretDescend;
+    // Set the caret height to match the size of the active font
+    caretRect.size.height = [font size];
 
     if (_selectionRange.location == numberOfGlyphs)
         caretRect.origin.x += caretRect.size.width;
@@ -2306,7 +2354,7 @@ Sets the selection to a range of characters in response to user action.
     caretRect.origin.y += _textContainerOrigin.y;
 
     caretRect.size.width = MAX(1.0, caretRect.size.width);
-    caretRect.size.height = MAX(1.0, caretRect.size.height);
+    caretRect.size.height = MAX(1.0, caretRect.size.height) + 2;
 
     return caretRect;
 }
@@ -2624,6 +2672,10 @@ var compareTabStops = function(obj1, obj2, context) {
         [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
     }
+
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
 }
 
 - (void)rulerView:(CPRulerView)rulerView didRemoveMarker:(CPRulerMarker)marker
@@ -2843,11 +2895,16 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
         _typingAttributes = [[_textStorage attributesAtIndex:0 effectiveRange:nil] copy];
 
+        if (!_typingAttributes)
+            _typingAttributes = [CPMutableDictionary dictionary];
+
         if (![_typingAttributes valueForKey:CPForegroundColorAttributeName])
             [_typingAttributes setObject:[CPColor blackColor] forKey:CPForegroundColorAttributeName];
 
         _textColor = [_typingAttributes valueForKey:CPForegroundColorAttributeName];
-        [self setFont:[_typingAttributes valueForKey:CPFontAttributeName]];
+
+        var decodedFont = [_typingAttributes valueForKey:CPFontAttributeName] || [CPFont systemFontOfSize:12.0];
+        [self setFont:decodedFont];
 
         [self setString:[_textStorage string]];
 
@@ -3176,6 +3233,11 @@ var _CPCopyPlaceholder = '-';
 
             if (richtext)
             {
+                var shouldPastePlainText = [[CPApp currentEvent] modifierFlags] & (CPShiftKeyMask | CPAlternateKeyMask);
+
+                if (shouldPastePlainText && richtext._string)
+                    richtext = richtext._string;
+
                 [currentFirstResponder _pasteString:richtext];
 
                 return;
