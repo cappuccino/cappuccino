@@ -2618,7 +2618,7 @@ setBoundsOrigin:
 */
 - (void)_scaleSizeUnitSquareToSize:(CGSize)aSize
 {
-    _hierarchyScaleSize = CGSizeMakeCopy([_superview _hierarchyScaleSize]);
+    _hierarchyScaleSize = _superview ? CGSizeMakeCopy([_superview _hierarchyScaleSize]) : CGSizeMake(1.0, 1.0);
 
     if (_isScaled)
     {
