@@ -31,8 +31,9 @@
 @import "CPFont.j"
 
 @global _MakeRangeFromAbs
-
 @global document
+@global CPBaselineOffsetAttributeName
+@global CPSuperscriptAttributeName
 
 @class CPTextContainer
 @class CPTextView
@@ -964,16 +965,11 @@ _oncontextmenuhandler = function () { return false; };
                         if (frame)
                         {
                             var correctedRect = CGRectCreateCopy(frame);
-                            correctedRect.size.height -= frame._descent;
-                            correctedRect.origin.y -= frame._descent;
 
                             if (!rect)
                                 rect = CGRectCreateCopy(correctedRect);
                             else
                                 rect = CGRectUnion(rect, correctedRect);
-
-                            if (_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, CPMaxRange(selectedCharRange) - 1)]))
-                                 rect.size.width = containerSize.width - rect.origin.x;
                         }
                     }
                 }
@@ -1225,7 +1221,7 @@ var _objectsInRange = function(aList, aRange)
                 if (![attributes objectForKey:_CPAttachmentInvisible])
                 {
                     var view = [attributes objectForKey:_CPAttachmentView];
-                    var run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:nil, string:nil, view:view, paragraphStyle:paragraphStyle};
+                    var run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:nil, string:nil, view:view, paragraphStyle:paragraphStyle, underline:underline, baselineOffset:0.0};
                     _runs.push(run);
                 }
             }
@@ -1234,6 +1230,34 @@ var _objectsInRange = function(aList, aRange)
                 var color = [attributes objectForKey:CPForegroundColorAttributeName],
                     bgcolor = [attributes objectForKey:CPBackgroundColorAttributeName],
                     font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0];
+
+                var baselineOffset = [attributes objectForKey:CPBaselineOffsetAttributeName],
+                    superscript = [attributes objectForKey:CPSuperscriptAttributeName];
+
+                if (baselineOffset === nil || baselineOffset === undefined || typeof baselineOffset !== "number")
+                    baselineOffset = 0.0;
+
+                if (superscript === nil || superscript === undefined || typeof superscript !== "number")
+                    superscript = 0;
+
+                if (superscript !== 0)
+                {
+                    var size = [font size],
+                        scaledSize = size * 0.65,
+                        fontName = [font familyName],
+                        isBold = [font isBold],
+                        isItalic = [font isItalic];
+
+                    font = [CPFont _fontWithName:fontName size:scaledSize bold:isBold italic:isItalic];
+
+                    if (baselineOffset === 0.0)
+                    {
+                        if (superscript > 0)
+                            baselineOffset = size * 0.35;
+                        else
+                            baselineOffset = -size * 0.15;
+                    }
+                }
 
                 var currentLoc = effectiveRange.location,
                     strLen = string.length,
@@ -1254,7 +1278,9 @@ var _objectsInRange = function(aList, aRange)
                                     elem: nil,
                                     string: subString,
                                     bgcolor: bgcolor,
-                                    paragraphStyle: paragraphStyle
+                                    paragraphStyle: paragraphStyle,
+                                    underline: underline,
+                                    baselineOffset: baselineOffset
                                 };
                             _runs.push(run);
                         }
@@ -1267,7 +1293,9 @@ var _objectsInRange = function(aList, aRange)
                                 elem: nil,
                                 string: nil,
                                 bgcolor: nil,
-                                paragraphStyle: paragraphStyle
+                                paragraphStyle: paragraphStyle,
+                                underline: underline,
+                                baselineOffset: 0.0
                             };
                         _runs.push(tabRun);
 
@@ -1286,7 +1314,9 @@ var _objectsInRange = function(aList, aRange)
                             elem: nil,
                             string: subString,
                             bgcolor: bgcolor,
-                            paragraphStyle: paragraphStyle
+                            paragraphStyle: paragraphStyle,
+                            underline: underline,
+                            baselineOffset: baselineOffset
                         };
                     _runs.push(run);
                 }
@@ -1313,7 +1343,10 @@ var _objectsInRange = function(aList, aRange)
     {
         _glyphsFrames[i] = CGRectMake(origin.x, origin.y, someAdvancements[i].width, height);
         _glyphsFrames[i]._descent = someAdvancements[i].descent;
-        _glyphsOffsets[i] = height - someAdvancements[i].height;
+        
+        // Align the run's baseline with the common line baseline (_location.y)
+        _glyphsOffsets[i] = _location.y - someAdvancements[i].height;
+        
         origin.x += someAdvancements[i].width;
     }
 }
@@ -1458,7 +1491,10 @@ var _objectsInRange = function(aList, aRange)
         if (!_RectEqualToRectHorizontally(newLineFragment._fragmentRect, _fragmentRect))
             return NO;
 
-        if (newFragmentRuns[i].color !== oldFragmentRuns[i].color || newFragmentRuns[i].bgcolor !== oldFragmentRuns[i].bgcolor || newFragmentRuns[i].font !== oldFragmentRuns[i].font)
+        if (newFragmentRuns[i].color !== oldFragmentRuns[i].color || 
+            newFragmentRuns[i].bgcolor !== oldFragmentRuns[i].bgcolor || 
+            newFragmentRuns[i].font !== oldFragmentRuns[i].font ||
+            newFragmentRuns[i].baselineOffset !== oldFragmentRuns[i].baselineOffset)
             return NO;
 
         var oldStyle = oldFragmentRuns[i].paragraphStyle || [CPParagraphStyle defaultParagraphStyle],

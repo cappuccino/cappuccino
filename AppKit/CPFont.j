@@ -465,6 +465,22 @@ following:
 }
 
 /*!
+    Returns the font size. Cocoa/AppKit compatibility alias for -size.
+*/
+- (float)pointSize
+{
+    return [self size];
+}
+
+/*!
+    Returns the font name. Cocoa/AppKit compatibility alias for -familyName.
+*/
+- (CPString)fontName
+{
+    return [self familyName];
+}
+
+/*!
     Returns the font as a CSS string
 */
 - (CPString)cssString

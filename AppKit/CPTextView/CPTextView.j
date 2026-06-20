@@ -1010,6 +1010,25 @@ Sets the selection to a range of characters in response to user action.
         if (doOverwrite && _placeholderString == nil && isNewSelection)
             [self setTypingAttributes:[_textStorage attributesAtIndex:CPMaxRange(range) effectiveRange:nil]];
 
+        // Update the shared CPColorPanel with the active selection color
+        if ([self _isFirstResponder] && [_textStorage length] > 0)
+        {
+            var currentTextColor = [self textColor] || [CPColor blackColor];
+
+            if ([self isRichText])
+            {
+                var charIndex = _selectionRange.location;
+                if (charIndex >= [_textStorage length])
+                    charIndex = MAX(0, charIndex - 1);
+
+                var attributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
+                if ([attributes objectForKey:CPForegroundColorAttributeName])
+                    currentTextColor = [attributes objectForKey:CPForegroundColorAttributeName];
+            }
+
+            [[CPColorPanel sharedColorPanel] setColor:currentTextColor];
+        }
+
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
     }
 
@@ -1804,6 +1823,13 @@ Sets the selection to a range of characters in response to user action.
     // SYNCHRONIZE ACTIVE PARAGRAPH MARKERS ON TYPING ATTRIBUTES CHANGE
     [self updateRuler];
 
+    // Synchronize CPColorPanel if text view is active
+    if ([self _isFirstResponder])
+    {
+        var currentTextColor = [_typingAttributes objectForKey:CPForegroundColorAttributeName] || [self textColor] || [CPColor blackColor];
+        [[CPColorPanel sharedColorPanel] setColor:currentTextColor];
+    }
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
 
     // We always clear the saved selection range from the last mouse down event here.
@@ -2316,17 +2342,15 @@ Sets the selection to a range of characters in response to user action.
 
     var loc = (_selectionRange.location == numberOfGlyphs) ? _selectionRange.location - 1 : _selectionRange.location,
         caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
-        oldYPosition = CGRectGetMaxY(caretRect),
-        caretDescend = [_layoutManager _descentAtLocation:loc];
+        font = [_textStorage attribute:CPFontAttributeName atIndex:loc effectiveRange:nil] || [self font];
 
     if (caretOffset > 0)
     {
         caretRect.origin.y += caretOffset;
-        caretRect.size.height = oldYPosition - caretRect.origin.y;
     }
 
-    if (caretDescend < 0)
-        caretRect.size.height -= caretDescend;
+    // Set the caret height to match the size of the active font
+    caretRect.size.height = [font size];
 
     if (_selectionRange.location == numberOfGlyphs)
         caretRect.origin.x += caretRect.size.width;
@@ -2335,7 +2359,7 @@ Sets the selection to a range of characters in response to user action.
     caretRect.origin.y += _textContainerOrigin.y;
 
     caretRect.size.width = MAX(1.0, caretRect.size.width);
-    caretRect.size.height = MAX(1.0, caretRect.size.height);
+    caretRect.size.height = MAX(1.0, caretRect.size.height) + 2;
 
     return caretRect;
 }
