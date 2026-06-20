@@ -1474,6 +1474,21 @@ var CPViewHighDPIDrawingEnabled = YES;
         origin.y *= size.height / frameSize.height;
     }
 
+    [self willChangeValueForKey:@"scaleSize"];
+    if (size.width === 0 || size.height === 0)
+    {
+        _scaleSize = CGSizeMake(1.0, 1.0);
+    }
+    else
+    {
+        _scaleSize = CGSizeMake(frameSize.width / size.width, frameSize.height / size.height);
+    }
+    _isScaled = (_scaleSize.width !== 1.0 || _scaleSize.height !== 1.0);
+    [self didChangeValueForKey:@"scaleSize"];
+
+    // Recompute hierarchy scale size for this view and its descendants
+    [self _scaleSizeUnitSquareToSize:CGSizeMake(1.0, 1.0)];
+
     if (_layer)
         [_layer _owningViewBoundsChanged];
 
