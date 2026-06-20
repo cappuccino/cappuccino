@@ -797,10 +797,15 @@ var kRgsymRtf = {
                  [self _flushCurrentRun];
                  var fontIndex = parseInt(param) - 1;
 
-                 if (_currentRun && fontIndex >= 0)
-                     _currentRun.fgColour = _colorArray[fontIndex];
+                 if (_currentRun)
+                 {
+                     if (fontIndex >= 0 && fontIndex < _colorArray.length)
+                         _currentRun.fgColour = _colorArray[fontIndex];
+                     else
+                         _currentRun.fgColour = nil;
+                 }
 
-                break;
+                 break;
 
             case "cb":  // change background color
             case "highlight":
