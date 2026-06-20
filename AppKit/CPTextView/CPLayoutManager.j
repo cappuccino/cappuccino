@@ -965,16 +965,11 @@ _oncontextmenuhandler = function () { return false; };
                         if (frame)
                         {
                             var correctedRect = CGRectCreateCopy(frame);
-                            correctedRect.size.height -= frame._descent;
-                            correctedRect.origin.y -= frame._descent;
 
                             if (!rect)
                                 rect = CGRectCreateCopy(correctedRect);
                             else
                                 rect = CGRectUnion(rect, correctedRect);
-
-                            if (_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, CPMaxRange(selectedCharRange) - 1)]))
-                                 rect.size.width = containerSize.width - rect.origin.x;
                         }
                     }
                 }
@@ -1348,7 +1343,10 @@ var _objectsInRange = function(aList, aRange)
     {
         _glyphsFrames[i] = CGRectMake(origin.x, origin.y, someAdvancements[i].width, height);
         _glyphsFrames[i]._descent = someAdvancements[i].descent;
-        _glyphsOffsets[i] = height - someAdvancements[i].height;
+        
+        // Align the run's baseline with the common line baseline (_location.y)
+        _glyphsOffsets[i] = _location.y - someAdvancements[i].height;
+        
         origin.x += someAdvancements[i].width;
     }
 }
