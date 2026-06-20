@@ -3237,6 +3237,11 @@ var _CPCopyPlaceholder = '-';
 
             if (richtext)
             {
+                var shouldPastePlainText = [[CPApp currentEvent] modifierFlags] & (CPShiftKeyMask | CPAlternateKeyMask);
+
+                if (shouldPastePlainText && richtext._string)
+                    richtext = richtext._string;
+
                 [currentFirstResponder _pasteString:richtext];
 
                 return;
