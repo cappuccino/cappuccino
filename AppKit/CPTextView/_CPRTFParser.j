@@ -979,7 +979,11 @@ var kRgsymRtf = {
                 else
                 {
                     _freename += tmp;
-                   [self _appendPlainString:tmp];
+                    // Only append literal spaces to the document if we are in the active body state
+                    if (_curState == 0)
+                    {
+                        [self _appendPlainString:tmp];
+                    }
                 }
 
                 break;
@@ -1025,7 +1029,8 @@ var kRgsymRtf = {
 
                 if (_hexreturn)
                 {
-                    if (ch.length > 0)
+                    // Only append decoded characters if we are in the active body state
+                    if (ch.length > 0 && _curState === 0)
                     {
                         var byteVal = parseInt(ch, 16);
                         var unicodeVal = byteVal;
