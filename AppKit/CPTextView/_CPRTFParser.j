@@ -334,6 +334,7 @@ var kRgsymRtf = {
     CPArray             _fontArray;
     CPString            _freename;
     BOOL                _parsingFontTable;
+    BOOL                _keywordIsControlWord;
 
     // Table parsing state
     BOOL                _inTableActive;
@@ -353,6 +354,7 @@ var kRgsymRtf = {
         _states             = [];
         _currentParseIndex  = 0;
         _hexreturn          = NO;
+        _keywordIsControlWord = NO;
         _result             = [CPAttributedString new];
         _colorArray         = [];
         _fontArray          = ['Arial'];   // FIXME: should be name of system font
@@ -795,10 +797,15 @@ var kRgsymRtf = {
                  [self _flushCurrentRun];
                  var fontIndex = parseInt(param) - 1;
 
-                 if (_currentRun && fontIndex >= 0)
-                     _currentRun.fgColour = _colorArray[fontIndex];
+                 if (_currentRun)
+                 {
+                     if (fontIndex >= 0 && fontIndex < _colorArray.length)
+                         _currentRun.fgColour = _colorArray[fontIndex];
+                     else
+                         _currentRun.fgColour = nil;
+                 }
 
-                break;
+                 break;
 
             case "cb":  // change background color
             case "highlight":
@@ -889,7 +896,12 @@ var kRgsymRtf = {
     ch = rtf.charAt(_currentParseIndex);
 
     if (!/[a-zA-Z]/.test(ch))
+    {
+        _keywordIsControlWord = NO;
         return [self _translateKeyword:ch parameter:nil fParameter:fParam];
+    }
+
+    _keywordIsControlWord = YES;
 
     while (new RegExp("[a-zA-Z]").test(ch))
     {
@@ -972,12 +984,17 @@ var kRgsymRtf = {
                 else
                 {
                     _freename += tmp;
-                   [self _appendPlainString:tmp];
+                    // Only append literal spaces to the document if we are in the active body state
+                    if (_curState == 0)
+                    {
+                        [self _appendPlainString:tmp];
+                    }
                 }
 
                 break;
 
             case "{":
+                lastchar = 0;
                 if (_waitingForNextRow)
                     [self _flushTableIfAny];
 
@@ -986,6 +1003,7 @@ var kRgsymRtf = {
                 break;
 
             case "}":
+                lastchar = 0;
                 if (_waitingForNextRow)
                     [self _flushTableIfAny];
 
@@ -1009,14 +1027,15 @@ var kRgsymRtf = {
                 _freename = '';
                 ch = [self _parseKeyword:rtf length:len];
 
-                if (!_hexreturn && ch.length == 0)
+                if (!_hexreturn && _keywordIsControlWord)
                     lastchar = 1;
                 else
                     lastchar = 0;
 
                 if (_hexreturn)
                 {
-                    if (ch.length > 0)
+                    // Only append decoded characters if we are in the active body state
+                    if (ch.length > 0 && _curState === 0)
                     {
                         var byteVal = parseInt(ch, 16);
                         var unicodeVal = byteVal;
@@ -1040,6 +1059,7 @@ var kRgsymRtf = {
             case 0x0a:
             case '\n':
             case '\r':
+                lastchar = 0;
                 break;
 
             default:

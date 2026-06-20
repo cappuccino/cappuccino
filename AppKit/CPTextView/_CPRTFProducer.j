@@ -542,6 +542,17 @@ function _points2twips(a) { return (a) * 20.0; }
                         cellText = "";
                     }
                     
+                    // Safely extract text representation from CPAttributedString / CPTextStorage if present
+                    if (cellText && typeof cellText === "object") {
+                        if (typeof cellText.string === "function") {
+                            cellText = [cellText string];
+                        } else if (cellText._string !== undefined) {
+                            cellText = cellText._string;
+                        } else if (cellText.string !== undefined) {
+                            cellText = cellText.string;
+                        }
+                    }
+
                     cellText = String(cellText);
                     cellText = cellText.replace(/\\/g, '\\\\');
                     cellText = cellText.replace(/{/g, '\\{');
@@ -715,7 +726,7 @@ function _points2twips(a) { return (a) * 20.0; }
         var nobraces;
 
         if ([headerString length])
-            nobraces = [CPString stringWithFormat:@"%@ %@}", headerString, substring];
+            nobraces = [CPString stringWithFormat:@"%@ %@", headerString, substring];
         else
             nobraces = substring;
 
