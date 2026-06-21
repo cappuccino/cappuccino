@@ -72,6 +72,7 @@ _oncontextmenuhandler = function () { return false; };
 
     BOOL            _isValidatingLayoutAndGlyphs;
     CPRange         _removeInvalidLineFragmentsRange;
+    CPRange         _lastEditedRange;
 }
 
 
@@ -96,6 +97,7 @@ _oncontextmenuhandler = function () { return false; };
     _textContainers                 = [[CPMutableArray alloc] init];
     _textStorage                    = [[CPTextStorage alloc] init];
     _typesetter                     = [CPTypesetter sharedSystemTypesetter];
+    _lastEditedRange                = nil;
 
     [_textStorage addLayoutManager:self];
 }
@@ -370,6 +372,16 @@ _oncontextmenuhandler = function () { return false; };
             l = _lineFragmentsForRescue.length,
             newTargetLine = startLineForDOMRemoval + removalSkip;
 
+        // Ensure that the remaining lines we are attempting to rescue 
+        // start after the end of the edited region.
+        if (newTargetLine < l && _lastEditedRange)
+        {
+            var firstRescuedLineNewLocation = _lineFragmentsForRescue[newTargetLine]._range.location + rangeOffset;
+
+            if (firstRescuedLineNewLocation < CPMaxRange(_lastEditedRange))
+                return NO;
+        }
+
         for (; newTargetLine < l; newTargetLine++)
         {
             _lineFragmentsForRescue[newTargetLine]._isInvalid = NO;    // protect them from final removal
@@ -440,6 +452,8 @@ _oncontextmenuhandler = function () { return false; };
 - (void)textStorage:(CPTextStorage)textStorage edited:(unsigned)mask range:(CPRange)charRange changeInLength:(int)delta invalidatedRange:(CPRange)invalidatedRange
 {
     var actualRange = CPMakeRange(CPNotFound,0);
+
+    _lastEditedRange = CPMakeRangeCopy(charRange);
 
     [self invalidateLayoutForCharacterRange:invalidatedRange isSoft:NO actualCharacterRange:actualRange];
     [self invalidateDisplayForGlyphRange:actualRange];
