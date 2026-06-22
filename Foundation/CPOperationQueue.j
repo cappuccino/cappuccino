@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ * Modernized with Promises, Async/Await support, and KVO-based triggering.
  */
 
 @import "CPArray.j"
@@ -25,81 +27,193 @@
 @import "CPObject.j"
 @import "CPOperation.j"
 @import "CPString.j"
-@import "CPTimer.j"
 
 // the global queue (mainQueue)
 var cpOperationMainQueue = nil;
 
+// --------------------------------------------------------------------------------
+// _CPOperationAwaiter
+// A private helper class to bridge KVO notifications to a JS Promise.
+// Handles single operation completion.
+// --------------------------------------------------------------------------------
+@implementation _CPOperationAwaiter : CPObject
+{
+    JSObject    _resolve;
+    JSObject    _reject;
+}
+
+- (id)initWithResolve:(JSObject)resolve reject:(JSObject)reject
+{
+    self = [super init];
+    if (self)
+    {
+        _resolve = resolve;
+        _reject = reject;
+    }
+    return self;
+}
+
+- (void)observeValueForKeyPath:(CPString)keyPath 
+                      ofObject:(id)object 
+                        change:(CPDictionary)change 
+                       context:(id)context
+{
+    if (keyPath === @"isFinished" && [object isFinished])
+    {
+        [object removeObserver:self forKeyPath:@"isFinished"];
+        
+        if ([object isCancelled])
+        {
+            _reject("Operation Cancelled");
+        }
+        else
+        {
+            _resolve(object);
+        }
+    }
+}
+@end
+
+
+// --------------------------------------------------------------------------------
+// CPOperationQueue
+// --------------------------------------------------------------------------------
+
 /*!
     @class CPOperationQueue
-    @brief Represents an operation queue that can run CPOperations
+    @brief Represents an operation queue that can run CPOperations.
+    @discussion This queue supports asynchronous operations via Promises/Async functions 
+                and allows awaiting operation completion using standard JS async/await syntax.
 */
 @implementation CPOperationQueue : CPObject
 {
-    CPArray _operations;
-    BOOL _suspended;
-    CPString _name @accessors(property=name);
-    CPTimer _timer;
+    CPArray     _operations;
+    BOOL        _suspended;
+    BOOL        _isRunScheduled;
+    int         _maxConcurrentOperationCount;
+    CPString    _name @accessors(property=name);
+    CPArray     _drainResolvers;
 }
 
 - (id)init
 {
     self = [super init];
-
     if (self)
     {
         _operations = [[CPArray alloc] init];
         _suspended = NO;
-//        _currentlyModifyingOps = NO;
-        _timer = [CPTimer scheduledTimerWithTimeInterval:0.01
-                                                  target:self
-                                                selector:@selector(_runNextOpsInQueue)
-                                                userInfo:nil
-                                                 repeats:YES];
+        _isRunScheduled = NO;
+        _maxConcurrentOperationCount = 1; 
+        _drainResolvers = [[CPArray alloc] init];
     }
     return self;
 }
 
+#pragma mark -
+#pragma mark Execution Engine
+
+- (int)_unfinishedOperationCount
+{
+    var count = 0,
+        i = 0,
+        total = [_operations count];
+        
+    for (; i < total; i++)
+    {
+        var op = [_operations objectAtIndex:i];
+        if (![op isFinished] && ![op isCancelled])
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+/*!
+    Logic to determine if we should start new operations.
+    Triggered when an operation is added or when an operation finishes.
+*/
 - (void)_runNextOpsInQueue
 {
-    if (!_suspended && [self operationCount] > 0)
-    {
-        var i = 0,
-            count = [_operations count];
+    if (_suspended || [_operations count] == 0 || _isRunScheduled)
+        return;
 
-        for (; i < count; i++)
+    _isRunScheduled = YES;
+
+    // Use a timeout to break the call stack and let the UI update
+    // if many operations finish/start rapidly.
+    window.setTimeout(function() {
+        _isRunScheduled = NO;
+        
+        // Check how many are currently running
+        var runningCount = 0;
+        var i = 0;
+        var count = [_operations count];
+        
+        for (i = 0; i < count; i++)
         {
+            if ([[_operations objectAtIndex:i] isExecuting])
+                runningCount++;
+        }
+
+        // If we reached our max concurrency, stop starting new ones
+        if (runningCount >= _maxConcurrentOperationCount)
+            return;
+
+        // Try to start pending operations
+        for (i = 0; i < count; i++)
+        {
+            // Re-check concurrency limit inside the loop
+            if (runningCount >= _maxConcurrentOperationCount)
+                break;
+
             var op = [_operations objectAtIndex:i];
+            
             if ([op isReady] && ![op isFinished] && ![op isExecuting])
             {
                 [op start];
+                runningCount++;
+            }
+        }
+    }, 0);
+}
+
+/*!
+    Internal KVO handler. When an operation finishes, we trigger the queue
+    to look for the next operation.
+*/
+- (void)observeValueForKeyPath:(CPString)keyPath 
+                      ofObject:(id)object 
+                        change:(CPDictionary)change 
+                       context:(id)context
+{
+    if (keyPath === @"isFinished" && [object isFinished])
+    {
+        // Stop observing the finished operation to prevent memory leaks
+        [object removeObserver:self forKeyPath:@"isFinished"];
+        
+        // Trigger the queue to run the next item
+        [self _runNextOpsInQueue];
+
+        // Resolve any pending drain promises if the queue has fully completed
+        if ([self _unfinishedOperationCount] == 0)
+        {
+            var resolvers = [_drainResolvers copy];
+            [_drainResolvers removeAllObjects];
+            
+            var i = 0,
+                count = [resolvers count];
+            for (; i < count; i++)
+            {
+                var resolve = [resolvers objectAtIndex:i];
+                resolve(self);
             }
         }
     }
 }
 
-- (void)_enableTimer:(BOOL)enable
-{
-    if (!enable)
-    {
-        if (_timer)
-        {
-            [_timer invalidate];
-            _timer = nil;
-        }
-    }
-    else
-    {
-        if (!_timer)
-        {
-            _timer = [CPTimer scheduledTimerWithTimeInterval:0.01
-                                                      target:self
-                                                    selector:@selector(_runNextOpsInQueue)
-                                                    userInfo:nil
-                                                     repeats:YES];
-        }
-    }
-}
+#pragma mark -
+#pragma mark Adding Operations
 
 /*!
     Adds the specified operation object to the receiver.
@@ -109,40 +223,122 @@ var cpOperationMainQueue = nil;
 {
     [self willChangeValueForKey:@"operations"];
     [self willChangeValueForKey:@"operationCount"];
+    
     [_operations addObject:anOperation];
     [self _sortOpsByPriority:_operations];
+    
+    // Only observe the operation if it hasn't finished already
+    if (![anOperation isFinished])
+    {
+        [anOperation addObserver:self 
+                      forKeyPath:@"isFinished" 
+                         options:0 
+                         context:nil];
+    }
+
     [self didChangeValueForKey:@"operations"];
     [self didChangeValueForKey:@"operationCount"];
+
+    // Trigger execution
+    [self _runNextOpsInQueue];
+}
+
+/*!
+    Adds an operation and returns a Promise that resolves when the operation finishes.
+    This allows you to 'await' the operation execution in the queue.
+*/
+- (async JSObject)addOperationAsync:(CPOperation)anOperation
+{
+    return new Promise((resolve, reject) => {
+        
+        // Create our helper observer which holds the resolve/reject callbacks
+        var awaiter = [[_CPOperationAwaiter alloc] initWithResolve:resolve reject:reject];
+        
+        // Add the observer for KVO
+        [anOperation addObserver:awaiter
+                      forKeyPath:@"isFinished" 
+                         options:CPKeyValueObservingOptionNew 
+                         context:nil];
+                         
+        // Add to queue to start execution
+        [self addOperation:anOperation];
+    });
 }
 
 /*!
     Adds the specified array of operations to the queue.
     @param ops The array of CPOperation objects that you want to add to the receiver.
-    @param wait If YES, the method only returns once all of the specified operations finish executing. If NO, the operations are added to the queue and control returns immediately to the caller.
+    @param wait If YES, the method only returns once all of the specified operations finish executing. 
+                If NO, the operations are added to the queue and control returns immediately.
 */
 - (void)addOperations:(CPArray)ops waitUntilFinished:(BOOL)wait
 {
-    if (ops)
+    if (ops && [ops count] > 0)
     {
+        // Legacy Sync blocking mode
         if (wait)
         {
             [self _sortOpsByPriority:ops];
             [self _runOpsSynchronously:ops];
         }
 
-        [_operations addObjectsFromArray:ops];
-        [self _sortOpsByPriority:_operations];
+        // Add them to the queue
+        var i = 0;
+        for (; i < [ops count]; i++)
+        {
+            [self addOperation:[ops objectAtIndex:i]];
+        }
     }
 }
 
 /*!
-    Wraps the given js function in a CPOperation and adds it to the queue
-    @param aFunction the JS function to add
+    Asynchronous version of addOperations:waitUntilFinished:.
+    Returns a Promise that resolves when all operations are finished.
+    Safe to use with Promise-based CPFunctionOperations.
+*/
+- (async JSObject)addOperationsAsync:(CPArray)ops waitUntilFinished:(BOOL)wait
+{
+    if (ops && [ops count] > 0)
+    {
+        if (wait)
+        {
+            var promises = [];
+            var i = 0,
+                count = [ops count];
+            
+            for (; i < count; i++)
+            {
+                promises.push([self addOperationAsync:[ops objectAtIndex:i]]);
+            }
+            
+            return Promise.all(promises);
+        }
+        else
+        {
+            var i = 0,
+                count = [ops count];
+            for (; i < count; i++)
+            {
+                [self addOperation:[ops objectAtIndex:i]];
+            }
+        }
+    }
+    
+    return Promise.resolve();
+}
+
+
+/*!
+    Wraps the given js function in a CPOperation and adds it to the queue.
+    @param aFunction the JS function to add. Can be a synchronous function or a function returning a Promise.
 */
 - (void)addOperationWithFunction:(JSObject)aFunction
 {
     [self addOperation:[CPFunctionOperation functionOperationWithFunction:aFunction]];
 }
+
+#pragma mark -
+#pragma mark Queue Management
 
 - (CPArray)operations
 {
@@ -151,12 +347,7 @@ var cpOperationMainQueue = nil;
 
 - (int)operationCount
 {
-    if (_operations)
-    {
-        return [_operations count];
-    }
-
-    return 0;
+    return _operations ? [_operations count] : 0;
 }
 
 /*!
@@ -181,42 +372,48 @@ var cpOperationMainQueue = nil;
 */
 - (void)waitUntilAllOperationsAreFinished
 {
-    // lets first stop the timer so it won't interfere
-    [self _enableTimer:NO];
     [self _runOpsSynchronously:_operations];
-    if (!_suspended)
-    {
-        [self _enableTimer:YES];
-    }
 }
 
-
 /*!
-    Returns the maximum number of concurrent operations that the receiver can execute.
-    Always returns 1 because JS doesn't have threads
+    Waits asynchronously until the queue is completely empty of active operations.
 */
+- (async JSObject)waitUntilAllOperationsAreFinishedAsync
+{
+    if ([self _unfinishedOperationCount] == 0)
+        return Promise.resolve(self);
+
+    return new Promise((resolve) => {
+        [_drainResolvers addObject:resolve];
+    });
+}
+
 - (int)maxConcurrentOperationCount
 {
-    return 1;
+    return _maxConcurrentOperationCount;
 }
 
-/*!
-    Modifies the execution of pending operations
-    @param suspend if YES, queue execution is suspended. If NO, it is resumed
-*/
+- (void)setMaxConcurrentOperationCount:(int)count
+{
+    _maxConcurrentOperationCount = count;
+}
+
 - (void)setSuspended:(BOOL)suspend
 {
     _suspended = suspend;
-    [self _enableTimer:!suspend];
+    if (!_suspended)
+    {
+        [self _runNextOpsInQueue];
+    }
 }
 
-/*!
-    Returns a Boolean value indicating whether the receiver is scheduling queued operations for execution.
-*/
 - (BOOL)isSuspended
 {
     return _suspended;
 }
+
+#pragma mark -
+#pragma mark Internal Helpers
 
 - (void)_sortOpsByPriority:(CPArray)someOps
 {
@@ -224,21 +421,9 @@ var cpOperationMainQueue = nil;
     {
         [someOps sortUsingFunction:function(lhs, rhs)
         {
-            if ([lhs queuePriority] < [rhs queuePriority])
-            {
-                return 1;
-            }
-            else
-            {
-                if ([lhs queuePriority] > [rhs queuePriority])
-                {
-                    return -1;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
+            if ([lhs queuePriority] < [rhs queuePriority]) return 1;
+            else if ([lhs queuePriority] > [rhs queuePriority]) return -1;
+            else return 0;
         }
         context:nil];
     }
@@ -289,7 +474,6 @@ var cpOperationMainQueue = nil;
         cpOperationMainQueue = [[CPOperationQueue alloc] init];
         [cpOperationMainQueue setName:@"main"];
     }
-
     return cpOperationMainQueue;
 }
 
