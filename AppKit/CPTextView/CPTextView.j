@@ -3187,10 +3187,12 @@ var _CPCopyPlaceholder = '-';
             _CPNativeInputField.innerHTML = '';
             return;
         }
-        
-        // Robustness: Use 'textContent' instead of 'innerHTML' to strip any
-        // unexpected HTML tags the browser might have inserted.
-        var textToInsert = e.target.textContent;
+
+        // Prefer e.data to capture the exact inserted character(s) from key entry.
+        // This avoids harvesting structural markup or stale carriage returns
+        // introduced by the browser's selection layout.
+        var textToInsert = (e.data !== undefined && e.data !== null) ? e.data : e.target.textContent;
+
         handleInput(textToInsert);
     });
 
