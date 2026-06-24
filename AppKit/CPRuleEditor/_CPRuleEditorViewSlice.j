@@ -49,6 +49,13 @@
     return self;
 }
 
+- (void)setRowIndex:(int)anIndex
+{
+    _rowIndex = anIndex;
+    [self _updateBackgroundColor];
+    [self setNeedsDisplay:YES];
+}
+
 - (void)_setSelected:(BOOL)select
 {
     if (select == _selected)
@@ -57,6 +64,47 @@
     var selector = select ? @selector(setThemeState:) : @selector(unsetThemeState:);
     [[self subviews] makeObjectsPerformSelector:selector  withObject:CPThemeStateSelectedDataView];
     _selected = select;
+    
+    [self _updateBackgroundColor];
+    [self setNeedsDisplay:YES];
+}
+
+- (void)_updateBackgroundColor
+{
+    var color = nil;
+
+    if ([self _isSelected])
+    {
+        color = [_ruleEditor _selectedRowColor];
+    }
+    else
+    {
+        var colors = [_ruleEditor _backgroundColors],
+            count = [colors count];
+        
+        if (count > 0)
+            color = [colors objectAtIndex:(_rowIndex % count)];
+    }
+
+    [self setBackgroundColor:color];
+}
+
+- (void)viewDidMoveToWindow
+{
+    [super viewDidMoveToWindow];
+    [self _updateBackgroundColor];
+}
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    [self _updateBackgroundColor];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    [self _updateBackgroundColor];
 }
 
 - (void)drawRect:(CGRect)rect
@@ -66,35 +114,31 @@
         maxX    = CGRectGetWidth(bounds),
         maxY    = CGRectGetHeight(bounds);
 
-    // Draw background
-    if ([self _isSelected])
-        _backgroundColor = [_ruleEditor _selectedRowColor];
-    else
-    {
-        var colors = [_ruleEditor _backgroundColors],
-            count = [colors count];
-        _backgroundColor = [colors objectAtIndex:(_rowIndex % count)];
-    }
-
-    CGContextSetFillColor(context, _backgroundColor);
-    CGContextFillRect(context, rect);
+    // Note: Background is now handled by setBackgroundColor in _updateBackgroundColor
+    // to support CSS-based colors and transparency correctly.
 
     // Draw Top Border
-    CGContextBeginPath(context);
-    CGContextMoveToPoint(context, 0, 0);
-    CGContextAddLineToPoint(context, maxX, 0);
-    CGContextSetStrokeColor(context, [_ruleEditor _sliceTopBorderColor]);
-    CGContextStrokePath(context);
+    var topColor = [_ruleEditor _sliceTopBorderColor];
+    if (topColor)
+    {
+        CGContextBeginPath(context);
+        CGContextMoveToPoint(context, 0, 0);
+        CGContextAddLineToPoint(context, maxX, 0);
+        CGContextSetStrokeColor(context, topColor);
+        CGContextStrokePath(context);
+    }
 
     // Draw Bottom Border
-    CGContextBeginPath(context);
-    CGContextMoveToPoint(context, 0, maxY);
-    CGContextAddLineToPoint(context, maxX, maxY);
-
     var bottomColor = (_rowIndex == [_ruleEditor _lastRow]) ? [_ruleEditor _sliceLastBottomBorderColor] : [_ruleEditor _sliceBottomBorderColor];
 
-    CGContextSetStrokeColor(context, bottomColor);
-    CGContextStrokePath(context);
+    if (bottomColor)
+    {
+        CGContextBeginPath(context);
+        CGContextMoveToPoint(context, 0, maxY);
+        CGContextAddLineToPoint(context, maxX, maxY);
+        CGContextSetStrokeColor(context, bottomColor);
+        CGContextStrokePath(context);
+    }
 }
 
 - (void)mouseDown:(CPEvent)theEvent

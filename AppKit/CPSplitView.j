@@ -824,6 +824,9 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 
 - (void)layoutSubviews
 {
+    // Retrieve the current color based on the current theme state (Standard vs HUD)
+    var currentDividerColor = [self dividerColor];
+
     for (var i = 0, count = _arrangedSubviews.length, position = 0, origin; i < count; i++)
     {
         origin                   = CGPointMakeZero();
@@ -837,6 +840,9 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
             origin                   = CGPointMakeZero();
             origin[_originComponent] = position;
             position                += [_dividerSubviews[i] frame].size[_sizeComponent];
+
+            // Apply the color to the specific divider view
+            [_dividerSubviews[i] setBackgroundColor:currentDividerColor];
 
             [_dividerSubviews[i] setFrameOrigin:origin];
         }

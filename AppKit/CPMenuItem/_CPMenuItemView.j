@@ -83,6 +83,28 @@
     return self;
 }
 
+// override needed to cancel out the standard HUD propagation
+- (void)viewDidMoveToWindow
+{
+}
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+
+    // Propagate state to the actual content view (StandardView, Separator, etc.)
+    if ([_view respondsToSelector:@selector(setThemeState:)])
+        [_view setThemeState:aState];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    
+    if ([_view respondsToSelector:@selector(unsetThemeState:)])
+        [_view unsetThemeState:aState];
+}
+
 - (CGSize)minSize
 {
     return _minSize;

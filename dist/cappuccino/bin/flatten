@@ -233,7 +233,7 @@ ObjectiveJFlattener.prototype.serializeFunctions = function() {
             var functionString = executable._function.toString().replace(", require, exports, module, system, print, window", ""); // HACK
 
             var relative = this.rootPath.relative(path).toString();
-            this.functionsBuffer.push("ObjectiveJ.StaticResource._cacheFunction(new CFURL("+JSON.stringify(relative)+", baseURL),\n"+functionString+");");
+            this.functionsBuffer.push("ObjectiveJ.FileExecutable._cacheFunction(new CFURL("+JSON.stringify(relative)+", baseURL),\n"+functionString+");");
         }
 
         var bundle = this.context.global.CFBundle.bundleContainingURL(path);

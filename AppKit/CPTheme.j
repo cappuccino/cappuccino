@@ -814,10 +814,12 @@ CPThemeStateKeyWindow           = CPThemeState("keyWindow");
 CPThemeStateControlSizeRegular  = CPThemeState("controlSizeRegular");
 CPThemeStateControlSizeSmall    = CPThemeState("controlSizeSmall");
 CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
+CPThemeStateControlSizeLarge    = CPThemeState("controlSizeLarge");
 CPThemeStateAlternateState      = CPThemeState("alternate");
 CPThemeStateComposedControl     = CPThemeState("composed");
-
+CPThemeStateWindowsPlatform     = CPThemeState("windowsPlatform");
 CPThemeStateNormalString        = String(CPThemeStateNormal);
+CPThemeStateHUD                 = CPThemeState("hud");
 
 
 @implementation _CPThemeAttribute : CPObject
