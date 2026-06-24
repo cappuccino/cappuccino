@@ -1474,6 +1474,25 @@ var CPViewHighDPIDrawingEnabled = YES;
         origin.y *= size.height / frameSize.height;
     }
 
+    var newScaleSize;
+
+    if (size && size.width !== 0 && size.height !== 0 && frameSize)
+        newScaleSize = CGSizeMake(frameSize.width / size.width, frameSize.height / size.height);
+    else
+        newScaleSize = CGSizeMake(1.0, 1.0);
+
+    // Only update and propagate if the scale factor has actually changed
+    if (!CGSizeEqualToSize(_scaleSize, newScaleSize))
+    {
+        [self willChangeValueForKey:@"scaleSize"];
+        _scaleSize = newScaleSize;
+        _isScaled = (_scaleSize.width !== 1.0 || _scaleSize.height !== 1.0);
+        [self didChangeValueForKey:@"scaleSize"];
+
+        // Only traverse the view hierarchy if there is a genuine change in the scale state
+        [self _scaleSizeUnitSquareToSize:CGSizeMake(1.0, 1.0)];
+    }
+
     if (_layer)
         [_layer _owningViewBoundsChanged];
 
@@ -1486,7 +1505,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_window && !_window._inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
         [self _updateTrackingAreasWithRecursion:YES];
 }
-
 
 /*!
     Notifies subviews that the superview changed size.
@@ -2606,7 +2624,7 @@ setBoundsOrigin:
 */
 - (void)_scaleSizeUnitSquareToSize:(CGSize)aSize
 {
-    _hierarchyScaleSize = CGSizeMakeCopy([_superview _hierarchyScaleSize]);
+    _hierarchyScaleSize = _superview ? CGSizeMakeCopy([_superview _hierarchyScaleSize]) : CGSizeMake(1.0, 1.0);
 
     if (_isScaled)
     {
