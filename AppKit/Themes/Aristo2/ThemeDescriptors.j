@@ -45,6 +45,7 @@
 @import <AppKit/CPTableHeaderView.j>
 @import <AppKit/CPSearchField.j>
 @import <AppKit/CPTextField.j>
+@import <AppKit/CPTextView.j>
 @import <AppKit/CPTokenField.j>
 @import <AppKit/CPWindow.j>
 @import <AppKit/CPAlert.j>
@@ -647,6 +648,26 @@ var themedButtonValues = nil,
     [self registerThemeValues:themedHorizontalScrollerValues forView:scroller];
 
     return scroller;
+}
+      
++ (CPTextView)themedTextView
+{
+    var textView = [[CPTextView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
+
+    themeValues =
+    [
+        // Default state
+        [@"background-color",   [CPColor textBackgroundColor]],
+        [@"content-inset",      CGSizeMake(2, 2)],
+        [@"text-color",         [CPColor textColor]],
+
+        // Disabled state: Change appearance to look inactive
+        [@"text-color", [CPColor disabledControlTextColor], CPThemeStateDisabled]
+    ];
+
+    [self registerThemeValues:themeValues forView:textView];
+
+    return textView;
 }
 
 + (CPTextField)themedStandardTextField
