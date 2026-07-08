@@ -7572,7 +7572,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPCoder"])]);
 }
-p;12;CPIndexSet.jt;32674;@STATIC;1.0;i;9;CPArray.ji;10;CPObject.ji;9;CPRange.jt;32613;objj_executeFile("CPArray.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPRange.j", YES);
+p;12;CPIndexSet.jt;32227;@STATIC;1.0;i;9;CPArray.ji;10;CPObject.ji;9;CPRange.jt;32166;objj_executeFile("CPArray.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPRange.j", YES);
 {var the_class = objj_allocateClassPair(CPObject, "CPIndexSet"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_count", "unsigned"), new objj_ivar("_ranges", "CPArray")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPIndexSet__init(self, _cmd)
@@ -7643,12 +7643,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPInd
     return YES;
 }
 
-,["BOOL","CPIndexSet"]), new objj_method(sel_getUid("isEqual:"), function $CPIndexSet__isEqual_(self, _cmd, anObject)
-{
-    return self === anObject || (anObject == null ? anObject : (anObject.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(anObject, "isKindOfClass:", (self.isa.method_msgSend["class"] || _objj_forward)(self, "class"))) && (self.isa.method_msgSend["isEqualToIndexSet:"] || _objj_forward)(self, "isEqualToIndexSet:", anObject);
-}
-
-,["BOOL","id"]), new objj_method(sel_getUid("containsIndex:"), function $CPIndexSet__containsIndex_(self, _cmd, anIndex)
+,["BOOL","CPIndexSet"]), new objj_method(sel_getUid("containsIndex:"), function $CPIndexSet__containsIndex_(self, _cmd, anIndex)
 {
     return positionOfIndex(self._ranges, anIndex) !== CPNotFound;
 }
