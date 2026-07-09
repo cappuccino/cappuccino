@@ -226,6 +226,14 @@
 	}
 }
 
+- (id)valueForKey:(CPString)aKey
+{
+	// If the key starts with @, it is an operator path.
+	// If not, it is a property path that we want applied to all members.
+	// In either case, valueForKeyPath: handles both scenarios correctly.
+	return [self valueForKeyPath:aKey];
+}
+
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
 	var containedObject,
