@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray+KVO.j"
 @import "CPArray.j"
 @import "CPDictionary.j"
 @import "CPException.j"
@@ -1566,6 +1567,3 @@ var _CPKVOInfoMake = function(anObserver, theOptions, aContext, aForwarder)
         forwarder: aForwarder
     };
 };
-
-@import "CPArray+KVO.j"
-@import "CPSet+KVO.j"
