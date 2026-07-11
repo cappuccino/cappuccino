@@ -66455,7 +66455,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["id"])]);
 }
-p;14;CPRuleEditor.jt;155826;@STATIC;1.0;I;24;Foundation/CPPredicate.jI;20;Foundation/CPArray.jI;25;Foundation/CPDictionary.jI;23;Foundation/CPIndexSet.ji;14;CPPasteboard.ji;24;CPRuleEditor_Constants.ji;13;CPTextField.ji;17;CPViewAnimation.ji;8;CPView.ji;27;_CPRuleEditorViewSliceRow.ji;24;_CPRuleEditorLocalizer.jt;155532;objj_executeFile("Foundation/CPPredicate.j", NO);objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPDictionary.j", NO);objj_executeFile("Foundation/CPIndexSet.j", NO);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPRuleEditor_Constants.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPViewAnimation.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("_CPRuleEditorViewSliceRow.j", YES);objj_executeFile("_CPRuleEditorLocalizer.j", YES);{var the_protocol = objj_allocateProtocol("CPRuleEditorDelegate");
+p;14;CPRuleEditor.jt;156712;@STATIC;1.0;I;24;Foundation/CPPredicate.jI;20;Foundation/CPArray.jI;25;Foundation/CPDictionary.jI;23;Foundation/CPIndexSet.ji;14;CPPasteboard.ji;24;CPRuleEditor_Constants.ji;13;CPTextField.ji;17;CPViewAnimation.ji;8;CPView.ji;27;_CPRuleEditorViewSliceRow.ji;24;_CPRuleEditorLocalizer.jt;156418;objj_executeFile("Foundation/CPPredicate.j", NO);objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPDictionary.j", NO);objj_executeFile("Foundation/CPIndexSet.j", NO);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPRuleEditor_Constants.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPViewAnimation.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("_CPRuleEditorViewSliceRow.j", YES);objj_executeFile("_CPRuleEditorLocalizer.j", YES);{var the_protocol = objj_allocateProtocol("CPRuleEditorDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPRuleEditorDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -68068,29 +68068,31 @@ default:
 
 ,["BOOL","id"]), new objj_method(sel_getUid("performDragOperation:"), function $CPRuleEditor__performDragOperation_(self, _cmd, info)
 {
-    var aboveInsertIndexCount = 0,
-        object,
-        removeIndex;
+    var object;
     var rowObjects = ((___r1 = self._rowCache), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["valueForKey:"] || _objj_forward)(___r1, "valueForKey:", "rowObject")),
         index = ((___r1 = self._draggingRows), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["lastIndex"] || _objj_forward)(___r1, "lastIndex"));
-    var parentRowIndex = (self.isa.method_msgSend["parentRowForRow:"] || _objj_forward)(self, "parentRowForRow:", index),
+    var firstDraggingIndex = ((___r1 = self._draggingRows), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["firstIndex"] || _objj_forward)(___r1, "firstIndex")),
+        parentRowIndex = (self.isa.method_msgSend["parentRowForRow:"] || _objj_forward)(self, "parentRowForRow:", firstDraggingIndex),
         parentRowObject = parentRowIndex === -1 ? self._boundArrayOwner : ((___r1 = (self.isa.method_msgSend["_rowCacheForIndex:"] || _objj_forward)(self, "_rowCacheForIndex:", parentRowIndex)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["rowObject"] || _objj_forward)(___r1, "rowObject")),
         insertIndex = self._subviewIndexOfDropLine;
     while (index !== CPNotFound)
     {
-        if (index >= insertIndex)
+        var parentOfCurrent = (self.isa.method_msgSend["parentRowForRow:"] || _objj_forward)(self, "parentRowForRow:", index);
+        if (parentOfCurrent !== -1 && ((___r1 = self._draggingRows), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["containsIndex:"] || _objj_forward)(___r1, "containsIndex:", parentOfCurrent)))
         {
-            removeIndex = index + aboveInsertIndexCount;
-            aboveInsertIndexCount += 1;
+            index = ((___r1 = self._draggingRows), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexLessThanIndex:"] || _objj_forward)(___r1, "indexLessThanIndex:", index));
+            continue;
         }
-        else
+        object = (rowObjects == null ? rowObjects : (rowObjects.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(rowObjects, "objectAtIndex:", index));
+        var cache = (self.isa.method_msgSend["_searchCacheForRowObject:"] || _objj_forward)(self, "_searchCacheForRowObject:", object);
+        var liveIndex = ((___r1 = self._rowCache), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexOfObjectIdenticalTo:"] || _objj_forward)(___r1, "indexOfObjectIdenticalTo:", cache));
+        if (liveIndex !== CPNotFound)
         {
-            removeIndex = index;
-            insertIndex -= 1;
+            if (liveIndex < insertIndex)
+                insertIndex -= 1;
+            (self.isa.method_msgSend["removeRowAtIndex:"] || _objj_forward)(self, "removeRowAtIndex:", liveIndex);
+            ((___r1 = (self.isa.method_msgSend["_subrowObjectsOfObject:"] || _objj_forward)(self, "_subrowObjectsOfObject:", parentRowObject)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["insertObject:atIndex:"] || _objj_forward)(___r1, "insertObject:atIndex:", object, insertIndex - parentRowIndex - 1));
         }
-        object = (rowObjects == null ? rowObjects : (rowObjects.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(rowObjects, "objectAtIndex:", removeIndex));
-        (self.isa.method_msgSend["removeRowAtIndex:"] || _objj_forward)(self, "removeRowAtIndex:", removeIndex);
-        ((___r1 = (self.isa.method_msgSend["_subrowObjectsOfObject:"] || _objj_forward)(self, "_subrowObjectsOfObject:", parentRowObject)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["insertObject:atIndex:"] || _objj_forward)(___r1, "insertObject:atIndex:", object, insertIndex - parentRowIndex - 1));
         index = ((___r1 = self._draggingRows), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexLessThanIndex:"] || _objj_forward)(___r1, "indexLessThanIndex:", index));
     }
     (self.isa.method_msgSend["_clearDropLine"] || _objj_forward)(self, "_clearDropLine");
