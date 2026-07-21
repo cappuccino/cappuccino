@@ -50,7 +50,7 @@
 }
 
 
-#pragma mark Init
+// MARK: Init
 
 - (id)initWithFrame:(CGRect)aFrame withDatePicker:(CPDatePicker)aDatePicker
 {
@@ -141,8 +141,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Responder methods
+// MARK: -
+// MARK: Responder methods
 
 /*! @ignore */
 - (BOOL)acceptsFirstResponder
@@ -154,8 +154,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Override observers
+// MARK: -
+// MARK: Override observers
 
 - (void)_removeObservers
 {
@@ -177,8 +177,8 @@
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldAMPMChangedNotification:) name:CPDatePickerElementTextFieldAMPMChangedNotification object:_textFieldPMAM];
 }
 
-#pragma mark -
-#pragma mark Mouse event
+// MARK: -
+// MARK: Mouse event
 
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
@@ -229,8 +229,8 @@
     return nil;
 }
 
-#pragma mark -
-#pragma mark Setter Getter methods
+// MARK: -
+// MARK: Setter Getter methods
 
 /*! Set the value of the textFields
     @param aDateValue the value
@@ -378,8 +378,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Notification methods
+// MARK: -
+// MARK: Notification methods
 
 /*! Called when changing AM or PM
     @param aNotification
@@ -413,8 +413,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Layout methods
+// MARK: -
+// MARK: Layout methods
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
 {
@@ -886,8 +886,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Responder methods
+// MARK: -
+// MARK: Responder methods
 
 - (void)_updateResponderTextField
 {

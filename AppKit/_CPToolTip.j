@@ -45,8 +45,8 @@ var _CPToolTipHeight = 24.0,
 }
 
 
-#pragma mark -
-#pragma mark Class Methods
+// MARK: -
+// MARK: Class Methods
 
 /*! @ignore
     Invalidate any scheduled tooltips, or hide any visible one
@@ -160,8 +160,8 @@ var _CPToolTipHeight = 24.0,
 }
 
 
-#pragma mark -
-#pragma mark Initialization
+// MARK: -
+// MARK: Initialization
 
 /*!
     Returns an initialized _CPToolTip with string.
@@ -208,8 +208,8 @@ var _CPToolTipHeight = 24.0,
 }
 
 
-#pragma mark -
-#pragma mark Controls
+// MARK: -
+// MARK: Controls
 
 /*!
     Show the tooltip after computing the position.

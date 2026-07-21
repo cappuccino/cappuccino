@@ -62,8 +62,8 @@ var CPUserNotificationDefaultCenter = nil;
 }
 
 
-#pragma mark -
-#pragma mark Creating Default User Notification Center
+// MARK: -
+// MARK: Creating Default User Notification Center
 
 /*!
     Returns the user's notification center
@@ -91,8 +91,8 @@ var CPUserNotificationDefaultCenter = nil;
 }
 
 
-#pragma mark -
-#pragma mark Getting and Setting the Delegate
+// MARK: -
+// MARK: Getting and Setting the Delegate
 
 - (void)setDelegate:(id <CPUserNotificationCenterDelegate>)aDelegate
 {
@@ -113,8 +113,8 @@ var CPUserNotificationDefaultCenter = nil;
 }
 
 
-#pragma mark -
-#pragma mark Managing the Scheduled Notification Queue
+// MARK: -
+// MARK: Managing the Scheduled Notification Queue
 
 /*!
     Schedules the given user notification
@@ -158,8 +158,8 @@ var CPUserNotificationDefaultCenter = nil;
 }
 
 
-#pragma mark -
-#pragma mark Managing the Delivered Notifications
+// MARK: -
+// MARK: Managing the Delivered Notifications
 
 /*!
     Deliver the given user notification
@@ -188,8 +188,8 @@ var CPUserNotificationDefaultCenter = nil;
 }
 
 
-#pragma mark -
-#pragma mark Permission Utilities
+// MARK: -
+// MARK: Permission Utilities
 
 - (void)_askPermissionForUserNotification:(CPUserNotification)anUserNotification
 {
@@ -201,8 +201,8 @@ var CPUserNotificationDefaultCenter = nil;
 }
 
 
-#pragma mark -
-#pragma mark Notification Utilities
+// MARK: -
+// MARK: Notification Utilities
 
 - (void)_launchUserNotification:(CPUserNotification)anUserNotification
 {

@@ -273,7 +273,7 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     SET_NEEDS_NUMBER_HANDLER_UPDATE();
 }
 
-#pragma mark Private
+// MARK: Private
 
 - (void)_updateNumberHandlerIfNecessary
 {

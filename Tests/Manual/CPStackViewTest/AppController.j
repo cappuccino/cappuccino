@@ -141,8 +141,8 @@
     // If we were using a Cib, initialization would happen here.
 }
 
-#pragma mark -
-#pragma mark Actions
+// MARK: -
+// MARK: Actions
 
 - (@action)toggleHidden:(id)sender
 {
@@ -183,8 +183,8 @@
     [stackViewHorizontal setSpacing:(current >= 20.0 ? 8.0 : current + 4.0)];
 }
 
-#pragma mark -
-#pragma mark Helpers
+// MARK: -
+// MARK: Helpers
 
 - (CPView)_createBoxColor:(CPColor)aColor size:(CGSize)aSize label:(CPString)text
 {

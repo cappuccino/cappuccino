@@ -82,8 +82,8 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     CPMapTable                          _visibilityPriorities;
 }
 
-#pragma mark -
-#pragma mark Initialization
+// MARK: -
+// MARK: Initialization
 
 + (CPStackView)stackViewWithViews:(CPArray)views
 {
@@ -116,8 +116,8 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     return self;
 }
 
-#pragma mark -
-#pragma mark Configuration
+// MARK: -
+// MARK: Configuration
 
 /*!
     The horizontal or vertical layout direction of the stack view.
@@ -222,8 +222,8 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     [self setNeedsLayout:YES];
 }
 
-#pragma mark -
-#pragma mark Managing Views in Gravity Areas
+// MARK: -
+// MARK: Managing Views in Gravity Areas
 
 - (CPArray)_containerForGravity:(CPStackViewGravity)gravity
 {
@@ -358,8 +358,8 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     [self removeView:view];
 }
 
-#pragma mark -
-#pragma mark Custom Spacing
+// MARK: -
+// MARK: Custom Spacing
 
 - (float)customSpacingAfterView:(CPView)aView
 {
@@ -388,8 +388,8 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     return _spacing;
 }
 
-#pragma mark -
-#pragma mark Visibility Priority
+// MARK: -
+// MARK: Visibility Priority
 
 - (void)setVisibilityPriority:(float)priority forView:(CPView)aView
 {
@@ -418,8 +418,8 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     return CPStackViewVisibilityPriorityMustHold;
 }
 
-#pragma mark -
-#pragma mark Layout
+// MARK: -
+// MARK: Layout
 
 - (void)resizeSubviewsWithOldSize:(CGSize)oldSize
 {
@@ -649,8 +649,8 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     return cursor;
 }
 
-#pragma mark -
-#pragma mark CPCoding
+// MARK: -
+// MARK: CPCoding
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

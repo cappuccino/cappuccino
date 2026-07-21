@@ -70,8 +70,8 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 }
 
 
-#pragma mark -
-#pragma mark Init methods
+// MARK: -
+// MARK: Init methods
 
 - (id)initWithString:(CPString)aString attributes:(CPDictionary)attributes
 {
@@ -99,8 +99,8 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 }
 
 
-#pragma mark -
-#pragma mark Delegate methods
+// MARK: -
+// MARK: Delegate methods
 
 - (void)setDelegate:(id <CPTextStorageDelegate>)aDelegate
 {
@@ -121,8 +121,8 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 }
 
 
-#pragma mark -
-#pragma mark Layout manager methods
+// MARK: -
+// MARK: Layout manager methods
 
 - (void)addLayoutManager:(CPLayoutManager)aManager
 {
@@ -148,8 +148,8 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 }
 
 
-#pragma mark -
-#pragma mark Editing methods
+// MARK: -
+// MARK: Editing methods
 
 - (void)processEditing
 {

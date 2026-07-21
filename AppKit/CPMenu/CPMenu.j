@@ -1356,7 +1356,7 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPMenu (CSSTheming)
 

@@ -123,8 +123,8 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     return self;
 }
 
-#pragma mark -
-#pragma mark Draw
+// MARK: -
+// MARK: Draw
 
 /*!
     Sets whether the color well is bordered.
@@ -145,8 +145,8 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     return [self hasThemeState:CPThemeStateBordered];
 }
 
-#pragma mark -
-#pragma mark Managing Color
+// MARK: -
+// MARK: Managing Color
 
 /*!
     Returns the color well's current color.
@@ -199,8 +199,8 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     }
 }
 
-#pragma mark -
-#pragma mark Activating and Deactivating
+// MARK: -
+// MARK: Activating and Deactivating
 
 /*!
     Activates the color well, displays the color panel, and makes the panel's current color the same as its own.
@@ -241,8 +241,8 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     return YES;
 }
 
-#pragma mark -
-#pragma mark Event Handling
+// MARK: -
+// MARK: Event Handling
 
 - (void)mouseDown:(CPEvent)anEvent
 {
@@ -289,8 +289,8 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 }
 
 
-#pragma mark -
-#pragma mark Drag and Drop
+// MARK: -
+// MARK: Drag and Drop
 
 - (void)draggingEntered:(id)sender
 {
@@ -346,8 +346,8 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     return CPDragOperationCopy;
 }
 
-#pragma mark -
-#pragma mark Layout
+// MARK: -
+// MARK: Layout
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {

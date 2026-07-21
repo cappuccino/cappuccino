@@ -169,8 +169,8 @@ CPTokenFieldDeleteButtonType     = 1;
     [self addSubview:_tokenScrollView];
 }
 
-#pragma mark -
-#pragma mark Delegate methods
+// MARK: -
+// MARK: Delegate methods
 
 /*!
     Set the delegate of the receiver

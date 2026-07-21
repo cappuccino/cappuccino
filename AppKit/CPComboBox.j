@@ -133,7 +133,7 @@ var CPComboBoxTextSubview = @"text",
     [self setThemeState:CPComboBoxStateButtonBordered];
 }
 
-#pragma mark Setting Display Attributes
+// MARK: Setting Display Attributes
 
 - (BOOL)hasVerticalScroller
 {
@@ -214,7 +214,7 @@ var CPComboBoxTextSubview = @"text",
     _numberOfVisibleItems = MAX(visibleItems, 1);
 }
 
-#pragma mark Setting a Delegate
+// MARK: Setting a Delegate
 
 - (id <CPComboBoxDelegate>)delegate
 {
@@ -254,7 +254,7 @@ var CPComboBoxTextSubview = @"text",
     [super setDelegate:aDelegate];
 }
 
-#pragma mark Setting a Data Source
+// MARK: Setting a Data Source
 
 - (id <CPComboBoxDataSource>)dataSource
 {
@@ -305,7 +305,7 @@ var CPComboBoxTextSubview = @"text",
     [self reloadData];
 }
 
-#pragma mark Working with an Internal List
+// MARK: Working with an Internal List
 
 - (void)addItemsWithObjectValues:(CPArray)objects
 {
@@ -378,7 +378,7 @@ var CPComboBoxTextSubview = @"text",
         return _items.length;
 }
 
-#pragma mark Manipulating the Displayed List
+// MARK: Manipulating the Displayed List
 
 /*!
     Returns the delegate to be used when creating the pop up list.
@@ -594,7 +594,7 @@ var CPComboBoxTextSubview = @"text",
     [self sendAction:[self action] to:[self target]];
 }
 
-#pragma mark Manipulating the Selection
+// MARK: Manipulating the Selection
 
 - (void)deselectItemAtIndex:(int)index
 {
@@ -646,7 +646,7 @@ var CPComboBoxTextSubview = @"text",
         [self selectItemAtIndex:index];
 }
 
-#pragma mark Completing the Text Field
+// MARK: Completing the Text Field
 
 - (BOOL)completes
 {
@@ -693,7 +693,7 @@ var CPComboBoxTextSubview = @"text",
     _forceSelection = !!flag;
 }
 
-#pragma mark CPTextField Delegate Methods and Overrides
+// MARK: CPTextField Delegate Methods and Overrides
 
 /*! @ignore */
 - (BOOL)sendAction:(SEL)anAction to:(id)anObject
@@ -893,7 +893,7 @@ var CPComboBoxTextSubview = @"text",
         [_listDelegate setAlignment:alignment];
 }
 
-#pragma mark Pop Up Button Layout
+// MARK: Pop Up Button Layout
 
 - (CGRect)popupButtonRectForBounds:(CGRect)bounds
 {
@@ -938,7 +938,7 @@ var CPComboBoxTextSubview = @"text",
                             relativeToEphemeralSubviewNamed:@"content-view"];
 }
 
-#pragma mark Internal Helpers
+// MARK: Internal Helpers
 
 /*! @ignore */
 - (void)_dataSourceWarningForMethod:(SEL)cmd condition:(CPString)flag
@@ -1016,8 +1016,8 @@ var CPComboBoxTextSubview = @"text",
 }
 
 
-#pragma mark -
-#pragma mark Observers method
+// MARK: -
+// MARK: Observers method
 
 - (void)_addObservers
 {

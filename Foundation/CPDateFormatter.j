@@ -231,8 +231,8 @@ var _separatorsCharacterSet = nil;
 }
 
 
-#pragma mark -
-#pragma mark Setter Getter Helper
+// MARK: -
+// MARK: Setter Getter Helper
 
 /*! Return symbols for the given language code
 */
@@ -280,8 +280,8 @@ var _separatorsCharacterSet = nil;
     [languageSymbols setValue:aSymbol forKey:aKey];
 }
 
-#pragma mark -
-#pragma mark Setter Getter
+// MARK: -
+// MARK: Setter Getter
 
 /*! Return AMSymbol
 */
@@ -536,8 +536,8 @@ var _separatorsCharacterSet = nil;
 }
 
 
-#pragma mark -
-#pragma mark StringFromDate methods
+// MARK: -
+// MARK: StringFromDate methods
 
 /*! Return a string representation of a given date.
     This method returns (if possible) a representation of the given date with the dateFormat of the CPDateFormatter, otherwise it takes the dateStyle and timeStyle
@@ -1160,8 +1160,8 @@ var _separatorsCharacterSet = nil;
 }
 
 
-#pragma mark -
-#pragma mark datefromString
+// MARK: -
+// MARK: datefromString
 
 /*! Return a date of the given string
     This method returns (if possible) a representation of the given string with the dateFormat of the CPDateFormatter, otherwise it takes the dateStyle and timeStyle
@@ -1922,8 +1922,8 @@ var _separatorsCharacterSet = nil;
 }
 
 
-#pragma mark -
-#pragma mark Utils
+// MARK: -
+// MARK: Utils
 
 - (CPString)_stringValueForValue:(id)aValue length:(int)length
 {

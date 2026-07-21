@@ -63,8 +63,8 @@ CPThemeStateAppearanceVibrantDark      = CPThemeState("appearance-vibrant-dark")
 }
 
 
-#pragma mark -
-#pragma mark Class Methods
+// MARK: -
+// MARK: Class Methods
 
 /*! Returns the current default CPAppearance
 */
@@ -99,8 +99,8 @@ CPThemeStateAppearanceVibrantDark      = CPThemeState("appearance-vibrant-dark")
 }
 
 
-#pragma mark -
-#pragma mark Initialization
+// MARK: -
+// MARK: Initialization
 
 /*! Creates a CPAppearance object initialized to the specified appearance file in the specified bundle
     This method does actually nothing special. It just creates a default appearance object
@@ -122,8 +122,8 @@ CPThemeStateAppearanceVibrantDark      = CPThemeState("appearance-vibrant-dark")
 }
 
 
-#pragma mark -
-#pragma mark Implementation
+// MARK: -
+// MARK: Implementation
 
 - (BOOL)isEqual:(id)anObject
 {
@@ -139,8 +139,8 @@ CPThemeStateAppearanceVibrantDark      = CPThemeState("appearance-vibrant-dark")
 }
 
 
-#pragma mark -
-#pragma mark CPCoding
+// MARK: -
+// MARK: CPCoding
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

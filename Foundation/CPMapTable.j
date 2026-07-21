@@ -29,8 +29,8 @@
     return self;
 }
 
-#pragma mark -
-#pragma mark Accessing Content
+// MARK: -
+// MARK: Accessing Content
 
 /*!
    Returns the value associated with a given key.
@@ -70,8 +70,8 @@
     return _map.size;
 }
 
-#pragma mark -
-#pragma mark Manipulating Content
+// MARK: -
+// MARK: Manipulating Content
 
 /*!
    Adds a given key-value pair to the map table.
@@ -101,8 +101,8 @@
     _map.clear();
 }
 
-#pragma mark -
-#pragma mark Creating a Dictionary Representation
+// MARK: -
+// MARK: Creating a Dictionary Representation
 
 /*!
    Returns a dictionary representation of the map table.

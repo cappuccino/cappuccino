@@ -52,7 +52,7 @@
 }
 
 
-#pragma mark Init method
+// MARK: Init method
 
 /*! Init a _CPDatePickerCalendar
     @param aFrame
@@ -111,8 +111,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Responder methods
+// MARK: -
+// MARK: Responder methods
 
 - (BOOL)acceptsFirstResponder
 {
@@ -120,8 +120,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Getter Setter methods
+// MARK: -
+// MARK: Getter Setter methods
 
 /*! Set the date value of the component. It sets the dateValue of the header and the monthView also
     @param aDateValue
@@ -160,8 +160,8 @@
     [self _init];
 }
 
-#pragma mark -
-#pragma mark Layout methods
+// MARK: -
+// MARK: Layout methods
 
 /*! Manager the subviews. It hides or not the clock.
 */
@@ -221,8 +221,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Action methods
+// MARK: -
+// MARK: Action methods
 
 /*! Move to the nextMonth without changing the dateValue of the datePicker
 */

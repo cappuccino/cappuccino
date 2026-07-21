@@ -172,7 +172,7 @@ var bottomHeight = 71;
     BOOL                    _needsLayout;
 }
 
-#pragma mark Creating Alerts
+// MARK: Creating Alerts
 
 /*!
     Returns a CPAlert object with the provided info
@@ -249,8 +249,8 @@ var bottomHeight = 71;
 }
 
 
-#pragma mark -
-#pragma mark Delegate
+// MARK: -
+// MARK: Delegate
 
 /*!
     Set the delegate of the receiver
@@ -272,7 +272,7 @@ var bottomHeight = 71;
 }
 
 
-#pragma mark Accessors
+// MARK: Accessors
 
 - (CPTheme)theme
 {
@@ -402,7 +402,7 @@ var bottomHeight = 71;
     _needsLayout = YES;
 }
 
-#pragma mark Accessing Buttons
+// MARK: Accessing Buttons
 
 /*!
     Adds a button with a given title to the receiver.
@@ -438,7 +438,7 @@ var bottomHeight = 71;
     [_buttons insertObject:button atIndex:0];
 }
 
-#pragma mark Layout
+// MARK: Layout
 
 /*!
     @ignore
@@ -664,7 +664,7 @@ var bottomHeight = 71;
     _needsLayout = NO;
 }
 
-#pragma mark Displaying Alerts
+// MARK: Displaying Alerts
 
 /*!
     Displays the \c CPAlert panel as a modal dialog. The user will not be
@@ -742,7 +742,7 @@ var bottomHeight = 71;
     [self beginSheetModalForWindow:aWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 
-#pragma mark Private
+// MARK: Private
 
 /*!
     @ignore

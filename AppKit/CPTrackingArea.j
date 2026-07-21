@@ -69,8 +69,8 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
 }
 
 
-#pragma mark -
-#pragma mark Initialization
+// MARK: -
+// MARK: Initialization
 
 /*!
  Initializes and returns an object defining a region of a view to receive mouse-tracking events, mouse-moved events, cursor-update events, or possibly
@@ -121,8 +121,8 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
 }
 
 
-#pragma mark -
-#pragma mark Implementation
+// MARK: -
+// MARK: Implementation
 
 - (void)_updateWindowRect
 {
@@ -140,8 +140,8 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
 
 @end
 
-#pragma mark -
-#pragma mark CPCoding
+// MARK: -
+// MARK: CPCoding
 
 @implementation CPTrackingArea (CPCoding)
 

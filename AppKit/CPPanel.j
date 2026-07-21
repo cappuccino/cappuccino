@@ -121,8 +121,8 @@ CPDocModalWindowMask    = 1 << 6;
 }
 
 
-#pragma mark -
-#pragma mark Overrides
+// MARK: -
+// MARK: Overrides
 
 /*!
     @ignore
