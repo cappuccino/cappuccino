@@ -103,7 +103,7 @@
 - (id)initWithObjects:(id)anObject, ...
 {
 	var index = 2,
-	count = arguments.length;
+	    count = arguments.length;
 
 	for (; index < count; ++index)
 		if (arguments[index] === nil)
@@ -140,9 +140,9 @@
 
 - (CPArray)allObjects
 {
-	var objects = [],
-	object,
-	objectEnumerator = [self objectEnumerator];
+	var objects          = [],
+	    object,
+	    objectEnumerator = [self objectEnumerator];
 
 	while ((object = [objectEnumerator nextObject]) != nil)
 		objects.push(object);
@@ -162,9 +162,9 @@
 
 - (CPSet)filteredSetUsingPredicate:(CPPredicate)aPredicate
 {
-	var objects = [],
-	object,
-	objectEnumerator = [self objectEnumerator];
+	var objects          = [],
+		object,
+	    objectEnumerator = [self objectEnumerator];
 
 	while ((object = [objectEnumerator nextObject]) != nil)
 		if ([aPredicate evaluateWithObject:object])
@@ -186,8 +186,8 @@
 - (void)makeObjectsPerformSelector:(SEL)aSelector withObjects:(CPArray)objects
 {
 	var object,
-	objectEnumerator = [self objectEnumerator],
-	argumentsArray = [nil, aSelector].concat(objects || []);
+	    objectEnumerator = [self objectEnumerator],
+	    argumentsArray   = [nil, aSelector].concat(objects || []);
 
 	while ((object = [objectEnumerator nextObject]) != nil)
 	{
@@ -209,8 +209,8 @@
 - (void)enumerateObjectsUsingBlock:(Function)aFunction
 {
 	var object,
-	objectEnumerator = [self objectEnumerator],
-	shouldStop = NO;
+	    objectEnumerator = [self objectEnumerator],
+	    shouldStop       = NO;
 
 	while (!shouldStop && (object = [objectEnumerator nextObject]) != nil) {
 		if (aFunction(object, @ref(shouldStop)) !== undefined) {
@@ -221,9 +221,9 @@
 
 - (CPSet)objectsPassingTest:(Function)aFunction
 {
-	var objects = [],
-	object = nil,
-	objectEnumerator = [self objectEnumerator];
+	var objects          = [],
+	    object           = nil,
+	    objectEnumerator = [self objectEnumerator];
 
 	while ((object = [objectEnumerator nextObject]) != nil)
 		if (aFunction(object))
@@ -234,8 +234,8 @@
 
 - (BOOL)isSubsetOfSet:(CPSet)aSet
 {
-	var object = nil,
-	objectEnumerator = [self objectEnumerator];
+	var object           = nil,
+	    objectEnumerator = [self objectEnumerator];
 
 	while ((object = [objectEnumerator nextObject]) != nil)
 		if (![aSet containsObject:object])
@@ -249,8 +249,8 @@
 	if (self === aSet)
 		return [self count] > 0;
 
-	var object = nil,
-	objectEnumerator = [self objectEnumerator];
+	var object           = nil,
+	    objectEnumerator = [self objectEnumerator];
 
 	while ((object = [objectEnumerator nextObject]) != nil)
 		if ([aSet containsObject:object])
@@ -279,10 +279,10 @@
 
 - (CPString)description
 {
-	var string = "{(\n",
-	objects = [self allObjects],
-	index = 0,
-	count = [objects count];
+	var string  = "{(\n",
+	    objects = [self allObjects],
+	    index   = 0,
+	    count   = [objects count];
 
 	for (; index < count; ++index)
 	{
@@ -295,8 +295,8 @@
 
 @end
 
-#pragma mark -
-#pragma mark Category: CPCopying
+// MARK: -
+// MARK: Category: CPCopying
 
 @implementation CPSet (CPCopying)
 
@@ -312,8 +312,8 @@
 
 @end
 
-#pragma mark -
-#pragma mark Category: CPCoding
+// MARK: -
+// MARK: Category: CPCoding
 
 var CPSetObjectsKey = @"CPSetObjectsKey";
 
@@ -331,8 +331,8 @@ var CPSetObjectsKey = @"CPSetObjectsKey";
 
 @end
 
-#pragma mark -
-#pragma mark Private Allocation Placeholder
+// MARK: -
+// MARK: Private Allocation Placeholder
 
 var _CPSharedPlaceholderSet = nil;
 
