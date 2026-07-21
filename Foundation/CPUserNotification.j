@@ -91,8 +91,8 @@ CPUserNotificationActivationTypeAdditionalActionClicked = 4;
 }
 
 
-#pragma mark -
-#pragma mark Creating an user notification
+// MARK: -
+// MARK: Creating an user notification
 
 - (id)init
 {

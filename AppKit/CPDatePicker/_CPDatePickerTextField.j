@@ -62,7 +62,7 @@
 }
 
 
-#pragma mark Init
+// MARK: Init
 
 - (id)initWithFrame:(CGRect)aFrame withDatePicker:(CPDatePicker)aDatePicker
 {
@@ -103,8 +103,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Override responder methods
+// MARK: -
+// MARK: Override responder methods
 
 - (BOOL)becomeFirstResponder
 {
@@ -138,8 +138,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Setter Getter methods
+// MARK: -
+// MARK: Setter Getter methods
 
 /*! Set the value of the control
     @param aDateValue
@@ -188,8 +188,8 @@
     [self setNeedsLayout];
 }
 
-#pragma mark -
-#pragma mark Notification methods
+// MARK: -
+// MARK: Notification methods
 
 /*! This is called to when the user just changed the selected textField
     @param aNotification
@@ -207,8 +207,8 @@
 }
 
 
-#pragma mark -
-#pragma mark SelectTextField action
+// MARK: -
+// MARK: SelectTextField action
 
 - (void)_selectTextFieldWithFlags:(unsigned)flags
 {
@@ -273,8 +273,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Events
+// MARK: -
+// MARK: Events
 
 /*! Called when the user click on the stepper
 */
@@ -557,8 +557,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Layout methods
+// MARK: -
+// MARK: Layout methods
 
 /*! Layout the subviews
 */
@@ -607,8 +607,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Override observers
+// MARK: -
+// MARK: Override observers
 
 - (void)_removeObservers
 {

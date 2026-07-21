@@ -377,8 +377,8 @@ function _abbreviationForNameAndDate(tzName, date)
 }
 
 
-#pragma mark -
-#pragma mark Class constructor
+// MARK: -
+// MARK: Class constructor
 
 /*! Returns a time zone from the given abbreviation.
     Returns nil if the given abbreviation doesn't match with any abbreviations
@@ -482,8 +482,8 @@ function _abbreviationForNameAndDate(tzName, date)
     return array;
 }
 
-#pragma mark -
-#pragma mark Class accessors
+// MARK: -
+// MARK: Class accessors
 
 /*! Return the timeZoneDataVersion (not yet implemented)
 */
@@ -558,8 +558,8 @@ function _abbreviationForNameAndDate(tzName, date)
 }
 
 
-#pragma mark -
-#pragma mark Consructors
+// MARK: -
+// MARK: Consructors
 
 /*! Init a new time zone with the given time zone name and abbreviation
     Returns nil if tzName doesn't match with any timeZoneNames or if abbreviation is nil
@@ -658,8 +658,8 @@ function _abbreviationForNameAndDate(tzName, date)
 }
 
 
-#pragma mark -
-#pragma mark Methods for CPDate
+// MARK: -
+// MARK: Methods for CPDate
 
 /*! Returns the abbreviation from a date
     Returns nil if the date is nil
@@ -697,8 +697,8 @@ function _abbreviationForNameAndDate(tzName, date)
 }
 
 
-#pragma mark -
-#pragma mark Compars methods
+// MARK: -
+// MARK: Compars methods
 
 /*! Returns a bool to compare tow timeZones.
     This is made by the compare of the name and the data of the timeZones
@@ -710,8 +710,8 @@ function _abbreviationForNameAndDate(tzName, date)
 }
 
 
-#pragma mark -
-#pragma mark Description
+// MARK: -
+// MARK: Description
 
 /*! Returns the description of the timeZone
     The pattern of the description is : 'name of the timeZone' ('abbreviation of the timeZone') offset 'the timeDifferenceFromGMT'
@@ -723,8 +723,8 @@ function _abbreviationForNameAndDate(tzName, date)
 }
 
 
-#pragma mark -
-#pragma mark Localized methods
+// MARK: -
+// MARK: Localized methods
 
 /*! Return a localized string from the given style and locale
     @param style the style

@@ -377,7 +377,7 @@ Preprocessor.prototype.hash = function(tokens, aStringBuffer)
     {
         token = tokens.skip_whitespace();
 
-        // '#pragma mark' directive is used in Xcode editor for creating labels,
+        // '// MARK:' directive is used in Xcode editor for creating labels,
         // which is irrelevant to Cappuccino - just swallow this line
         if (token === TOKEN_MARK)
         {

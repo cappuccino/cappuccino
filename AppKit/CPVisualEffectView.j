@@ -57,8 +57,8 @@ CPVisualEffectStateInactive                 = 2;
 }
 
 
-#pragma mark -
-#pragma mark Initialization
+// MARK: -
+// MARK: Initialization
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -74,8 +74,8 @@ CPVisualEffectStateInactive                 = 2;
 }
 
 
-#pragma mark -
-#pragma mark CPVisualEffectView API
+// MARK: -
+// MARK: CPVisualEffectView API
 
 /*! Sets the appearance of the CPVisualEffectView.
 
@@ -114,8 +114,8 @@ CPVisualEffectStateInactive                 = 2;
 }
 
 
-#pragma mark -
-#pragma mark Utilities
+// MARK: -
+// MARK: Utilities
 
 - (void)_setEffectEnabled:(BOOL)shouldEnable
 {
@@ -156,8 +156,8 @@ CPVisualEffectStateInactive                 = 2;
 }
 
 
-#pragma mark -
-#pragma mark CPCoding
+// MARK: -
+// MARK: CPCoding
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

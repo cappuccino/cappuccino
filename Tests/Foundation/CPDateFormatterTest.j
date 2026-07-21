@@ -52,8 +52,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Setter
+// MARK: -
+// MARK: Setter
 
 - (void)testSetterAMSymbol
 {
@@ -163,8 +163,8 @@
     [self assert:[_dateFormatter shortStandaloneQuarterSymbols] equals:[@"Hej hej"]];
 }
 
-#pragma mark -
-#pragma mark string from date
+// MARK: -
+// MARK: string from date
 
 - (void)testLocalizedStringFromDate
 {
@@ -446,8 +446,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Date From string
+// MARK: -
+// MARK: Date From string
 
 - (void)testDateFromStringToken
 {
@@ -1328,8 +1328,8 @@
     [self assert:error equals:@"The value \"ezr 12\" is invalid."];
 }
 
-#pragma mark -
-#pragma mark non-en locales
+// MARK: -
+// MARK: non-en locales
 
 // Unless we have full locale support any non-supported locale should return the english values as they are the only defined ones at the moment.
 

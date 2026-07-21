@@ -71,8 +71,8 @@ _CPDatePickerClockSeconds = 3;
 }
 
 
-#pragma mark -
-#pragma mark Init methods
+// MARK: -
+// MARK: Init methods
 
 - (id)initWithFrame:(CGRect)aFrame datePicker:(CPDatePicker)aDatePicker
 {
@@ -200,7 +200,7 @@ _CPDatePickerClockSeconds = 3;
 #endif
 }
 
-#pragma mark Layout methods
+// MARK: Layout methods
 
 - (void)layoutSubviews
 {
@@ -246,7 +246,7 @@ _CPDatePickerClockSeconds = 3;
 //    [_middleHandLayer setNeedsDisplay];
 }
 
-#pragma mark Accessors
+// MARK: Accessors
 
 - (void)setEnabled:(BOOL)shouldEnable
 {
@@ -261,7 +261,7 @@ _CPDatePickerClockSeconds = 3;
     [self setNeedsLayout];
 }
 
-#pragma mark Mouse actions
+// MARK: Mouse actions
 
 - (void)mouseDown:(CPEvent)anEvent
 {
@@ -425,7 +425,7 @@ _CPDatePickerClockSeconds = 3;
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation HandLayer : CALayer
 {
@@ -434,7 +434,7 @@ _CPDatePickerClockSeconds = 3;
     float           _rotationRadians;
 }
 
-#pragma mark Init methods
+// MARK: Init methods
 
 - (id)initWithSize:(CGSize)aSize
 {
@@ -453,7 +453,7 @@ _CPDatePickerClockSeconds = 3;
 }
 
 
-#pragma mark Setter Getter methods
+// MARK: Setter Getter methods
 
 /*!
     Set the bounds of the layer. The imageLayer will be at the center of this bounds.
@@ -516,7 +516,7 @@ _CPDatePickerClockSeconds = 3;
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation HandImageLayer : CALayer
 {
@@ -550,7 +550,7 @@ _CPDatePickerClockSeconds = 3;
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation HoursLayer : CALayer
 {

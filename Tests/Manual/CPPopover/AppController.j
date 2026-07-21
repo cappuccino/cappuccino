@@ -226,8 +226,8 @@
     [aPopover setAppearance:appearance];
 }
 
-#pragma mark -
-#pragma mark CPPopover Delegate
+// MARK: -
+// MARK: CPPopover Delegate
 
 - (void)popoverWillShow:(CPPopover)aPopover
 {

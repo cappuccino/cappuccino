@@ -826,7 +826,7 @@ CPControlKeyMask
     return [[self menu] highlightedItem] == self;
 }
 
-#pragma mark CPObject Overrides
+// MARK: CPObject Overrides
 
 /*!
     Returns a copy of the item. The copy does not belong If the item has a submenu, it is NOT copied.
@@ -867,7 +867,7 @@ CPControlKeyMask
     return [self copy];
 }
 
-#pragma mark Internal
+// MARK: Internal
 
 /*
     @ignore
@@ -897,7 +897,7 @@ CPControlKeyMask
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPMenuItem (CSSTheming)
 
@@ -909,7 +909,7 @@ CPControlKeyMask
 
 @end
 
-#pragma mark -
+// MARK: -
 
 var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 

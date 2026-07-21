@@ -66,8 +66,8 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 }
 
 
-#pragma mark -
-#pragma mark Theme State
+// MARK: -
+// MARK: Theme State
 
 - (unsigned)themeState
 {
@@ -155,7 +155,7 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
     return [self unsetThemeState:aState];
 }
 
-#pragma mark Theme Attributes
+// MARK: Theme Attributes
 
 + (CPString)defaultThemeClass
 {
@@ -494,8 +494,8 @@ var NULL_THEME = {};
     }
 }
 
-#pragma mark -
-#pragma mark CSS styling additions
+// MARK: -
+// MARK: CSS styling additions
 
 - (CPTheme)actualTheme
 {

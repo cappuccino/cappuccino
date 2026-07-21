@@ -202,8 +202,8 @@ var HORIZONTAL_MARGIN = 2;
 
 
 
-#pragma mark -
-#pragma mark Delegate
+// MARK: -
+// MARK: Delegate
 
 /*!
     Set the delegate of the receiver

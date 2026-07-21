@@ -481,8 +481,8 @@ CPAMPMDateType = 6;
 }
 
 
-#pragma mark -
-#pragma mark Mouse event
+// MARK: -
+// MARK: Mouse event
 
 /*! Mouse down event. Launch a notification to notif the new first responder textField
 */
@@ -496,8 +496,8 @@ CPAMPMDateType = 6;
 }
 
 
-#pragma mark -
-#pragma mark Theme functions
+// MARK: -
+// MARK: Theme functions
 
 /*! Set the theme CPThemeStateSelected
 */
@@ -517,8 +517,8 @@ CPAMPMDateType = 6;
 }
 
 
-#pragma mark -
-#pragma mark Override
+// MARK: -
+// MARK: Override
 
 /*!
     We override this method to get all the time the good width
@@ -584,7 +584,7 @@ CPAMPMDateType = 6;
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation _CPDatePickerElementSeparator : CPTextField
 

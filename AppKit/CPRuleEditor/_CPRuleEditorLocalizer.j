@@ -97,7 +97,7 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
     return aString;
 }
 
-#pragma mark - Formatting & Reordering Helpers
+// MARK: - Formatting & Reordering Helpers
 
 - (CPString)_englishRepresentationForView:(id)aView
 {

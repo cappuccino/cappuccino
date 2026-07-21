@@ -154,8 +154,8 @@ CPRulerOrientationVertical = 1
         }
     }
 }
-#pragma mark -
-#pragma mark Context Menu Support
+// MARK: -
+// MARK: Context Menu Support
 
 - (CPMenu)menuForEvent:(CPEvent)anEvent
 {
@@ -385,8 +385,8 @@ CPRulerOrientationVertical = 1
 }
 
 
-#pragma mark -
-#pragma mark Interaction Handlers
+// MARK: -
+// MARK: Interaction Handlers
 
 - (void)mouseDown:(CPEvent)anEvent
 {
@@ -500,8 +500,8 @@ CPRulerOrientationVertical = 1
 }
 
 
-#pragma mark -
-#pragma mark DOM Layout Builder
+// MARK: -
+// MARK: DOM Layout Builder
 
 - (void)updateRuler
 {

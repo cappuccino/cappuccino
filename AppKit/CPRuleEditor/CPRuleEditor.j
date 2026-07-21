@@ -1304,7 +1304,7 @@ TODO: implement
     return shouldHide;
 }
 
-#pragma mark Rows management
+// MARK: Rows management
 
 - (id)_rowCacheForIndex:(int)index
 {
@@ -1566,7 +1566,7 @@ TODO: implement
     return row;
 }
 
-#pragma mark Key value observing
+// MARK: Key value observing
 
 - (void)_startObservingRowObjectsRecursively:(CPArray)rowObjects
 {

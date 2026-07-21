@@ -41,7 +41,7 @@
 }
 
 
-#pragma mark Init methods
+// MARK: Init methods
 
 /*! Create a new instance of _CPDatePickerDayView
     @param aFrame
@@ -123,8 +123,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Theme methods
+// MARK: -
+// MARK: Theme methods
 
 /*! Set a theme
 */
@@ -143,8 +143,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Getter methods
+// MARK: -
+// MARK: Getter methods
 
 /*! Select the tile
 */
@@ -205,8 +205,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Layout methods
+// MARK: -
+// MARK: Layout methods
 
 /*! Layout the subviews
 */

@@ -70,8 +70,8 @@ function _points2twips(a) { return (a) * 20.0; }
     CPColor             ulColor;
 }
 
-#pragma mark -
-#pragma mark Class methods
+// MARK: -
+// MARK: Class methods
 
 
 + (CPString)produceRTF:(CPAttributedString)aText documentAttributes:(CPDictionary)dict
@@ -82,8 +82,8 @@ function _points2twips(a) { return (a) * 20.0; }
 }
 
 
-#pragma mark -
-#pragma mark init methods
+// MARK: -
+// MARK: init methods
 
 - (id)init
 {
