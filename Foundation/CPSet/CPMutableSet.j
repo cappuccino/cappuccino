@@ -173,8 +173,8 @@
 
 @end
 
-#pragma mark -
-#pragma mark Category: CPKeyValueCoding
+// MARK: -
+// MARK: Category: CPKeyValueCoding
 
 @implementation CPSet (CPKeyValueCoding)
 
@@ -247,8 +247,8 @@
 
 @end
 
-#pragma mark -
-#pragma mark Key-Value Observing Extensions
+// MARK: -
+// MARK: Key-Value Observing Extensions
 
 @implementation CPObject (CPSetKVO)
 
@@ -274,8 +274,8 @@
 
 @end
 
-#pragma mark -
-#pragma mark Key-Value Observing Proxy Implementation
+// MARK: -
+// MARK: Key-Value Observing Proxy Implementation
 
 @implementation _CPKVCSet : CPMutableSet
 {

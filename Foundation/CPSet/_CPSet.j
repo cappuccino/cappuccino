@@ -295,8 +295,8 @@
 
 @end
 
-#pragma mark -
-#pragma mark Category: CPCopying
+// MARK: -
+// MARK: Category: CPCopying
 
 @implementation CPSet (CPCopying)
 
@@ -312,8 +312,8 @@
 
 @end
 
-#pragma mark -
-#pragma mark Category: CPCoding
+// MARK: -
+// MARK: Category: CPCoding
 
 var CPSetObjectsKey = @"CPSetObjectsKey";
 
@@ -331,8 +331,8 @@ var CPSetObjectsKey = @"CPSetObjectsKey";
 
 @end
 
-#pragma mark -
-#pragma mark Private Allocation Placeholder
+// MARK: -
+// MARK: Private Allocation Placeholder
 
 var _CPSharedPlaceholderSet = nil;
 
