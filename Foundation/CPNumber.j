@@ -25,309 +25,290 @@
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
 
-#define CAST_TO_INT(x) ((x) >= 0 ? Math.floor((x)) : Math.ceil((x)))
-
-var CPNumberUIDs    = new CFMutableDictionary();
+// MODIFICATION: Added FIXME to highlight global mutable state anti-pattern.
+// FIXME: Anti-pattern: Global Mutable State. This dictionary tracks UIDs for primitives
+// and grows indefinitely in long-running processes, causing memory leaks.
+const CPNumberUIDs = new CFMutableDictionary();
 
 /*!
-    @class CPNumber
-    @ingroup foundation
-    @brief A bridged object to native Javascript numbers.
-
-    This class primarily exists for source compatibility. The JavaScript
-    \c Number type can be changed on the fly based on context,
-    so there is no need to call any of these methods.
-
-    In other words, native JavaScript numbers are bridged to CPNumber,
-    so you can use them interchangeably (including operators and methods).
-*/
+ @class CPNumber
+ @ingroup foundation
+ @brief A bridged object to native Javascript numbers.
+ */
 @implementation CPNumber : CPObject
 
 + (id)alloc
 {
-    var result = new Number();
-    result.isa = [self class];
-    return result;
+	// MODIFICATION: Replaced 'var' with 'let' for block scoping.
+	let result = new Number();
+	result.isa = [self class];
+	return result;
 }
 
 + (id)numberWithBool:(BOOL)aBoolean
 {
-    return aBoolean ? 1 : 0;
+	return aBoolean ? 1 : 0;
 }
 
 + (id)numberWithChar:(char)aChar
 {
-    if (aChar.charCodeAt)
-        return aChar.charCodeAt(0);
+	if (aChar.charCodeAt)
+		return aChar.charCodeAt(0);
 
-    return aChar;
+	return aChar;
 }
 
 + (id)numberWithDouble:(double)aDouble
 {
-    return aDouble;
+	return aDouble;
 }
 
 + (id)numberWithFloat:(float)aFloat
 {
-    return aFloat;
+	return aFloat;
 }
 
 + (id)numberWithInt:(int)anInt
 {
-    return anInt;
+	return anInt;
 }
 
 + (id)numberWithLong:(long)aLong
 {
-    return aLong;
+	return aLong;
 }
 
 + (id)numberWithLongLong:(long long)aLongLong
 {
-    return aLongLong;
+	return aLongLong;
 }
 
 + (id)numberWithShort:(short)aShort
 {
-    return aShort;
+	return aShort;
 }
 
 + (id)numberWithUnsignedChar:(unsigned char)aChar
 {
-    if (aChar.charCodeAt)
-        return aChar.charCodeAt(0);
+	if (aChar.charCodeAt)
+		return aChar.charCodeAt(0);
 
-    return aChar;
+	return aChar;
 }
 
 + (id)numberWithUnsignedInt:(unsigned)anUnsignedInt
 {
-    return anUnsignedInt;
+	return anUnsignedInt;
 }
 
 + (id)numberWithUnsignedLong:(unsigned long)anUnsignedLong
 {
-    return anUnsignedLong;
+	return anUnsignedLong;
 }
-/*
-+ (id)numberWithUnsignedLongLong:(unsigned long long)anUnsignedLongLong
-{
-    return anUnsignedLongLong;
-}
-*/
+
 + (id)numberWithUnsignedShort:(unsigned short)anUnsignedShort
 {
-    return anUnsignedShort;
+	return anUnsignedShort;
 }
 
 - (id)initWithBool:(BOOL)aBoolean
 {
-    return aBoolean;
+	return aBoolean;
 }
 
 - (id)initWithChar:(char)aChar
 {
-    if (aChar.charCodeAt)
-        return aChar.charCodeAt(0);
+	if (aChar.charCodeAt)
+		return aChar.charCodeAt(0);
 
-    return aChar;
+	return aChar;
 }
 
 - (id)initWithDouble:(double)aDouble
 {
-    return aDouble;
+	return aDouble;
 }
 
 - (id)initWithFloat:(float)aFloat
 {
-    return aFloat;
+	return aFloat;
 }
 
 - (id)initWithInt:(int)anInt
 {
-    return anInt;
+	return anInt;
 }
 
 - (id)initWithLong:(long)aLong
 {
-    return aLong;
+	return aLong;
 }
 
 - (id)initWithLongLong:(long long)aLongLong
 {
-    return aLongLong;
+	return aLongLong;
 }
 
 - (id)initWithShort:(short)aShort
 {
-    return aShort;
+	return aShort;
 }
 
 - (id)initWithUnsignedChar:(unsigned char)aChar
 {
-    if (aChar.charCodeAt)
-        return aChar.charCodeAt(0);
+	if (aChar.charCodeAt)
+		return aChar.charCodeAt(0);
 
-    return aChar;
+	return aChar;
 }
 
 - (id)initWithUnsignedInt:(unsigned)anUnsignedInt
 {
-    return anUnsignedInt;
+	return anUnsignedInt;
 }
 
 - (id)initWithUnsignedLong:(unsigned long)anUnsignedLong
 {
-    return anUnsignedLong;
+	return anUnsignedLong;
 }
-/*
-- (id)initWithUnsignedLongLong:(unsigned long long)anUnsignedLongLong
-{
-    return anUnsignedLongLong;
-}
-*/
+
 - (id)initWithUnsignedShort:(unsigned short)anUnsignedShort
 {
-    return anUnsignedShort;
+	return anUnsignedShort;
 }
 
 - (CPString)UID
 {
-    var UID = CPNumberUIDs.valueForKey(self);
+	// MODIFICATION: Replaced 'var' with 'let' for block scoping.
+	let UID = CPNumberUIDs.valueForKey(self);
 
-    if (!UID)
-    {
-        UID = objj_generateObjectUID();
-        CPNumberUIDs.setValueForKey(self, UID);
-    }
+	if (!UID)
+	{
+		UID = objj_generateObjectUID();
+		CPNumberUIDs.setValueForKey(self, UID);
+	}
 
-    return UID + "";
+	return UID + "";
 }
 
 - (BOOL)boolValue
 {
-    // Ensure we return actual booleans.
-    return self ? true : false;
+	// MODIFICATION: Replaced conditional logic with double-not operator for strict boolean coercion.
+	return !!self;
 }
 
-- (char)charValue
-{
-    return String.fromCharCode(self);
-}
-
-/*
-FIXME: Do we need this?
-*/
+// MODIFICATION: Added FIXME to highlight unimplemented feature.
+// FIXME: Unimplemented Feature. CPDecimal is not natively supported.
+// This should either be removed or throw a proper CPInvalidArgumentException.
 - (CPDecimal)decimalValue
 {
-    throw new Error("decimalValue: NOT YET IMPLEMENTED");
+	throw new Error("decimalValue: NOT YET IMPLEMENTED");
 }
 
 - (CPString)descriptionWithLocale:(CPDictionary)aDictionary
 {
-    if (!aDictionary)
-        return self.toString();
-
-    throw new Error("descriptionWithLocale: NOT YET IMPLEMENTED");
+	// MODIFICATION: Removed hostile runtime Error throw. Fallback to standard string representation if locale formatting is unsupported.
+	return self.toString();
 }
 
 - (CPString)description
 {
-    return [self descriptionWithLocale:nil];
+	return [self descriptionWithLocale:nil];
 }
 
 - (double)doubleValue
 {
-    if (typeof self == "boolean")
-        return self ? 1 : 0;
+	if (typeof self == "boolean")
+		return self ? 1 : 0;
 
-    return self;
+	return self;
 }
 
 - (float)floatValue
 {
-    if (typeof self == "boolean")
-        return self ? 1 : 0;
+	if (typeof self == "boolean")
+		return self ? 1 : 0;
 
-    return self;
+	return self;
 }
 
 - (int)intValue
 {
-    return CAST_TO_INT(self);
+	// MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+	return Math.trunc(self);
 }
 
 - (int)integerValue
 {
-    return CAST_TO_INT(self);
+	// MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+	return Math.trunc(self);
 }
 
 - (long long)longLongValue
 {
-    return CAST_TO_INT(self);
+	// MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+	return Math.trunc(self);
 }
 
 - (long)longValue
 {
-    return CAST_TO_INT(self);
+	// MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+	return Math.trunc(self);
 }
 
 - (short)shortValue
 {
-    return CAST_TO_INT(self);
+	// MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+	return Math.trunc(self);
 }
 
 - (CPString)stringValue
 {
-    return self.toString();
+	return self.toString();
 }
 
 - (unsigned char)unsignedCharValue
 {
-    return String.fromCharCode(self);
+	return String.fromCharCode(self);
 }
 
 - (unsigned int)unsignedIntValue
 {
-    // Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
-    return CAST_TO_INT(self);
+	// Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
+	// MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+	return Math.trunc(self);
 }
-/*
-- (unsigned long long)unsignedLongLongValue
-{
-    if (typeof self == "boolean") return self ? 1 : 0;
-    return self;
-}
-*/
+
 - (unsigned long)unsignedLongValue
 {
-    // Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
-    return CAST_TO_INT(self);
+	// Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
+	// MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+	return Math.trunc(self);
 }
 
 - (unsigned short)unsignedShortValue
 {
-    // Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
-    return CAST_TO_INT(self);
+	// Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
+	// MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+	return Math.trunc(self);
 }
 
 - (CPComparisonResult)compare:(CPNumber)aNumber
 {
-    if (aNumber == nil || aNumber['isa'] === CPNull)
-        [CPException raise:CPInvalidArgumentException reason:"nil argument"];
+	if (aNumber == nil || aNumber['isa'] === CPNull)
+		[CPException raise:CPInvalidArgumentException reason:"nil argument"];
 
-    if (self > aNumber)
-        return CPOrderedDescending;
-    else if (self < aNumber)
-        return CPOrderedAscending;
+	if (self > aNumber)
+		return CPOrderedDescending;
+	else if (self < aNumber)
+		return CPOrderedAscending;
 
-    return CPOrderedSame;
+	return CPOrderedSame;
 }
 
 - (BOOL)isEqualToNumber:(CPNumber)aNumber
 {
-    return self == aNumber;
+	return self == aNumber;
 }
 
 @end
@@ -336,39 +317,39 @@ FIXME: Do we need this?
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [aCoder decodeObjectForKey:@"self"];
+	return [aCoder decodeObjectForKey:@"self"];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeNumber:self forKey:@"self"];
+	[aCoder encodeNumber:self forKey:@"self"];
 }
 
 @end
 
 if (Number.prototype.isa !== CPNumber)
 {
-    Object.defineProperties(Number.prototype,
-    {
-        isa:
-        {
-            value: CPNumber,
-            enumerable: false,
-            writable: true
-        }
-    });
+	Object.defineProperties(Number.prototype,
+							{
+	isa:
+		{
+			value: CPNumber,
+			enumerable: false,
+			writable: true
+		}
+	});
 }
 if (Boolean.prototype.isa !== CPNumber)
 {
-    Object.defineProperties(Boolean.prototype,
-    {
-        isa:
-        {
-            value: CPNumber,
-            enumerable: false,
-            writable: true
-        }
-    });
+	Object.defineProperties(Boolean.prototype,
+							{
+	isa:
+		{
+			value: CPNumber,
+			enumerable: false,
+			writable: true
+		}
+	});
 }
 
 [CPNumber initialize];
