@@ -517,8 +517,8 @@ function CPAppKitImage(aFilename, aSize)
 
 @end
 
-#pragma mark -
-#pragma mark CSS Theming
+// MARK: -
+// MARK: CSS Theming
 
 // The code below adds support for CSS theming with 100% compatibility with current theming system.
 // The idea is to extend CPImage (and CPColor) with CSS components and adapt low level UI components to
@@ -738,7 +738,7 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
     CPImageCSSBeforeDictionaryKey = @"CPImageCSSBeforeDictionaryKey",
     CPImageCSSAfterDictionaryKey  = @"CPImageCSSAfterDictionaryKey";
 
-#pragma mark -
+// MARK: -
 
 @implementation CPImage (CPCoding)
 
@@ -775,8 +775,8 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
 
 @end
 
-#pragma mark -
-#pragma mark Drawing
+// MARK: -
+// MARK: Drawing
 
 @implementation CPImage (Drawing)
 
@@ -813,7 +813,7 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
 @end
 
 
-#pragma mark -
+// MARK: -
 
 @implementation _CPMaterialIconImage : CPImage
 {
@@ -973,7 +973,7 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPThreePartImage : CPObject
 {
@@ -1116,7 +1116,7 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPImage (Duplication)
 

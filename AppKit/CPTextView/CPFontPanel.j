@@ -86,8 +86,8 @@ var _availableTraits = [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     int     _fontChanges;
 }
 
-#pragma mark -
-#pragma mark Class methods
+// MARK: -
+// MARK: Class methods
 
 /*!
     Check if the shared Font panel exists.
@@ -113,8 +113,8 @@ var _availableTraits = [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     return NO;
 }
 
-#pragma mark -
-#pragma mark Init methods
+// MARK: -
+// MARK: Init methods
 
 /*! @ignore */
 - (id)init

@@ -143,8 +143,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 }
 
 
-#pragma mark -
-#pragma mark Override observers
+// MARK: -
+// MARK: Override observers
 
 - (void)_removeObservers
 {
@@ -795,7 +795,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPSearchField (ThemingAdditions)
 
@@ -987,7 +987,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPSearchField (CPTrackingArea)
 {
@@ -1042,7 +1042,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 @end
 
-#pragma mark -
+// MARK: -
 
 var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
     CPSendsWholeSearchStringKey         = @"CPSendsWholeSearchStringKey",

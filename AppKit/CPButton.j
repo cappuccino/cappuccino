@@ -221,8 +221,8 @@ CPButtonImageOffset   = 3.0;
     [self setButtonType:CPMomentaryPushInButton];
 }
 
-#pragma mark -
-#pragma mark Control Size
+// MARK: -
+// MARK: Control Size
 
 - (void)setControlSize:(CPControlSize)aControlSize
 {
@@ -233,7 +233,7 @@ CPButtonImageOffset   = 3.0;
 }
 
 
-#pragma mark -
+// MARK: -
 
 // Setting the state
 /*!

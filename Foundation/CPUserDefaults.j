@@ -381,7 +381,7 @@ var StandardUserDefaults;
     }
 }
 
-#pragma mark Getting Default Values
+// MARK: Getting Default Values
 
 /*!
     Returns the array value associated with the specified key.
@@ -517,7 +517,7 @@ var StandardUserDefaults;
     return nil;
 }
 
-#pragma mark Setting Default Values
+// MARK: Setting Default Values
 
 /*!
     Sets the value of the specified default key to the specified Boolean value.

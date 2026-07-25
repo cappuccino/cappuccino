@@ -20,17 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPException.j"
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
 @import "CPRange.j"
-@import "CPSortDescriptor.j"
-@import "CPURL.j"
 @import "CPValue.j"
 @import "CPNull.j"
 
 @class CPException
 @class CPURL
+@class CPSortDescriptor
 
 @global CPInvalidArgumentException
 @global CPRangeException

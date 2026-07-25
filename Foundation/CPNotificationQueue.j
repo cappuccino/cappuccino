@@ -98,8 +98,8 @@ var runLoop = [CPRunLoop mainRunLoop];
 }
 
 
-#pragma mark -
-#pragma mark Class methods
+// MARK: -
+// MARK: Class methods
 
 /*!
     Returns the application's notification queue. This notification queue uses the default notification center
@@ -113,8 +113,8 @@ var runLoop = [CPRunLoop mainRunLoop];
 }
 
 
-#pragma mark -
-#pragma mark Init methods
+// MARK: -
+// MARK: Init methods
 
 /*!
     Initializes and returns a notification queue for the specified notification center.
@@ -135,8 +135,8 @@ var runLoop = [CPRunLoop mainRunLoop];
 }
 
 
-#pragma mark -
-#pragma mark Enqueue methods
+// MARK: -
+// MARK: Enqueue methods
 
 /*!
     Adds a notification to the notification queue with a specified posting style.
@@ -185,8 +185,8 @@ var runLoop = [CPRunLoop mainRunLoop];
 }
 
 
-#pragma mark -
-#pragma mark Dequeue methods
+// MARK: -
+// MARK: Dequeue methods
 
 /*!
     Removes all notifications from the queue that match a provided notification using provided matching criteria.
@@ -199,8 +199,8 @@ var runLoop = [CPRunLoop mainRunLoop];
 }
 
 
-#pragma mark -
-#pragma mark RunLoop methods
+// MARK: -
+// MARK: RunLoop methods
 
 /*!
     @ignore
@@ -244,8 +244,8 @@ var runLoop = [CPRunLoop mainRunLoop];
 }
 
 
-#pragma mark -
-#pragma mark Posting methods
+// MARK: -
+// MARK: Posting methods
 
 /*!
     @ignore
@@ -262,8 +262,8 @@ var runLoop = [CPRunLoop mainRunLoop];
 }
 
 
-#pragma mark -
-#pragma mark Remove methods
+// MARK: -
+// MARK: Remove methods
 
 /*!
     @ignore

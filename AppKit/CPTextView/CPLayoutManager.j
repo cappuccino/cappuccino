@@ -76,8 +76,8 @@ _oncontextmenuhandler = function () { return false; };
 }
 
 
-#pragma mark -
-#pragma mark Init methods
+// MARK: -
+// MARK: Init methods
 
 - (id)init
 {
@@ -103,8 +103,8 @@ _oncontextmenuhandler = function () { return false; };
 }
 
 
-#pragma mark -
-#pragma mark Text containes method
+// MARK: -
+// MARK: Text containes method
 
 - (void)insertTextContainer:(CPTextContainer)aContainer atIndex:(int)index
 {
@@ -1132,8 +1132,8 @@ var _objectsInRange = function(aList, aRange)
     CPMutableArray  _runs;
 }
 
-#pragma mark -
-#pragma mark Init methods
+// MARK: -
+// MARK: Init methods
 
 - (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor
 {

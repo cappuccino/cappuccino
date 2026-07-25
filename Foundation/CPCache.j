@@ -74,8 +74,8 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
 }
 
 
-#pragma mark -
-#pragma mark Initialization
+// MARK: -
+// MARK: Initialization
 
 /*!
     Initializes the cache with default values
@@ -100,8 +100,8 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
 }
 
 
-#pragma mark -
-#pragma mark Managing cache
+// MARK: -
+// MARK: Managing cache
 
 /*!
     Returns the object which correspond to the given key
@@ -182,8 +182,8 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
 }
 
 
-#pragma mark -
-#pragma mark Setters
+// MARK: -
+// MARK: Setters
 
 /*!
     Sets the count limit of the cache.
@@ -224,8 +224,8 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
 }
 
 
-#pragma mark -
-#pragma mark Privates
+// MARK: -
+// MARK: Privates
 
 /*
  * This method return the number of objects in the cache

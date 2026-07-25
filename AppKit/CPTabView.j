@@ -696,8 +696,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     [self _displayItemView:_placeholderView];
 }
 
-#pragma mark -
-#pragma mark Override
+// MARK: -
+// MARK: Override
 
 /*!
     Enabled controls accept first mouse by default.
@@ -886,11 +886,11 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPTabView (CSSTheming)
 
-#pragma mark Override
+// MARK: Override
 
 - (void)_setThemeIncludingDescendants:(CPTheme)aTheme
 {
@@ -906,7 +906,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation _CPTabViewBox : CPBox
 {
@@ -915,8 +915,8 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 }
 
 
-#pragma mark -
-#pragma mark Override
+// MARK: -
+// MARK: Override
 
 - (id)initWithFrame:(CGRect)aFrame
 {

@@ -74,8 +74,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 }
 
 
-#pragma mark -
-#pragma mark Class methods
+// MARK: -
+// MARK: Class methods
 
 /*!
     Overrides the default windowView class loader.
@@ -89,8 +89,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 }
 
 
-#pragma mark -
-#pragma mark Initialization
+// MARK: -
+// MARK: Initialization
 
 /*!
     Create and init a _CPPopoverWindow with given the given frame.
@@ -138,8 +138,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     return self;
 }
 
-#pragma mark -
-#pragma mark Getters / Setters
+// MARK: -
+// MARK: Getters / Setters
 
 - (void)setAppearance:(int)anAppearance
 {
@@ -177,8 +177,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         _implementedDelegateMethods |= _CPPopoverWindow_didShow_;
 }
 
-#pragma mark -
-#pragma mark Observer
+// MARK: -
+// MARK: Observer
 
 /*!
     @ignore
@@ -236,8 +236,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 }
 
 
-#pragma mark -
-#pragma mark Utilities
+// MARK: -
+// MARK: Utilities
 
 - (CGPoint)computeOriginFromRect:(CGRect)aRect ofView:(CPView)positioningView preferredEdge:(int)anEdge
 {
@@ -447,8 +447,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     }
 }
 
-#pragma mark -
-#pragma mark Actions
+// MARK: -
+// MARK: Actions
 
 /*!
     @ignore
@@ -462,8 +462,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 }
 
 
-#pragma mark -
-#pragma mark Overrides
+// MARK: -
+// MARK: Overrides
 
 /*!
     @ignore
@@ -697,8 +697,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 }
 
 
-#pragma mark -
-#pragma mark Private
+// MARK: -
+// MARK: Private
 
 - (CPString)_currentTransformMatrix
 {

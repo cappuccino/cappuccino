@@ -42,8 +42,8 @@
     CPButton    _buttonUp;
 }
 
-#pragma mark -
-#pragma mark Initialization
+// MARK: -
+// MARK: Initialization
 
 /*!
     Initializes a CPStepper with given values.
@@ -147,8 +147,8 @@
     [self _sizeToFit];
 }
 
-#pragma mark -
-#pragma mark Superclass overrides
+// MARK: -
+// MARK: Superclass overrides
 
 /*!
     Set if the CPStepper is enabled or not.
@@ -290,8 +290,8 @@
         [super setDoubleValue:aValue];
 }
 
-#pragma mark -
-#pragma mark Actions
+// MARK: -
+// MARK: Actions
 
 /*! @ignore */
 - (IBAction)_buttonDidClick:(id)aSender
@@ -326,8 +326,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Theming
+// MARK: -
+// MARK: Theming
 
 + (CPString)defaultThemeClass
 {

@@ -95,8 +95,8 @@ CPCheckBoxImageOffset = 4.0;
 }
 
 
-#pragma mark -
-#pragma mark Override methods from CPButton
+// MARK: -
+// MARK: Override methods from CPButton
 
 - (CGSize)_minimumFrameSize
 {
@@ -177,7 +177,7 @@ CPCheckBoxImageOffset = 4.0;
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPCheckBox (TableDataView)
 

@@ -465,7 +465,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation _CPMenuWindow (CSSTheming)
 
@@ -478,7 +478,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 @end
 
-#pragma mark -
+// MARK: -
 
 /*
     @ignore
@@ -664,7 +664,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation _CPMenuView (CSSTheming)
 

@@ -210,7 +210,7 @@ var ListColumnIdentifier = @"1";
     CPTableColumn           _tableColumn;
 }
 
-#pragma mark Creating and Displaying a List
+// MARK: Creating and Displaying a List
 
 /*!
     Creates a pop up list of choices that will display in a scrollable CPTableView.
@@ -386,7 +386,7 @@ var ListColumnIdentifier = @"1";
     [self scrollItemAtIndexToTop:[_tableView selectedRow]];
 }
 
-#pragma mark Setting Display Attributes
+// MARK: Setting Display Attributes
 
 /*!
     Returns the desired width of the list.
@@ -481,7 +481,7 @@ var ListColumnIdentifier = @"1";
     return _panel;
 }
 
-#pragma mark Setting a Data Source
+// MARK: Setting a Data Source
 
 - (void)setDataSource:(_CPPopUpListDataSource)aDataSource
 {
@@ -501,7 +501,7 @@ var ListColumnIdentifier = @"1";
     return _dataSource;
 }
 
-#pragma mark Manipulating the Selection
+// MARK: Manipulating the Selection
 
 /*!
     Select the next item in the list if there one. If there is currently no selected item,
@@ -589,7 +589,7 @@ var ListColumnIdentifier = @"1";
         return NO;
 }
 
-#pragma mark Manipulating the Displayed List
+// MARK: Manipulating the Displayed List
 
 /*!
     Scroll the list down one page.
@@ -670,7 +670,7 @@ var ListColumnIdentifier = @"1";
     [[CPNotificationCenter defaultCenter] postNotificationName:_CPPopUpListItemWasClickedNotification object:self];
 }
 
-#pragma mark Handling Events
+// MARK: Handling Events
 
 /*!
     Handles standard key equivalents for moving the selection
@@ -818,7 +818,7 @@ var ListColumnIdentifier = @"1";
         return YES;
 }
 
-#pragma mark Internal Helpers
+// MARK: Internal Helpers
 
 /*! @ignore */
 - (void)listWillPopUp

@@ -319,8 +319,8 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 
 @end
 
-#pragma mark -
-#pragma mark CSS Theming
+// MARK: -
+// MARK: CSS Theming
 
 // The code below adds support for CSS theming with 100% compatibility with current theming system.
 // The idea is to extend CPColor and CPImage with CSS components and adapt low level UI components to
@@ -556,7 +556,7 @@ var _savedThemesByName = { };
 
 @end
 
-#pragma mark -
+// MARK: -
 
 /*!
  * ThemeStates are immutable objects representing a particular ThemeState.  Applications should never be creating

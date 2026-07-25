@@ -82,8 +82,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 }
 
 
-#pragma mark -
-#pragma mark Theme methods
+// MARK: -
+// MARK: Theme methods
 
 + (CPString)defaultThemeClass
 {
@@ -174,8 +174,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 }
 
 
-#pragma mark -
-#pragma mark Binding methods
+// MARK: -
+// MARK: Binding methods
 
 + (Class)_binderClassForBinding:(CPString)theBinding
 {
@@ -200,8 +200,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 }
 
 
-#pragma mark -
-#pragma mark Init methods
+// MARK: -
+// MARK: Init methods
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -271,8 +271,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 }
 
 
-#pragma mark -
-#pragma mark Control Size
+// MARK: -
+// MARK: Control Size
 
 - (void)setControlSize:(CPControlSize)aControlSize
 {
@@ -285,8 +285,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 }
 
 
-#pragma mark -
-#pragma mark Delegate methods
+// MARK: -
+// MARK: Delegate methods
 
 /*! Set the delegate of the datePicker
     @param aDelegate delegate of the datePicker
@@ -302,8 +302,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 }
 
 
-#pragma mark -
-#pragma mark Layout method
+// MARK: -
+// MARK: Layout method
 
 /*! Layout the subviews
 */
@@ -313,8 +313,8 @@ CPEraDatePickerElementFlag              = 0x0100;
     [_datePickerComponent setNeedsDisplay:YES];
 }
 
-#pragma mark -
-#pragma mark Setter
+// MARK: -
+// MARK: Setter
 
 /*! Return the objectValue of the datePicker. The objectValue should take the timeZoneEffect
 */
@@ -651,8 +651,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 }
 
 
-#pragma mark -
-#pragma mark First responder methods
+// MARK: -
+// MARK: First responder methods
 
 /*! Return YES if style is set to CPTextFieldAndStepperDatePickerStyle or CPTextFieldDatePickerStyle
 */
@@ -689,8 +689,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 }
 
 
-#pragma mark -
-#pragma mark getter
+// MARK: -
+// MARK: getter
 
 /*!
     Returns \c YES if the textfield is bezeled.
@@ -723,8 +723,8 @@ CPEraDatePickerElementFlag              = 0x0100;
     return [[_locale objectForKey:CPLocaleCountryCode] isEqualToString:@"US"];
 }
 
-#pragma mark -
-#pragma mark Key event
+// MARK: -
+// MARK: Key event
 
 /*! Key down event
     @param anEvent

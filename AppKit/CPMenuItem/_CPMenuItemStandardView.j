@@ -436,11 +436,11 @@
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation _CPMenuItemStandardView (CSSTheming)
 
-#pragma mark Override
+// MARK: Override
 
 - (void)_setThemeIncludingDescendants:(CPTheme)aTheme
 {
@@ -450,7 +450,7 @@
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation _CPMenuItemSubmenuIndicatorView : CPView
 {

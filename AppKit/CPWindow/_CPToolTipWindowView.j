@@ -29,8 +29,9 @@
     unsigned    _gravity            @accessors(property=gravity);
 }
 
-#pragma mark -
-#pragma mark Class methods
+
+// MARK: -
+// MARK: Class methods
 
 + (CPString)defaultThemeClass
 {
@@ -84,8 +85,8 @@
     return aFrameRect;
 }
 
-#pragma mark -
-#pragma mark DOM/CSS Rendering
+// MARK: -
+// MARK: drawing
 
 - (void)layoutSubviews
 {

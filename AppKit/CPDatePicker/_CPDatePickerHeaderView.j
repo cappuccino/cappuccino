@@ -50,7 +50,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 }
 
 
-#pragma mark Init methods
+// MARK: Init methods
 
 /*! Init a new instance of _CPDatePickerHeaderView
     @param aFrame
@@ -153,8 +153,8 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 }
 
 
-#pragma mark -
-#pragma mark Getter Setter methods
+// MARK: -
+// MARK: Getter Setter methods
 
 /*! Return the day names depending on the CPLocale of the datePicker
     @return an array
@@ -242,8 +242,8 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 }
 
 
-#pragma mark -
-#pragma mark Layout methods
+// MARK: -
+// MARK: Layout methods
 
 /*! Layout the subviews
 */

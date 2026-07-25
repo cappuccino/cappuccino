@@ -3375,7 +3375,7 @@ setBoundsOrigin:
 
 @implementation CPView (Theming)
 
-#pragma mark Override
+// MARK: Override
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
@@ -3412,7 +3412,7 @@ setBoundsOrigin:
 }
 
 
-#pragma mark First responder
+// MARK: First responder
 
 - (BOOL)becomeFirstResponder
 {
@@ -3474,7 +3474,7 @@ setBoundsOrigin:
         [_subviews[count] _notifyWindowDidResignKey];
 }
 
-#pragma mark Theme Attributes
+// MARK: Theme Attributes
 
 - (void)_setThemeIncludingDescendants:(CPTheme)aTheme
 {

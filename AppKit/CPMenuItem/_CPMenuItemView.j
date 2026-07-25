@@ -274,11 +274,11 @@
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation _CPMenuItemView (CSSTheming)
 
-#pragma mark Override
+// MARK: Override
 
 - (void)_setThemeIncludingDescendants:(CPTheme)aTheme
 {
@@ -297,7 +297,7 @@
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation _CPMenuItemArrowView : CPView
 {

@@ -140,7 +140,7 @@
     [self assert:[track volume] equals:[slider floatValue]];
 }
 
-#pragma mark ----- actions used by implementation 01 -----
+// MARK: ----- actions used by implementation 01 -----
 
 - (void)updateVolumeFrom:(id)sender
 {
@@ -161,7 +161,7 @@
     [self updateUserInterface];
 }
 
-#pragma mark ----- actions used by implementation 02 and 03 -----
+// MARK: ----- actions used by implementation 02 and 03 -----
 
 - (void)muteTrack:(id)sender
 {

@@ -187,7 +187,7 @@ CPRadioImageOffset = 4.0;
     [self _setRadioGroup];
 }
 
-#pragma mark Private methods
+// MARK: Private methods
 
 - (void)_setRadioGroup
 {
@@ -260,8 +260,8 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
     [aCoder encodeObject:_radioGroup forKey:CPRadioRadioGroupKey];
 }
 
-#pragma mark -
-#pragma mark Override methods from CPButton
+// MARK: -
+// MARK: Override methods from CPButton
 
 - (CPThemeState)_contentVisualState
 {
@@ -412,7 +412,7 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
     [_radios makeObjectsPerformSelector:@selector(setHidden:) withObject:hidden];
 }
 
-#pragma mark Private
+// MARK: Private
 
 - (void)_addRadio:(CPRadio)aRadio
 {

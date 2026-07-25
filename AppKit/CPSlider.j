@@ -586,7 +586,7 @@ var AFFINITY = 5;
             return [self setFloatValue:1.0];
 }
 
-#pragma mark - New methods as in High Sierra (10.13)
+// MARK: - New methods as in High Sierra (10.13)
 
 /*!
     Creates and returns a continuous horizontal slider whose values range from 0.0 to 1.0.
@@ -812,7 +812,7 @@ var AFFINITY = 5;
     return [self valueForThemeAttribute:@"left-track-color" inStates:normalState];
 }
 
-#pragma mark - Private methods
+// MARK: - Private methods
 
 - (void)_refreshCachesAndStates
 {
@@ -1050,7 +1050,7 @@ var AFFINITY = 5;
     return value;
 }
 
-#pragma mark - Overrides
+// MARK: - Overrides
 
 - (void)setFrameSize:(CGSize)aSize
 {
@@ -1060,7 +1060,7 @@ var AFFINITY = 5;
     [self setNeedsDisplay:YES];
 }
 
-#pragma mark -
+// MARK: -
 
 @end
 

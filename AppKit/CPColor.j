@@ -89,8 +89,8 @@ var cachedBlackColor,
 }
 @global document
 
-#pragma mark -
-#pragma mark Theming
+// MARK: -
+// MARK: Theming
 
 + (CPString)defaultThemeClass
 {
@@ -109,8 +109,8 @@ var cachedBlackColor,
 }
 
 
-#pragma mark -
-#pragma mark Static methods
+// MARK: -
+// MARK: Static methods
 
 /*!
     Creates a color in the RGB colorspace, with an alpha value.
@@ -884,8 +884,8 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
 @end
 
-#pragma mark -
-#pragma mark CSS Theming
+// MARK: -
+// MARK: CSS Theming
 
 // The code below adds support for CSS theming with 100% compatibility with current theming system.
 // The idea is to extend CPColor (and CPImage) with CSS components and adapt low level UI components to
@@ -1091,7 +1091,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
 @end
 
-#pragma mark -
+// MARK: -
 
 /// @cond IGNORE
 var CPColorComponentsKey            = @"CPColorComponentsKey",

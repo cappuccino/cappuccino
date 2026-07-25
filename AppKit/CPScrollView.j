@@ -159,8 +159,8 @@ var _CPScrollViews;
 }
 
 
-#pragma mark -
-#pragma mark Class methods
+// MARK: -
+// MARK: Class methods
 
 + (void)initialize
 {
@@ -320,8 +320,8 @@ var _CPScrollViews;
 }
 
 
-#pragma mark -
-#pragma mark Initialization
+// MARK: -
+// MARK: Initialization
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -366,8 +366,8 @@ var _CPScrollViews;
 }
 
 
-#pragma mark -
-#pragma mark Getters / Setters
+// MARK: -
+// MARK: Getters / Setters
 
 /*!
     The delegate of the scroll view
@@ -845,8 +845,8 @@ Notifies the delegate when the scroll view has finished scrolling.
 }
 
 
-#pragma mark -
-#pragma mark Rulers
+// MARK: -
+// MARK: Rulers
 
 - (BOOL)hasHorizontalRuler
 {
@@ -942,8 +942,8 @@ Notifies the delegate when the scroll view has finished scrolling.
 }
 
 
-#pragma mark -
-#pragma mark Privates
+// MARK: -
+// MARK: Privates
 
 /* @ignore */
 - (void)_updateScrollerStyle
@@ -1263,8 +1263,8 @@ Notifies the delegate when the scroll view has finished scrolling.
 
 
 
-#pragma mark -
-#pragma mark Utilities
+// MARK: -
+// MARK: Utilities
 
 /*!
     Lays out the scroll view's components.
@@ -1530,8 +1530,8 @@ Notifies the delegate when the scroll view has finished scrolling.
     return [_contentView documentVisibleRect];
 }
 
-#pragma mark -
-#pragma mark Overrides
+// MARK: -
+// MARK: Overrides
 
 - (void)_removeObservers
 {
@@ -1765,7 +1765,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPScrollView (CSSTheming)
 
@@ -1840,7 +1840,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 
 @end
 
-#pragma mark -
+// MARK: -
 
 var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
     CPScrollViewHeaderClipViewKey       = @"CPScrollViewHeaderClipViewKey",

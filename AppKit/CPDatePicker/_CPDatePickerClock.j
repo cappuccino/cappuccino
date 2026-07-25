@@ -76,8 +76,8 @@ _CPDatePickerClockSeconds = 3;
     CPInteger               _datePickerElements @accessors(getter=datePickerElements);
 }
 
-#pragma mark -
-#pragma mark Init methods
+// MARK: -
+// MARK: Init methods
 
 - (id)initWithFrame:(CGRect)aFrame datePicker:(CPDatePicker)aDatePicker
 {
@@ -186,7 +186,7 @@ _CPDatePickerClockSeconds = 3;
     [_secondHandView setHidden:!((_datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)];
 }
 
-#pragma mark Layout methods
+// MARK: Layout methods
 
 - (void)layoutSubviews
 {
@@ -267,7 +267,7 @@ _CPDatePickerClockSeconds = 3;
     [self _rotateView:_secondHandView byAngle:_secondAngle];
 }
 
-#pragma mark Accessors
+// MARK: Accessors
 
 - (void)setEnabled:(BOOL)shouldEnable
 {
@@ -281,7 +281,7 @@ _CPDatePickerClockSeconds = 3;
     [self setNeedsLayout];
 }
 
-#pragma mark Mouse actions
+// MARK: Mouse actions
 
 // Since we rotate using Pure CSS, Cappuccino's `convertPoint:` doesn't know about it.
 // So we use standard Trigonometry to perfectly hit-test the rotated hands!

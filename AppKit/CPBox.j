@@ -264,8 +264,8 @@ CPBelowBottom = 6;
     [self _manageTitlePositioning];
 }
 
-#pragma mark -
-#pragma mark Style properties which override theme values
+// MARK: -
+// MARK: Style properties which override theme values
 /*!
     The borderColor, borderWidth, cornerRadius and fillColor properties for the receiver
     are only supported for boxes with boxType === CPBoxCustom and borderType === CPLineBorder.
@@ -282,7 +282,7 @@ CPBelowBottom = 6;
 */
 
 // See discussion above.
-#pragma mark borderColor
+// MARK: borderColor
 - (CPColor)borderColor
 {
     return [self currentValueForThemeAttribute:@"border-color"];
@@ -308,7 +308,7 @@ CPBelowBottom = 6;
 }
 
 // See discussion above.
-#pragma mark borderWidth
+// MARK: borderWidth
 - (float)borderWidth
 {
     return [self valueForThemeAttribute:@"border-width"];
@@ -334,7 +334,7 @@ CPBelowBottom = 6;
 }
 
 // See discussion above.
-#pragma mark cornerRadius
+// MARK: cornerRadius
 - (float)cornerRadius
 {
     return [self valueForThemeAttribute:@"corner-radius"];
@@ -360,7 +360,7 @@ CPBelowBottom = 6;
 }
 
 // See discussion above.
-#pragma mark fillColor
+// MARK: fillColor
 - (CPColor)fillColor
 {
     return [self valueForThemeAttribute:@"background-color"];
@@ -761,7 +761,7 @@ CPBelowBottom = 6;
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPBox (CSSTheming)
 
@@ -829,7 +829,7 @@ CPBelowBottom = 6;
 
 @end
 
-#pragma mark -
+// MARK: -
 
 var CPBoxTypeKey          = @"CPBoxTypeKey",
     CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",

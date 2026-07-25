@@ -54,8 +54,8 @@ var CPSystemTypesetterFactory,
 @implementation CPTypesetter : CPObject
 
 
-#pragma mark -
-#pragma mark Class methods
+// MARK: -
+// MARK: Class methods
 
 + (void)initialize
 {
@@ -122,8 +122,8 @@ var CPSystemTypesetterFactory,
 }
 
 
-#pragma mark -
-#pragma mark Class methods
+// MARK: -
+// MARK: Class methods
 
 + (id)sharedInstance
 {

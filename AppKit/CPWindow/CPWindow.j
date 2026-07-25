@@ -4462,7 +4462,7 @@ var interpolate = function(fromValue, toValue, progress)
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPWindow (CSSTheming)
 
@@ -4473,7 +4473,7 @@ var interpolate = function(fromValue, toValue, progress)
 
 @end
 
-#pragma mark -
+// MARK: -
 
 function _CPWindowFullPlatformWindowSessionMake(aWindowView, aContentRect, hasShadow, aLevel)
 {

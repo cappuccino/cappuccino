@@ -245,8 +245,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 
-#pragma mark -
-#pragma mark Control Size
+// MARK: -
+// MARK: Control Size
 
 - (void)setControlSize:(CPControlSize)aControlSize
 {
@@ -257,7 +257,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 
-#pragma mark -
+// MARK: -
 
 #if PLATFORM(DOM)
 - (DOMElement)_inputElement
@@ -381,7 +381,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return self;
 }
 
-#pragma mark Controlling Editability and Selectability
+// MARK: Controlling Editability and Selectability
 
 /*!
     Sets whether or not the receiver text field can be edited. If NO, any
@@ -1848,7 +1848,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self _didEdit];
 }
 
-#pragma mark Setting the Delegate
+// MARK: Setting the Delegate
 
 - (void)setDelegate:(id <CPTextFieldDelegate>)aDelegate
 {
@@ -2008,7 +2008,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _setCSSStyleForInputElement];
 }
 
-#pragma mark Overrides
+// MARK: Overrides
 
 /*!
     Sets the font of the receiver.
@@ -2061,7 +2061,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         }
 }
 
-#pragma mark Overrides
+// MARK: Overrides
 
 /*!
     Sets the text color of the receiver.
@@ -2130,7 +2130,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return YES;
 }
 
-#pragma mark Private
+// MARK: Private
 
 - (BOOL)_isWithinUsablePlatformRect
 {
@@ -2429,7 +2429,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPTextField (TableDataView)
 
@@ -2446,7 +2446,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @end
 
-#pragma mark -
+// MARK: -
 
 @implementation CPTextField (Deprecated)
 
