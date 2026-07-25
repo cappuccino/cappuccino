@@ -89,8 +89,8 @@ CPLineMovesUp = 4;
 }
 
 
-#pragma mark -
-#pragma mark Init methods
+// MARK: -
+// MARK: Init methods
 
 - (id)initWithContainerSize:(CGSize)aSize
 {
@@ -118,8 +118,8 @@ CPLineMovesUp = 4;
     [_layoutManager addTextContainer:self];
 }
 
-#pragma mark -
-#pragma mark Setter methods
+// MARK: -
+// MARK: Setter methods
 
 - (void)setContainerSize:(CGSize)someSize
 {

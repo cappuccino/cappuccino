@@ -46,7 +46,7 @@
 }
 
 
-#pragma mark Init methods
+// MARK: Init methods
 
 /*! Init a _CPDatePickerMonthView
     @param aFrame
@@ -77,8 +77,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Getter Setter methods
+// MARK: -
+// MARK: Getter Setter methods
 
 /*! Set the monthDate of the component
     @param aDate
@@ -194,8 +194,8 @@
     return tileIndex;
 }
 
-#pragma mark -
-#pragma mark Reload data
+// MARK: -
+// MARK: Reload data
 
 /*! Reload the data
 */
@@ -235,8 +235,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Select methods
+// MARK: -
+// MARK: Select methods
 
 /*! Select one date or several date depending of the giving interval
     @param aStartDate
@@ -297,8 +297,8 @@
     }
 }
 
-#pragma mark -
-#pragma mark Layout methods
+// MARK: -
+// MARK: Layout methods
 
 /*! Tile the view
 */
@@ -438,8 +438,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Mouse event
+// MARK: -
+// MARK: Mouse event
 
 /*! Mouse down event
 */
@@ -596,8 +596,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Timer
+// MARK: -
+// MARK: Timer
 
 - (void)_timerNextMonthEvent:(CPEvent)anEvent
 {
@@ -618,8 +618,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Date methods
+// MARK: -
+// MARK: Date methods
 
 - (CPDate)_hoursMinutesSecondsFromDatePickerForDate:(CPDate)aDate
 {

@@ -207,8 +207,8 @@ var CPControlBlackColor = [CPColor blackColor];
     return self;
 }
 
-#pragma mark -
-#pragma mark Control Size
+// MARK: -
+// MARK: Control Size
 
 /*!
     Returns the control's control size
@@ -286,7 +286,7 @@ var CPControlBlackColor = [CPColor blackColor];
 }
 
 
-#pragma mark -
+// MARK: -
 
 /*!
     Sets the receiver's target action.
@@ -1023,8 +1023,8 @@ var CPControlBlackColor = [CPColor blackColor];
 }
 
 
-#pragma mark -
-#pragma mark Base writing direction
+// MARK: -
+// MARK: Base writing direction
 
 /*!
     Sets the initial writing direction of the receiver

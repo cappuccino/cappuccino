@@ -176,13 +176,6 @@
     return YES;
 }
 
-- (BOOL)isEqual:(id)anObject
-{
-    return  self === anObject ||
-            [anObject isKindOfClass:[self class]] &&
-            [self isEqualToIndexSet:anObject];
-}
-
 /*!
     Returns \c YES if the index set contains the specified index.
     @param anIndex the index to check for in the set

@@ -76,8 +76,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Delegate
+// MARK: -
+// MARK: Delegate
 
 - (void)windowDidBecomeKey:(CPNotification)aNotification
 {

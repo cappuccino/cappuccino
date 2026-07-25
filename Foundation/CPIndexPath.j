@@ -70,8 +70,8 @@
     return [super description] + " " + _indexes;
 }
 
-#pragma mark -
-#pragma mark Accessing
+// MARK: -
+// MARK: Accessing
 
 - (id)length
 {
@@ -93,8 +93,8 @@
     return [_indexes copy];
 }
 
-#pragma mark -
-#pragma mark Modification
+// MARK: -
+// MARK: Modification
 
 - (CPIndexPath)indexPathByAddingIndex:(int)index
 {
@@ -106,8 +106,8 @@
     return [CPIndexPath indexPathWithIndexes:_indexes length:[self length] - 1];
 }
 
-#pragma mark -
-#pragma mark Comparison
+// MARK: -
+// MARK: Comparison
 
 - (BOOL)isEqual:(id)anObject
 {

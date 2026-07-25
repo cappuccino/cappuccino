@@ -5761,8 +5761,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 }
 
 
-#pragma mark -
-#pragma mark DataSource methods to implement
+// MARK: -
+// MARK: DataSource methods to implement
 
 /*!
     @ignore
@@ -6030,8 +6030,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 }
 
 
-#pragma mark -
-#pragma mark Delegate methods to implement
+// MARK: -
+// MARK: Delegate methods to implement
 
 /*!
     @ignore

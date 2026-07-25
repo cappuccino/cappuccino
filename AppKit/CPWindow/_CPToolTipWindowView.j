@@ -30,8 +30,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Class methods
+// MARK: -
+// MARK: Class methods
 
 + (CPString)defaultThemeClass
 {
@@ -80,8 +80,8 @@
 }
 
 
-#pragma mark -
-#pragma mark drawing
+// MARK: -
+// MARK: drawing
 
 - (void)drawRect:(CGRect)aRect
 {

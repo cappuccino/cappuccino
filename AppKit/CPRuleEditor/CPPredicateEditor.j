@@ -34,7 +34,7 @@
     SEL     _predicateAction @accessors(property=action);
 }
 
-#pragma mark public methods
+// MARK: public methods
 /*!
     @ingroup appkit
     @class CPPredicateEditor
@@ -251,7 +251,7 @@
     return tree;
 }
 
-#pragma mark Set the Predicate
+// MARK: Set the Predicate
 
 - (void)setObjectValue:(id)objectValue
 {
@@ -374,7 +374,7 @@
     return row;
 }
 
-#pragma mark Get the predicate
+// MARK: Get the predicate
 
 - (void)_updatePredicate
 {
@@ -452,7 +452,7 @@
     return CPAndPredicateType;
 }
 
-#pragma mark Control delegate
+// MARK: Control delegate
 
 - (void)_sendRuleAction
 {
@@ -487,7 +487,7 @@
 }
 */
 
-#pragma mark RuleEditor delegate methods
+// MARK: RuleEditor delegate methods
 
 - (int)_queryNumberOfChildrenOfItem:(id)rowItem withRowType:(CPRuleEditorRowType)type
 {

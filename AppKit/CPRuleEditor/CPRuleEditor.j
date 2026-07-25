@@ -1304,7 +1304,7 @@ TODO: implement
     return shouldHide;
 }
 
-#pragma mark Rows management
+// MARK: Rows management
 
 - (id)_rowCacheForIndex:(int)index
 {
@@ -1566,7 +1566,7 @@ TODO: implement
     return row;
 }
 
-#pragma mark Key value observing
+// MARK: Key value observing
 
 - (void)_startObservingRowObjectsRecursively:(CPArray)rowObjects
 {
@@ -2342,33 +2342,41 @@ TODO: implement
 
 - (BOOL)performDragOperation:(id /*< CPDraggingInfo >*/)info
 {
-    var aboveInsertIndexCount = 0,
-        object,
-        removeIndex;
+    var object;
 
     var rowObjects = [_rowCache valueForKey:@"rowObject"],
         index = [_draggingRows lastIndex];
 
-    var parentRowIndex = [self parentRowForRow:index], // first index of draggingrows
+    var firstDraggingIndex = [_draggingRows firstIndex],
+        parentRowIndex = [self parentRowForRow:firstDraggingIndex],
         parentRowObject = (parentRowIndex === -1) ? _boundArrayOwner : [[self _rowCacheForIndex:parentRowIndex] rowObject],
         insertIndex = _subviewIndexOfDropLine;
 
     while (index !== CPNotFound)
     {
-        if (index >= insertIndex)
+        // Identify if this row's parent is also inside the dragging set.
+        // If it is, we skip it because it will move automatically with its parent.
+        var parentOfCurrent = [self parentRowForRow:index];
+        if (parentOfCurrent !== -1 && [_draggingRows containsIndex:parentOfCurrent])
         {
-            removeIndex = index + aboveInsertIndexCount;
-            aboveInsertIndexCount += 1;
-        }
-        else
-        {
-            removeIndex = index;
-            insertIndex -= 1;
+            index = [_draggingRows indexLessThanIndex:index];
+            continue;
         }
 
-        object = [rowObjects objectAtIndex:removeIndex];
-        [self removeRowAtIndex:removeIndex];
-        [[self _subrowObjectsOfObject:parentRowObject] insertObject:object atIndex:insertIndex - parentRowIndex - 1];
+        object = [rowObjects objectAtIndex:index];
+        
+        // Find the current live index of the object inside the editor
+        var cache = [self _searchCacheForRowObject:object];
+        var liveIndex = [_rowCache indexOfObjectIdenticalTo:cache];
+
+        if (liveIndex !== CPNotFound)
+        {
+            if (liveIndex < insertIndex)
+                insertIndex -= 1;
+
+            [self removeRowAtIndex:liveIndex];
+            [[self _subrowObjectsOfObject:parentRowObject] insertObject:object atIndex:insertIndex - parentRowIndex - 1];
+        }
 
         index = [_draggingRows indexLessThanIndex:index];
     }
@@ -2377,6 +2385,7 @@ TODO: implement
     _draggingRows = nil;
     return YES;
 }
+
 
 - (CPIndexSet)_draggingTypes
 {

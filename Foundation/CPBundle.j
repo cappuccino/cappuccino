@@ -239,8 +239,8 @@ var CPBundlesForURLStrings = { };
 }
 
 
-#pragma mark -
-#pragma mark Localization
+// MARK: -
+// MARK: Localization
 
 - (CPArray)localizations
 {

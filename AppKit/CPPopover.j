@@ -84,8 +84,8 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 }
 
 
-#pragma mark -
-#pragma mark Initialization
+// MARK: -
+// MARK: Initialization
 
 /*!
     Initialize the CPPopover witn default values
@@ -105,8 +105,8 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 }
 
 
-#pragma mark -
-#pragma mark Getters / Setters
+// MARK: -
+// MARK: Getters / Setters
 
 /*!
     Returns the current rect of the popover
@@ -220,8 +220,8 @@ Set the behavior of the CPPopover. It can be:
         _implementedDelegateMethods |= CPPopoverDelegate_popover_didClose_;
 }
 
-#pragma mark -
-#pragma mark Positioning
+// MARK: -
+// MARK: Positioning
 
 /*!
     Show the popover
@@ -298,8 +298,8 @@ Set the behavior of the CPPopover. It can be:
 }
 
 
-#pragma mark -
-#pragma mark Action
+// MARK: -
+// MARK: Action
 
 /*!
     Close the popover
@@ -318,8 +318,8 @@ Set the behavior of the CPPopover. It can be:
 }
 
 
-#pragma mark -
-#pragma mark Delegates
+// MARK: -
+// MARK: Delegates
 
 /*! @ignore */
 - (BOOL)_popoverWindowShouldClose

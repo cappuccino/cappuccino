@@ -33,7 +33,7 @@
     [[self scrollView] setDocumentView:pagePreview];
 }
 
-#pragma mark - Window delegate methods
+// MARK: - Window delegate methods
 - (CGSize)windowWillResize:(CPWindow)theWindow toSize:(CPSize)frameSize
 {
     if (![self pagePreviewBox])

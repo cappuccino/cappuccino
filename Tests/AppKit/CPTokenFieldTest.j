@@ -31,8 +31,8 @@
 
 }
 
-#pragma mark -
-#pragma mark Test creation
+// MARK: -
+// MARK: Test creation
 
 - (void)testArchiving
 {
@@ -57,8 +57,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Test objectValue and stringValue
+// MARK: -
+// MARK: Test objectValue and stringValue
 
 /*!
     This is totally different than cocoa
@@ -82,8 +82,8 @@
 }
 
 
-#pragma mark -
-#pragma mark Delegate methods
+// MARK: -
+// MARK: Delegate methods
 
 - (void)testDelegateDisplayStringForRepresentedObject
 {

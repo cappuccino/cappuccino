@@ -191,8 +191,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return editMenu;
 }
 
-#pragma mark -
-#pragma mark Class methods
+// MARK: -
+// MARK: Class methods
 
 /* <!> FIXME
     just a testing characterSet
@@ -200,8 +200,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     Need some CPLocale support and maybe even a FSM...
  */
 
-#pragma mark -
-#pragma mark Init methods
+// MARK: -
+// MARK: Init methods
 
 - (id)initWithFrame:(CGRect)aFrame textContainer:(CPTextContainer)aContainer
 {
@@ -444,8 +444,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self _becomeFirstResponder];
 }
 
-#pragma mark -
-#pragma mark Copy and paste methods
+// MARK: -
+// MARK: Copy and paste methods
 
 - (void)copy:(id)sender
 {
@@ -527,8 +527,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self _pasteString:[self _stringForPasting]];
 }
 
-#pragma mark -
-#pragma mark Responders method
+// MARK: -
+// MARK: Responders method
 
 - (BOOL)acceptsFirstResponder
 {
@@ -587,8 +587,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 
-#pragma mark -
-#pragma mark Delegate methods
+// MARK: -
+// MARK: Delegate methods
 
 /*!
     TODO : documentation
@@ -647,8 +647,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 
-#pragma mark -
-#pragma mark Key window methods
+// MARK: -
+// MARK: Key window methods
 
 - (void)becomeKeyWindow
 {
@@ -674,8 +674,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 
-#pragma mark -
-#pragma mark Undo redo methods
+// MARK: -
+// MARK: Undo redo methods
 
 - (void)undo:(id)sender
 {
@@ -690,8 +690,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 
-#pragma mark -
-#pragma mark Accessors
+// MARK: -
+// MARK: Accessors
 
 - (CPString)stringValue
 {
@@ -805,8 +805,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 
-#pragma mark -
-#pragma mark Insert characters methods
+// MARK: -
+// MARK: Insert characters methods
 
 - (void)_fixupReplaceForRange:(CPRange)aRange
 {
@@ -864,8 +864,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _stickyXLocation = MAX(0, _caret._rect.origin.x - 1);
 }
 
-#pragma mark -
-#pragma mark Drawing methods
+// MARK: -
+// MARK: Drawing methods
 
 - (void)drawInsertionPointInRect:(CGRect)aRect color:(CPColor)aColor turnedOn:(BOOL)flag
 {
@@ -923,8 +923,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 
-#pragma mark -
-#pragma mark Select methods
+// MARK: -
+// MARK: Select methods
 
 - (void)selectAll:(id)sender
 {
@@ -1055,8 +1055,8 @@ Sets the selection to a range of characters in response to user action.
     return [_selectionRange];
 }
 
-#pragma mark -
-#pragma mark Keyboard events
+// MARK: -
+// MARK: Keyboard events
 
 - (void)keyDown:(CPEvent)event
 {
@@ -1124,8 +1124,8 @@ Sets the selection to a range of characters in response to user action.
     [placeholderString addAttribute:_CPAttachmentInvisible value:YES range:rangeToHide];
 }
 
-#pragma mark -
-#pragma mark Mouse Events
+// MARK: -
+// MARK: Mouse Events
 
 - (void)mouseDown:(CPEvent)event
 {
@@ -1847,8 +1847,8 @@ Sets the selection to a range of characters in response to user action.
 }
 
 
-#pragma mark -
-#pragma mark Font methods
+// MARK: -
+// MARK: Font methods
 
 - (CPFont)font
 {
@@ -1938,8 +1938,8 @@ Sets the selection to a range of characters in response to user action.
 }
 
 
-#pragma mark -
-#pragma mark Color methods
+// MARK: -
+// MARK: Color methods
 
 - (void)changeColor:(id)sender
 {
@@ -1974,8 +1974,8 @@ Sets the selection to a range of characters in response to user action.
     [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(range) changeInLength:0 invalidatedRange:CPMakeRangeCopy(range)];
 }
 
-#pragma mark -
-#pragma mark Style & Alignment methods
+// MARK: -
+// MARK: Style & Alignment methods
 
 - (void)bold:(id)sender
 {
@@ -2383,8 +2383,8 @@ Sets the selection to a range of characters in response to user action.
     [_caret setVisibility:YES];
 }
 
-#pragma mark -
-#pragma mark Dragging operation
+// MARK: -
+// MARK: Dragging operation
 
 - (void)performDragOperation:(CPDraggingInfo)aSender
 {
