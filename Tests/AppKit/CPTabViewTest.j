@@ -69,6 +69,7 @@
 {
     var tabs = [_tabView tabs];
     [_tabView setBounds:CGRectMake(100, 100, 20, 300)];
+
     // Perform this manually for the sake of the unit test.
     [_tabView layoutIfNeeded];
     [self assert:([tabs boundsSize].width / 2)  equals:CGRectGetMidX([tabs bounds])];
