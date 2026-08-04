@@ -7127,7 +7127,7 @@ if (CFError.prototype.isa !== CPError)
 {
     Object.defineProperties(CFError.prototype, {isa: {value: CPError, enumerable: false, writable: true}});
 }
-p;13;CPException.jt;8970;@STATIC;1.0;i;10;CPObject.ji;10;CPString.jt;8921;objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);CPInvalidArgumentException = "CPInvalidArgumentException";
+p;13;CPException.jt;8908;@STATIC;1.0;i;10;CPObject.ji;10;CPString.jt;8859;objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);CPInvalidArgumentException = "CPInvalidArgumentException";
 CPUnsupportedMethodException = "CPUnsupportedMethodException";
 CPRangeException = "CPRangeException";
 CPInternalInconsistencyException = "CPInternalInconsistencyException";
@@ -7257,17 +7257,22 @@ if (Error.prototype._userInfo !== null)
     Object.defineProperties(Error.prototype, {_userInfo: {value: null, enumerable: false, writable: true}});
 }
 (CPException.isa.method_msgSend["initialize"] || _objj_forward)(CPException, "initialize");
+_CPMethodCallString = function(anObject, aSelector)
+{
+    var prefix = class_isMetaClass(anObject.isa) ? "+" : "-";
+    return prefix + "[" + (anObject == null ? anObject : (anObject.isa.method_msgSend["className"] || _objj_forward)(anObject, "className")) + " " + aSelector + "]: ";
+}
 _CPRaiseInvalidAbstractInvocation = function(anObject, aSelector)
 {
     (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "*** -" + sel_getName(aSelector) + " cannot be sent to an abstract object of class " + (anObject == null ? anObject : (anObject.isa.method_msgSend["className"] || _objj_forward)(anObject, "className")) + ": Create a concrete instance!");
 }
 _CPRaiseInvalidArgumentException = function(anObject, aSelector, aMessage)
 {
-    (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, (class_isMetaClass(anObject.isa) ? "+" : "-") + "[" + (anObject == null ? anObject : (anObject.isa.method_msgSend["className"] || _objj_forward)(anObject, "className")) + " " + aSelector + "]: " + aMessage);
+    (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, METHOD_CALL_STRING() + aMessage);
 }
 _CPRaiseRangeException = function(anObject, aSelector, anIndex, aCount)
 {
-    (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPRangeException, (class_isMetaClass(anObject.isa) ? "+" : "-") + "[" + (anObject == null ? anObject : (anObject.isa.method_msgSend["className"] || _objj_forward)(anObject, "className")) + " " + aSelector + "]: " + "index (" + anIndex + ") beyond bounds (" + aCount + ")");
+    (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPRangeException, METHOD_CALL_STRING() + "index (" + anIndex + ") beyond bounds (" + aCount + ")");
 }
 _CPReportLenientDeprecation = function(aClass, oldSelector, newSelector)
 {
