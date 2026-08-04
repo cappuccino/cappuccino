@@ -3,8 +3,11 @@
 
 # Cappuccino: Build Desktop-Class Web Applications
 
-> **✨ Project Status: Active Development & Node.js Transition**
-> Cappuccino has been under continuous development since 2008 and is actively maintained. A major transition to a modern, **Node.js-based toolchain** has recently been finalized. The current release is a production-ready Release Candidate, with a formal release scheduled for 2026. It is stable, fast, and ready for new projects.
+> **🛑 Legacy Branch: Node.js Tombstone**
+> This branch is the final, unmaintained state of the pre-Aristo3 Node/npm era (tagged `v1.4.0`), remaining visually and mechanically compatible with the `1.3.1` npm release. Bug fixes and improvements from the main branch are included. It uses Aristo2 as its theme.
+> 
+> While the main branch is intended to maintain backward theme and toolchain compatibility, no guarantees are made that this branch will be advanced in sync with it. This branch is intended solely as a frozen artifact for those requiring an extended transition period to Cappuccino 2.
+
 
 ## Why Use Cappuccino?
 
