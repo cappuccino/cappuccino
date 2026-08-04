@@ -3,8 +3,13 @@
 
 # Cappuccino: Build Desktop-Class Web Applications
 
-> **✨ Project Status: Active Development & Node.js Transition**
-> Cappuccino has been under continuous development since 2008 and is actively maintained. A major transition to a modern, **Node.js-based toolchain** has recently been finalized. The current release is a production-ready Release Candidate, with a formal release scheduled for 2026. It is stable, fast, and ready for new projects.
+> **✨ Project Status: v1.5.0 Baseline & Upcoming v2.0.0 Toolchain**
+> 
+> Cappuccino has been under continuous development since 2008 and is actively maintained. This v1.5.0 release establishes the new resolution-independent Aristo3 theme as the baseline. While Aristo2 remains included, using it requires explicitly setting the theme descriptor.
+
+> For users seeking a complication-free alternative who wish to avoid the Aristo3 work entirely, the legacy-1.4.0 branch provides an unambiguous freeze point. Please note, however, that this legacy branch is not guaranteed to receive any future bug fixes or improvements.
+
+> Active development is now focused on the upcoming v2.0.0 release, which will transition the full toolchain to Golang and the platform-native binaries it produces, leaving Node.js and npm behind.
 
 ## Why Use Cappuccino?
 
