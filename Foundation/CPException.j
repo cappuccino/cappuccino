@@ -248,8 +248,13 @@ if (Error.prototype._userInfo !== null)
 
 [CPException initialize];
 
-#define METHOD_CALL_STRING()\
-    ((class_isMetaClass(anObject.isa) ? "+" : "-") + "[" + [anObject className] + " " + aSelector + "]: ")
+// MARK: - Exception Utilities
+
+function _CPMethodCallString(anObject, aSelector)
+{
+	var prefix = class_isMetaClass(anObject.isa) ? "+" : "-";
+	return prefix + "[" + [anObject className] + " " + aSelector + "]: ";
+}
 
 function _CPRaiseInvalidAbstractInvocation(anObject, aSelector)
 {
