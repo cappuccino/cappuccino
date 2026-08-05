@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "Foundation.h"
-
 @import "CPArray.j"
 @import "CPObject.j"
 @import "CPRange.j"
@@ -79,7 +77,7 @@
 */
 - (id)initWithIndex:(CPInteger)anIndex
 {
-    if (!_IS_NUMERIC(anIndex))
+    if (!CPIsNumeric(anIndex))
         [CPException raise:CPInvalidArgumentException
                     reason:"Invalid index"];
 
