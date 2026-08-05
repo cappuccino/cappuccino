@@ -11440,7 +11440,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("null"), function $CPNu
 
 ,["CPNull"])]);
 }
-p;10;CPNumber.jt;9742;@STATIC;1.0;i;13;CPException.ji;8;CPNull.ji;10;CPObject.ji;15;CPObjJRuntime.jt;9658;objj_executeFile("CPException.j", YES);objj_executeFile("CPNull.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPObjJRuntime.j", YES);var CPNumberUIDs = new CFMutableDictionary();
+p;10;CPNumber.jt;9260;@STATIC;1.0;i;13;CPException.ji;8;CPNull.ji;10;CPObject.ji;15;CPObjJRuntime.jt;9176;objj_executeFile("CPException.j", YES);objj_executeFile("CPNull.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPObjJRuntime.j", YES);const CPNumberUIDs = new CFMutableDictionary();
 
 {var the_class = objj_allocateClassPair(CPObject, "CPNumber"),
 meta_class = the_class.isa;objj_registerClassPair(the_class);
@@ -11510,7 +11510,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithBool:"), functi
 
 ,["id","unsigned short"]), new objj_method(sel_getUid("UID"), function $CPNumber__UID(self, _cmd)
 {
-    var UID = CPNumberUIDs.valueForKey(self);
+    let UID = CPNumberUIDs.valueForKey(self);
     if (!UID)
     {
         UID = objj_generateObjectUID();
@@ -11521,24 +11521,17 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithBool:"), functi
 
 ,["CPString"]), new objj_method(sel_getUid("boolValue"), function $CPNumber__boolValue(self, _cmd)
 {
-    return self ? true : false;
+    return !!self;
 }
 
-,["BOOL"]), new objj_method(sel_getUid("charValue"), function $CPNumber__charValue(self, _cmd)
-{
-    return String.fromCharCode(self);
-}
-
-,["char"]), new objj_method(sel_getUid("decimalValue"), function $CPNumber__decimalValue(self, _cmd)
+,["BOOL"]), new objj_method(sel_getUid("decimalValue"), function $CPNumber__decimalValue(self, _cmd)
 {
     throw new Error("decimalValue: NOT YET IMPLEMENTED");
 }
 
 ,["CPDecimal"]), new objj_method(sel_getUid("descriptionWithLocale:"), function $CPNumber__descriptionWithLocale_(self, _cmd, aDictionary)
 {
-    if (!aDictionary)
-        return self.toString();
-    throw new Error("descriptionWithLocale: NOT YET IMPLEMENTED");
+    return self.toString();
 }
 
 ,["CPString","CPDictionary"]), new objj_method(sel_getUid("description"), function $CPNumber__description(self, _cmd)
@@ -11562,27 +11555,27 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithBool:"), functi
 
 ,["float"]), new objj_method(sel_getUid("intValue"), function $CPNumber__intValue(self, _cmd)
 {
-    return self >= 0 ? Math.floor(self) : Math.ceil(self);
+    return Math.trunc(self);
 }
 
 ,["int"]), new objj_method(sel_getUid("integerValue"), function $CPNumber__integerValue(self, _cmd)
 {
-    return self >= 0 ? Math.floor(self) : Math.ceil(self);
+    return Math.trunc(self);
 }
 
 ,["int"]), new objj_method(sel_getUid("longLongValue"), function $CPNumber__longLongValue(self, _cmd)
 {
-    return self >= 0 ? Math.floor(self) : Math.ceil(self);
+    return Math.trunc(self);
 }
 
 ,["long long"]), new objj_method(sel_getUid("longValue"), function $CPNumber__longValue(self, _cmd)
 {
-    return self >= 0 ? Math.floor(self) : Math.ceil(self);
+    return Math.trunc(self);
 }
 
 ,["long"]), new objj_method(sel_getUid("shortValue"), function $CPNumber__shortValue(self, _cmd)
 {
-    return self >= 0 ? Math.floor(self) : Math.ceil(self);
+    return Math.trunc(self);
 }
 
 ,["short"]), new objj_method(sel_getUid("stringValue"), function $CPNumber__stringValue(self, _cmd)
@@ -11597,17 +11590,17 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithBool:"), functi
 
 ,["unsigned char"]), new objj_method(sel_getUid("unsignedIntValue"), function $CPNumber__unsignedIntValue(self, _cmd)
 {
-    return self >= 0 ? Math.floor(self) : Math.ceil(self);
+    return Math.trunc(self);
 }
 
 ,["unsigned int"]), new objj_method(sel_getUid("unsignedLongValue"), function $CPNumber__unsignedLongValue(self, _cmd)
 {
-    return self >= 0 ? Math.floor(self) : Math.ceil(self);
+    return Math.trunc(self);
 }
 
 ,["unsigned long"]), new objj_method(sel_getUid("unsignedShortValue"), function $CPNumber__unsignedShortValue(self, _cmd)
 {
-    return self >= 0 ? Math.floor(self) : Math.ceil(self);
+    return Math.trunc(self);
 }
 
 ,["unsigned short"]), new objj_method(sel_getUid("compare:"), function $CPNumber__compare_(self, _cmd, aNumber)
@@ -11629,7 +11622,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithBool:"), functi
 ,["BOOL","CPNumber"])]);
 class_addMethods(meta_class, [new objj_method(sel_getUid("alloc"), function $CPNumber__alloc(self, _cmd)
 {
-    var result = new Number();
+    let result = new Number();
     result.isa = (self.isa.method_msgSend["class"] || _objj_forward)(self, "class");
     return result;
 }
