@@ -24973,7 +24973,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("visibleFrame"), functio
 
 ,["CGRect"])]);
 }
-p;12;CPScroller.jt;41369;@STATIC;1.0;i;13;CPAnimation.ji;11;CPControl.ji;20;CPWindow_Constants.ji;17;CPViewAnimation.jt;41268;objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPControl.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("CPViewAnimation.j", YES);{var the_typedef = objj_allocateTypeDef("CPScrollerPart");
+p;12;CPScroller.jt;41335;@STATIC;1.0;i;13;CPAnimation.ji;11;CPControl.ji;17;CPViewAnimation.ji;20;CPWindow_Constants.jt;41234;objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPControl.j", YES);objj_executeFile("CPViewAnimation.j", YES);objj_executeFile("CPWindow_Constants.j", YES);{var the_typedef = objj_allocateTypeDef("CPScrollerPart");
 objj_registerTypeDef(the_typedef);
 }CPScrollerNoPart = 0;
 CPScrollerDecrementPage = 1;
@@ -25082,7 +25082,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("isVertical"), function 
 
 ,["float"]), new objj_method(sel_getUid("setKnobProportion:"), function $CPScroller__setKnobProportion_(self, _cmd, aProportion)
 {
-    if (!(!isNaN(parseFloat(aProportion)) && isFinite(aProportion)))
+    if (!CPIsNumeric(aProportion))
         (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "aProportion must be numeric, was: " + aProportion);
     self._knobProportion = MIN(1.0, MAX(0.0001, aProportion));
     (self.isa.method_msgSend["setNeedsDisplay:"] || _objj_forward)(self, "setNeedsDisplay:", YES);
@@ -30103,7 +30103,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","BOOL"])]);
 }
-p;13;CPSplitView.jt;96631;@STATIC;1.0;i;13;CPButtonBar.ji;9;CPImage.ji;8;CPView.ji;10;CPCursor.ji;16;CPTrackingArea.jt;96532;objj_executeFile("CPButtonBar.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPTrackingArea.j", YES);{var the_protocol = objj_allocateProtocol("CPSplitViewDelegate");
+p;13;CPSplitView.jt;96518;@STATIC;1.0;i;13;CPButtonBar.ji;10;CPCursor.ji;9;CPImage.ji;16;CPTrackingArea.ji;8;CPView.jt;96419;objj_executeFile("CPButtonBar.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);{var the_protocol = objj_allocateProtocol("CPSplitViewDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPSplitViewDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -30825,7 +30825,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 ,["float","int"]), new objj_method(sel_getUid("_realPositionForPosition:ofDividerAtIndex:"), function $CPSplitView___realPositionForPosition_ofDividerAtIndex_(self, _cmd, position, dividerIndex)
 {
     var proposedPosition = (self.isa.method_msgSend["_sendDelegateSplitViewConstrainSplitPosition:ofSubviewAt:"] || _objj_forward)(self, "_sendDelegateSplitViewConstrainSplitPosition:ofSubviewAt:", position, dividerIndex);
-    if (!isNaN(parseFloat(proposedPosition)) && isFinite(proposedPosition))
+    if (CPIsNumeric(proposedPosition))
         position = proposedPosition;
     var proposedMax = (self.isa.method_msgSend["maxPossiblePositionOfDividerAtIndex:"] || _objj_forward)(self, "maxPossiblePositionOfDividerAtIndex:", dividerIndex),
         proposedMin = (self.isa.method_msgSend["minPossiblePositionOfDividerAtIndex:"] || _objj_forward)(self, "minPossiblePositionOfDividerAtIndex:", dividerIndex),
@@ -30833,9 +30833,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
         actualMin = proposedMin,
         proposedActualMin = (self.isa.method_msgSend["_sendDelegateSplitViewConstrainMinCoordinate:ofSubviewAt:"] || _objj_forward)(self, "_sendDelegateSplitViewConstrainMinCoordinate:ofSubviewAt:", proposedMin, dividerIndex),
         proposedActualMax = (self.isa.method_msgSend["_sendDelegateSplitViewConstrainMaxCoordinate:ofSubviewAt:"] || _objj_forward)(self, "_sendDelegateSplitViewConstrainMaxCoordinate:ofSubviewAt:", proposedMax, dividerIndex);
-    if (!isNaN(parseFloat(proposedActualMin)) && isFinite(proposedActualMin))
+    if (CPIsNumeric(proposedActualMin))
         actualMin = proposedActualMin;
-    if (!isNaN(parseFloat(proposedActualMax)) && isFinite(proposedActualMax))
+    if (CPIsNumeric(proposedActualMax))
         actualMax = proposedActualMax;
     var viewA = self._arrangedSubviews[dividerIndex],
         viewB = self._arrangedSubviews[dividerIndex + 1],
