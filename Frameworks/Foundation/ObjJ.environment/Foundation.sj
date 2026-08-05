@@ -14323,7 +14323,8 @@ if (String.prototype.isa !== CPString)
     Object.defineProperties(String.prototype, {isa: {value: CPString, enumerable: false, writable: true}});
 }
 ;
-p;9;CPTimer.jt;11697;@STATIC;1.0;i;8;CPDate.ji;14;CPInvocation.ji;10;CPObject.ji;11;CPRunLoop.jt;11615;objj_executeFile("CPDate.j", YES);objj_executeFile("CPInvocation.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPRunLoop.j", YES);
+p;9;CPTimer.jt;11802;@STATIC;1.0;i;8;CPDate.ji;14;CPInvocation.ji;10;CPObject.ji;11;CPRunLoop.jt;11720;objj_executeFile("CPDate.j", YES);objj_executeFile("CPInvocation.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPRunLoop.j", YES);const CPTimerDefaultTimeInterval = 0.1;
+
 {var the_class = objj_allocateClassPair(CPObject, "CPTimer"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_timeInterval", "CPTimeInterval"), new objj_ivar("_invocation", "CPInvocation"), new objj_ivar("_callback", "Function"), new objj_ivar("_repeats", "BOOL"), new objj_ivar("_isValid", "BOOL"), new objj_ivar("_fireDate", "CPDate"), new objj_ivar("_userInfo", "id")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("initWithFireDate:interval:invocation:repeats:"), function $CPTimer__initWithFireDate_interval_invocation_repeats_(self, _cmd, aDate, seconds, anInvocation, shouldRepeat)
@@ -14331,7 +14332,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFireDate:interv
     self = (objj_getClass("CPTimer").super_class.method_dtable["init"] || _objj_forward)(self, "init");
     if (self)
     {
-        self._timeInterval = seconds <= 0 ? 0.1 : seconds;
+        self._timeInterval = seconds <= 0 ? CPTimerDefaultTimeInterval : seconds;
         self._invocation = anInvocation;
         self._repeats = shouldRepeat;
         self._isValid = YES;
@@ -14342,7 +14343,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFireDate:interv
 
 ,["id","CPDate","CPTimeInterval","CPInvocation","BOOL"]), new objj_method(sel_getUid("initWithFireDate:interval:target:selector:userInfo:repeats:"), function $CPTimer__initWithFireDate_interval_target_selector_userInfo_repeats_(self, _cmd, aDate, seconds, aTarget, aSelector, userInfo, shouldRepeat)
 {
-    var invocation = (CPInvocation.isa.method_msgSend["invocationWithMethodSignature:"] || _objj_forward)(CPInvocation, "invocationWithMethodSignature:", 1);
+    const invocation = (CPInvocation.isa.method_msgSend["invocationWithMethodSignature:"] || _objj_forward)(CPInvocation, "invocationWithMethodSignature:", 1);
     (invocation == null ? invocation : (invocation.isa.method_msgSend["setTarget:"] || _objj_forward)(invocation, "setTarget:", aTarget));
     (invocation == null ? invocation : (invocation.isa.method_msgSend["setSelector:"] || _objj_forward)(invocation, "setSelector:", aSelector));
     (invocation == null ? invocation : (invocation.isa.method_msgSend["setArgument:atIndex:"] || _objj_forward)(invocation, "setArgument:atIndex:", self, 2));
@@ -14357,7 +14358,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFireDate:interv
     self = (objj_getClass("CPTimer").super_class.method_dtable["init"] || _objj_forward)(self, "init");
     if (self)
     {
-        self._timeInterval = seconds <= 0 ? 0.1 : seconds;
+        self._timeInterval = seconds <= 0 ? CPTimerDefaultTimeInterval : seconds;
         self._callback = aFunction;
         self._repeats = shouldRepeat;
         self._isValid = YES;
@@ -14419,7 +14420,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFireDate:interv
 ,["id"])]);
 class_addMethods(meta_class, [new objj_method(sel_getUid("scheduledTimerWithTimeInterval:invocation:repeats:"), function $CPTimer__scheduledTimerWithTimeInterval_invocation_repeats_(self, _cmd, seconds, anInvocation, shouldRepeat)
 {
-    var timer = ((___r1 = (self.isa.method_msgSend["alloc"] || _objj_forward)(self, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFireDate:interval:invocation:repeats:"] || _objj_forward)(___r1, "initWithFireDate:interval:invocation:repeats:", (CPDate.isa.method_msgSend["dateWithTimeIntervalSinceNow:"] || _objj_forward)(CPDate, "dateWithTimeIntervalSinceNow:", seconds), seconds, anInvocation, shouldRepeat));
+    const timer = ((___r1 = (self.isa.method_msgSend["alloc"] || _objj_forward)(self, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFireDate:interval:invocation:repeats:"] || _objj_forward)(___r1, "initWithFireDate:interval:invocation:repeats:", (CPDate.isa.method_msgSend["dateWithTimeIntervalSinceNow:"] || _objj_forward)(CPDate, "dateWithTimeIntervalSinceNow:", seconds), seconds, anInvocation, shouldRepeat));
     ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addTimer:forMode:"] || _objj_forward)(___r1, "addTimer:forMode:", timer, CPDefaultRunLoopMode));
     return timer;
     var ___r1;
@@ -14427,7 +14428,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("scheduledTimerWithTime
 
 ,["CPTimer","CPTimeInterval","CPInvocation","BOOL"]), new objj_method(sel_getUid("scheduledTimerWithTimeInterval:target:selector:userInfo:repeats:"), function $CPTimer__scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(self, _cmd, seconds, aTarget, aSelector, userInfo, shouldRepeat)
 {
-    var timer = ((___r1 = (self.isa.method_msgSend["alloc"] || _objj_forward)(self, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFireDate:interval:target:selector:userInfo:repeats:"] || _objj_forward)(___r1, "initWithFireDate:interval:target:selector:userInfo:repeats:", (CPDate.isa.method_msgSend["dateWithTimeIntervalSinceNow:"] || _objj_forward)(CPDate, "dateWithTimeIntervalSinceNow:", seconds), seconds, aTarget, aSelector, userInfo, shouldRepeat));
+    const timer = ((___r1 = (self.isa.method_msgSend["alloc"] || _objj_forward)(self, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFireDate:interval:target:selector:userInfo:repeats:"] || _objj_forward)(___r1, "initWithFireDate:interval:target:selector:userInfo:repeats:", (CPDate.isa.method_msgSend["dateWithTimeIntervalSinceNow:"] || _objj_forward)(CPDate, "dateWithTimeIntervalSinceNow:", seconds), seconds, aTarget, aSelector, userInfo, shouldRepeat));
     ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addTimer:forMode:"] || _objj_forward)(___r1, "addTimer:forMode:", timer, CPDefaultRunLoopMode));
     return timer;
     var ___r1;
@@ -14435,7 +14436,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("scheduledTimerWithTime
 
 ,["CPTimer","CPTimeInterval","id","SEL","id","BOOL"]), new objj_method(sel_getUid("scheduledTimerWithTimeInterval:callback:repeats:"), function $CPTimer__scheduledTimerWithTimeInterval_callback_repeats_(self, _cmd, seconds, aFunction, shouldRepeat)
 {
-    var timer = ((___r1 = (self.isa.method_msgSend["alloc"] || _objj_forward)(self, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFireDate:interval:callback:repeats:"] || _objj_forward)(___r1, "initWithFireDate:interval:callback:repeats:", (CPDate.isa.method_msgSend["dateWithTimeIntervalSinceNow:"] || _objj_forward)(CPDate, "dateWithTimeIntervalSinceNow:", seconds), seconds, aFunction, shouldRepeat));
+    const timer = ((___r1 = (self.isa.method_msgSend["alloc"] || _objj_forward)(self, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFireDate:interval:callback:repeats:"] || _objj_forward)(___r1, "initWithFireDate:interval:callback:repeats:", (CPDate.isa.method_msgSend["dateWithTimeIntervalSinceNow:"] || _objj_forward)(CPDate, "dateWithTimeIntervalSinceNow:", seconds), seconds, aFunction, shouldRepeat));
     ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addTimer:forMode:"] || _objj_forward)(___r1, "addTimer:forMode:", timer, CPDefaultRunLoopMode));
     return timer;
     var ___r1;
@@ -14461,19 +14462,19 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("scheduledTimerWithTime
 
 ,["CPTimer","CPTimeInterval","Function","BOOL"])]);
 }
-var CPTimersTimeoutID = 1000,
-    CPTimersForTimeoutIDs = {};
-var _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functionArgs)
+let CPTimersTimeoutID = 1000;
+const CPTimersForTimeoutIDs = {};
+const _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functionArgs)
 {
-    var timeoutID = CPTimersTimeoutID++,
-        theFunction = nil;
+    const timeoutID = CPTimersTimeoutID++;
+    let theFunction = nil;
     if (typeof codeOrFunction === "string")
     {
         theFunction =         function()
         {
             new Function(codeOrFunction)();
             if (!shouldRepeat)
-                CPTimersForTimeoutIDs[timeoutID] = nil;
+                delete CPTimersForTimeoutIDs[timeoutID];
         };
     }
     else
@@ -14484,7 +14485,7 @@ var _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functio
         {
             codeOrFunction.apply(window, functionArgs);
             if (!shouldRepeat)
-                CPTimersForTimeoutIDs[timeoutID] = nil;
+                delete CPTimersForTimeoutIDs[timeoutID];
         };
     }
     aDelay = aDelay | 0.0;
@@ -14499,10 +14500,10 @@ if (typeof window !== 'undefined')
     };
     window.clearTimeout =     function(aTimeoutID)
     {
-        var timer = CPTimersForTimeoutIDs[aTimeoutID];
+        const timer = CPTimersForTimeoutIDs[aTimeoutID];
         if (timer)
             (timer == null ? timer : (timer.isa.method_msgSend["invalidate"] || _objj_forward)(timer, "invalidate"));
-        CPTimersForTimeoutIDs[aTimeoutID] = nil;
+        delete CPTimersForTimeoutIDs[aTimeoutID];
     };
     window.setInterval =     function(codeOrFunction, aDelay, functionArgs)
     {
