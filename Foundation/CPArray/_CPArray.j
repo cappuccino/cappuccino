@@ -43,14 +43,6 @@ var concat = Array.prototype.concat,
     join = Array.prototype.join,
     push = Array.prototype.push;
 
-#define FORWARD_TO_CONCRETE_CLASS()\
-    if (self === _CPSharedPlaceholderArray)\
-    {\
-        arguments[0] = [_CPJavaScriptArray alloc];\
-        return objj_msgSend.apply(this, arguments);\
-    }\
-    return [super init];
-
 /*!
     @class CPArray
     @brief A mutable array backed by a JavaScript Array.
@@ -133,7 +125,14 @@ var concat = Array.prototype.concat,
 */
 - (id)init
 {
-    FORWARD_TO_CONCRETE_CLASS();
+    // Expanded inline to remove the pre-processor dependency on FORWARD_TO_CONCRETE_CLASS()
+    // for the Go-based toolchain, routing placeholder instantiation requests directly to _CPJavaScriptArray.
+    if (self === _CPSharedPlaceholderArray)
+    {
+        arguments[0] = [_CPJavaScriptArray alloc];
+        return objj_msgSend.apply(this, arguments);
+    }
+    return [super init];
 }
 
 // Creating an Array
@@ -144,7 +143,14 @@ var concat = Array.prototype.concat,
 */
 - (id)initWithArray:(CPArray)anArray
 {
-    FORWARD_TO_CONCRETE_CLASS();
+    // Expanded inline to remove the pre-processor dependency on FORWARD_TO_CONCRETE_CLASS()
+    // for the Go-based toolchain, routing placeholder instantiation requests directly to _CPJavaScriptArray.
+    if (self === _CPSharedPlaceholderArray)
+    {
+        arguments[0] = [_CPJavaScriptArray alloc];
+        return objj_msgSend.apply(this, arguments);
+    }
+    return [super init];
 }
 
 /*!
@@ -157,7 +163,14 @@ var concat = Array.prototype.concat,
 */
 - (id)initWithArray:(CPArray)anArray copyItems:(BOOL)shouldCopyItems
 {
-    FORWARD_TO_CONCRETE_CLASS();
+    // Expanded inline to remove the pre-processor dependency on FORWARD_TO_CONCRETE_CLASS()
+    // for the Go-based toolchain, routing placeholder instantiation requests directly to _CPJavaScriptArray.
+    if (self === _CPSharedPlaceholderArray)
+    {
+        arguments[0] = [_CPJavaScriptArray alloc];
+        return objj_msgSend.apply(this, arguments);
+    }
+    return [super init];
 }
 
 /*!
@@ -165,7 +178,14 @@ var concat = Array.prototype.concat,
 */
 - (id)initWithObjects:(id)anObject, ...
 {
-    FORWARD_TO_CONCRETE_CLASS();
+    // Expanded inline to remove the pre-processor dependency on FORWARD_TO_CONCRETE_CLASS()
+    // for the Go-based toolchain, routing placeholder instantiation requests directly to _CPJavaScriptArray.
+    if (self === _CPSharedPlaceholderArray)
+    {
+        arguments[0] = [_CPJavaScriptArray alloc];
+        return objj_msgSend.apply(this, arguments);
+    }
+    return [super init];
 }
 
 /*!
@@ -176,13 +196,27 @@ var concat = Array.prototype.concat,
 */
 - (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
 {
-    FORWARD_TO_CONCRETE_CLASS();
+    // Expanded inline to remove the pre-processor dependency on FORWARD_TO_CONCRETE_CLASS()
+    // for the Go-based toolchain, routing placeholder instantiation requests directly to _CPJavaScriptArray.
+    if (self === _CPSharedPlaceholderArray)
+    {
+        arguments[0] = [_CPJavaScriptArray alloc];
+        return objj_msgSend.apply(this, arguments);
+    }
+    return [super init];
 }
 
 // FIXME: This should be defined in CPMutableArray, not here.
 - (id)initWithCapacity:(CPUInteger)aCapacity
 {
-    FORWARD_TO_CONCRETE_CLASS();
+    // Expanded inline to remove the pre-processor dependency on FORWARD_TO_CONCRETE_CLASS()
+    // for the Go-based toolchain, routing placeholder instantiation requests directly to _CPJavaScriptArray.
+    if (self === _CPSharedPlaceholderArray)
+    {
+        arguments[0] = [_CPJavaScriptArray alloc];
+        return objj_msgSend.apply(this, arguments);
+    }
+    return [super init];
 }
 
 // Querying an array
@@ -1057,5 +1091,3 @@ var _CPSharedPlaceholderArray   = nil;
 }
 
 @end
-
-//@import "_CPJavaScriptArray.j"
