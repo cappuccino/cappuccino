@@ -43,8 +43,6 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 
 var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 
-#define SET_NEEDS_NUMBER_HANDLER_UPDATE() _numberHandler = nil
-
 
 /*!
     @ingroup foundation
@@ -232,13 +230,19 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
         case CPNumberFormatterDecimalStyle:
             _minimumFractionDigits = 0;
             _maximumFractionDigits = 3;
-            SET_NEEDS_NUMBER_HANDLER_UPDATE();
+            // Invalidate the cached number handler.
+			// It rebuilds on next use.
+			// Replaces pre-processor directive, which is incompatible with the new compiler
+            _numberHandler = nil;
             break;
 
         case CPNumberFormatterCurrencyStyle:
             _minimumFractionDigits = 2;
             _maximumFractionDigits = 2;
-            SET_NEEDS_NUMBER_HANDLER_UPDATE();
+            // Invalidate the cached number handler.
+			// It rebuilds on next use.
+			// Replaces pre-processor directive, which is incompatible with the new compiler
+            _numberHandler = nil;
             break;
     }
 }
@@ -246,31 +250,46 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 - (void)setRoundingMode:(CPNumberFormatterRoundingMode)aRoundingMode
 {
     _roundingMode = aRoundingMode;
-    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+            // Invalidate the cached number handler.
+			// It rebuilds on next use.
+			// Replaces pre-processor directive, which is incompatible with the new compiler
+    _numberHandler = nil;
 }
 
 - (void)setMinimumFractionDigits:(CPUInteger)aNumber
 {
     _minimumFractionDigits = aNumber;
-    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+            // Invalidate the cached number handler.
+			// It rebuilds on next use.
+			// Replaces pre-processor directive, which is incompatible with the new compiler
+    _numberHandler = nil;
 }
 
 - (void)setMaximumFractionDigits:(CPUInteger)aNumber
 {
     _maximumFractionDigits = aNumber;
-    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+            // Invalidate the cached number handler.
+			// It rebuilds on next use.
+			// Replaces pre-processor directive, which is incompatible with the new compiler
+    _numberHandler = nil;
 }
 
 - (void)setMinimum:(CPUInteger)aNumber
 {
     _minimum = aNumber;
-    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+            // Invalidate the cached number handler.
+			// It rebuilds on next use.
+			// Replaces pre-processor directive, which is incompatible with the new compiler
+    _numberHandler = nil;
 }
 
 - (void)setMaximum:(CPUInteger)aNumber
 {
     _maximum = aNumber;
-    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+            // Invalidate the cached number handler.
+			// It rebuilds on next use.
+			// Replaces pre-processor directive, which is incompatible with the new compiler
+    _numberHandler = nil;
 }
 
 // MARK: Private
