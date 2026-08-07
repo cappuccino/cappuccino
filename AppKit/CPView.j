@@ -334,8 +334,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     return @{
              @"css-based": NO,
-             @"dynamic-set": [CPNull null],
-             @"nib2cib-adjustment-frame": CGRectMakeZero()
+             @"nib2cib-adjustment-frame": [CPNull null],
+             @"direct-nib2cib-adjustment": NO,
+             @"dynamic-set": [CPNull null]
              };
 }
 
@@ -928,6 +929,13 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)viewDidMoveToWindow
 {
+    var window = [self window];
+
+    // If the view is inside a window with the HUD style mask, turn on the HUD state
+    if (window && ([window styleMask] & CPHUDBackgroundWindowMask))
+        [self setThemeState:CPThemeStateHUD];
+    else
+        [self unsetThemeState:CPThemeStateHUD];
 }
 
 /*!
@@ -4171,3 +4179,27 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 
     return transform;
 };
+
+@implementation CPView (ThemingAdditions)
+
+- (void)_setThemeStateRecursively:(ThemeState)aState
+{
+    [_subviews makeObjectsPerformSelector:@selector(_setThemeStateRecursively:) withObject:aState];
+
+    [_subviews enumerateObjectsUsingBlock:function(view, idx, stop)
+    {
+        [view setThemeState:aState];
+    }];
+}
+
+- (void)_unsetThemeStateRecursively:(ThemeState)aState
+{
+    [_subviews makeObjectsPerformSelector:@selector(_unsetThemeStateRecursively:) withObject:aState];
+
+    [_subviews enumerateObjectsUsingBlock:function(view, idx, stop)
+    {
+        [view unsetThemeState:aState];
+    }];
+}
+
+@end
