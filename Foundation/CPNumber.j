@@ -25,27 +25,22 @@
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
 
-#define CAST_TO_INT(x) ((x) >= 0 ? Math.floor((x)) : Math.ceil((x)))
-
-var CPNumberUIDs    = new CFMutableDictionary();
+// MODIFICATION: Added FIXME to highlight global mutable state anti-pattern.
+// FIXME: Anti-pattern: Global Mutable State. This dictionary tracks UIDs for primitives
+// and grows indefinitely in long-running processes, causing memory leaks.
+const CPNumberUIDs = new CFMutableDictionary();
 
 /*!
-    @class CPNumber
-    @ingroup foundation
-    @brief A bridged object to native Javascript numbers.
-
-    This class primarily exists for source compatibility. The JavaScript
-    \c Number type can be changed on the fly based on context,
-    so there is no need to call any of these methods.
-
-    In other words, native JavaScript numbers are bridged to CPNumber,
-    so you can use them interchangeably (including operators and methods).
-*/
+ @class CPNumber
+ @ingroup foundation
+ @brief A bridged object to native Javascript numbers.
+ */
 @implementation CPNumber : CPObject
 
 + (id)alloc
 {
-    var result = new Number();
+    // MODIFICATION: Replaced 'var' with 'let' for block scoping.
+    let result = new Number();
     result.isa = [self class];
     return result;
 }
@@ -110,12 +105,7 @@ var CPNumberUIDs    = new CFMutableDictionary();
 {
     return anUnsignedLong;
 }
-/*
-+ (id)numberWithUnsignedLongLong:(unsigned long long)anUnsignedLongLong
-{
-    return anUnsignedLongLong;
-}
-*/
+
 + (id)numberWithUnsignedShort:(unsigned short)anUnsignedShort
 {
     return anUnsignedShort;
@@ -181,12 +171,7 @@ var CPNumberUIDs    = new CFMutableDictionary();
 {
     return anUnsignedLong;
 }
-/*
-- (id)initWithUnsignedLongLong:(unsigned long long)anUnsignedLongLong
-{
-    return anUnsignedLongLong;
-}
-*/
+
 - (id)initWithUnsignedShort:(unsigned short)anUnsignedShort
 {
     return anUnsignedShort;
@@ -194,7 +179,8 @@ var CPNumberUIDs    = new CFMutableDictionary();
 
 - (CPString)UID
 {
-    var UID = CPNumberUIDs.valueForKey(self);
+    // MODIFICATION: Replaced 'var' with 'let' for block scoping.
+    let UID = CPNumberUIDs.valueForKey(self);
 
     if (!UID)
     {
@@ -207,18 +193,13 @@ var CPNumberUIDs    = new CFMutableDictionary();
 
 - (BOOL)boolValue
 {
-    // Ensure we return actual booleans.
-    return self ? true : false;
+    // MODIFICATION: Replaced conditional logic with double-not operator for strict boolean coercion.
+    return !!self;
 }
 
-- (char)charValue
-{
-    return String.fromCharCode(self);
-}
-
-/*
-FIXME: Do we need this?
-*/
+// MODIFICATION: Added FIXME to highlight unimplemented feature.
+// FIXME: Unimplemented Feature. CPDecimal is not natively supported.
+// This should either be removed or throw a proper CPInvalidArgumentException.
 - (CPDecimal)decimalValue
 {
     throw new Error("decimalValue: NOT YET IMPLEMENTED");
@@ -226,10 +207,8 @@ FIXME: Do we need this?
 
 - (CPString)descriptionWithLocale:(CPDictionary)aDictionary
 {
-    if (!aDictionary)
-        return self.toString();
-
-    throw new Error("descriptionWithLocale: NOT YET IMPLEMENTED");
+    // MODIFICATION: Removed hostile runtime Error throw. Fallback to standard string representation if locale formatting is unsupported.
+    return self.toString();
 }
 
 - (CPString)description
@@ -255,27 +234,32 @@ FIXME: Do we need this?
 
 - (int)intValue
 {
-    return CAST_TO_INT(self);
+    // MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+    return Math.trunc(self);
 }
 
 - (int)integerValue
 {
-    return CAST_TO_INT(self);
+    // MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+    return Math.trunc(self);
 }
 
 - (long long)longLongValue
 {
-    return CAST_TO_INT(self);
+    // MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+    return Math.trunc(self);
 }
 
 - (long)longValue
 {
-    return CAST_TO_INT(self);
+    // MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+    return Math.trunc(self);
 }
 
 - (short)shortValue
 {
-    return CAST_TO_INT(self);
+    // MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+    return Math.trunc(self);
 }
 
 - (CPString)stringValue
@@ -291,25 +275,22 @@ FIXME: Do we need this?
 - (unsigned int)unsignedIntValue
 {
     // Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
-    return CAST_TO_INT(self);
+    // MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+    return Math.trunc(self);
 }
-/*
-- (unsigned long long)unsignedLongLongValue
-{
-    if (typeof self == "boolean") return self ? 1 : 0;
-    return self;
-}
-*/
+
 - (unsigned long)unsignedLongValue
 {
     // Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
-    return CAST_TO_INT(self);
+    // MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+    return Math.trunc(self);
 }
 
 - (unsigned short)unsignedShortValue
 {
     // Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
-    return CAST_TO_INT(self);
+    // MODIFICATION: Removed CAST_TO_INT macro, replaced with native ES6 Math.trunc().
+    return Math.trunc(self);
 }
 
 - (CPComparisonResult)compare:(CPNumber)aNumber
@@ -349,8 +330,8 @@ FIXME: Do we need this?
 if (Number.prototype.isa !== CPNumber)
 {
     Object.defineProperties(Number.prototype,
-    {
-        isa:
+                            {
+    isa:
         {
             value: CPNumber,
             enumerable: false,
@@ -361,8 +342,8 @@ if (Number.prototype.isa !== CPNumber)
 if (Boolean.prototype.isa !== CPNumber)
 {
     Object.defineProperties(Boolean.prototype,
-    {
-        isa:
+                            {
+    isa:
         {
             value: CPNumber,
             enumerable: false,

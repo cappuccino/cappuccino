@@ -23,13 +23,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "../Foundation/Foundation.h"
-
 @import "CPButtonBar.j"
-@import "CPImage.j"
-@import "CPView.j"
 @import "CPCursor.j"
+@import "CPImage.j"
 @import "CPTrackingArea.j"
+@import "CPView.j"
 
 @class CPUserDefaults
 @global CPApp
@@ -1177,7 +1175,7 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
     // Silently ignore bad positions which could result from odd delegate responses. We don't want these
     // bad results to go into the system and cause havoc with frame sizes as the split view tries to resize
     // its subviews.
-    if (_IS_NUMERIC(proposedPosition))
+    if (CPIsNumeric(proposedPosition))
         position = proposedPosition;
 
     var proposedMax = [self maxPossiblePositionOfDividerAtIndex:dividerIndex],
@@ -1187,10 +1185,10 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
         proposedActualMin = [self _sendDelegateSplitViewConstrainMinCoordinate:proposedMin ofSubviewAt:dividerIndex],
         proposedActualMax = [self _sendDelegateSplitViewConstrainMaxCoordinate:proposedMax ofSubviewAt:dividerIndex];
 
-    if (_IS_NUMERIC(proposedActualMin))
+    if (CPIsNumeric(proposedActualMin))
         actualMin = proposedActualMin;
 
-    if (_IS_NUMERIC(proposedActualMax))
+    if (CPIsNumeric(proposedActualMax))
         actualMax = proposedActualMax;
 
     var viewA = _arrangedSubviews[dividerIndex],
