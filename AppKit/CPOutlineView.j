@@ -1515,8 +1515,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 {
     if (_disclosureControlsForRows.length)
     {
-        var indexes = [_selectedRowIndexes copy];
-        [indexes removeIndexesInRange:CPMakeRange(_disclosureControlsForRows.length, _itemsForRows.length - _disclosureControlsForRows.length)];
+        var indexes = [_selectedRowIndexes copy],
+            diff = _itemsForRows.length - _disclosureControlsForRows.length;
+
+        if (diff > 0)
+            [indexes removeIndexesInRange:CPMakeRange(_disclosureControlsForRows.length, diff)];
+
         [[_disclosureControlsForRows objectsAtIndexes:indexes] makeObjectsPerformSelector:@selector(unsetThemeState:) withObject:CPThemeStateSelected];
     }
 
@@ -1524,8 +1528,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     if (_disclosureControlsForRows.length)
     {
-        var indexes = [_selectedRowIndexes copy];
-        [indexes removeIndexesInRange:CPMakeRange(_disclosureControlsForRows.length, _itemsForRows.length - _disclosureControlsForRows.length)];
+        var indexes = [_selectedRowIndexes copy],
+            diff = _itemsForRows.length - _disclosureControlsForRows.length;
+
+        if (diff > 0)
+            [indexes removeIndexesInRange:CPMakeRange(_disclosureControlsForRows.length, diff)];
+
         [[_disclosureControlsForRows objectsAtIndexes:indexes] makeObjectsPerformSelector:@selector(setThemeState:) withObject:CPThemeStateSelected];
     }
 }

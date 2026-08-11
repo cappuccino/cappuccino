@@ -2092,6 +2092,9 @@ NOT YET IMPLEMENTED
     if (lastRow < 0)
         lastRow = _numberOfRows - 1;
 
+    if (firstRow > lastRow)
+        return CPMakeRange(0, 0);
+
     return CPMakeRange(firstRow, lastRow - firstRow + 1);
 }
 
@@ -2130,11 +2133,17 @@ NOT YET IMPLEMENTED
     // O(log numberOfColumns) if table view contains no hidden columns
     // O(numberOfColumns) if table view contains hidden columns
 
+    if (NUMBER_OF_COLUMNS() === 0)
+        return [CPIndexSet indexSet];
+
     var column = MAX(0, [self columnAtPoint:CGPointMake(aRect.origin.x, 0.0)]),
         lastColumn = [self columnAtPoint:CGPointMake(CGRectGetMaxX(aRect), 0.0)];
 
     if (lastColumn === CPNotFound)
         lastColumn = NUMBER_OF_COLUMNS() - 1;
+
+    if (column > lastColumn || lastColumn < 0)
+        return [CPIndexSet indexSet];
 
     // Don't bother doing the expensive removal of hidden indexes if we have no hidden columns.
     if (_numberOfHiddenColumns <= 0)
