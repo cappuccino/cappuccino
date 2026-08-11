@@ -4,12 +4,31 @@
 # Cappuccino: Build Desktop-Class Web Applications
 
 > **✨ Project Status: v1.5.0 Baseline & Upcoming v2.0.0 Toolchain**
-> 
-> Cappuccino has been under continuous development since 2008 and is actively maintained. This v1.5.0 release establishes the new resolution-independent Aristo3 theme as the baseline. While Aristo2 remains included, using it requires explicitly setting the theme descriptor.
+>
+> Cappuccino has been under continuous development since 2008 and is actively maintained. The v1.5.0 release establishes a baseline as we move to the new resolution-independent Aristo3 theme and Go-based toolchain.
 
 > For users seeking a complication-free alternative who wish to avoid the Aristo3 work entirely, the legacy-1.4.0 branch provides an unambiguous freeze point. Please note, however, that this legacy branch is not guaranteed to receive any future bug fixes or improvements.
 
 > Active development is now focused on the upcoming v2.0.0 release, which will transition the full toolchain to Golang and the platform-native binaries it produces, leaving Node.js and npm behind.
+
+> **🚨 Aristo3 Theme: Community Testing Required**
+>
+> Aristo3 represents a non-trivial refactoring of AppKit UI classes. While unit tests pass, it must be tested against real-world applications before being merged into `main`. Community members testing against their own applications will accelerate the process. We are not concerned with minor visual breakages or cosmetic regressions at this stage; **the primary concern is structural failures.**
+>
+> The fully merged state has been pushed to the `aristo3` branch on the canonical repo.
+>
+> **How to help:**
+> 1. Check out the `aristo3` branch: `git fetch origin && git checkout aristo3`
+> 2. Build the frameworks and run your existing applications against this branch.
+> 3. Open your browser's developer console and watch for:
+>    - Uncaught `CPException`s or JavaScript errors.
+>    - Infinite layout loops (browser freezing/tab crashing).
+>    - Broken responder chains or keyboard event handling.
+>    - KVO/Binding failures or `valueForThemeAttribute:` resolving to `nil` unexpectedly.
+>    - View hierarchy corruption (subviews disappearing or failing to clip).
+>
+> Please leave a 👍 on the [Aristo3 Pull Request](https://github.com/cappuccino/cappuccino/pull/3038) if your apps run without structural failures. If you encounter exceptions or crashes, please leave a comment with the stack trace. **A solid response of thumbs up is required before `main` can be merged. Our intention is to leave no community member behind.**
+
 
 ## Why Use Cappuccino?
 
@@ -93,7 +112,7 @@ Pure JavaScript and Objective-J can be mixed and matched, even in the same file.
 
 ## Frequently Asked Questions (FAQ)
 
-**Q: What are the advantages over React or Vue?**  
+**Q: What are the advantages over React or Vue?**
 **A:** React and Vue are excellent libraries for building web UIs. Cappuccino is a comprehensive **framework** for building entire **applications**. It provides a fully integrated stack—including a mature UI library, event handling, and data management—designed for large-scale development.
 
 Beyond this, Cappuccino provides a more integrated and powerful data-binding layer inspired directly by Cocoa, which dramatically reduces boilerplate code for complex UIs as you can see in this [example code](https://github.com/daboe01/UIBuilder/tree/master/public/Frontend) that uses these features:
@@ -103,19 +122,19 @@ Beyond this, Cappuccino provides a more integrated and powerful data-binding lay
 *   **Advanced Filtering with Predicates:** A table displaying thousands of items can be filtered simply by setting a predicate (a declarative filter rule, e.g., `lastName BEGINSWITH 'S'`) on its controller. The UI updates instantly. This eliminates tons of manual state management and filtering logic code.
 *   **Automatic Value Transformation:** Data can be easily formatted for display (e.g., dates, currency, booleans to "Yes/No") directly within the binding itself using value transformers, keeping model data pure and view logic minimal.
 
-**Q: Can Cappuccino be used on Windows/Linux?**  
+**Q: Can Cappuccino be used on Windows/Linux?**
 **A:** Yes. The development tools run on Node.js and are platform-independent. Applications can be developed on any OS and deployed on any web server.
 
-**Q: Is Xcode required?**  
+**Q: Is Xcode required?**
 **A:** No. Any code editor can be used. Xcode offers optional visual development tools for macOS users, but it is not a requirement.
 
-**Q: Hasn't Apple moved on from Objective-C, making these APIs obsolete?**  
+**Q: Hasn't Apple moved on from Objective-C, making these APIs obsolete?**
 **A:** While Swift is Apple's newer language, Objective-C and AppKit remain foundational, actively supported technologies used in many of Apple's flagship applications. Cappuccino leverages the stability and power of this time-tested API design, which is independent of Apple's future product roadmap.
 
-**Q: How can custom HTML, CSS, or JavaScript libraries be integrated?**  
+**Q: How can custom HTML, CSS, or JavaScript libraries be integrated?**
 **A:** Cappuccino abstracts away the DOM, but other web technologies can still be integrated. The `CPWebView` control allows arbitrary HTML/CSS/JS content to be embedded. Since Objective-J is a superset of JavaScript, JS libraries can be used and JS functions can be called directly from Objective-J code.
 
-**Q: Does the LGPL license permit closed-source commercial applications?**  
+**Q: Does the LGPL license permit closed-source commercial applications?**
 **A:** Yes. The LGPLv2 license allows proprietary, closed-source applications to be built and distributed using Cappuccino. Sharing of source code is only required for any modifications made **to the Cappuccino framework itself**. The application code remains proprietary.
 
 ---
