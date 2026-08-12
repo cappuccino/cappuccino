@@ -105,17 +105,31 @@
 // MARK: Creating a Dictionary Representation
 
 /*!
-   Returns a dictionary representation of the map table.
-   Note: This will only work correctly if all keys are strings.
+ Returns a dictionary representation of the map table.
+ Note: This will only work correctly if all keys are strings.
 
-   @return A CPDictionary containing the entries of the map table.
+ @return A CPDictionary containing the entries of the map table.
  */
 - (CPDictionary)dictionaryRepresentation
 {
     var dictionary = [CPDictionary dictionary];
 
-    for (var [key, value] of _map.entries())
+    // TODO: Revert to ES6 destructuring in the loop declaration once the
+    // legacy compiler is retired. The legacy parser fails to recognize
+    // `var [key, value]` as a local scope declaration, causing the variables
+    // to leak to the global object and emitting false-positive "uninitialized
+    // global variable" warnings, which is unacceptable for CI hygiene.
+    //
+    // for (var [key, value] of _map.entries())
+    // {
+    //     [dictionary setObject:value forKey:key];
+    // }
+
+    for (var entry of _map.entries())
     {
+        var key = entry[0],
+        value = entry[1];
+
         [dictionary setObject:value forKey:key];
     }
 
