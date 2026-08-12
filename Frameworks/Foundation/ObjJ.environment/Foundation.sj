@@ -10857,7 +10857,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 ,["void","CPCoder"])]);
 }
 p;7;CPLog.jt;19;@STATIC;1.0;t;3;1;
-p;12;CPMapTable.jt;2618;@STATIC;1.0;i;10;CPObject.ji;14;CPEnumerator.ji;14;CPDictionary.ji;9;CPArray.jt;2533;objj_executeFile("CPObject.j", YES);objj_executeFile("CPEnumerator.j", YES);objj_executeFile("CPDictionary.j", YES);objj_executeFile("CPArray.j", YES);
+p;12;CPMapTable.jt;2669;@STATIC;1.0;i;10;CPObject.ji;14;CPEnumerator.ji;14;CPDictionary.ji;9;CPArray.jt;2584;objj_executeFile("CPObject.j", YES);objj_executeFile("CPEnumerator.j", YES);objj_executeFile("CPDictionary.j", YES);objj_executeFile("CPArray.j", YES);
 {var the_class = objj_allocateClassPair(CPObject, "CPMapTable"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_map", "id")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPMapTable__init(self, _cmd)
@@ -10910,8 +10910,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPMap
 ,["void"]), new objj_method(sel_getUid("dictionaryRepresentation"), function $CPMapTable__dictionaryRepresentation(self, _cmd)
 {
     var dictionary = (CPDictionary.isa.method_msgSend["dictionary"] || _objj_forward)(CPDictionary, "dictionary");
-for(var [key, value] of self._map.entries())
+for(var entry of self._map.entries())
     {
+        var key = entry[0],
+            value = entry[1];
         (dictionary == null ? dictionary : (dictionary.isa.method_msgSend["setObject:forKey:"] || _objj_forward)(dictionary, "setObject:forKey:", value, key));
     }
     return dictionary;
