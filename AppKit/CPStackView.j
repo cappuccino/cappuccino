@@ -20,7 +20,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPGeometry.j>
+@import <Foundation/CPMapTable.j>
+
+@import "CPLayoutConstraint.j"
 @import "CPView.j"
+
+// Layout Orientation
+@typedef CPUserInterfaceLayoutOrientation
+    CPUserInterfaceLayoutOrientationHorizontal  = 0;
+    CPUserInterfaceLayoutOrientationVertical    = 1;
 
 // Gravity Areas
 @typedef CPStackViewGravity
