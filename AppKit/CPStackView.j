@@ -20,7 +20,80 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/*
+ * PLACEHOLDER IMPLEMENTATION — READ BEFORE USE OR MODIFICATION.
+ *
+ * This class lays out views by direct, procedural arithmetic. It has no
+ * constraint solver. It cannot compress, expand, or negotiate space among
+ * views the way NSStackView does; it only places views at their existing
+ * frame size, in order, separated by fixed spacing.
+ *
+ * Known, accepted limitations:
+ *   - `distribution` is stored but has no effect on layout. Fill,
+ *     FillEqually, FillProportionally, and EqualSpacing are unimplemented.
+ *   - Center-gravity views are clamped against the Leading edge only; if
+ *     Leading + Center + Trailing content overflows the container, Center
+ *     views can overlap Trailing views instead of compressing.
+ *   - `visibilityPriority:forView:` only supports the two extreme values
+ *     (MustHold / NotVisible). Intermediate priorities are accepted but
+ *     have no defined effect.
+ *   - No guarantee is made of correctness beyond what a single manual
+ *     test (Tests/Manual/CPStackViewTest) exercises: orientation, the
+ *     three gravity areas, alignment switching, spacing, and hidden-view
+ *     detachment. Insertion, removal, custom spacing, and the CPCoding
+ *     archive path are implemented but not verified by that test.
+ *
+ * This exists to give AppKit a working CPStackView symbol now, not to be
+ * a durable design. It is expected to be replaced by a constraint-solver
+ * based implementation (Kiwi.js) when time permits. Do not build on its
+ * internal layout algorithm as if it were a stable foundation.
+ */
+
 @import "CPView.j"
+@import <Foundation/CPMapTable.j>
+
+// MARK: -
+// MARK: Minimal local type definitions
+//
+// These types support this file only. They are not shared with the rest
+// of AppKit. A future constraint-solver based Auto Layout engine will
+// replace them. Numeric values match the equivalent Cocoa constants
+// (NSUserInterfaceLayoutOrientation, NSLayoutAttribute) so that a later,
+// solver-based CPLayoutAttribute can reuse these numbers without a
+// renumbering pass.
+
+@typedef CPUserInterfaceLayoutOrientation
+    CPUserInterfaceLayoutOrientationHorizontal = 0;
+    CPUserInterfaceLayoutOrientationVertical   = 1;
+
+@typedef CPLayoutAttribute
+    CPLayoutAttributeLeft      = 1;
+    CPLayoutAttributeRight     = 2;
+    CPLayoutAttributeTop       = 3;
+    CPLayoutAttributeBottom    = 4;
+    CPLayoutAttributeLeading   = 5;
+    CPLayoutAttributeTrailing  = 6;
+    CPLayoutAttributeWidth     = 7;
+    CPLayoutAttributeHeight    = 8;
+    CPLayoutAttributeCenterX   = 9;
+    CPLayoutAttributeCenterY   = 10;
+
+@typedef CPEdgeInsets
+
+/*!
+    Creates a CPEdgeInsets. Argument order matches Cocoa's NSEdgeInsetsMake
+    (top, left, bottom, right). Storage reuses the existing CGInset struct,
+    whose field order is (top, right, bottom, left).
+*/
+function CPEdgeInsetsMake(top, left, bottom, right)
+{
+    return CGInsetMake(top, right, bottom, left);
+}
+
+function CPEdgeInsetsEqualToEdgeInsets(lhsInsets, rhsInsets)
+{
+    return CGInsetEqualToInset(lhsInsets, rhsInsets);
+}
 
 // Gravity Areas
 @typedef CPStackViewGravity
@@ -60,6 +133,7 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
 {
     CPUserInterfaceLayoutOrientation    _orientation;
     CPLayoutAttribute                   _alignment;
+    CPStackViewDistribution             _distribution;
     float                               _spacing;
     CPEdgeInsets                        _edgeInsets;
     
@@ -99,6 +173,7 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     {
         _orientation = CPUserInterfaceLayoutOrientationHorizontal;
         _alignment = CPLayoutAttributeCenterY; // Default alignment
+        _distribution = CPStackViewDistributionGravityAreas;
         _spacing = 8.0; // Default Cocoa spacing
         _edgeInsets = CPEdgeInsetsMake(0, 0, 0, 0);
         _detachesHiddenViews = YES;
@@ -170,6 +245,27 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
 }
 
 /*!
+    The distribution mode for the stack view.
+    @note Not yet applied to layout. All views are laid out at their
+    existing frame size regardless of this value, pending the
+    constraint-solver based layout engine. The value is stored and
+    returned so client code can read back what was set.
+*/
+- (CPStackViewDistribution)distribution
+{
+    return _distribution;
+}
+
+- (void)setDistribution:(CPStackViewDistribution)aDistribution
+{
+    if (_distribution === aDistribution)
+        return;
+        
+    _distribution = aDistribution;
+    [self setNeedsLayout:YES];
+}
+
+/*!
     The minimum spacing, in points, between adjacent views in the stack view.
 */
 - (float)spacing
@@ -234,6 +330,21 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
 }
 
 /*!
+    Rebuilds _arrangedSubviews from the three gravity containers, in
+    Leading, Center, Trailing order. Call after any change to a gravity
+    container so _arrangedSubviews stays a correct, single source of truth
+    for ordering, rather than an incrementally and separately maintained
+    (and error-prone) copy.
+*/
+- (void)_rebuildArrangedSubviews
+{
+    _arrangedSubviews = [[CPMutableArray alloc] init];
+    [_arrangedSubviews addObjectsFromArray:_viewsLeading];
+    [_arrangedSubviews addObjectsFromArray:_viewsCenter];
+    [_arrangedSubviews addObjectsFromArray:_viewsTrailing];
+}
+
+/*!
     Adds a view to the end of the stack view gravity area.
 */
 - (void)addView:(CPView)aView inGravity:(CPStackViewGravity)gravity
@@ -245,7 +356,7 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
         [self removeView:aView];
         
     [container addObject:aView];
-    [_arrangedSubviews addObject:aView];
+    [self _rebuildArrangedSubviews];
     
     // Add as actual subview
     if ([aView superview] !== self)
@@ -269,7 +380,7 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     else
         [container insertObject:aView atIndex:index];
         
-    [_arrangedSubviews addObject:aView];
+    [self _rebuildArrangedSubviews];
     
     if ([aView superview] !== self)
         [self addSubview:aView];
@@ -284,13 +395,9 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
 {
     var container = [self _containerForGravity:gravity];
     
-    // Remove old views from arranged list and superview
+    // Remove old views from superview
     for (var i = 0; i < [container count]; i++)
-    {
-        var oldView = container[i];
-        [oldView removeFromSuperview];
-        [_arrangedSubviews removeObject:oldView];
-    }
+        [container[i] removeFromSuperview];
     
     [container removeAllObjects];
     
@@ -298,10 +405,10 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     {
         var newView = views[i];
         [container addObject:newView];
-        [_arrangedSubviews addObject:newView];
         [self addSubview:newView];
     }
     
+    [self _rebuildArrangedSubviews];
     [self setNeedsLayout:YES];
 }
 
@@ -316,7 +423,7 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     [_viewsLeading removeObject:aView];
     [_viewsCenter removeObject:aView];
     [_viewsTrailing removeObject:aView];
-    [_arrangedSubviews removeObject:aView];
+    [self _rebuildArrangedSubviews];
     
     [aView removeFromSuperview];
     
@@ -531,6 +638,13 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     var limit = (dir === 1) ? count : -1;
     var step = (dir === 1) ? 1 : -1;
     
+    // Spacing is applied as a gap *before* placing an element (except the
+    // first placed one), rather than trailing off the end after the last
+    // element. This keeps the returned cursor at the true content edge,
+    // with no phantom spacing past the final view.
+    var hasPlacedAny = false;
+    var pendingSpacing = 0;
+    
     for (; i !== limit; i += step)
     {
         var view = views[i];
@@ -538,6 +652,9 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
         if (_detachesHiddenViews && [view isHidden])
             continue;
             
+        if (hasPlacedAny)
+            cursor += (dir === 1) ? pendingSpacing : -pendingSpacing;
+        
         var viewFrame = [view frame];
         var viewSizePrimary = isVert ? CGRectGetHeight(viewFrame) : CGRectGetWidth(viewFrame);
         
@@ -617,11 +734,10 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
             
             if (dir === 1) {
                 originY = cursor;
-                cursor += sizeH + [self _spacingAfterView:view];
+                cursor += sizeH;
             } else {
                 cursor -= sizeH;
                 originY = cursor;
-                cursor -= [self _spacingAfterView:view];
             }
         }
         else
@@ -633,15 +749,17 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
             
             if (dir === 1) {
                 originX = cursor;
-                cursor += sizeW + [self _spacingAfterView:view];
+                cursor += sizeW;
             } else {
                 cursor -= sizeW;
                 originX = cursor;
-                cursor -= [self _spacingAfterView:view];
             }
         }
         
         [view setFrame:CGRectMake(originX, originY, sizeW, sizeH)];
+        
+        pendingSpacing = [self _spacingAfterView:view];
+        hasPlacedAny = true;
     }
     
     return cursor;
@@ -657,6 +775,7 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     {
         _orientation = [aCoder decodeIntForKey:@"CPStackViewOrientation"];
         _alignment = [aCoder decodeIntForKey:@"CPStackViewAlignment"];
+        _distribution = [aCoder decodeIntForKey:@"CPStackViewDistribution"];
         _spacing = [aCoder decodeFloatForKey:@"CPStackViewSpacing"];
         _edgeInsets = [aCoder decodeObjectForKey:@"CPStackViewEdgeInsets"]; // Assuming CPEdgeInsets supports obj coding or manual decode
         if (!_edgeInsets) _edgeInsets = CPEdgeInsetsMake(0,0,0,0);
@@ -668,10 +787,7 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
         _viewsTrailing = [aCoder decodeObjectForKey:@"CPStackViewViewsTrailing"] || [];
         
         // Rebuild arranged subviews cache
-        _arrangedSubviews = [[CPMutableArray alloc] init];
-        [_arrangedSubviews addObjectsFromArray:_viewsLeading];
-        [_arrangedSubviews addObjectsFromArray:_viewsCenter];
-        [_arrangedSubviews addObjectsFromArray:_viewsTrailing];
+        [self _rebuildArrangedSubviews];
         
         _customSpacings = [aCoder decodeObjectForKey:@"CPStackViewCustomSpacings"] || [[CPMapTable alloc] init];
         _visibilityPriorities = [[CPMapTable alloc] init]; // usually not persisted
@@ -684,6 +800,7 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
     [super encodeWithCoder:aCoder];
     [aCoder encodeInt:_orientation forKey:@"CPStackViewOrientation"];
     [aCoder encodeInt:_alignment forKey:@"CPStackViewAlignment"];
+    [aCoder encodeInt:_distribution forKey:@"CPStackViewDistribution"];
     [aCoder encodeFloat:_spacing forKey:@"CPStackViewSpacing"];
     [aCoder encodeObject:_edgeInsets forKey:@"CPStackViewEdgeInsets"];
     [aCoder encodeBool:_detachesHiddenViews forKey:@"CPStackViewDetachesHiddenViews"];
