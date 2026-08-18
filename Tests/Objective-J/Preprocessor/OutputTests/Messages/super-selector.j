@@ -5,7 +5,7 @@
 
 - (void)xxxx:(id)argument
 {
-	[super xxxx:argument];
+    [super xxxx:argument];
 }
 
 @end
