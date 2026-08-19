@@ -21662,7 +21662,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("openPanel"), function 
 
 ,["id"])]);
 }
-p;15;CPOutlineView.jt;126416;@STATIC;1.0;i;10;CPButton.ji;15;CPTableColumn.ji;13;CPTableView.jt;126342;objj_executeFile("CPButton.j", YES);objj_executeFile("CPTableColumn.j", YES);objj_executeFile("CPTableView.j", YES);CPOutlineViewColumnDidMoveNotification = "CPOutlineViewColumnDidMoveNotification";
+p;15;CPOutlineView.jt;126416;@STATIC;1.0;i;10;CPButton.ji;15;CPTableColumn.ji;13;CPTableView.ji;12;CPTreeNode.jt;126325;objj_executeFile("CPButton.j", YES);objj_executeFile("CPTableColumn.j", YES);objj_executeFile("CPTableView.j", YES);objj_executeFile("CPTreeNode.j", YES);CPOutlineViewColumnDidMoveNotification = "CPOutlineViewColumnDidMoveNotification";
 CPOutlineViewColumnDidResizeNotification = "CPOutlineViewColumnDidResizeNotification";
 CPOutlineViewItemDidCollapseNotification = "CPOutlineViewItemDidCollapseNotification";
 CPOutlineViewItemDidExpandNotification = "CPOutlineViewItemDidExpandNotification";
@@ -23101,8 +23101,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("setValueFor:"), functio
     var destination = ((___r1 = self._info), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectForKey:"] || _objj_forward)(___r1, "objectForKey:", CPObservedObjectKey)),
         keyPath = ((___r1 = self._info), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectForKey:"] || _objj_forward)(___r1, "objectForKey:", CPObservedKeyPathKey)),
         value = (destination == null ? destination : (destination.isa.method_msgSend["valueForKeyPath:"] || _objj_forward)(destination, "valueForKeyPath:", keyPath));
-    if (!value || !(value == null ? value : (value.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(value, "isKindOfClass:", (CPTreeNode == null ? CPTreeNode : (CPTreeNode.isa.method_msgSend["class"] || _objj_forward)(CPTreeNode, "class")))))
-        self._rootNode = ((___r1 = (CPTreeNode == null ? CPTreeNode : (CPTreeNode.isa.method_msgSend["alloc"] || _objj_forward)(CPTreeNode, "alloc"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithRepresentedObject:"] || _objj_forward)(___r1, "initWithRepresentedObject:", nil));
+    if (!value || !(value == null ? value : (value.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(value, "isKindOfClass:", (CPTreeNode.isa.method_msgSend["class"] || _objj_forward)(CPTreeNode, "class"))))
+        self._rootNode = ((___r1 = (CPTreeNode.isa.method_msgSend["alloc"] || _objj_forward)(CPTreeNode, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithRepresentedObject:"] || _objj_forward)(___r1, "initWithRepresentedObject:", nil));
     else
         self._rootNode = value;
     if (((___r1 = self._source), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["dataSource"] || _objj_forward)(___r1, "dataSource")) !== self)
@@ -23168,6 +23168,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithBinding:name:to
 {
     self = (objj_getClass("_CPOutlineViewSelectionIndexPathsBinder").super_class.method_dtable["initWithBinding:name:to:keyPath:options:from:"] || _objj_forward)(self, "initWithBinding:name:to:keyPath:options:from:", aBinding, aName, aDestination, aKeyPath, options, aSource);
     ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addObserver:selector:name:object:"] || _objj_forward)(___r1, "addObserver:selector:name:object:", self, sel_getUid("outlineViewSelectionDidChange:"), CPOutlineViewSelectionDidChangeNotification, aSource));
+    return self;
     var ___r1;
 }
 
@@ -45729,7 +45730,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTreeNode.jt;12134;@STATIC;1.0;I;21;Foundation/CPObject.jI;24;Foundation/CPIndexPath.jI;20;Foundation/CPArray.jt;12034;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPIndexPath.j", NO);objj_executeFile("Foundation/CPArray.j", NO);
+p;12;CPTreeNode.jt;16998;@STATIC;1.0;I;21;Foundation/CPObject.jI;24;Foundation/CPIndexPath.jI;20;Foundation/CPArray.jt;16898;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPIndexPath.j", NO);objj_executeFile("Foundation/CPArray.j", NO);
 {var the_class = objj_allocateClassPair(CPObject, "CPTreeNode"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_representedObject", "id"), new objj_ivar("_parentNode", "CPTreeNode"), new objj_ivar("_childNodes", "CPMutableArray")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("representedObject"), function $CPTreeNode__representedObject(self, _cmd)
@@ -45737,22 +45738,12 @@ class_addMethods(the_class, [new objj_method(sel_getUid("representedObject"), fu
     return self._representedObject;
 }
 
-,["id"]), new objj_method(sel_getUid("setRepresentedObject:"), function $CPTreeNode__setRepresentedObject_(self, _cmd, newValue)
-{
-    self._representedObject = newValue;
-}
-
-,["void","id"]), new objj_method(sel_getUid("parentNode"), function $CPTreeNode__parentNode(self, _cmd)
+,["id"]), new objj_method(sel_getUid("parentNode"), function $CPTreeNode__parentNode(self, _cmd)
 {
     return self._parentNode;
 }
 
-,["CPTreeNode"]), new objj_method(sel_getUid("setParentNode:"), function $CPTreeNode__setParentNode_(self, _cmd, newValue)
-{
-    self._parentNode = newValue;
-}
-
-,["void","CPTreeNode"]), new objj_method(sel_getUid("initWithRepresentedObject:"), function $CPTreeNode__initWithRepresentedObject_(self, _cmd, anObject)
+,["CPTreeNode"]), new objj_method(sel_getUid("initWithRepresentedObject:"), function $CPTreeNode__initWithRepresentedObject_(self, _cmd, anObject)
 {
     self = (objj_getClass("CPTreeNode").super_class.method_dtable["init"] || _objj_forward)(self, "init");
     if (self)
@@ -45763,18 +45754,64 @@ class_addMethods(the_class, [new objj_method(sel_getUid("representedObject"), fu
     return self;
 }
 
-,["id","id"]), new objj_method(sel_getUid("indexPath"), function $CPTreeNode__indexPath(self, _cmd)
+,["id","id"]), new objj_method(sel_getUid("init"), function $CPTreeNode__init(self, _cmd)
 {
-    if (self._parentNode)
+    return (self.isa.method_msgSend["initWithRepresentedObject:"] || _objj_forward)(self, "initWithRepresentedObject:", nil);
+}
+
+,["id"]), new objj_method(sel_getUid("_wouldCreateCycleWithNode:"), function $CPTreeNode___wouldCreateCycleWithNode_(self, _cmd, aTreeNode)
+{
+    for (var node = self; node; node = node._parentNode)
     {
-        var index = ((___r1 = ((___r2 = self._parentNode), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["childNodes"] || _objj_forward)(___r2, "childNodes"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexOfObjectIdenticalTo:"] || _objj_forward)(___r1, "indexOfObjectIdenticalTo:", self));
-        var parentPath = ((___r1 = self._parentNode), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexPath"] || _objj_forward)(___r1, "indexPath"));
-        if (parentPath)
-            return (parentPath == null ? parentPath : (parentPath.isa.method_msgSend["indexPathByAddingIndex:"] || _objj_forward)(parentPath, "indexPathByAddingIndex:", index));
-        return (CPIndexPath.isa.method_msgSend["indexPathWithIndex:"] || _objj_forward)(CPIndexPath, "indexPathWithIndex:", index);
+        if (node === aTreeNode)
+            return YES;
     }
-    return nil;
-    var ___r1, ___r2;
+    return NO;
+}
+
+,["BOOL","CPTreeNode"]), new objj_method(sel_getUid("_validateChildNode:"), function $CPTreeNode___validateChildNode_(self, _cmd, aTreeNode)
+{
+    if (!(aTreeNode == null ? aTreeNode : (aTreeNode.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(aTreeNode, "isKindOfClass:", (CPTreeNode.isa.method_msgSend["class"] || _objj_forward)(CPTreeNode, "class"))))
+    {
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "CPTreeNode children must be CPTreeNode instances.");
+    }
+}
+
+,["void","id"]), new objj_method(sel_getUid("_removeChildNode:"), function $CPTreeNode___removeChildNode_(self, _cmd, aNode)
+{
+    var index = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexOfObjectIdenticalTo:"] || _objj_forward)(___r1, "indexOfObjectIdenticalTo:", aNode));
+    if (index === CPNotFound)
+    {
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInternalInconsistencyException, "CPTreeNode parent and child relationship is inconsistent.");
+    }
+    aNode._parentNode = nil;
+    ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectAtIndex:"] || _objj_forward)(___r1, "removeObjectAtIndex:", index));
+    var ___r1;
+}
+
+,["void","CPTreeNode"]), new objj_method(sel_getUid("indexPath"), function $CPTreeNode__indexPath(self, _cmd)
+{
+    if (!self._parentNode)
+        return (CPIndexPath.isa.method_msgSend["indexPathWithIndexes:"] || _objj_forward)(CPIndexPath, "indexPathWithIndexes:", []);
+    var indexes = [],
+        node = self;
+    while (node._parentNode)
+    {
+        var parent = node._parentNode,
+            index = ((___r1 = parent._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexOfObjectIdenticalTo:"] || _objj_forward)(___r1, "indexOfObjectIdenticalTo:", node));
+        if (index === CPNotFound)
+        {
+            (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInternalInconsistencyException, "CPTreeNode parent and child relationship is inconsistent.");
+        }
+        (indexes == null ? indexes : (indexes.isa.method_msgSend["addObject:"] || _objj_forward)(indexes, "addObject:", index));
+        node = parent;
+    }
+    var orderedIndexes = [],
+        count = (indexes == null ? indexes : (indexes.isa.method_msgSend["count"] || _objj_forward)(indexes, "count"));
+    while (count--)
+        (orderedIndexes == null ? orderedIndexes : (orderedIndexes.isa.method_msgSend["addObject:"] || _objj_forward)(orderedIndexes, "addObject:", (indexes == null ? indexes : (indexes.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(indexes, "objectAtIndex:", count))));
+    return (CPIndexPath.isa.method_msgSend["indexPathWithIndexes:"] || _objj_forward)(CPIndexPath, "indexPathWithIndexes:", orderedIndexes);
+    var ___r1;
 }
 
 ,["CPIndexPath"]), new objj_method(sel_getUid("isLeaf"), function $CPTreeNode__isLeaf(self, _cmd)
@@ -45796,65 +45833,108 @@ class_addMethods(the_class, [new objj_method(sel_getUid("representedObject"), fu
 
 ,["CPMutableArray"]), new objj_method(sel_getUid("insertObject:inChildNodesAtIndex:"), function $CPTreeNode__insertObject_inChildNodesAtIndex_(self, _cmd, aTreeNode, anIndex)
 {
-    if ((aTreeNode == null ? aTreeNode : (aTreeNode.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(aTreeNode, "isKindOfClass:", (CPTreeNode.isa.method_msgSend["class"] || _objj_forward)(CPTreeNode, "class"))) && aTreeNode._parentNode)
+    var count = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count"));
+    if (anIndex < 0 || anIndex > count)
     {
-        ((___r1 = ((___r2 = aTreeNode._parentNode), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["mutableChildNodes"] || _objj_forward)(___r2, "mutableChildNodes"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectIdenticalTo:"] || _objj_forward)(___r1, "removeObjectIdenticalTo:", aTreeNode));
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPRangeException, "index (" + anIndex + ") beyond bounds (0 .. " + count + ") for insertObject:inChildNodesAtIndex:");
     }
-    if ((aTreeNode == null ? aTreeNode : (aTreeNode.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(aTreeNode, "isKindOfClass:", (CPTreeNode.isa.method_msgSend["class"] || _objj_forward)(CPTreeNode, "class"))))
-        aTreeNode._parentNode = self;
+    (self.isa.method_msgSend["_validateChildNode:"] || _objj_forward)(self, "_validateChildNode:", aTreeNode);
+    if ((self.isa.method_msgSend["_wouldCreateCycleWithNode:"] || _objj_forward)(self, "_wouldCreateCycleWithNode:", aTreeNode))
+    {
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "Inserting a CPTreeNode beneath itself or one of its descendants makes a cycle.");
+    }
+    if (aTreeNode._parentNode)
+    {
+        if (aTreeNode._parentNode === self)
+        {
+            var originalIndex = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexOfObjectIdenticalTo:"] || _objj_forward)(___r1, "indexOfObjectIdenticalTo:", aTreeNode));
+            aTreeNode._parentNode = nil;
+            ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectAtIndex:"] || _objj_forward)(___r1, "removeObjectAtIndex:", originalIndex));
+            if (originalIndex < anIndex)
+                --anIndex;
+        }
+        else
+        {
+            ((___r1 = aTreeNode._parentNode), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_removeChildNode:"] || _objj_forward)(___r1, "_removeChildNode:", aTreeNode));
+        }
+    }
+    aTreeNode._parentNode = self;
     ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["insertObject:atIndex:"] || _objj_forward)(___r1, "insertObject:atIndex:", aTreeNode, anIndex));
-    var ___r1, ___r2;
+    var ___r1;
 }
 
 ,["void","CPTreeNode","CPInteger"]), new objj_method(sel_getUid("removeObjectFromChildNodesAtIndex:"), function $CPTreeNode__removeObjectFromChildNodesAtIndex_(self, _cmd, anIndex)
 {
     var node = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", anIndex));
-    if ((node == null ? node : (node.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(node, "isKindOfClass:", (CPTreeNode.isa.method_msgSend["class"] || _objj_forward)(CPTreeNode, "class"))))
-        node._parentNode = nil;
+    node._parentNode = nil;
     ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectAtIndex:"] || _objj_forward)(___r1, "removeObjectAtIndex:", anIndex));
     var ___r1;
 }
 
-,["void","CPInteger"]), new objj_method(sel_getUid("replaceObjectFromChildNodesAtIndex:withObject:"), function $CPTreeNode__replaceObjectFromChildNodesAtIndex_withObject_(self, _cmd, anIndex, aTreeNode)
+,["void","CPInteger"]), new objj_method(sel_getUid("replaceObjectInChildNodesAtIndex:withObject:"), function $CPTreeNode__replaceObjectInChildNodesAtIndex_withObject_(self, _cmd, anIndex, aTreeNode)
 {
     var oldTreeNode = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", anIndex));
-    if ((oldTreeNode == null ? oldTreeNode : (oldTreeNode.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(oldTreeNode, "isKindOfClass:", (CPTreeNode.isa.method_msgSend["class"] || _objj_forward)(CPTreeNode, "class"))))
-        oldTreeNode._parentNode = nil;
-    if ((aTreeNode == null ? aTreeNode : (aTreeNode.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(aTreeNode, "isKindOfClass:", (CPTreeNode.isa.method_msgSend["class"] || _objj_forward)(CPTreeNode, "class"))))
-        aTreeNode._parentNode = self;
+    (self.isa.method_msgSend["_validateChildNode:"] || _objj_forward)(self, "_validateChildNode:", aTreeNode);
+    if (oldTreeNode === aTreeNode)
+        return;
+    if ((self.isa.method_msgSend["_wouldCreateCycleWithNode:"] || _objj_forward)(self, "_wouldCreateCycleWithNode:", aTreeNode))
+    {
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "Replacing a child with itself or one of its ancestors makes a cycle.");
+    }
+    var oldParent = aTreeNode._parentNode;
+    if (oldParent === self)
+    {
+        var replacementIndex = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexOfObjectIdenticalTo:"] || _objj_forward)(___r1, "indexOfObjectIdenticalTo:", aTreeNode));
+        if (replacementIndex === CPNotFound)
+        {
+            (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInternalInconsistencyException, "CPTreeNode parent and child relationship is inconsistent.");
+        }
+        aTreeNode._parentNode = nil;
+        ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectAtIndex:"] || _objj_forward)(___r1, "removeObjectAtIndex:", replacementIndex));
+        if (replacementIndex < anIndex)
+            --anIndex;
+    }
+    else if (oldParent)
+    {
+        (oldParent == null ? oldParent : (oldParent.isa.method_msgSend["_removeChildNode:"] || _objj_forward)(oldParent, "_removeChildNode:", aTreeNode));
+    }
+    oldTreeNode._parentNode = nil;
+    aTreeNode._parentNode = self;
     ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["replaceObjectAtIndex:withObject:"] || _objj_forward)(___r1, "replaceObjectAtIndex:withObject:", anIndex, aTreeNode));
     var ___r1;
 }
 
-,["void","CPInteger","id"]), new objj_method(sel_getUid("objectInChildNodesAtIndex:"), function $CPTreeNode__objectInChildNodesAtIndex_(self, _cmd, anIndex)
+,["void","CPInteger","CPTreeNode"]), new objj_method(sel_getUid("objectInChildNodesAtIndex:"), function $CPTreeNode__objectInChildNodesAtIndex_(self, _cmd, anIndex)
 {
     return ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", anIndex));
     var ___r1;
 }
 
-,["id","CPInteger"]), new objj_method(sel_getUid("count"), function $CPTreeNode__count(self, _cmd)
+,["id","CPInteger"]), new objj_method(sel_getUid("countOfChildNodes"), function $CPTreeNode__countOfChildNodes(self, _cmd)
 {
     return ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count"));
     var ___r1;
 }
 
-,["CPInteger"]), new objj_method(sel_getUid("objectAtIndex:"), function $CPTreeNode__objectAtIndex_(self, _cmd, anIndex)
+,["CPInteger"]), new objj_method(sel_getUid("sortWithSortDescriptors:recursively:"), function $CPTreeNode__sortWithSortDescriptors_recursively_(self, _cmd, sortDescriptors, shouldSortRecursively)
 {
-    return ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", anIndex));
-    var ___r1;
-}
-
-,["id","CPInteger"]), new objj_method(sel_getUid("sortWithSortDescriptors:recursively:"), function $CPTreeNode__sortWithSortDescriptors_recursively_(self, _cmd, sortDescriptors, shouldSortRecursively)
-{
-    ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["sortUsingDescriptors:"] || _objj_forward)(___r1, "sortUsingDescriptors:", sortDescriptors));
     if (!shouldSortRecursively)
-        return;
-    var count = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count"));
-    while (count--)
     {
-        var child = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", count));
-        if ((child == null ? child : (child.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(child, "respondsToSelector:", sel_getUid("sortWithSortDescriptors:recursively:"))))
-            (child == null ? child : (child.isa.method_msgSend["sortWithSortDescriptors:recursively:"] || _objj_forward)(child, "sortWithSortDescriptors:recursively:", sortDescriptors, YES));
+        ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["sortUsingDescriptors:"] || _objj_forward)(___r1, "sortUsingDescriptors:", sortDescriptors));
+        return;
+    }
+    var stack = [];
+    (stack == null ? stack : (stack.isa.method_msgSend["addObject:"] || _objj_forward)(stack, "addObject:", self));
+    while ((stack == null ? stack : (stack.isa.method_msgSend["count"] || _objj_forward)(stack, "count")))
+    {
+        var node = (stack == null ? stack : (stack.isa.method_msgSend["lastObject"] || _objj_forward)(stack, "lastObject"));
+        (stack == null ? stack : (stack.isa.method_msgSend["removeLastObject"] || _objj_forward)(stack, "removeLastObject"));
+        ((___r1 = node._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["sortUsingDescriptors:"] || _objj_forward)(___r1, "sortUsingDescriptors:", sortDescriptors));
+        var count = ((___r1 = node._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count"));
+        while (count--)
+        {
+            (stack == null ? stack : (stack.isa.method_msgSend["addObject:"] || _objj_forward)(stack, "addObject:", ((___r1 = node._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", count))));
+        }
     }
     var ___r1;
 }
@@ -45868,10 +45948,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("representedObject"), fu
     for (var i = 0; i < length; i++)
     {
         var index = (indexPath == null ? indexPath : (indexPath.isa.method_msgSend["indexAtPosition:"] || _objj_forward)(indexPath, "indexAtPosition:", i)),
-            count = (node == null ? node : (node.isa.method_msgSend["count"] || _objj_forward)(node, "count"));
-        if (index >= count || index < 0)
+            count = (node == null ? node : (node.isa.method_msgSend["countOfChildNodes"] || _objj_forward)(node, "countOfChildNodes"));
+        if (index < 0 || index >= count)
             return nil;
-        node = (node == null ? node : (node.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(node, "objectAtIndex:", index));
+        node = (node == null ? node : (node.isa.method_msgSend["objectInChildNodesAtIndex:"] || _objj_forward)(node, "objectInChildNodesAtIndex:", index));
     }
     return node;
 }
@@ -45900,7 +45980,16 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
         self._parentNode = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPTreeNodeParentNodeKey));
         self._childNodes = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPTreeNodeChildNodesKey));
         if (!self._childNodes)
-            self._childNodes = ((___r1 = (CPMutableArray.isa.method_msgSend["alloc"] || _objj_forward)(CPMutableArray, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
+            self._childNodes = [];
+        if (!((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(___r1, "isKindOfClass:", (CPMutableArray.isa.method_msgSend["class"] || _objj_forward)(CPMutableArray, "class"))))
+            self._childNodes = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["mutableCopy"] || _objj_forward)(___r1, "mutableCopy"));
+        var count = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count"));
+        while (count--)
+        {
+            var child = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", count));
+            (self == null ? self : (self.isa.method_msgSend["_validateChildNode:"] || _objj_forward)(self, "_validateChildNode:", child));
+            child._parentNode = self;
+        }
     }
     return self;
     var ___r1;
