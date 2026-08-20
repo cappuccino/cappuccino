@@ -70986,7 +70986,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithParagraphStyle:
 
 ,["id","CPZone"])]);
 }
-p;13;CPRulerView.jt;44796;@STATIC;1.0;I;21;Foundation/CPObject.ji;8;CPView.ji;13;CPTextField.ji;9;CPColor.ji;8;CPFont.ji;8;CPMenu.ji;12;CPMenuItem.jt;44666;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPMenuItem.j", YES);(CPHorizontalRuler = 0, CPVerticalRuler = 1, CPRulerOrientationHorizontal = 0, CPRulerOrientationVertical = 1);
+p;13;CPRulerView.jt;44798;@STATIC;1.0;I;21;Foundation/CPObject.ji;8;CPView.ji;13;CPTextField.ji;9;CPColor.ji;8;CPFont.ji;8;CPMenu.ji;12;CPMenuItem.jt;44668;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPMenuItem.j", YES);(CPHorizontalRuler = 0, CPVerticalRuler = 1, CPRulerOrientationHorizontal = 0, CPRulerOrientationVertical = 1);
+;
 ;
 
 {var the_class = objj_allocateClassPair(CPView, "CPRulerMarker"),
