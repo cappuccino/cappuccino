@@ -36,6 +36,7 @@ CPRulerOrientationHorizontal = 0,
 CPRulerOrientationVertical = 1
 
 @class CPRulerView;
+@class CPScrollView;
 
 
 // MARK: - CPRulerMarker (Interactive Handles with Dynamic Alignment Icons)
