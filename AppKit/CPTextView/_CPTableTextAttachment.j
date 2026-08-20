@@ -19,7 +19,8 @@
  */
 
 @import "CPView.j"
-@import "CPTextView.j"
+@class CPTextView;
+@class CPTextContainer;
 @import "CPTextField.j"
 @import <Foundation/CPAttributedString.j>
 
