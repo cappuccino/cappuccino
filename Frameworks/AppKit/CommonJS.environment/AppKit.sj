@@ -68259,7 +68259,9 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("produceRTF:documentAtt
 
 ,["CPString","CPAttributedString","CPDictionary"])]);
 }
-p;24;_CPTableTextAttachment.jt;32135;@STATIC;1.0;i;8;CPView.ji;12;CPTextView.ji;13;CPTextField.jI;31;Foundation/CPAttributedString.jt;32032;objj_executeFile("CPView.j", YES);objj_executeFile("CPTextView.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("Foundation/CPAttributedString.j", NO);
+p;24;_CPTableTextAttachment.jt;32130;@STATIC;1.0;i;8;CPView.ji;13;CPTextField.jI;31;Foundation/CPAttributedString.jt;32044;objj_executeFile("CPView.j", YES);;
+;
+objj_executeFile("CPTextField.j", YES);objj_executeFile("Foundation/CPAttributedString.j", NO);
 {var the_class = objj_allocateClassPair(CPView, "_CPTableTextAttachment"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_headers", "CPArray"), new objj_ivar("_rows", "CPArray"), new objj_ivar("_isResizing", "BOOL"), new objj_ivar("_isEditable", "BOOL"), new objj_ivar("_acceptsRichText", "BOOL")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("initWithHeaders:rows:"), function $_CPTableTextAttachment__initWithHeaders_rows_(self, _cmd, headers, rows)
@@ -68452,7 +68454,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithHeaders:rows:")
         borderView._DOMElement.style.boxSizing = "border-box";
     }
     (cellContainer == null ? cellContainer : (cellContainer.isa.method_msgSend["addSubview:"] || _objj_forward)(cellContainer, "addSubview:", borderView));
-    var textContainer = ((___r1 = (CPTextContainer.isa.method_msgSend["alloc"] || _objj_forward)(CPTextContainer, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithContainerSize:"] || _objj_forward)(___r1, "initWithContainerSize:", CGSizeMake(initialWidth - 8, 1e7)));
+    var textContainer = ((___r1 = (CPTextContainer == null ? CPTextContainer : (CPTextContainer.isa.method_msgSend["alloc"] || _objj_forward)(CPTextContainer, "alloc"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithContainerSize:"] || _objj_forward)(___r1, "initWithContainerSize:", CGSizeMake(initialWidth - 8, 1e7)));
     var textView = ((___r1 = (CPTextView == null ? CPTextView : (CPTextView.isa.method_msgSend["alloc"] || _objj_forward)(CPTextView, "alloc"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFrame:textContainer:"] || _objj_forward)(___r1, "initWithFrame:textContainer:", CGRectMake(4, 2, initialWidth - 8, initialHeight - 4), textContainer));
     (textView == null ? textView : (textView.isa.method_msgSend["setTextContainerInset:"] || _objj_forward)(textView, "setTextContainerInset:", CGSizeMake(0, 0)));
     (textView == null ? textView : (textView.isa.method_msgSend["setEditable:"] || _objj_forward)(textView, "setEditable:", self._isEditable));
