@@ -37,6 +37,7 @@ CPRulerOrientationVertical = 1
 
 @class CPRulerView;
 @class CPScrollView;
+@class CPTextTab;
 
 
 // MARK: - CPRulerMarker (Interactive Handles with Dynamic Alignment Icons)
