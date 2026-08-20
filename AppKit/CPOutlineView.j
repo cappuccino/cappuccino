@@ -24,6 +24,7 @@
 @import "CPTableColumn.j"
 @import "CPTableView.j"
 @import "CPViewAnimation.j"
+@import "CPTreeNode.j"
 
 @global CPApp
 
@@ -3054,6 +3055,8 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted)
            selector:@selector(outlineViewSelectionDidChange:) 
                name:CPOutlineViewSelectionDidChangeNotification 
              object:aSource];
+
+    return self;
 }
 
 + (void)unbind:(CPString)aBinding forObject:(id)anObject

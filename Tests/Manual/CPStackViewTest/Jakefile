@@ -1,94 +1,162 @@
 /*
  * Jakefile
- * CPSplitViewTest
+ * CPStackViewTest
  *
- * Created by Alexander Ljungberg on January 27, 2012.
- * Copyright 2012, WireLoad All rights reserved.
+ * Created by You on August 14, 2026.
+ * Copyright 2026, Your Company All rights reserved.
  */
 
-var ENV = require("system").env,
-    FILE = require("file"),
-    JAKE = require("jake"),
+const path = require("path");
+const fs = require("fs");
+
+var ENV = process.env,
     task = JAKE.task,
     FileList = JAKE.FileList,
-    app = require("cappuccino/jake").app,
+    app = CAPPUCCINO.Jake.applicationtask.app,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
-    OS = require("os");
+    OS = require("os"),
+    projectName = "CPStackViewTest";
 
-app ("CPSplitViewTest", function(task)
+var buildDir = path.resolve(ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build");
+
+app (projectName, function(task)
 {
-    task.setBuildIntermediatesPath(FILE.join("Build", "CPSplitViewTest.build", configuration));
-    task.setBuildPath(FILE.join("Build", configuration));
+    ENV["OBJJ_INCLUDE_PATHS"] = ["Frameworks"];
 
-    task.setProductName("CPSplitViewTest");
-    task.setIdentifier("com.yourcompany.CPSplitViewTest");
+    if (configuration === "Debug")
+        ENV["OBJJ_INCLUDE_PATHS"] = path.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
+
+    task.setBuildIntermediatesPath(path.join(buildDir, "CPStackViewTest.build", configuration));
+    task.setBuildPath(path.join(buildDir, configuration));
+
+    task.setProductName("CPStackViewTest");
+    task.setIdentifier("com.yourcompany.CPStackViewTest");
     task.setVersion("1.0");
-    task.setAuthor("WireLoad");
+    task.setAuthor("Your Company");
     task.setEmail("feedback @nospam@ yourcompany.com");
-    task.setSummary("CPSplitViewTest");
-    task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
+    task.setSummary("CPStackViewTest");
+    task.setSources(new FileList("**/*.j").exclude(path.join("Build", "**")).exclude(path.join("Frameworks", "Source", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
-    task.setNib2CibFlags("-R Resources/");
 
     if (configuration === "Debug")
-        task.setCompilerFlags("-DDEBUG -g");
+        task.setCompilerFlags("-DDEBUG -g -S --inline-msg-send");
     else
-        task.setCompilerFlags("-O");
+        task.setCompilerFlags("-O2");
 });
 
-task ("default", ["CPSplitViewTest"], function()
+task ("default", [projectName], function()
 {
     printResults(configuration);
 });
 
-task ("build", ["default"]);
+task ("build", ["default"], function()
+{
+    updateApplicationSize();
+});
 
 task ("debug", function()
 {
-    ENV["CONFIGURATION"] = "Debug";
+    configuration = ENV["CONFIGURATION"] = "Debug";
     JAKE.subjake(["."], "build", ENV);
 });
 
 task ("release", function()
 {
-    ENV["CONFIGURATION"] = "Release";
+    configuration = ENV["CONFIGURATION"] = "Release";
     JAKE.subjake(["."], "build", ENV);
-});
-
-task ("run", ["debug"], function()
-{
-    OS.system(["open", FILE.join("Build", "Debug", "CPSplitViewTest", "index.html")]);
-});
-
-task ("run-release", ["release"], function()
-{
-    OS.system(["open", FILE.join("Build", "Release", "CPSplitViewTest", "index.html")]);
-});
-
-task ("deploy", ["release"], function()
-{
-    FILE.mkdirs(FILE.join("Build", "Deployment", "CPSplitViewTest"));
-    OS.system(["press", "-f", FILE.join("Build", "Release", "CPSplitViewTest"), FILE.join("Build", "Deployment", "CPSplitViewTest")]);
-    printResults("Deployment")
-});
-
-task ("desktop", ["release"], function()
-{
-    FILE.mkdirs(FILE.join("Build", "Desktop", "CPSplitViewTest"));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "CPSplitViewTest"), FILE.join("Build", "Desktop", "CPSplitViewTest", "CPSplitViewTest.app"));
-    printResults("Desktop")
-});
-
-task ("run-desktop", ["desktop"], function()
-{
-    OS.system([FILE.join("Build", "Desktop", "CPSplitViewTest", "CPSplitViewTest.app", "Contents", "MacOS", "NativeHost"), "-i"]);
 });
 
 function printResults(configuration)
 {
-    print("----------------------------");
-    print(configuration+" app built at path: "+FILE.join("Build", configuration, "CPSplitViewTest"));
-    print("----------------------------");
+    console.log("----------------------------");
+    console.log(configuration+" app built at path: "+path.join(buildDir, configuration, projectName));
+    console.log("----------------------------");
+}
+
+function updateApplicationSize()
+{
+    console.log("Calculating application file sizes...");
+    
+    var contents = fs.readFileSync(path.join(buildDir, configuration, projectName, "Info.plist"), { encoding: "utf8" }),
+        format = CFPropertyList.sniffedFormatOfString(contents),
+        plist = CFPropertyList.propertyListFromString(contents),
+        totalBytes = {executable:0, data:0, mhtml:0};
+
+    // Get the size of all framework executables and sprite data
+    var frameworksDir = "Frameworks";
+
+    if (configuration === "Debug")
+        frameworksDir = path.join(frameworksDir, "Debug");
+
+    var frameworks = [];
+
+    if (fs.existsSync(frameworksDir)) {
+        frameworks = fs.readdirSync(frameworksDir);
+    }
+    
+    frameworks.forEach(function(framework)
+    {
+        if (framework !== "Source")
+            addBundleFileSizes(path.join(frameworksDir, framework), totalBytes);
+    });
+
+    // Read in the default theme name, and attempt to get its size
+    var themeName = plist.valueForKey("CPDefaultTheme") || "Aristo2",
+        themePath = nil;
+
+    if (themeName === "Aristo" || themeName === "Aristo2")
+        themePath = path.join(frameworksDir, "AppKit", "Resources", themeName + ".blend");
+    else
+        themePath = path.join("Frameworks", "Resources", themeName + ".blend");
+
+    if (fs.existsSync(themePath) && fs.lstatSync(themePath).isDirectory())
+        addBundleFileSizes(themePath, totalBytes);
+
+    // Add sizes for the app
+    addBundleFileSizes(path.join(buildDir, configuration, projectName), totalBytes);
+
+    console.log("Executables: " + totalBytes.executable + ", sprite data: " + totalBytes.data + ", total: " + (totalBytes.executable + totalBytes.data));
+
+    var dict = new CFMutableDictionary();
+
+    dict.setValueForKey("executable", totalBytes.executable);
+    dict.setValueForKey("data", totalBytes.data);
+    dict.setValueForKey("mhtml", totalBytes.mhtml);
+
+    plist.setValueForKey("CPApplicationSize", dict);
+    fs.writeFileSync(path.join(buildDir, configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { encoding: "utf8" });
+}
+
+function addBundleFileSizes(bundlePath, totalBytes)
+{
+    var bundleName = path.basename(bundlePath),
+        environment = bundleName === "Foundation" ? "Objj" : "Browser",
+        bundlePath = path.join(bundlePath, environment + ".environment");
+
+    if (fs.existsSync(bundlePath) && fs.lstatSync(bundlePath).isDirectory())
+    {
+        var filename = bundleName + ".sj",
+            filePath = path.join(bundlePath, filename);
+            
+        if (fs.existsSync(filePath)) {
+            totalBytes.executable += fs.lstatSync(filePath).size;            
+        }
+
+        filePath = path.join(bundlePath, "dataURLs.txt");
+        
+        if (fs.existsSync(filePath))
+            totalBytes.data += fs.lstatSync(filePath).size;    
+
+        filePath = path.join(bundlePath, "MHTMLData.txt");
+
+        if (fs.existsSync(filePath))
+            totalBytes.mhtml += fs.lstatSync(filePath).size;    
+
+        filePath = path.join(bundlePath, "MHTMLPaths.txt");
+
+        if (fs.existsSync(filePath))
+            totalBytes.mhtml += fs.lstatSync(filePath).size;    
+    }
 }
