@@ -36,6 +36,7 @@
 @class CPLayoutManager
 @class CPTextContainer
 @class CPFontManager
+@class _CPFontPanelPreviewView
 
 /*
     Collection indexes
