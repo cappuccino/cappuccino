@@ -26,7 +26,7 @@
 
 CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
 
-// Define missing global tab stop type constants
+@typedef CPTabStopType
 CPLeftTabStopType = 0;
 CPRightTabStopType = 1;
 CPCenterTabStopType = 2;
