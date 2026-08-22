@@ -277,7 +277,7 @@ function _points2twips(a) { return (a) * 20.0; }
 
     if (!num)
         [colorDict setObject:num = [CPNumber numberWithInt:[colorDict count] + 1]
-		              forKey:[color cssString]];
+                      forKey:[color cssString]];
 
     return [num intValue];
 }

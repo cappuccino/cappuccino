@@ -12,9 +12,9 @@
 @implementation AppController : CPObject
 {
     @outlet CPWindow    theWindow;
-	@outlet CPButton	clearButton;
-	@outlet CPButton	escButton;
-	@outlet CPTextField	wasPressedLabel;
+    @outlet CPButton    clearButton;
+    @outlet CPButton    escButton;
+    @outlet CPTextField    wasPressedLabel;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -33,11 +33,11 @@
 }
 
 - (@action)clearButtonPressed:(id)sender {
-	[wasPressedLabel setStringValue:@"No"];
+    [wasPressedLabel setStringValue:@"No"];
 }
 
 - (@action)escButtonPressed:(id)sender {
-	[wasPressedLabel setStringValue:@"Yes"];
+    [wasPressedLabel setStringValue:@"Yes"];
 }
 
 @end
