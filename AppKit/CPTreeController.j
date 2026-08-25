@@ -171,6 +171,9 @@
     if (![value isKindOfClass:[CPArray class]])
         value = [CPArray arrayWithObject:value];
 
+    if (_contentObject === value)
+        return;
+
     var oldSelectedObjects = nil,
         oldSelectionIndexPaths = nil;
 
@@ -178,6 +181,10 @@
         oldSelectedObjects = [self selectedObjects];
     else
         oldSelectionIndexPaths = [self selectionIndexPaths];
+
+    [self _selectionWillChange];
+    [self willChangeValueForKey:@"content"];
+    [self willChangeValueForKey:@"contentArray"];
 
     _contentObject = value;
 
@@ -187,7 +194,12 @@
         [self __setSelectedObjects:oldSelectedObjects];
     else
         [self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
+
+    [self didChangeValueForKey:@"contentArray"];
+    [self didChangeValueForKey:@"content"];
+    [self _selectionDidChange];
 }
+
 
 - (void)_setContentArray:(id)anArray { [self setContent:anArray]; }
 - (id)contentArray { return _contentObject; }
@@ -195,9 +207,13 @@
 
 - (void)rearrangeObjects
 {
+    [self _selectionWillChange];
     [self willChangeValueForKey:@"arrangedObjects"];
+
     [self _rearrangeObjects];
+
     [self didChangeValueForKey:@"arrangedObjects"];
+    [self _selectionDidChange];
 }
 
 - (void)_rearrangeObjects
@@ -520,6 +536,7 @@
 
 - (void)insertObjects:(CPArray)objects atArrangedObjectIndexPaths:(CPArray)indexPaths
 {
+    [self _selectionWillChange];
     [self willChangeValueForKey:@"content"];
     _disableSetContent = YES;
 
@@ -569,6 +586,7 @@
         [self setSelectionIndexPaths:indexPaths];
 
     [self didChangeValueForKey:@"content"];
+    [self _selectionDidChange];
 }
 
 - (void)remove:(id)sender
@@ -583,6 +601,7 @@
 
 - (void)removeObjectsAtArrangedObjectIndexPaths:(CPArray)indexPaths
 {
+    [self _selectionWillChange];
     [self willChangeValueForKey:@"content"];
     _disableSetContent = YES;
 
@@ -622,6 +641,7 @@
     _disableSetContent = NO;
     [self _rearrangeObjects];
     [self didChangeValueForKey:@"content"];
+    [self _selectionDidChange];
 }
 
 - (void)moveNode:(CPTreeNode)node toIndexPath:(CPIndexPath)indexPath
