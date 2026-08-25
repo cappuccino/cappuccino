@@ -29,14 +29,15 @@
 @import "CPMenuItem.j"
 
 // Orientations matching AppKit standards
-// typedef enum CPRulerOrientation
-CPHorizontalRuler = 0,
-CPVerticalRuler = 1,
-CPRulerOrientationHorizontal = 0,
-CPRulerOrientationVertical = 1
+@typedef CPRulerOrientation
+CPHorizontalRuler = 0;
+CPVerticalRuler = 1;
+CPRulerOrientationHorizontal = 0;
+CPRulerOrientationVertical = 1;
 
 @class CPRulerView;
 @class CPScrollView;
+@class CPTextTab;
 
 
 // MARK: - CPRulerMarker (Interactive Handles with Dynamic Alignment Icons)
