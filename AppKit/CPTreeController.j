@@ -414,9 +414,13 @@
         count = [nodes count];
 
     for (var i = 0; i < count; i++)
-        [objects addObject:[[nodes objectAtIndex:i] representedObject]];
+    {
+        var representedObject = [[nodes objectAtIndex:i] representedObject];
+        if (representedObject)
+            [objects addObject:representedObject];
+    }
 
-    return objects;
+    return [_CPObservableArray arrayWithArray:objects];
 }
 
 - (BOOL)__setSelectedObjects:(CPArray)objects
