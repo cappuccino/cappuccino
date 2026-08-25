@@ -43715,7 +43715,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPCoder"])]);
 }
-p;18;CPTreeController.jt;52765;@STATIC;1.0;I;20;Foundation/CPArray.jI;24;Foundation/CPIndexPath.ji;20;CPObjectController.ji;19;CPKeyValueBinding.ji;12;CPTreeNode.jt;52625;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPIndexPath.j", NO);objj_executeFile("CPObjectController.j", YES);objj_executeFile("CPKeyValueBinding.j", YES);objj_executeFile("CPTreeNode.j", YES);
+p;18;CPTreeController.jt;54013;@STATIC;1.0;I;20;Foundation/CPArray.jI;24;Foundation/CPIndexPath.ji;20;CPObjectController.ji;19;CPKeyValueBinding.ji;12;CPTreeNode.jt;53873;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPIndexPath.j", NO);objj_executeFile("CPObjectController.j", YES);objj_executeFile("CPKeyValueBinding.j", YES);objj_executeFile("CPTreeNode.j", YES);
 {var the_class = objj_allocateClassPair(CPObjectController, "CPTreeController"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_avoidsEmptySelection", "BOOL"), new objj_ivar("_preservesSelection", "BOOL"), new objj_ivar("_selectsInsertedObjects", "BOOL"), new objj_ivar("_alwaysUsesMultipleValuesMarker", "BOOL"), new objj_ivar("_childrenKeyPath", "CPString"), new objj_ivar("_countKeyPath", "CPString"), new objj_ivar("_leafKeyPath", "CPString"), new objj_ivar("_sortDescriptors", "CPArray"), new objj_ivar("_arrangedObjects", "id"), new objj_ivar("_selectionIndexPaths", "CPArray"), new objj_ivar("_disableSetContent", "BOOL")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPTreeController__init(self, _cmd)
@@ -43854,18 +43854,26 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPTre
         value = (CPArray.isa.method_msgSend["array"] || _objj_forward)(CPArray, "array");
     if (!(value == null ? value : (value.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(value, "isKindOfClass:", (CPArray.isa.method_msgSend["class"] || _objj_forward)(CPArray, "class"))))
         value = (CPArray.isa.method_msgSend["arrayWithObject:"] || _objj_forward)(CPArray, "arrayWithObject:", value);
+    if (self._contentObject === value)
+        return;
     var oldSelectedObjects = nil,
         oldSelectionIndexPaths = nil;
     if ((self.isa.method_msgSend["preservesSelection"] || _objj_forward)(self, "preservesSelection"))
         oldSelectedObjects = (self.isa.method_msgSend["selectedObjects"] || _objj_forward)(self, "selectedObjects");
     else
         oldSelectionIndexPaths = (self.isa.method_msgSend["selectionIndexPaths"] || _objj_forward)(self, "selectionIndexPaths");
+    (self.isa.method_msgSend["_selectionWillChange"] || _objj_forward)(self, "_selectionWillChange");
+    (self.isa.method_msgSend["willChangeValueForKey:"] || _objj_forward)(self, "willChangeValueForKey:", "content");
+    (self.isa.method_msgSend["willChangeValueForKey:"] || _objj_forward)(self, "willChangeValueForKey:", "contentArray");
     self._contentObject = value;
     (self.isa.method_msgSend["_rearrangeObjects"] || _objj_forward)(self, "_rearrangeObjects");
     if ((self.isa.method_msgSend["preservesSelection"] || _objj_forward)(self, "preservesSelection"))
         (self.isa.method_msgSend["__setSelectedObjects:"] || _objj_forward)(self, "__setSelectedObjects:", oldSelectedObjects);
     else
         (self.isa.method_msgSend["__setSelectionIndexPaths:avoidEmpty:"] || _objj_forward)(self, "__setSelectionIndexPaths:avoidEmpty:", oldSelectionIndexPaths, self._avoidsEmptySelection);
+    (self.isa.method_msgSend["didChangeValueForKey:"] || _objj_forward)(self, "didChangeValueForKey:", "contentArray");
+    (self.isa.method_msgSend["didChangeValueForKey:"] || _objj_forward)(self, "didChangeValueForKey:", "content");
+    (self.isa.method_msgSend["_selectionDidChange"] || _objj_forward)(self, "_selectionDidChange");
 }
 
 ,["void","id"]), new objj_method(sel_getUid("_setContentArray:"), function $CPTreeController___setContentArray_(self, _cmd, anArray)
@@ -43885,9 +43893,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPTre
 
 ,["id"]), new objj_method(sel_getUid("rearrangeObjects"), function $CPTreeController__rearrangeObjects(self, _cmd)
 {
+    (self.isa.method_msgSend["_selectionWillChange"] || _objj_forward)(self, "_selectionWillChange");
     (self.isa.method_msgSend["willChangeValueForKey:"] || _objj_forward)(self, "willChangeValueForKey:", "arrangedObjects");
     (self.isa.method_msgSend["_rearrangeObjects"] || _objj_forward)(self, "_rearrangeObjects");
     (self.isa.method_msgSend["didChangeValueForKey:"] || _objj_forward)(self, "didChangeValueForKey:", "arrangedObjects");
+    (self.isa.method_msgSend["_selectionDidChange"] || _objj_forward)(self, "_selectionDidChange");
 }
 
 ,["void"]), new objj_method(sel_getUid("_rearrangeObjects"), function $CPTreeController___rearrangeObjects(self, _cmd)
@@ -43965,10 +43975,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPTre
 
 ,["CPArray"]), new objj_method(sel_getUid("setSelectionIndexPaths:"), function $CPTreeController__setSelectionIndexPaths_(self, _cmd, indexPaths)
 {
-    (self.isa.method_msgSend["_selectionWillChange"] || _objj_forward)(self, "_selectionWillChange");
-    var result = (self.isa.method_msgSend["__setSelectionIndexPaths:avoidEmpty:"] || _objj_forward)(self, "__setSelectionIndexPaths:avoidEmpty:", indexPaths, NO);
-    (self.isa.method_msgSend["_selectionDidChange"] || _objj_forward)(self, "_selectionDidChange");
-    return result;
+    return (self.isa.method_msgSend["__setSelectionIndexPaths:avoidEmpty:"] || _objj_forward)(self, "__setSelectionIndexPaths:avoidEmpty:", indexPaths, NO);
 }
 
 ,["BOOL","CPArray"]), new objj_method(sel_getUid("_ensureTreeNodesExistForIndexPaths:"), function $CPTreeController___ensureTreeNodesExistForIndexPaths_(self, _cmd, indexPaths)
@@ -44040,16 +44047,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPTre
     }
     if (((___r1 = self._selectionIndexPaths), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isEqualToArray:"] || _objj_forward)(___r1, "isEqualToArray:", newPaths)))
         return NO;
+    (self.isa.method_msgSend["_selectionWillChange"] || _objj_forward)(self, "_selectionWillChange");
     (self.isa.method_msgSend["willChangeValueForKey:"] || _objj_forward)(self, "willChangeValueForKey:", "selectionIndexPaths");
     self._selectionIndexPaths = (newPaths == null ? newPaths : (newPaths.isa.method_msgSend["copy"] || _objj_forward)(newPaths, "copy"));
-    var binderClass = ((___r1 = (self.isa.method_msgSend["class"] || _objj_forward)(self, "class")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_binderClassForBinding:"] || _objj_forward)(___r1, "_binderClassForBinding:", "selectionIndexPaths"));
-    if (binderClass)
-    {
-        var binding = (binderClass == null ? binderClass : (binderClass.isa.method_msgSend["getBinding:forObject:"] || _objj_forward)(binderClass, "getBinding:forObject:", "selectionIndexPaths", self));
-        if (binding)
-            (binding == null ? binding : (binding.isa.method_msgSend["reverseSetValueFor:"] || _objj_forward)(binding, "reverseSetValueFor:", "selectionIndexPaths"));
-    }
     (self.isa.method_msgSend["didChangeValueForKey:"] || _objj_forward)(self, "didChangeValueForKey:", "selectionIndexPaths");
+    (self.isa.method_msgSend["_selectionDidChange"] || _objj_forward)(self, "_selectionDidChange");
     return YES;
     var ___r1, ___r2;
 }
@@ -44090,8 +44092,12 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPTre
         nodes = (self.isa.method_msgSend["selectedNodes"] || _objj_forward)(self, "selectedNodes"),
         count = (nodes == null ? nodes : (nodes.isa.method_msgSend["count"] || _objj_forward)(nodes, "count"));
     for (var i = 0; i < count; i++)
-        (objects == null ? objects : (objects.isa.method_msgSend["addObject:"] || _objj_forward)(objects, "addObject:", ((___r1 = (nodes == null ? nodes : (nodes.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(nodes, "objectAtIndex:", i))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["representedObject"] || _objj_forward)(___r1, "representedObject"))));
-    return objects;
+    {
+        var representedObject = ((___r1 = (nodes == null ? nodes : (nodes.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(nodes, "objectAtIndex:", i))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["representedObject"] || _objj_forward)(___r1, "representedObject"));
+        if (representedObject)
+            (objects == null ? objects : (objects.isa.method_msgSend["addObject:"] || _objj_forward)(objects, "addObject:", representedObject));
+    }
+    return (_CPObservableArray.isa.method_msgSend["arrayWithArray:"] || _objj_forward)(_CPObservableArray, "arrayWithArray:", objects);
     var ___r1;
 }
 
@@ -44196,6 +44202,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPTre
 
 ,["void","id","CPIndexPath"]), new objj_method(sel_getUid("insertObjects:atArrangedObjectIndexPaths:"), function $CPTreeController__insertObjects_atArrangedObjectIndexPaths_(self, _cmd, objects, indexPaths)
 {
+    (self.isa.method_msgSend["_selectionWillChange"] || _objj_forward)(self, "_selectionWillChange");
     (self.isa.method_msgSend["willChangeValueForKey:"] || _objj_forward)(self, "willChangeValueForKey:", "content");
     self._disableSetContent = YES;
     var count = (objects == null ? objects : (objects.isa.method_msgSend["count"] || _objj_forward)(objects, "count"));
@@ -44235,6 +44242,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPTre
     if ((self.isa.method_msgSend["selectsInsertedObjects"] || _objj_forward)(self, "selectsInsertedObjects"))
         (self.isa.method_msgSend["setSelectionIndexPaths:"] || _objj_forward)(self, "setSelectionIndexPaths:", indexPaths);
     (self.isa.method_msgSend["didChangeValueForKey:"] || _objj_forward)(self, "didChangeValueForKey:", "content");
+    (self.isa.method_msgSend["_selectionDidChange"] || _objj_forward)(self, "_selectionDidChange");
     var ___r1;
 }
 
@@ -44250,6 +44258,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPTre
 
 ,["void","CPIndexPath"]), new objj_method(sel_getUid("removeObjectsAtArrangedObjectIndexPaths:"), function $CPTreeController__removeObjectsAtArrangedObjectIndexPaths_(self, _cmd, indexPaths)
 {
+    (self.isa.method_msgSend["_selectionWillChange"] || _objj_forward)(self, "_selectionWillChange");
     (self.isa.method_msgSend["willChangeValueForKey:"] || _objj_forward)(self, "willChangeValueForKey:", "content");
     self._disableSetContent = YES;
     var sortedPaths = (indexPaths == null ? indexPaths : (indexPaths.isa.method_msgSend["sortedArrayUsingSelector:"] || _objj_forward)(indexPaths, "sortedArrayUsingSelector:", sel_getUid("compare:"))),
@@ -44282,6 +44291,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPTre
     self._disableSetContent = NO;
     (self.isa.method_msgSend["_rearrangeObjects"] || _objj_forward)(self, "_rearrangeObjects");
     (self.isa.method_msgSend["didChangeValueForKey:"] || _objj_forward)(self, "didChangeValueForKey:", "content");
+    (self.isa.method_msgSend["_selectionDidChange"] || _objj_forward)(self, "_selectionDidChange");
     var ___r1;
 }
 
@@ -44302,6 +44312,9 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
         return;
     (self.isa.method_msgSend["exposeBinding:"] || _objj_forward)(self, "exposeBinding:", "contentArray");
     (self.isa.method_msgSend["exposeBinding:"] || _objj_forward)(self, "exposeBinding:", "sortDescriptors");
+    (self.isa.method_msgSend["exposeBinding:"] || _objj_forward)(self, "exposeBinding:", "selectionIndexPaths");
+    (self.isa.method_msgSend["exposeBinding:"] || _objj_forward)(self, "exposeBinding:", "selectionIndexPath");
+    (self.isa.method_msgSend["exposeBinding:"] || _objj_forward)(self, "exposeBinding:", "selectedObjects");
 }
 
 ,["void"]), new objj_method(sel_getUid("keyPathsForValuesAffectingContentArray"), function $CPTreeController__keyPathsForValuesAffectingContentArray(self, _cmd)
@@ -44311,7 +44324,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["CPSet"]), new objj_method(sel_getUid("keyPathsForValuesAffectingArrangedObjects"), function $CPTreeController__keyPathsForValuesAffectingArrangedObjects(self, _cmd)
 {
-    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "content", "sortDescriptors", "childrenKeyPath");
+    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "content", "contentArray", "sortDescriptors", "childrenKeyPath");
 }
 
 ,["CPSet"]), new objj_method(sel_getUid("keyPathsForValuesAffectingSelectionIndexPath"), function $CPTreeController__keyPathsForValuesAffectingSelectionIndexPath(self, _cmd)
@@ -44321,27 +44334,27 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["CPSet"]), new objj_method(sel_getUid("keyPathsForValuesAffectingSelectedObjects"), function $CPTreeController__keyPathsForValuesAffectingSelectedObjects(self, _cmd)
 {
-    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "selectionIndexPaths");
+    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "selectionIndexPaths", "arrangedObjects");
 }
 
 ,["CPSet"]), new objj_method(sel_getUid("keyPathsForValuesAffectingSelectedNodes"), function $CPTreeController__keyPathsForValuesAffectingSelectedNodes(self, _cmd)
 {
-    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "selectionIndexPaths");
-}
-
-,["CPSet"]), new objj_method(sel_getUid("keyPathsForValuesAffectingCanAddChild"), function $CPTreeController__keyPathsForValuesAffectingCanAddChild(self, _cmd)
-{
-    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "selectionIndexPaths");
+    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "selectionIndexPaths", "arrangedObjects");
 }
 
 ,["CPSet"]), new objj_method(sel_getUid("keyPathsForValuesAffectingCanInsert"), function $CPTreeController__keyPathsForValuesAffectingCanInsert(self, _cmd)
 {
-    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "selectionIndexPaths");
+    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "editable");
 }
 
 ,["CPSet"]), new objj_method(sel_getUid("keyPathsForValuesAffectingCanInsertChild"), function $CPTreeController__keyPathsForValuesAffectingCanInsertChild(self, _cmd)
 {
-    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "selectionIndexPaths");
+    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "selectionIndexPaths", "editable");
+}
+
+,["CPSet"]), new objj_method(sel_getUid("keyPathsForValuesAffectingCanAddChild"), function $CPTreeController__keyPathsForValuesAffectingCanAddChild(self, _cmd)
+{
+    return (CPSet.isa.method_msgSend["setWithObjects:"] || _objj_forward)(CPSet, "setWithObjects:", "selectionIndexPaths", "editable");
 }
 
 ,["CPSet"])]);
