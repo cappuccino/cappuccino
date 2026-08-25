@@ -50,6 +50,9 @@
 
     [self exposeBinding:@"contentArray"];
     [self exposeBinding:@"sortDescriptors"];
+    [self exposeBinding:@"selectionIndexPaths"];
+    [self exposeBinding:@"selectionIndexPath"];
+    [self exposeBinding:@"selectedObjects"];
 }
 
 + (CPSet)keyPathsForValuesAffectingContentArray
@@ -59,7 +62,7 @@
 
 + (CPSet)keyPathsForValuesAffectingArrangedObjects
 {
-    return [CPSet setWithObjects:@"content", @"sortDescriptors", @"childrenKeyPath"];
+    return [CPSet setWithObjects:@"content", @"contentArray", @"sortDescriptors", @"childrenKeyPath"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelectionIndexPath
@@ -69,27 +72,27 @@
 
 + (CPSet)keyPathsForValuesAffectingSelectedObjects
 {
-    return [CPSet setWithObjects:@"selectionIndexPaths"];
+    return [CPSet setWithObjects:@"selectionIndexPaths", @"arrangedObjects"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelectedNodes
 {
-    return [CPSet setWithObjects:@"selectionIndexPaths"];
-}
-
-+ (CPSet)keyPathsForValuesAffectingCanAddChild
-{
-    return [CPSet setWithObjects:@"selectionIndexPaths"];
+    return [CPSet setWithObjects:@"selectionIndexPaths", @"arrangedObjects"];
 }
 
 + (CPSet)keyPathsForValuesAffectingCanInsert
 {
-    return [CPSet setWithObjects:@"selectionIndexPaths"];
+    return [CPSet setWithObjects:@"editable"];
 }
 
 + (CPSet)keyPathsForValuesAffectingCanInsertChild
 {
-    return [CPSet setWithObjects:@"selectionIndexPaths"];
+    return [CPSet setWithObjects:@"selectionIndexPaths", @"editable"];
+}
+
++ (CPSet)keyPathsForValuesAffectingCanAddChild
+{
+    return [CPSet setWithObjects:@"selectionIndexPaths", @"editable"];
 }
 
 - (id)init
@@ -115,7 +118,8 @@
 }
 
 - (void)prepareContent
-{[self _setContentArray:[CPArray arrayWithObject:[self newObject]]];
+{
+    [self _setContentArray:[CPArray arrayWithObject:[self newObject]]];
 }
 
 - (BOOL)preservesSelection { return _preservesSelection; }
@@ -144,7 +148,8 @@
 - (void)setChildrenKeyPath:(CPString)aKeyPath
 {
     if (_childrenKeyPath === aKeyPath) return;
-    _childrenKeyPath = aKeyPath;[self rearrangeObjects];
+    _childrenKeyPath = aKeyPath;
+    [self rearrangeObjects];
 }
 
 - (CPString)countKeyPath { return _countKeyPath; }
@@ -167,7 +172,7 @@
         value = [CPArray arrayWithObject:value];
 
     var oldSelectedObjects = nil,
-    oldSelectionIndexPaths = nil;
+        oldSelectionIndexPaths = nil;
 
     if ([self preservesSelection])
         oldSelectedObjects = [self selectedObjects];
@@ -184,7 +189,7 @@
         [self __setSelectionIndexPaths:oldSelectionIndexPaths avoidEmpty:_avoidsEmptySelection];
 }
 
-- (void)_setContentArray:(id)anArray {[self setContent:anArray]; }
+- (void)_setContentArray:(id)anArray { [self setContent:anArray]; }
 - (id)contentArray { return _contentObject; }
 - (id)arrangedObjects { return _arrangedObjects; }
 
@@ -198,7 +203,7 @@
 - (void)_rearrangeObjects
 {
     var oldSelectedObjects = nil,
-    oldSelectionIndexPaths = nil;
+        oldSelectionIndexPaths = nil;
 
     if ([self preservesSelection])
         oldSelectedObjects = [self selectedObjects];
@@ -216,7 +221,7 @@
 - (void)__rebuildArrangedObjectsTree
 {
     var rootNode = [[CPTreeNode alloc] initWithRepresentedObject:nil],
-    contentArray = [self contentArray];
+        contentArray = [self contentArray];
 
     if (contentArray && [contentArray count] > 0)
     {
@@ -244,7 +249,7 @@
     for (var i = 0; i < count; i++)
     {
         var obj = [sortedObjects objectAtIndex:i],
-        node = [[CPTreeNode alloc] initWithRepresentedObject:obj];
+            node = [[CPTreeNode alloc] initWithRepresentedObject:obj];
 
         if (_childrenKeyPath)
         {
@@ -278,11 +283,7 @@
 
 - (BOOL)setSelectionIndexPaths:(CPArray)indexPaths
 {
-    [self _selectionWillChange];
-    var result = [self __setSelectionIndexPaths:indexPaths avoidEmpty:NO];
-    [self _selectionDidChange];
-
-    return result;
+    return [self __setSelectionIndexPaths:indexPaths avoidEmpty:NO];
 }
 
 - (void)_ensureTreeNodesExistForIndexPaths:(CPArray)indexPaths
@@ -334,7 +335,8 @@
                 if (needsRebuild)
                 {
                     [childNodes removeAllObjects];
-                    var newNodes = [self _buildTreeNodesForObjects:expectedChildObjects];[childNodes addObjectsFromArray:newNodes];
+                    var newNodes = [self _buildTreeNodesForObjects:expectedChildObjects];
+                    [childNodes addObjectsFromArray:newNodes];
                 }
             }
 
@@ -366,21 +368,13 @@
     if ([_selectionIndexPaths isEqualToArray:newPaths])
         return NO;
 
+    [self _selectionWillChange];
     [self willChangeValueForKey:@"selectionIndexPaths"];
 
     _selectionIndexPaths = [newPaths copy];
 
-    var binderClass = [[self class] _binderClassForBinding:@"selectionIndexPaths"];
-
-    if (binderClass)
-    {
-        var binding = [binderClass getBinding:@"selectionIndexPaths" forObject:self];
-
-        if (binding)
-            [binding reverseSetValueFor:@"selectionIndexPaths"];
-    }
-
     [self didChangeValueForKey:@"selectionIndexPaths"];
+    [self _selectionDidChange];
 
     return YES;
 }
@@ -388,9 +382,7 @@
 - (BOOL)addSelectionIndexPaths:(CPArray)indexPaths
 {
     var newPaths = [_selectionIndexPaths mutableCopy];
-
     [newPaths addObjectsFromArray:indexPaths];
-
     return [self setSelectionIndexPaths:newPaths];
 }
 
@@ -404,7 +396,7 @@
 - (CPArray)selectedNodes
 {
     var nodes = [CPMutableArray array],
-    count = [_selectionIndexPaths count];
+        count = [_selectionIndexPaths count];
 
     for (var i = 0; i < count; i++)
     {
@@ -418,8 +410,8 @@
 - (CPArray)selectedObjects
 {
     var objects = [CPMutableArray array],
-    nodes = [self selectedNodes],
-    count = [nodes count];
+        nodes = [self selectedNodes],
+        count = [nodes count];
 
     for (var i = 0; i < count; i++)
         [objects addObject:[[nodes objectAtIndex:i] representedObject]];
@@ -462,22 +454,22 @@
 }
 
 - (BOOL)canInsert { return [self isEditable]; }
-- (BOOL)canInsertChild { return [self isEditable] &&[_selectionIndexPaths count] > 0; }
+- (BOOL)canInsertChild { return [self isEditable] && [_selectionIndexPaths count] > 0; }
 - (BOOL)canAddChild { return [self canInsertChild]; }
 
 - (void)add:(id)sender
 {
     if (![self canInsert]) return;
 
-    var newObject = [self automaticallyPreparesContent] ? [self newObject] :[self _defaultNewObject],
-    selectionPath = [self selectionIndexPath];
+    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject],
+        selectionPath = [self selectionIndexPath];
 
     if (!selectionPath)
         selectionPath = [CPIndexPath indexPathWithIndex:[[[self arrangedObjects] childNodes] count]];
 
     var length = [selectionPath length],
-    lastIndex = [selectionPath indexAtPosition:length - 1],
-    insertPath = [selectionPath indexPathByRemovingLastIndex];
+        lastIndex = [selectionPath indexAtPosition:length - 1],
+        insertPath = [selectionPath indexPathByRemovingLastIndex];
 
     insertPath = [insertPath indexPathByAddingIndex:lastIndex + 1];
 
@@ -489,10 +481,10 @@
     if (![self canAddChild])
         return;
 
-    var newObject = [self automaticallyPreparesContent] ?[self newObject] : [self _defaultNewObject],
-    parentNode = [[self arrangedObjects] descendantNodeAtIndexPath:[self selectionIndexPath]],
-    childCount = [[parentNode childNodes] count],
-    insertPath = [[self selectionIndexPath] indexPathByAddingIndex:childCount];
+    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject],
+        parentNode = [[self arrangedObjects] descendantNodeAtIndexPath:[self selectionIndexPath]],
+        childCount = [[parentNode childNodes] count],
+        insertPath = [[self selectionIndexPath] indexPathByAddingIndex:childCount];
 
     [self insertObject:newObject atArrangedObjectIndexPath:insertPath];
 }
@@ -501,8 +493,8 @@
 {
     if (![self canInsert]) return;
 
-    var newObject = [self automaticallyPreparesContent] ? [self newObject] :[self _defaultNewObject],
-    indexPath = [self selectionIndexPath] || [CPIndexPath indexPathWithIndex:0];
+    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject],
+        indexPath = [self selectionIndexPath] || [CPIndexPath indexPathWithIndex:0];
 
     [self insertObject:newObject atArrangedObjectIndexPath:indexPath];
 }
@@ -512,7 +504,7 @@
     if (![self canInsertChild]) return;
 
     var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject],
-    insertPath = [[self selectionIndexPath] indexPathByAddingIndex:0];
+        insertPath = [[self selectionIndexPath] indexPathByAddingIndex:0];
 
     [self insertObject:newObject atArrangedObjectIndexPath:insertPath];
 }
@@ -531,21 +523,22 @@
     for (var i = 0; i < count; i++)
     {
         var object = [objects objectAtIndex:i],
-        path = [indexPaths objectAtIndex:i],
-        length = [path length];
+            path = [indexPaths objectAtIndex:i],
+            length = [path length];
 
         if (length === 1)
-        {[_contentObject insertObject:object atIndex:[path indexAtPosition:0]];
+        {
+            [_contentObject insertObject:object atIndex:[path indexAtPosition:0]];
         }
         else
         {
             var parentPath = [path indexPathByRemovingLastIndex],
-            parentNode = [[self arrangedObjects] descendantNodeAtIndexPath:parentPath];
+                parentNode = [[self arrangedObjects] descendantNodeAtIndexPath:parentPath];
 
             if (parentNode)
             {
                 var parentObj = [parentNode representedObject],
-                childIndex = [path indexAtPosition:length - 1];
+                    childIndex = [path indexAtPosition:length - 1];
 
                 var children = [parentObj valueForKeyPath:_childrenKeyPath];
                 if (!children)
@@ -568,7 +561,8 @@
     _disableSetContent = NO;
     [self _rearrangeObjects];
 
-    if ([self selectsInsertedObjects])[self setSelectionIndexPaths:indexPaths];
+    if ([self selectsInsertedObjects])
+        [self setSelectionIndexPaths:indexPaths];
 
     [self didChangeValueForKey:@"content"];
 }
@@ -589,12 +583,12 @@
     _disableSetContent = YES;
 
     var sortedPaths = [indexPaths sortedArrayUsingSelector:@selector(compare:)],
-    count = [sortedPaths count];
+        count = [sortedPaths count];
 
     for (var i = count - 1; i >= 0; i--)
     {
         var path = [sortedPaths objectAtIndex:i],
-        length = [path length];
+            length = [path length];
 
         if (length === 1)
         {
@@ -603,15 +597,15 @@
         else
         {
             var parentPath = [path indexPathByRemovingLastIndex],
-            parentNode = [[self arrangedObjects] descendantNodeAtIndexPath:parentPath];
+                parentNode = [[self arrangedObjects] descendantNodeAtIndexPath:parentPath];
 
             if (parentNode)
             {
                 var parentObj = [parentNode representedObject],
-                childIndex = [path indexAtPosition:length - 1],
-                mutableChildren = [parentObj mutableArrayValueForKeyPath:_childrenKeyPath];
+                    childIndex = [path indexAtPosition:length - 1],
+                    mutableChildren = [parentObj mutableArrayValueForKeyPath:_childrenKeyPath];
 
-                if (mutableChildren && childIndex <[mutableChildren count])
+                if (mutableChildren && childIndex < [mutableChildren count])
                     [mutableChildren removeObjectAtIndex:childIndex];
             }
         }
@@ -632,18 +626,19 @@
 }
 
 - (void)moveNodes:(CPArray)nodes toIndexPath:(CPIndexPath)startingIndexPath
-{[CPException raise:CPUnsupportedMethodException reason:@"moveNodes:toIndexPath: is not yet implemented in CPTreeController."];
+{
+    [CPException raise:CPUnsupportedMethodException reason:@"moveNodes:toIndexPath: is not yet implemented in CPTreeController."];
 }
 
 @end
 
 var CPTreeControllerAvoidsEmptySelection             = @"CPTreeControllerAvoidsEmptySelection",
-CPTreeControllerPreservesSelection               = @"CPTreeControllerPreservesSelection",
-CPTreeControllerSelectsInsertedObjects           = @"CPTreeControllerSelectsInsertedObjects",
-CPTreeControllerAlwaysUsesMultipleValuesMarker   = @"CPTreeControllerAlwaysUsesMultipleValuesMarker",
-CPTreeControllerChildrenKeyPath                  = @"CPTreeControllerChildrenKeyPath",
-CPTreeControllerCountKeyPath                     = @"CPTreeControllerCountKeyPath",
-CPTreeControllerLeafKeyPath                      = @"CPTreeControllerLeafKeyPath";
+    CPTreeControllerPreservesSelection               = @"CPTreeControllerPreservesSelection",
+    CPTreeControllerSelectsInsertedObjects           = @"CPTreeControllerSelectsInsertedObjects",
+    CPTreeControllerAlwaysUsesMultipleValuesMarker   = @"CPTreeControllerAlwaysUsesMultipleValuesMarker",
+    CPTreeControllerChildrenKeyPath                  = @"CPTreeControllerChildrenKeyPath",
+    CPTreeControllerCountKeyPath                     = @"CPTreeControllerCountKeyPath",
+    CPTreeControllerLeafKeyPath                      = @"CPTreeControllerLeafKeyPath";
 
 @implementation CPTreeController (CPCoding)
 
