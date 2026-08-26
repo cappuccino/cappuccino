@@ -2729,6 +2729,96 @@ var compareTabStops = function(obj1, obj2, context) {
     [self setNeedsDisplay:YES];
 }
 
+- (float)rulerView:(CPRulerView)aRulerView willMoveMarker:(CPRulerMarker)aMarker toLocation:(float)proposedLocation
+{
+    var rep = [aMarker representedObject];
+
+    // Indent markers can be dragged anywhere >= 0
+    if (rep === @"CPFirstLineIndent" || rep === @"CPHeadIndent" || rep === @"CPTailIndent")
+        return Math.max(0.0, proposedLocation);
+
+    var textLength = [_textStorage length];
+    if (textLength === 0)
+        return Math.max(0.0, proposedLocation);
+
+    var selectedRange = [self selectedRange],
+        targetRange = selectedRange;
+
+    if (targetRange.length === 0)
+        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
+
+    if (targetRange.length === 0)
+        return Math.max(0.0, proposedLocation);
+
+    [_layoutManager _validateLayoutAndGlyphs];
+
+    var theString = [_textStorage string],
+        minLocation = 0.0,
+        currentParagraphStyle = [_textStorage attribute:CPParagraphStyleAttributeName atIndex:targetRange.location effectiveRange:nil] || [CPParagraphStyle defaultParagraphStyle],
+        tabStops = [currentParagraphStyle tabStops] || [];
+
+    // Find which tab stop index this marker represents
+    var targetTabIndex = -1;
+    for (var i = 0; i < [tabStops count]; i++)
+    {
+        var tab = [tabStops objectAtIndex:i];
+        if (tab === rep || ([tab location] === [rep location] && [tab alignment] === [rep alignment]))
+        {
+            targetTabIndex = i;
+            break;
+        }
+    }
+
+    var start = targetRange.location,
+        end = CPMaxRange(targetRange),
+        tabCountInLine = 0,
+        lineStart = start;
+
+    for (var i = start; i < end; i++)
+    {
+        var charCode = theString.charCodeAt(i);
+        if (charCode === 10 || charCode === 13)
+        {
+            tabCountInLine = 0;
+            lineStart = i + 1;
+            continue;
+        }
+
+        if (charCode === 9) // '\t'
+        {
+            // If this tab corresponds to the marker being dragged
+            if (tabCountInLine === targetTabIndex || targetTabIndex === -1)
+            {
+                var precedingX = 0.0;
+                if (i === lineStart)
+                {
+                    var isFirstLine = (lineStart === 0 || theString.charCodeAt(lineStart - 1) === 10 || theString.charCodeAt(lineStart - 1) === 13);
+                    precedingX = isFirstLine ? [currentParagraphStyle firstLineHeadIndent] : [currentParagraphStyle headIndent];
+                }
+                else
+                {
+                    // Find right edge of glyph immediately preceding the tab
+                    var glyphRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(i - 1, 1) inTextContainer:_textContainer];
+                    precedingX = CGRectGetMaxX(glyphRect);
+                }
+
+                // Minimum safety spacer (e.g. + 2px after the preceding glyph)
+                var limit = precedingX + 2.0;
+                if (limit > minLocation)
+                    minLocation = limit;
+            }
+            tabCountInLine++;
+        }
+    }
+
+    return Math.max(minLocation, proposedLocation);
+}
+
+- (float)rulerView:(CPRulerView)aRulerView willAddMarker:(CPRulerMarker)aMarker atLocation:(float)proposedLocation
+{
+    return [self rulerView:aRulerView willMoveMarker:aMarker toLocation:proposedLocation];
+}
+
 @end
 
 @implementation CPTextView (CPTextViewDelegate)

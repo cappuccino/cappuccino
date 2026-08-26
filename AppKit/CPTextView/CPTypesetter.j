@@ -138,38 +138,30 @@ var CPSystemTypesetterFactory,
     return [_layoutManager textContainers];
 }
 
-// Retrieves correct CPTextTab stop accounting for CPArray properties
+// Retrieves correct CPTextTab stop accounting for custom stops and default intervals
 - (CPTextTab)textTabForWidth:(double)aWidth writingDirection:(CPWritingDirection)direction
 {
     var tabStops = [_currentParagraph tabStops],
         defaultInterval = [_currentParagraph defaultTabInterval] || 28.0;
 
-    // Calculate the immediate next standard tab stop location based on defaultInterval
-    var nextDefaultLocation = (Math.floor(aWidth / defaultInterval) + 1) * defaultInterval;
+    var l = tabStops ? [tabStops count] : 0;
 
-    // Search for the first custom tab stop strictly greater than aWidth
-    var nextCustomTab = nil;
-
-    if (tabStops)
+    // 1. If custom tab stops exist ahead of current position, use the first one encountered
+    if (l > 0)
     {
-        var l = [tabStops count];
         for (var i = 0; i < l; i++)
         {
             var tab = [tabStops objectAtIndex:i];
+
             if ([tab location] > aWidth)
-            {
-                nextCustomTab = tab;
-                break;
-            }
+                return tab;
         }
     }
 
-    // If a custom tab stop exists and is closer than (or at) the next default interval, use it
-    if (nextCustomTab && [nextCustomTab location] <= nextDefaultLocation)
-        return nextCustomTab;
+    // 2. Otherwise (or when all custom tab stops are behind the text), advance to the next default interval
+    var nextLocation = (Math.floor(aWidth / defaultInterval) + 1) * defaultInterval;
 
-    // Otherwise, snap to the immediate next regular tab interval
-    return [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:nextDefaultLocation];
+    return [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:nextLocation];
 }
 
 - (BOOL)_flushRange:(CPRange)lineRange
@@ -209,7 +201,7 @@ var CPSystemTypesetterFactory,
     [_layoutManager setLocation:CGPointMake(myX, _lineBase) forStartOfGlyphRange:lineRange];
     [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange];
 
-    //fix the _lineFragments when fontsizes differ
+    // fix the _lineFragments when fontsizes differ
     var l = _lineFragments.length;
 
     for (var i = 0 ; i < l ; i++)
@@ -255,7 +247,7 @@ var CPSystemTypesetterFactory,
         isTabStop = NO,
         isAttachment = NO,
         isWordWrapped = NO,
-        numberOfGlyphs= [_textStorage length],
+        numberOfGlyphs = [_textStorage length],
         leading,
         numLines = 0,
         theString = [_textStorage string],
@@ -297,7 +289,7 @@ var CPSystemTypesetterFactory,
 
     for (; numLines != maxNumLines && glyphIndex < numberOfGlyphs; glyphIndex++)
     {
-        // check whether there any change in the attributes from here on
+        // check whether there is any change in the attributes from here on
         if (!CPLocationInRange(glyphIndex, _attributesRange))
         {
             _currentAttributes = [_textStorage attributesAtIndex:glyphIndex effectiveRange:_attributesRange];
@@ -414,10 +406,10 @@ var CPSystemTypesetterFactory,
         // We are processing characters, so we are no longer at the start of a physical line
         isStartOfPhysicalLine = NO;
 
-        var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
+        var currentCharCode = theString.charCodeAt(glyphIndex),
             rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:currentFont inWidth:NULL].width + currentAnchor;
 
-        switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
+        switch (currentCharCode)
         {
             case CPAttachmentCharacter:
             {
@@ -449,6 +441,7 @@ var CPSystemTypesetterFactory,
             }
             case 9: // '\t'
             {
+                // Measure against the actual text position before the tab stop
                 var nextTab = [self textTabForWidth:prevRangeWidth + lineOrigin.x writingDirection:0];
 
                 isTabStop = YES;
@@ -506,10 +499,6 @@ var CPSystemTypesetterFactory,
                 wrapRange._height = _lineHeight;
                 wrapRange._base = _lineBase;
                 
-                // Optimization: Start measuring from the next character to avoid O(n^2) 
-                // string width calculation within a line since spaces do not carry ligatures or kerning.
-                // Only reset the measuring range if the next character is NOT another space.
-                // This prevents compounded subpixel rounding errors with contiguous spaces.
                 if (theString.charCodeAt(glyphIndex + 1) !== 32)
                 {
                     currentAnchor = rangeWidth;
@@ -539,7 +528,7 @@ var CPSystemTypesetterFactory,
 
             isNewline = YES;
             isWordWrapped = YES;
-            glyphIndex = CPMaxRange(lineRange) - 1;  // start the line starts directly at current character
+            glyphIndex = CPMaxRange(lineRange) - 1;
         }
 
         if (isNewline || isTabStop || isAttachment)
@@ -571,8 +560,6 @@ var CPSystemTypesetterFactory,
                     containerSizeHeight = containerSize.height;
                 }
 
-                // If this is a soft wrap (isWordWrapped), next line gets headIndent. 
-                // If it was a paragraph return, it gets firstLineHeadIndent.
                 isFirstLineOfParagraph = !isWordWrapped;
                 lineOrigin.x = isFirstLineOfParagraph ? [_currentParagraph firstLineHeadIndent] : [_currentParagraph headIndent];
 
@@ -598,7 +585,7 @@ var CPSystemTypesetterFactory,
         }
     }
 
-    // this is to "flush" the remaining characters
+    // Flush remaining characters
     if (lineRange.length)
         [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:NO];
 
