@@ -50601,7 +50601,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("values"), function $CAK
 
 ,["id"])]);
 }
-p;9;CALayer.jt;42254;@STATIC;1.0;I;21;Foundation/CPObject.jI;22;Foundation/CPRunLoop.ji;16;CABackingStore.ji;11;CGContext.ji;12;CGGeometry.ji;9;CPColor.ji;8;CPView.ji;23;CAMediaTimingFunction.jt;42074;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("CABackingStore.j", YES);objj_executeFile("CGContext.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CAMediaTimingFunction.j", YES);var CALayerGeometryBoundsMask = 1,
+p;9;CALayer.jt;42270;@STATIC;1.0;I;21;Foundation/CPObject.jI;22;Foundation/CPRunLoop.ji;16;CABackingStore.ji;11;CGContext.ji;12;CGGeometry.ji;9;CPColor.ji;8;CPView.ji;23;CAMediaTimingFunction.jt;42090;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("CABackingStore.j", YES);objj_executeFile("CGContext.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CAMediaTimingFunction.j", YES);var CALayerGeometryBoundsMask = 1,
     CALayerGeometryPositionMask = 2,
     CALayerGeometryAnchorPointMask = 4,
     CALayerGeometryAffineTransformMask = 8,
@@ -50933,7 +50933,6 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CALay
         (aLayer == null ? aLayer : (aLayer.isa.method_msgSend["removeFromSuperlayer"] || _objj_forward)(aLayer, "removeFromSuperlayer"));
     if (self._DOMContentsElement && aLayer._zPosition > self._DOMContentsElement.style.zIndex)
         self._DOMContentsElement.style.zIndex -= 100.0;
-;
     ((___r1 = self._sublayers), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["insertObject:atIndex:"] || _objj_forward)(___r1, "insertObject:atIndex:", aLayer, anIndex));
     aLayer._superlayer = self;
     if (self != superlayer)
@@ -50968,9 +50967,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CALay
     }
     if (self._DOMContentsElement && aLayer._zPosition > self._DOMContentsElement.style.zIndex)
         self._DOMContentsElement.style.zIndex -= 100.0;
-;
     ((___r1 = self._sublayers), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["replaceObjectAtIndex:withObject:"] || _objj_forward)(___r1, "replaceObjectAtIndex:withObject:", ((___r2 = self._sublayers), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["indexOfObjectIdenticalTo:"] || _objj_forward)(___r2, "indexOfObjectIdenticalTo:", aSublayer)), aLayer));
-    self._DOMElement.replaceChild(aSublayer._DOMElement, aLayer._DOMElement);
+    self._DOMElement.replaceChild(aLayer._DOMElement, aSublayer._DOMElement);
     var ___r1, ___r2;
 }
 
@@ -51322,8 +51320,8 @@ _CALayerRecalculateGeometry = function(aLayer, aGeometryChange)
     aLayer._standardBackingStoreFrame = (aLayer == null ? aLayer : (aLayer.isa.method_msgSend["convertRect:toLayer:"] || _objj_forward)(aLayer, "convertRect:toLayer:", bounds, nil));
     if (superlayer)
     {
-        var bounds = (superlayer == null ? superlayer : (superlayer.isa.method_msgSend["bounds"] || _objj_forward)(superlayer, "bounds")),
-            frame = (superlayer == null ? superlayer : (superlayer.isa.method_msgSend["convertRect:toLayer:"] || _objj_forward)(superlayer, "convertRect:toLayer:", bounds, nil));
+        var superlayerBounds = (superlayer == null ? superlayer : (superlayer.isa.method_msgSend["bounds"] || _objj_forward)(superlayer, "bounds")),
+            frame = (superlayer == null ? superlayer : (superlayer.isa.method_msgSend["convertRect:toLayer:"] || _objj_forward)(superlayer, "convertRect:toLayer:", superlayerBounds, nil));
         aLayer._standardBackingStoreFrame.origin.x -= CGRectGetMinX(frame);
         aLayer._standardBackingStoreFrame.origin.y -= CGRectGetMinY(frame);
     }
