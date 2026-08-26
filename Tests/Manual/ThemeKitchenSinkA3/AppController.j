@@ -691,7 +691,9 @@
     [textView setFont:[CPFont fontWithName:@"Courier" size:13.0]];
 
     [textScroll setDocumentView:textView];
-    
+    // Synchronize the ruler with the text view on setup
+    [textView updateRuler];
+
     [splitView addSubview:topPaneWrapper];
     [splitView addSubview:textScroll];
 
