@@ -61,16 +61,36 @@ CPRulerOrientationVertical = 1;
         
         _label = [[CPTextField alloc] initWithFrame:CGRectMake(0, 0, 12, 12)];
         [_label setFont:[CPFont systemFontOfSize:10.0]];
-        [_label setTextColor:[CPColor colorWithWhite:0.2 alpha:1.0]];
         [_label setAlignment:CPCenterTextAlignment];
         [self addSubview:_label];
         
         _customHandleView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
         [self addSubview:_customHandleView];
         
+        // Inherit HUD state from ruler if present
+        if ([aRulerView hasThemeState:CPThemeStateHUD])
+            [self setThemeState:CPThemeStateHUD];
+
         [self updateMarkerIcon];
     }
     return self;
+}
+
+- (BOOL)isHUD
+{
+    return [self hasThemeState:CPThemeStateHUD] || (_rulerView && [_rulerView hasThemeState:CPThemeStateHUD]);
+}
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    [self updateMarkerIcon];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    [self updateMarkerIcon];
 }
 
 - (CPTextField)label
@@ -94,7 +114,8 @@ CPRulerOrientationVertical = 1;
 // or draws custom split-height grab handles for indentation controls.
 - (void)updateMarkerIcon
 {
-    var isIndentMarker = (_representedObject === @"CPFirstLineIndent" || _representedObject === @"CPHeadIndent");
+    var isHUD = [self isHUD],
+        isIndentMarker = (_representedObject === @"CPFirstLineIndent" || _representedObject === @"CPHeadIndent");
     
     if (isIndentMarker)
     {
@@ -109,22 +130,39 @@ CPRulerOrientationVertical = 1;
         
         var isFirstLine = (_representedObject === @"CPFirstLineIndent");
         
-        // Dark outline/border representation
-        [_customHandleView setBackgroundColor:[CPColor colorWithWhite:0.5 alpha:1.0]];
+        // Border outline
+        if (isHUD)
+            [_customHandleView setBackgroundColor:[CPColor colorWithWhite:0.12 alpha:1.0]];
+        else
+            [_customHandleView setBackgroundColor:[CPColor colorWithWhite:0.5 alpha:1.0]];
         
-        // Inner fill (top handle is lighter, bottom is slightly darker)
+        // Inner fill
         var innerView = [[CPView alloc] initWithFrame:CGRectMake(1.0, 1.0, frame.size.width - 2.0, frame.size.height - 2.0)];
 
-        if (isFirstLine)
-            [innerView setBackgroundColor:[CPColor colorWithWhite:0.92 alpha:1.0]];
+        if (isHUD)
+        {
+            if (isFirstLine)
+                [innerView setBackgroundColor:[CPColor colorWithWhite:0.38 alpha:1.0]];
+            else
+                [innerView setBackgroundColor:[CPColor colorWithWhite:0.28 alpha:1.0]];
+        }
         else
-            [innerView setBackgroundColor:[CPColor colorWithWhite:0.80 alpha:1.0]];
+        {
+            if (isFirstLine)
+                [innerView setBackgroundColor:[CPColor colorWithWhite:0.92 alpha:1.0]];
+            else
+                [innerView setBackgroundColor:[CPColor colorWithWhite:0.80 alpha:1.0]];
+        }
 
         [_customHandleView addSubview:innerView];
         
-        // Horizontal indicator line to visually guide drag interactions
+        // Horizontal indicator grip line
         var gripLine = [[CPView alloc] initWithFrame:CGRectMake(Math.floor(frame.size.width / 2.0) - 1.0, 2.0, 1.0, frame.size.height - 4.0)];
-        [gripLine setBackgroundColor:[CPColor colorWithWhite:0.6 alpha:1.0]];
+        if (isHUD)
+            [gripLine setBackgroundColor:[CPColor colorWithWhite:0.65 alpha:1.0]];
+        else
+            [gripLine setBackgroundColor:[CPColor colorWithWhite:0.60 alpha:1.0]];
+
         [innerView addSubview:gripLine];
     }
     else
@@ -132,6 +170,12 @@ CPRulerOrientationVertical = 1;
         [_label setHidden:NO];
         [_customHandleView setHidden:YES];
         [_label setFrame:[self bounds]];
+
+        // Label color adapted to HUD state
+        if (isHUD)
+            [_label setTextColor:[CPColor colorWithWhite:0.92 alpha:1.0]];
+        else
+            [_label setTextColor:[CPColor colorWithWhite:0.2 alpha:1.0]];
         
         if ([_representedObject isKindOfClass:[CPTextTab class]])
         {
@@ -146,16 +190,17 @@ CPRulerOrientationVertical = 1;
         else if ([_representedObject isKindOfClass:[CPString class]])
         {
             if (_representedObject === @"CPTailIndent")
-                [_label setStringValue:@"⥘"]; // Solid downward triangle for tail indent
+                [_label setStringValue:@"⥘"];
             else
-                [_label setStringValue:@"⇡"]; // Fallback standard up marker
+                [_label setStringValue:@"⇡"];
         }
         else
         {
-            [_label setStringValue:@"⇡"]; // Fallback standard up marker
+            [_label setStringValue:@"⇡"];
         }
     }
 }
+
 // MARK: -
 // MARK: Context Menu Support
 
@@ -163,7 +208,6 @@ CPRulerOrientationVertical = 1;
 {
     var menu = [[CPMenu alloc] initWithTitle:@"Marker Context Menu"];
     
-    // If the marker represents a standard tab stop, allow changing its type
     if ([_representedObject isKindOfClass:[CPTextTab class]])
     {
         var itemLeft = [menu addItemWithTitle:@"Left Tab Stop" action:@selector(changeTypeToLeft:) keyEquivalent:@""],
@@ -182,7 +226,6 @@ CPRulerOrientationVertical = 1;
         [menu addItem:[CPMenuItem separatorItem]];
     }
     
-    // Determine the context-specific delete title
     var deleteTitle = @"Delete Tab Stop";
     if ([_representedObject isKindOfClass:[CPString class]])
     {
@@ -223,7 +266,6 @@ CPRulerOrientationVertical = 1;
     var oldTab = _representedObject;
     var newTab = [[CPTextTab alloc] initWithType:alignment location:_imageValue];
     
-    // Using setRepresentedObject: automatically updates the marker triangle direction
     [self setRepresentedObject:newTab];
     
     var client = [_rulerView clientView];
@@ -281,6 +323,27 @@ CPRulerOrientationVertical = 1;
     return self;
 }
 
+- (BOOL)isHUD
+{
+    return [self hasThemeState:CPThemeStateHUD];
+}
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    for (var i = 0; i < [_markers count]; i++)
+        [[_markers objectAtIndex:i] setThemeState:aState];
+    [self updateRuler];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    for (var i = 0; i < [_markers count]; i++)
+        [[_markers objectAtIndex:i] unsetThemeState:aState];
+    [self updateRuler];
+}
+
 - (void)setFrame:(CGRect)aFrame
 {
     [super setFrame:aFrame];
@@ -293,6 +356,9 @@ CPRulerOrientationVertical = 1;
     if ([_markers containsObject:aMarker])
         return;
         
+    if ([self hasThemeState:CPThemeStateHUD])
+        [aMarker setThemeState:CPThemeStateHUD];
+
     [_markers addObject:aMarker];
     [self addSubview:aMarker];
     [self _positionMarker:aMarker];
@@ -310,10 +376,13 @@ CPRulerOrientationVertical = 1;
         [[_markers objectAtIndex:i] removeFromSuperview];
     
     _markers = [newMarkers mutableCopy];
+    var isHUD = [self hasThemeState:CPThemeStateHUD];
     
     for (var i = 0; i < [_markers count]; i++)
     {
         var marker = [_markers objectAtIndex:i];
+        if (isHUD)
+            [marker setThemeState:CPThemeStateHUD];
         [self addSubview:marker];
         [self _positionMarker:marker];
     }
@@ -344,12 +413,11 @@ CPRulerOrientationVertical = 1;
 
     if (isHorizontal)
     {
-        var x = markerLocation - scrollPoint.x - 6.0, // Center the 12px wide marker
+        var x = markerLocation - scrollPoint.x - 6.0,
             y = rulerHeight - 11.0,
             w = 12.0,
             h = 12.0;
             
-        // Align the First Line Indent (upper half) and Head Indent (lower half) controls
         if ([aMarker representedObject] === @"CPFirstLineIndent")
         {
             y = 0.0;
@@ -358,11 +426,10 @@ CPRulerOrientationVertical = 1;
         else if ([aMarker representedObject] === @"CPHeadIndent")
         {
             y = Math.floor(rulerHeight / 2.0);
-            h = rulerHeight - y - 1.0; // Subtract 1px to stay cleanly above bottom border
+            h = rulerHeight - y - 1.0;
         }
         else
         {
-            // Keep normal horizontal markers within the bounds of the ruler to prevent clipping
             if (x < 0.0)
                 x = 0.0;
             else if (x + 12.0 > rulerWidth)
@@ -376,7 +443,6 @@ CPRulerOrientationVertical = 1;
         var x = rulerWidth - 11.0,
             y = markerLocation - scrollPoint.y - 6.0;
             
-        // Keep vertical marker within the bounds of the ruler to prevent clipping
         if (y < 0.0)
             y = 0.0;
         else if (y + 12.0 > rulerHeight)
@@ -400,7 +466,6 @@ CPRulerOrientationVertical = 1;
 
     var rulerLocation = isHorizontal ? (localPoint.x + scrollPoint.x) : (localPoint.y + scrollPoint.y);
 
-    // 1. Check if clicked an existing marker
     var clickedMarker = [self _markerAtPoint:localPoint];
     if (clickedMarker)
     {
@@ -408,7 +473,6 @@ CPRulerOrientationVertical = 1;
         _dragStartPoint = localPoint;
         _dragStartLocation = [_draggingMarker imageValue];
     }
-    // 2. Otherwise, create a new marker dynamically where the user clicked
     else
     {
         var newMarker = [[CPRulerMarker alloc] initWithRulerView:self 
@@ -417,7 +481,6 @@ CPRulerOrientationVertical = 1;
                                                representedObject:nil];
         [self addMarker:newMarker];
         
-        // Notify the client view (e.g., CPTextView) that a new marker was added
         var client = [self clientView];
         if (client && [client respondsToSelector:@selector(rulerView:didAddMarker:)])
             [client rulerView:self didAddMarker:newMarker];
@@ -443,28 +506,25 @@ CPRulerOrientationVertical = 1;
     if (newLocation < 0) newLocation = 0;
 
     [_draggingMarker setImageValue:newLocation];
-    
-    // Smoothly redraw ruler and margin bounds on every drag step
     [self updateRuler];
     
-    // Check if dragged off the ruler (more than 15px off the boundary)
     var draggedOff = isHorizontal ? (localPoint.y < -15 || localPoint.y > CGRectGetHeight([self bounds]) + 15)
                                   : (localPoint.x < -15 || localPoint.x > CGRectGetWidth([self bounds]) + 15);
 
     if (draggedOff)
     {
-        // Visual feedback: Dim the handle to 40% and turn the triangle icon gray
-        [_draggingMarker setAlphaValue:0.4];
+        [_draggingMarker setAlphaValue:0.35];
         [[_draggingMarker label] setTextColor:[CPColor grayColor]];
     }
     else
     {
-        // Restore standard styling when dragged back into the active strip
         [_draggingMarker setAlphaValue:1.0];
-        [[_draggingMarker label] setTextColor:[CPColor colorWithWhite:0.2 alpha:1.0]];
+        if ([self isHUD])
+            [[_draggingMarker label] setTextColor:[CPColor colorWithWhite:0.92 alpha:1.0]];
+        else
+            [[_draggingMarker label] setTextColor:[CPColor colorWithWhite:0.2 alpha:1.0]];
     }
     
-    // Notify the CPTextView that the marker coordinates shifted
     var client = [self clientView];
     if (client && [client respondsToSelector:@selector(rulerView:didMoveMarker:)])
         [client rulerView:self didMoveMarker:_draggingMarker];
@@ -477,8 +537,6 @@ CPRulerOrientationVertical = 1;
 
     var localPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil],
         isHorizontal = (_orientation === CPHorizontalRuler || _orientation === CPRulerOrientationHorizontal),
-        
-        // If dragged more than 15 pixels off the ruler, delete the marker
         draggedOff = isHorizontal ? (localPoint.y < -15 || localPoint.y > CGRectGetHeight([self bounds]) + 15)
                                   : (localPoint.x < -15 || localPoint.x > CGRectGetWidth([self bounds]) + 15);
 
@@ -492,9 +550,11 @@ CPRulerOrientationVertical = 1;
     }
     else
     {
-        // Ensure marker style is fully restored if not deleted
         [_draggingMarker setAlphaValue:1.0];
-        [[_draggingMarker label] setTextColor:[CPColor colorWithWhite:0.2 alpha:1.0]];
+        if ([self isHUD])
+            [[_draggingMarker label] setTextColor:[CPColor colorWithWhite:0.92 alpha:1.0]];
+        else
+            [[_draggingMarker label] setTextColor:[CPColor colorWithWhite:0.2 alpha:1.0]];
     }
     
     _draggingMarker = nil;
@@ -513,6 +573,14 @@ CPRulerOrientationVertical = 1;
     if (!_scrollView)
         return;
 
+    var isHUD = [self isHUD];
+
+    // Update ruler base background color
+    if (isHUD)
+        [self setBackgroundColor:[CPColor colorWithWhite:0.18 alpha:1.0]];
+    else
+        [self setBackgroundColor:[CPColor colorWithWhite:0.96 alpha:1.0]];
+
     var clipView = [_scrollView contentView],
         scrollBounds = [clipView bounds],
         scrollPoint = scrollBounds.origin,
@@ -526,12 +594,15 @@ CPRulerOrientationVertical = 1;
             rulerHeight = CGRectGetHeight([self bounds]),
             rulerWidth = CGRectGetWidth([self bounds]);
 
-        // Draw solid horizontal bottom border (pure, razor-sharp CSS DOM view)
+        // Bottom border
         var bottomBorder = [[CPView alloc] initWithFrame:CGRectMake(0, rulerHeight - 1, rulerWidth, 1)];
-        [bottomBorder setBackgroundColor:[CPColor colorWithWhite:0.75 alpha:1.0]];
+        if (isHUD)
+            [bottomBorder setBackgroundColor:[CPColor colorWithWhite:0.10 alpha:1.0]];
+        else
+            [bottomBorder setBackgroundColor:[CPColor colorWithWhite:0.75 alpha:1.0]];
         [self addSubview:bottomBorder];
 
-        // Find indent markers to determine background highlight boundaries
+        // Find indent markers to draw background margin bands
         var firstLineMarker = nil,
             headMarker = nil;
         for (var i = 0; i < [_markers count]; i++)
@@ -545,31 +616,37 @@ CPRulerOrientationVertical = 1;
 
         var halfHeight = Math.floor(rulerHeight / 2.0);
 
-        // Draw First Line Indent background - top half (lighter gray)
+        // Draw First Line Indent background - top half
         if (firstLineMarker)
         {
             var firstLineX = [firstLineMarker imageValue] - scrollPoint.x;
             if (firstLineX > 0)
             {
                 var firstLineBg = [[CPView alloc] initWithFrame:CGRectMake(0, 0, firstLineX, halfHeight)];
-                [firstLineBg setBackgroundColor:[CPColor colorWithWhite:0.93 alpha:1.0]];
+                if (isHUD)
+                    [firstLineBg setBackgroundColor:[CPColor colorWithWhite:0.24 alpha:1.0]];
+                else
+                    [firstLineBg setBackgroundColor:[CPColor colorWithWhite:0.93 alpha:1.0]];
                 [self addSubview:firstLineBg];
             }
         }
 
-        // Draw Head Indent background - bottom half (slightly darker gray)
+        // Draw Head Indent background - bottom half
         if (headMarker)
         {
             var headX = [headMarker imageValue] - scrollPoint.x;
             if (headX > 0)
             {
                 var headBg = [[CPView alloc] initWithFrame:CGRectMake(0, halfHeight, headX, rulerHeight - halfHeight - 1.0)];
-                [headBg setBackgroundColor:[CPColor colorWithWhite:0.86 alpha:1.0]];
+                if (isHUD)
+                    [headBg setBackgroundColor:[CPColor colorWithWhite:0.28 alpha:1.0]];
+                else
+                    [headBg setBackgroundColor:[CPColor colorWithWhite:0.86 alpha:1.0]];
                 [self addSubview:headBg];
             }
         }
 
-        // Render ruler tick lines and labels on top of shaded areas
+        // Render ruler tick lines and labels
         for (var val = start; val <= end; val += 10)
         {
             if (val < 0) continue;
@@ -579,18 +656,18 @@ CPRulerOrientationVertical = 1;
                 tickHeight = isMajor ? 8.0 : 4.0,
                 tickY = rulerHeight - tickHeight - 1.0;
 
-            // Tick mark CSS line view
             var tick = [[CPView alloc] initWithFrame:CGRectMake(screenX, tickY, 1.0, tickHeight)];
-            [tick setBackgroundColor:[CPColor colorWithWhite:0.65 alpha:1.0]];
+            if (isHUD)
+                [tick setBackgroundColor:isMajor ? [CPColor colorWithWhite:0.60 alpha:1.0] : [CPColor colorWithWhite:0.40 alpha:1.0]];
+            else
+                [tick setBackgroundColor:[CPColor colorWithWhite:0.65 alpha:1.0]];
             [self addSubview:tick];
 
-            // Unit label
             if (isMajor)
             {
                 var labelX = screenX - 20.0,
                     alignment = CPCenterTextAlignment;
 
-                // Adjust label frame and alignment if it lands near left/right bounds
                 if (labelX < 0.0)
                 {
                     labelX = Math.max(0.0, screenX);
@@ -605,7 +682,10 @@ CPRulerOrientationVertical = 1;
                 var label = [[CPTextField alloc] initWithFrame:CGRectMake(labelX, 1.0, 40.0, 12.0)];
                 [label setStringValue:[CPString stringWithFormat:@"%d", val]];
                 [label setFont:[CPFont systemFontOfSize:8.0]];
-                [label setTextColor:[CPColor colorWithWhite:0.4 alpha:1.0]];
+                if (isHUD)
+                    [label setTextColor:[CPColor colorWithWhite:0.75 alpha:1.0]];
+                else
+                    [label setTextColor:[CPColor colorWithWhite:0.40 alpha:1.0]];
                 [label setAlignment:alignment];
                 [self addSubview:label];
             }
@@ -619,9 +699,11 @@ CPRulerOrientationVertical = 1;
             rulerHeight = CGRectGetHeight([self bounds]),
             rulerWidth = CGRectGetWidth([self bounds]);
 
-        // Draw solid vertical right border (pure DOM)
         var rightBorder = [[CPView alloc] initWithFrame:CGRectMake(rulerWidth - 1, 0, 1, rulerHeight)];
-        [rightBorder setBackgroundColor:[CPColor colorWithWhite:0.75 alpha:1.0]];
+        if (isHUD)
+            [rightBorder setBackgroundColor:[CPColor colorWithWhite:0.10 alpha:1.0]];
+        else
+            [rightBorder setBackgroundColor:[CPColor colorWithWhite:0.75 alpha:1.0]];
         [self addSubview:rightBorder];
 
         for (var val = start; val <= end; val += 10)
@@ -633,17 +715,17 @@ CPRulerOrientationVertical = 1;
                 tickWidth = isMajor ? 8.0 : 4.0,
                 tickX = rulerWidth - tickWidth - 1.0;
 
-            // Tick mark CSS line view
             var tick = [[CPView alloc] initWithFrame:CGRectMake(tickX, screenY, tickWidth, 1.0)];
-            [tick setBackgroundColor:[CPColor colorWithWhite:0.65 alpha:1.0]];
+            if (isHUD)
+                [tick setBackgroundColor:isMajor ? [CPColor colorWithWhite:0.60 alpha:1.0] : [CPColor colorWithWhite:0.40 alpha:1.0]];
+            else
+                [tick setBackgroundColor:[CPColor colorWithWhite:0.65 alpha:1.0]];
             [self addSubview:tick];
 
-            // Unit label
             if (isMajor)
             {
                 var labelY = screenY - 6.0;
 
-                // Adjust label frame if it lands near top/bottom bounds
                 if (labelY < 0.0)
                     labelY = 0.0;
                 else if (labelY + 12.0 > rulerHeight)
@@ -652,17 +734,25 @@ CPRulerOrientationVertical = 1;
                 var label = [[CPTextField alloc] initWithFrame:CGRectMake(1.0, labelY, rulerWidth - 12.0, 12.0)];
                 [label setStringValue:[CPString stringWithFormat:@"%d", val]];
                 [label setFont:[CPFont systemFontOfSize:8.0]];
-                [label setTextColor:[CPColor colorWithWhite:0.4 alpha:1.0]];
+                if (isHUD)
+                    [label setTextColor:[CPColor colorWithWhite:0.75 alpha:1.0]];
+                else
+                    [label setTextColor:[CPColor colorWithWhite:0.40 alpha:1.0]];
                 [label setAlignment:CPRightTextAlignment];
                 [self addSubview:label];
             }
         }
     }
 
-    // Reposition and display active markers
+    // Reposition active markers and keep their theme in sync
     for (var i = 0; i < [_markers count]; i++)
     {
         var marker = [_markers objectAtIndex:i];
+        if (isHUD)
+            [marker setThemeState:CPThemeStateHUD];
+        else
+            [marker unsetThemeState:CPThemeStateHUD];
+
         if ([marker superview] !== self)
             [self addSubview:marker];
         [self _positionMarker:marker];
