@@ -141,31 +141,34 @@ var CPSystemTypesetterFactory,
 // Retrieves correct CPTextTab stop accounting for CPArray properties
 - (CPTextTab)textTabForWidth:(double)aWidth writingDirection:(CPWritingDirection)direction
 {
-    var tabStops = [_currentParagraph tabStops];
+    var tabStops = [_currentParagraph tabStops],
+        defaultInterval = [_currentParagraph defaultTabInterval] || 28.0;
 
-    if (!tabStops)
-        tabStops = [[CPParagraphStyle defaultParagraphStyle] tabStops];
+    // Calculate the immediate next standard tab stop location based on defaultInterval
+    var nextDefaultLocation = (Math.floor(aWidth / defaultInterval) + 1) * defaultInterval;
 
-    var l = [tabStops count];
-
-    if (l === 0)
-        return nil;
-
-    // Find the first tab stop that is strictly greater than the current width
-    for (var i = 0; i < l; i++)
+    // Search for the first custom tab stop strictly greater than aWidth
+    var nextCustomTab = nil;
+    if (tabStops)
     {
-        var tab = [tabStops objectAtIndex:i];
-
-        if ([tab location] > aWidth)
-            return tab;
+        var l = [tabStops count];
+        for (var i = 0; i < l; i++)
+        {
+            var tab = [tabStops objectAtIndex:i];
+            if ([tab location] > aWidth)
+            {
+                nextCustomTab = tab;
+                break;
+            }
+        }
     }
 
-    // If aWidth exceeds the last tab stop, dynamically calculate the next
-    // tab location using the default tab interval.
-    var defaultInterval = [_currentParagraph defaultTabInterval] || 28.0;
-    var nextLocation = CEIL((aWidth + 1.0) / defaultInterval) * defaultInterval;
+    // If a custom tab stop exists and is closer than (or at) the next default interval, use it
+    if (nextCustomTab && [nextCustomTab location] <= nextDefaultLocation)
+        return nextCustomTab;
 
-    return [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:nextLocation];
+    // Otherwise, snap to the immediate next regular tab interval
+    return [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:nextDefaultLocation];
 }
 
 - (BOOL)_flushRange:(CPRange)lineRange
@@ -327,15 +330,6 @@ var CPSystemTypesetterFactory,
                 lineOrigin.x = isFirstLineOfParagraph ? [_currentParagraph firstLineHeadIndent] : [_currentParagraph headIndent];
                 isFirstLineOfLayout = NO;
             }
-        
-            // Calculate the right wrapping margin based on tail indent
-            var tailIndent = [_currentParagraph tailIndent];
-            if (tailIndent > 0.0)
-                rightMargin = tailIndent;
-            else if (tailIndent < 0.0)
-                rightMargin = containerSizeWidth + tailIndent;
-            else
-                rightMargin = containerSizeWidth;
 
             // Handle the layout's very first line indentation
             if (isFirstLineOfLayout)
@@ -454,7 +448,7 @@ var CPSystemTypesetterFactory,
             }
             case 9: // '\t'
             {
-                var nextTab = [self textTabForWidth:rangeWidth + lineOrigin.x writingDirection:0];
+                var nextTab = [self textTabForWidth:prevRangeWidth + lineOrigin.x writingDirection:0];
 
                 isTabStop = YES;
 
@@ -501,7 +495,7 @@ var CPSystemTypesetterFactory,
                 }
                 else
                 {
-                    rangeWidth += 28.0; // standard fallback spacer
+                    rangeWidth = prevRangeWidth + 28.0; // standard fallback spacer
                 }
                 break;
             }
