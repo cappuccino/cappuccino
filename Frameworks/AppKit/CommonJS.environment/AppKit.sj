@@ -50407,41 +50407,23 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("group"), function $CAA
 
 ,["id"])]);
 }
-p;16;CABackingStore.jt;1095;@STATIC;1.0;i;12;CGGeometry.ji;17;CPCompatibility.jt;1037;objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPCompatibility.j", YES);CABackingStoreGetContext = function(aBackingStore)
+p;16;CABackingStore.jt;650;@STATIC;1.0;i;12;CGGeometry.jt;615;objj_executeFile("CGGeometry.j", YES);CABackingStoreGetContext = function(aBackingStore)
 {
     return aBackingStore.context;
 }
-;
-if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
+CABackingStoreCreate = function()
 {
-    CABackingStoreCreate =     function()
-    {
-        var DOMElement = document.createElement("canvas");
-        DOMElement.style.position = "absolute";
-        return {context: DOMElement.getContext("2d"), buffer: DOMElement, _image: DOMElement};
-    };
-    CABackingStoreSetSize =     function(aBackingStore, aSize)
-    {
-        var buffer = aBackingStore.buffer;
-        buffer.width = aSize.width;
-        buffer.height = aSize.height;
-        buffer.style.width = aSize.width + "px";
-;
-        buffer.style.height = aSize.height + "px";
-;
-    };
+    const DOMElement = document.createElement("canvas");
+    DOMElement.style.position = "absolute";
+    return {context: DOMElement.getContext("2d"), buffer: DOMElement, _image: DOMElement};
 }
-else
+CABackingStoreSetSize = function(aBackingStore, aSize)
 {
-    CABackingStoreCreate =     function()
-    {
-        var context = CGBitmapGraphicsContextCreate();
-        context.buffer = "";
-        return {context: context};
-    };
-    CABackingStoreSetSize =     function(aBackingStore, aSize)
-    {
-    };
+    const buffer = aBackingStore.buffer;
+    buffer.width = aSize.width;
+    buffer.height = aSize.height;
+    buffer.style.width = aSize.width + "px";
+    buffer.style.height = aSize.height + "px";
 }
 p;18;CABasicAnimation.jt;1629;@STATIC;1.0;I;21;Foundation/CPObject.ji;21;CAPropertyAnimation.jt;1558;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CAPropertyAnimation.j", YES);
 {var the_class = objj_allocateClassPair(CAPropertyAnimation, "CABasicAnimation"),
