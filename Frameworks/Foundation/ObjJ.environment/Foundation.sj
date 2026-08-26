@@ -10693,6 +10693,491 @@ var _CPKVOInfoMake = function(anObserver, theOptions, aContext, aForwarder)
 {
     return {observer: anObserver, options: theOptions, context: aContext, forwarder: aForwarder};
 };
+p;17;CPLanguageModel.jt;27581;@STATIC;1.0;i;10;CPObject.ji;10;CPString.ji;9;CPError.ji;14;CPDictionary.ji;10;CPBundle.ji;16;CPUserDefaults.jt;27463;objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);objj_executeFile("CPError.j", YES);objj_executeFile("CPDictionary.j", YES);objj_executeFile("CPBundle.j", YES);objj_executeFile("CPUserDefaults.j", YES);var CPLanguageModelSessionFallbackServiceType = "ollama",
+    CPLanguageModelSessionFallbackEndpoint = "http://localhost:11434/api/generate",
+    CPLanguageModelSessionFallbackModel = "gemma4:e4b",
+    CPLanguageModelSessionFallbackAPIKey = "",
+    CPLanguageModelSessionFallbackAPIKeyUserDefaultKey = "",
+    CPLanguageModelSessionEndorsesFallback = NO;
+
+{var the_class = objj_allocateClassPair(CPObject, "CPSystemLanguageModel"),
+meta_class = the_class.isa;var sharedInstance = nil;
+objj_registerClassPair(the_class);
+class_addMethods(the_class, [new objj_method(sel_getUid("supportsLocaleWithCompletionHandler:"), function $CPSystemLanguageModel__supportsLocaleWithCompletionHandler_(self, _cmd, completionHandler)
+{
+    if (typeof window === "undefined" || !completionHandler)
+    {
+        if (completionHandler)
+            completionHandler(NO);
+        return;
+    }
+    (    async function()
+    {
+        var supported = false;
+        try {
+            if (window.ai && window.ai.languageModel)
+            {
+                var options = {expectedInputs: [{type: "text", languages: ["en"]}], expectedOutputs: [{type: "text", languages: ["en"]}]};
+                if (typeof window.ai.languageModel.availability === 'function')
+                {
+                    var avail = await (window.ai.languageModel.availability(options));
+                    supported = avail === "readily" || avail === "available" || avail === "after-download";
+                }
+                else if (typeof window.ai.languageModel.capabilities === 'function')
+                {
+                    var caps = await (window.ai.languageModel.capabilities(options));
+                    supported = caps.available === "readily" || caps.available === "after-download";
+                }
+                else
+                {
+                    supported = true;
+                }
+            }
+            else if (window.LanguageModel)
+            {
+                supported = true;
+            }
+        }
+        catch(e) {
+            supported = false;
+        }
+        completionHandler(supported);
+    })();
+}
+
+,["void","Function"])]);
+class_addMethods(meta_class, [new objj_method(sel_getUid("defaultModel"), function $CPSystemLanguageModel__defaultModel(self, _cmd)
+{
+    if (!sharedInstance)
+        sharedInstance = ((___r1 = (CPSystemLanguageModel.isa.method_msgSend["alloc"] || _objj_forward)(CPSystemLanguageModel, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
+    return sharedInstance;
+    var ___r1;
+}
+
+,["id"])]);
+}
+
+{var the_class = objj_allocateClassPair(CPObject, "CPLanguageModelSession"),
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_chromeSession", "id"), new objj_ivar("_instructions", "CPString"), new objj_ivar("_fallbackServiceType", "CPString"), new objj_ivar("_fallbackEndpoint", "CPString"), new objj_ivar("_fallbackModel", "CPString"), new objj_ivar("_fallbackAPIKey", "CPString")]);objj_registerClassPair(the_class);
+class_addMethods(the_class, [new objj_method(sel_getUid("chromeSession"), function $CPLanguageModelSession__chromeSession(self, _cmd)
+{
+    return self._chromeSession;
+}
+
+,["id"]), new objj_method(sel_getUid("setChromeSession:"), function $CPLanguageModelSession__setChromeSession_(self, _cmd, newValue)
+{
+    self._chromeSession = newValue;
+}
+
+,["void","id"]), new objj_method(sel_getUid("instructions"), function $CPLanguageModelSession__instructions(self, _cmd)
+{
+    return self._instructions;
+}
+
+,["CPString"]), new objj_method(sel_getUid("setInstructions:"), function $CPLanguageModelSession__setInstructions_(self, _cmd, newValue)
+{
+    self._instructions = newValue;
+}
+
+,["void","CPString"]), new objj_method(sel_getUid("fallbackServiceType"), function $CPLanguageModelSession__fallbackServiceType(self, _cmd)
+{
+    return self._fallbackServiceType;
+}
+
+,["CPString"]), new objj_method(sel_getUid("setFallbackServiceType:"), function $CPLanguageModelSession__setFallbackServiceType_(self, _cmd, newValue)
+{
+    self._fallbackServiceType = newValue;
+}
+
+,["void","CPString"]), new objj_method(sel_getUid("fallbackEndpoint"), function $CPLanguageModelSession__fallbackEndpoint(self, _cmd)
+{
+    return self._fallbackEndpoint;
+}
+
+,["CPString"]), new objj_method(sel_getUid("setFallbackEndpoint:"), function $CPLanguageModelSession__setFallbackEndpoint_(self, _cmd, newValue)
+{
+    self._fallbackEndpoint = newValue;
+}
+
+,["void","CPString"]), new objj_method(sel_getUid("fallbackModel"), function $CPLanguageModelSession__fallbackModel(self, _cmd)
+{
+    return self._fallbackModel;
+}
+
+,["CPString"]), new objj_method(sel_getUid("setFallbackModel:"), function $CPLanguageModelSession__setFallbackModel_(self, _cmd, newValue)
+{
+    self._fallbackModel = newValue;
+}
+
+,["void","CPString"]), new objj_method(sel_getUid("fallbackAPIKey"), function $CPLanguageModelSession__fallbackAPIKey(self, _cmd)
+{
+    return self._fallbackAPIKey;
+}
+
+,["CPString"]), new objj_method(sel_getUid("setFallbackAPIKey:"), function $CPLanguageModelSession__setFallbackAPIKey_(self, _cmd, newValue)
+{
+    self._fallbackAPIKey = newValue;
+}
+
+,["void","CPString"]), new objj_method(sel_getUid("initWithInstructions:"), function $CPLanguageModelSession__initWithInstructions_(self, _cmd, instructions)
+{
+    self = (objj_getClass("CPLanguageModelSession").super_class.method_dtable["init"] || _objj_forward)(self, "init");
+    if (self)
+    {
+        self._instructions = instructions;
+        self._chromeSession = nil;
+        self._fallbackServiceType = nil;
+        self._fallbackEndpoint = nil;
+        self._fallbackModel = nil;
+        self._fallbackAPIKey = nil;
+    }
+    return self;
+}
+
+,["id","CPString"]), new objj_method(sel_getUid("initWithInstructions:apiKey:"), function $CPLanguageModelSession__initWithInstructions_apiKey_(self, _cmd, instructions, apiKey)
+{
+    self = (self == null ? self : (self.isa.method_msgSend["initWithInstructions:"] || _objj_forward)(self, "initWithInstructions:", instructions));
+    if (self)
+    {
+        self._fallbackAPIKey = apiKey;
+    }
+    return self;
+}
+
+,["id","CPString","CPString"]), new objj_method(sel_getUid("initWithInstructions:fallbackOptions:"), function $CPLanguageModelSession__initWithInstructions_fallbackOptions_(self, _cmd, instructions, options)
+{
+    self = (self == null ? self : (self.isa.method_msgSend["initWithInstructions:"] || _objj_forward)(self, "initWithInstructions:", instructions));
+    if (self)
+    {
+        if (options)
+        {
+            self._fallbackServiceType = (options == null ? options : (options.isa.method_msgSend["objectForKey:"] || _objj_forward)(options, "objectForKey:", "serviceType"));
+            self._fallbackEndpoint = (options == null ? options : (options.isa.method_msgSend["objectForKey:"] || _objj_forward)(options, "objectForKey:", "endpoint"));
+            self._fallbackModel = (options == null ? options : (options.isa.method_msgSend["objectForKey:"] || _objj_forward)(options, "objectForKey:", "model"));
+            self._fallbackAPIKey = (options == null ? options : (options.isa.method_msgSend["objectForKey:"] || _objj_forward)(options, "objectForKey:", "apiKey"));
+        }
+    }
+    return self;
+}
+
+,["id","CPString","CPDictionary"]), new objj_method(sel_getUid("respondToPrompt:options:completionHandler:"), function $CPLanguageModelSession__respondToPrompt_options_completionHandler_(self, _cmd, prompt, options, completionHandler)
+{
+    if (CPLanguageModelSessionEndorsesFallback)
+    {
+        (self.isa.method_msgSend["_executeRemoteFallbackWithPrompt:options:completionHandler:"] || _objj_forward)(self, "_executeRemoteFallbackWithPrompt:options:completionHandler:", prompt, options, completionHandler);
+        return;
+    }
+    if (self._chromeSession)
+    {
+        (self.isa.method_msgSend["_executePrompt:options:completionHandler:"] || _objj_forward)(self, "_executePrompt:options:completionHandler:", prompt, options, completionHandler);
+        return;
+    }
+    var instructions = (self.isa.method_msgSend["instructions"] || _objj_forward)(self, "instructions");
+    (CPLanguageModelSession.isa.method_msgSend["_getChromeFactoryWithCompletionHandler:"] || _objj_forward)(CPLanguageModelSession, "_getChromeFactoryWithCompletionHandler:",     function(factory, error)
+    {
+        if (error)
+        {
+            (self.isa.method_msgSend["_executeRemoteFallbackWithPrompt:options:completionHandler:"] || _objj_forward)(self, "_executeRemoteFallbackWithPrompt:options:completionHandler:", prompt, options, completionHandler);
+            return;
+        }
+        var sessionOptions = {expectedInputs: [{type: "text", languages: ["en"]}], expectedOutputs: [{type: "text", languages: ["en"]}]};
+        if (instructions)
+        {
+            sessionOptions.systemPrompt = instructions;
+        }
+        factory.create(sessionOptions).then(        function(session)
+        {
+            (self.isa.method_msgSend["setChromeSession:"] || _objj_forward)(self, "setChromeSession:", session);
+            (self.isa.method_msgSend["_executePrompt:options:completionHandler:"] || _objj_forward)(self, "_executePrompt:options:completionHandler:", prompt, options, completionHandler);
+        }).catch(        function(err)
+        {
+            (self.isa.method_msgSend["_executeRemoteFallbackWithPrompt:options:completionHandler:"] || _objj_forward)(self, "_executeRemoteFallbackWithPrompt:options:completionHandler:", prompt, options, completionHandler);
+        });
+    });
+}
+
+,["void","CPString","id","Function"]), new objj_method(sel_getUid("respondToPrompt:onChunkReceived:completed:"), function $CPLanguageModelSession__respondToPrompt_onChunkReceived_completed_(self, _cmd, prompt, chunkHandler, completionHandler)
+{
+    if (CPLanguageModelSessionEndorsesFallback)
+    {
+        (self.isa.method_msgSend["_executeRemoteFallbackWithPrompt:options:completionHandler:"] || _objj_forward)(self, "_executeRemoteFallbackWithPrompt:options:completionHandler:", prompt, nil,         function(res, err)
+        {
+            if (!err && chunkHandler)
+                chunkHandler(res);
+            completionHandler(res, err);
+            ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+            var ___r1;
+        });
+        return;
+    }
+    if (self._chromeSession)
+    {
+        (self.isa.method_msgSend["_executePromptStreaming:onChunkReceived:completed:"] || _objj_forward)(self, "_executePromptStreaming:onChunkReceived:completed:", prompt, chunkHandler, completionHandler);
+        return;
+    }
+    var instructions = (self.isa.method_msgSend["instructions"] || _objj_forward)(self, "instructions");
+    (CPLanguageModelSession.isa.method_msgSend["_getChromeFactoryWithCompletionHandler:"] || _objj_forward)(CPLanguageModelSession, "_getChromeFactoryWithCompletionHandler:",     function(factory, error)
+    {
+        if (error)
+        {
+            (self.isa.method_msgSend["_executeRemoteFallbackWithPrompt:options:completionHandler:"] || _objj_forward)(self, "_executeRemoteFallbackWithPrompt:options:completionHandler:", prompt, nil,             function(res, err)
+            {
+                if (!err && chunkHandler)
+                    chunkHandler(res);
+                completionHandler(res, err);
+                ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+                var ___r1;
+            });
+            return;
+        }
+        var options = {expectedInputs: [{type: "text", languages: ["en"]}], expectedOutputs: [{type: "text", languages: ["en"]}]};
+        if (instructions)
+            options.systemPrompt = instructions;
+        factory.create(options).then(        function(session)
+        {
+            (self.isa.method_msgSend["setChromeSession:"] || _objj_forward)(self, "setChromeSession:", session);
+            (self.isa.method_msgSend["_executePromptStreaming:onChunkReceived:completed:"] || _objj_forward)(self, "_executePromptStreaming:onChunkReceived:completed:", prompt, chunkHandler, completionHandler);
+        }).catch(        function(err)
+        {
+            (self.isa.method_msgSend["_executeRemoteFallbackWithPrompt:options:completionHandler:"] || _objj_forward)(self, "_executeRemoteFallbackWithPrompt:options:completionHandler:", prompt, nil,             function(res, err)
+            {
+                if (!err && chunkHandler)
+                    chunkHandler(res);
+                completionHandler(res, err);
+                ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+                var ___r1;
+            });
+        });
+    });
+}
+
+,["void","CPString","Function","Function"]), new objj_method(sel_getUid("destroy"), function $CPLanguageModelSession__destroy(self, _cmd)
+{
+    if (self._chromeSession && typeof self._chromeSession.destroy === "function")
+    {
+        self._chromeSession.destroy();
+        self._chromeSession = nil;
+    }
+}
+
+,["void"]), new objj_method(sel_getUid("_executePrompt:options:completionHandler:"), function $CPLanguageModelSession___executePrompt_options_completionHandler_(self, _cmd, prompt, options, completionHandler)
+{
+    var promptPromise = options ? self._chromeSession.prompt(prompt, options) : self._chromeSession.prompt(prompt);
+    promptPromise.then(    function(result)
+    {
+        completionHandler(result, nil);
+        ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+        var ___r1;
+    }).catch(    function(err)
+    {
+        var cpError = (CPError.isa.method_msgSend["errorWithDomain:code:userInfo:"] || _objj_forward)(CPError, "errorWithDomain:code:userInfo:", "CPLanguageModelErrorDomain", 2, (CPDictionary.isa.method_msgSend["dictionaryWithObject:forKey:"] || _objj_forward)(CPDictionary, "dictionaryWithObject:forKey:", err.message, CPLocalizedDescriptionKey));
+        completionHandler(nil, cpError);
+        ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+        var ___r1;
+    });
+}
+
+,["void","CPString","id","Function"]), new objj_method(sel_getUid("_resolvedFallbackServiceType"), function $CPLanguageModelSession___resolvedFallbackServiceType(self, _cmd)
+{
+    return self._fallbackServiceType || CPLanguageModelSessionFallbackServiceType;
+}
+
+,["CPString"]), new objj_method(sel_getUid("_resolvedFallbackEndpoint"), function $CPLanguageModelSession___resolvedFallbackEndpoint(self, _cmd)
+{
+    return self._fallbackEndpoint || CPLanguageModelSessionFallbackEndpoint;
+}
+
+,["CPString"]), new objj_method(sel_getUid("_resolvedFallbackModel"), function $CPLanguageModelSession___resolvedFallbackModel(self, _cmd)
+{
+    return self._fallbackModel || CPLanguageModelSessionFallbackModel;
+}
+
+,["CPString"]), new objj_method(sel_getUid("_resolvedFallbackAPIKey"), function $CPLanguageModelSession___resolvedFallbackAPIKey(self, _cmd)
+{
+    if (self._fallbackAPIKey)
+        return self._fallbackAPIKey;
+    if (CPLanguageModelSessionFallbackAPIKey)
+        return CPLanguageModelSessionFallbackAPIKey;
+    if (CPLanguageModelSessionFallbackAPIKeyUserDefaultKey)
+    {
+        var defaults = (CPUserDefaults.isa.method_msgSend["standardUserDefaults"] || _objj_forward)(CPUserDefaults, "standardUserDefaults"),
+            apiKey = (defaults == null ? defaults : (defaults.isa.method_msgSend["objectForKey:"] || _objj_forward)(defaults, "objectForKey:", CPLanguageModelSessionFallbackAPIKeyUserDefaultKey));
+        if (apiKey)
+            return apiKey;
+    }
+    return "";
+}
+
+,["CPString"]), new objj_method(sel_getUid("_executeRemoteFallbackWithPrompt:options:completionHandler:"), function $CPLanguageModelSession___executeRemoteFallbackWithPrompt_options_completionHandler_(self, _cmd, prompt, options, completionHandler)
+{
+    var systemPrompt = (self.isa.method_msgSend["instructions"] || _objj_forward)(self, "instructions"),
+        serviceType = (self.isa.method_msgSend["_resolvedFallbackServiceType"] || _objj_forward)(self, "_resolvedFallbackServiceType"),
+        endpoint = (self.isa.method_msgSend["_resolvedFallbackEndpoint"] || _objj_forward)(self, "_resolvedFallbackEndpoint"),
+        model = (self.isa.method_msgSend["_resolvedFallbackModel"] || _objj_forward)(self, "_resolvedFallbackModel"),
+        apiKey = (self.isa.method_msgSend["_resolvedFallbackAPIKey"] || _objj_forward)(self, "_resolvedFallbackAPIKey");
+    var reqUrl = "",
+        headers = {"Content-Type": "application/json"},
+        payload = {};
+    if (serviceType === "groq")
+    {
+        reqUrl = "https://api.groq.com/openai/v1/chat/completions";
+        headers["Authorization"] = "Bearer " + apiKey;
+        payload = {"model": model, "messages": [{"role": "system", "content": systemPrompt}, {"role": "user", "content": prompt}], "temperature": 0};
+    }
+    else if (serviceType === "gemini")
+    {
+        reqUrl = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey;
+        payload = {"contents": [{"parts": [{"text": systemPrompt + "\n\n" + prompt}]}], "generationConfig": {"temperature": 0}};
+    }
+    else if (serviceType === "openrouter")
+    {
+        reqUrl = "https://openrouter.ai/api/v1/chat/completions";
+        headers["Authorization"] = "Bearer " + apiKey;
+        payload = {"model": model, "messages": [{"role": "system", "content": systemPrompt}, {"role": "user", "content": prompt}], "temperature": 0};
+    }
+    else
+    {
+        reqUrl = endpoint || "http://localhost:11434/api/generate";
+        payload = {"model": model, "prompt": systemPrompt + "\n\n" + prompt, "stream": false, "options": {"temperature": 0}};
+    }
+    fetch(reqUrl, {method: 'POST', headers: headers, body: JSON.stringify(payload)}).then(    function(response)
+    {
+        if (!response.ok)
+        {
+            throw new Error("HTTP error! Status: " + response.status);
+        }
+        return response.json();
+    }).then(    function(data)
+    {
+        var responseText = "";
+        if (serviceType === "groq" || serviceType === "openrouter")
+        {
+            responseText = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : "";
+        }
+        else if (serviceType === "gemini")
+        {
+            responseText = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts ? data.candidates[0].content.parts[0].text : "";
+        }
+        else
+        {
+            responseText = data.response || "";
+        }
+        completionHandler(responseText, nil);
+        ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+        var ___r1;
+    }).catch(    function(err)
+    {
+        var cpError = (CPError.isa.method_msgSend["errorWithDomain:code:userInfo:"] || _objj_forward)(CPError, "errorWithDomain:code:userInfo:", "CPLanguageModelErrorDomain", 4, (CPDictionary.isa.method_msgSend["dictionaryWithObject:forKey:"] || _objj_forward)(CPDictionary, "dictionaryWithObject:forKey:", err.message, CPLocalizedDescriptionKey));
+        completionHandler(nil, cpError);
+        ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+        var ___r1;
+    });
+}
+
+,["void","CPString","id","Function"]), new objj_method(sel_getUid("_executePromptStreaming:onChunkReceived:completed:"), function $CPLanguageModelSession___executePromptStreaming_onChunkReceived_completed_(self, _cmd, prompt, chunkHandler, completionHandler)
+{
+    var stream;
+    try {
+        stream = self._chromeSession.promptStreaming(prompt);
+    }
+    catch(err) {
+        var cpError = (CPError.isa.method_msgSend["errorWithDomain:code:userInfo:"] || _objj_forward)(CPError, "errorWithDomain:code:userInfo:", "CPLanguageModelErrorDomain", 3, (CPDictionary.isa.method_msgSend["dictionaryWithObject:forKey:"] || _objj_forward)(CPDictionary, "dictionaryWithObject:forKey:", err.message, CPLocalizedDescriptionKey));
+        completionHandler(nil, cpError);
+        ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+        return;
+    }
+    (    async function()
+    {
+        var lastChunk = "";
+        try {
+for await (const chunk of stream)
+            {
+                lastChunk = chunk;
+                if (chunkHandler)
+                {
+                    chunkHandler(chunk);
+                }
+            }
+            if (completionHandler)
+            {
+                completionHandler(lastChunk, nil);
+                ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+            }
+        }
+        catch(err) {
+            if (completionHandler)
+            {
+                var cpError = (CPError.isa.method_msgSend["errorWithDomain:code:userInfo:"] || _objj_forward)(CPError, "errorWithDomain:code:userInfo:", "CPLanguageModelErrorDomain", 2, (CPDictionary.isa.method_msgSend["dictionaryWithObject:forKey:"] || _objj_forward)(CPDictionary, "dictionaryWithObject:forKey:", err.message, CPLocalizedDescriptionKey));
+                completionHandler(nil, cpError);
+                ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+            }
+        }
+        var ___r1;
+    })();
+    var ___r1;
+}
+
+,["void","CPString","Function","Function"])]);
+class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function $CPLanguageModelSession__initialize(self, _cmd)
+{
+    if (self === (CPLanguageModelSession.isa.method_msgSend["class"] || _objj_forward)(CPLanguageModelSession, "class"))
+    {
+        var bundle = (CPBundle.isa.method_msgSend["mainBundle"] || _objj_forward)(CPBundle, "mainBundle");
+        CPLanguageModelSessionEndorsesFallback = !!(bundle == null ? bundle : (bundle.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(bundle, "objectForInfoDictionaryKey:", "CPEndorseLanguageModelFallback"));
+        CPLanguageModelSessionFallbackServiceType = (bundle == null ? bundle : (bundle.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(bundle, "objectForInfoDictionaryKey:", "CPDefaultLanguageModelService")) || "ollama";
+        CPLanguageModelSessionFallbackEndpoint = (bundle == null ? bundle : (bundle.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(bundle, "objectForInfoDictionaryKey:", "CPDefaultLanguageModelEndpoint")) || "http://localhost:11434/api/generate";
+        CPLanguageModelSessionFallbackModel = (bundle == null ? bundle : (bundle.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(bundle, "objectForInfoDictionaryKey:", "CPDefaultLanguageModelModel")) || "gemma4:e4b";
+        CPLanguageModelSessionFallbackAPIKey = (bundle == null ? bundle : (bundle.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(bundle, "objectForInfoDictionaryKey:", "CPDefaultLanguageModelAPIKey")) || "";
+        CPLanguageModelSessionFallbackAPIKeyUserDefaultKey = (bundle == null ? bundle : (bundle.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(bundle, "objectForInfoDictionaryKey:", "CPDefaultLanguageModelAPIKeyUserDefaultKey")) || "";
+    }
+}
+
+,["void"]), new objj_method(sel_getUid("setEndorsesFallback:"), function $CPLanguageModelSession__setEndorsesFallback_(self, _cmd, shouldEndorse)
+{
+    CPLanguageModelSessionEndorsesFallback = shouldEndorse;
+}
+
+,["void","BOOL"]), new objj_method(sel_getUid("endorsesFallback"), function $CPLanguageModelSession__endorsesFallback(self, _cmd)
+{
+    return CPLanguageModelSessionEndorsesFallback;
+}
+
+,["BOOL"]), new objj_method(sel_getUid("setFallbackServiceType:endpoint:model:apiKey:"), function $CPLanguageModelSession__setFallbackServiceType_endpoint_model_apiKey_(self, _cmd, serviceType, endpoint, model, apiKey)
+{
+    CPLanguageModelSessionFallbackServiceType = serviceType;
+    CPLanguageModelSessionFallbackEndpoint = endpoint;
+    CPLanguageModelSessionFallbackModel = model;
+    CPLanguageModelSessionFallbackAPIKey = apiKey;
+}
+
+,["void","CPString","CPString","CPString","CPString"]), new objj_method(sel_getUid("setFallbackAPIKeyUserDefaultKey:"), function $CPLanguageModelSession__setFallbackAPIKeyUserDefaultKey_(self, _cmd, keyName)
+{
+    CPLanguageModelSessionFallbackAPIKeyUserDefaultKey = keyName;
+}
+
+,["void","CPString"]), new objj_method(sel_getUid("fallbackAPIKeyUserDefaultKey"), function $CPLanguageModelSession__fallbackAPIKeyUserDefaultKey(self, _cmd)
+{
+    return CPLanguageModelSessionFallbackAPIKeyUserDefaultKey;
+}
+
+,["CPString"]), new objj_method(sel_getUid("_getChromeFactoryWithCompletionHandler:"), function $CPLanguageModelSession___getChromeFactoryWithCompletionHandler_(self, _cmd, completionHandler)
+{
+    if (typeof window === "undefined")
+    {
+        var cpError = (CPError.isa.method_msgSend["errorWithDomain:code:userInfo:"] || _objj_forward)(CPError, "errorWithDomain:code:userInfo:", "CPLanguageModelErrorDomain", -1, (CPDictionary.isa.method_msgSend["dictionaryWithObject:forKey:"] || _objj_forward)(CPDictionary, "dictionaryWithObject:forKey:", "Execution environment is not a browser window.", CPLocalizedDescriptionKey));
+        completionHandler(nil, cpError);
+        return;
+    }
+    if (window.ai && window.ai.languageModel)
+        completionHandler(window.ai.languageModel, nil);
+    else if (window.LanguageModel)
+        completionHandler(window.LanguageModel, nil);
+    else
+        completionHandler(nil, (CPError.isa.method_msgSend["errorWithDomain:code:userInfo:"] || _objj_forward)(CPError, "errorWithDomain:code:userInfo:", "CPLanguageModelErrorDomain", 0, nil));
+}
+
+,["void","Function"])]);
+}
 p;10;CPLocale.jt;9223;@STATIC;1.0;i;10;CPObject.jt;9189;objj_executeFile("CPObject.j", YES);CPLocaleIdentifier = "CPLocaleIdentifier";
 CPLocaleLanguageCode = "CPLocaleLanguageCode";
 CPLocaleCountryCode = "CPLocaleCountryCode";
