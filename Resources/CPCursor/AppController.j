@@ -62,9 +62,9 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
     [theWindow setAcceptsMouseMovedEvents:YES];
     var contentView = [theWindow contentView],
-    	x = 20,
-    	y = 20,
-    	yInc = 25,
+        x = 20,
+        y = 20,
+        yInc = 25,
         imageCursorTester = [[CursorTester alloc] initWithText:@"Image cursor"
                                                         origin:CGPointMake(x, y)
                                                         cursor:[[CPCursor alloc] initWithImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] resourcePath] + @"spinner.gif"]
@@ -83,7 +83,7 @@
                                                         cursor:[CPCursor pointingHandCursor]],
         resizeDownCursorTester = [[CursorTester alloc] initWithText:@"Resize down cursor"
                                                         origin:CGPointMake(x, y+=yInc)
-														cursor:[CPCursor resizeDownCursor]],
+                                                        cursor:[CPCursor resizeDownCursor]],
         resizeUpCursorTester = [[CursorTester alloc] initWithText:@"Resize up cursor"
                                                         origin:CGPointMake(x, y+=yInc)
                                                         cursor:[CPCursor resizeUpCursor]],
@@ -119,7 +119,7 @@
                                                         cursor:[CPCursor closedHandCursor]],
         disappearingItemCursorTester = [[CursorTester alloc] initWithText:@"Disappearing item cursor"
                                                         origin:CGPointMake(x, y+=yInc)
- 													    cursor:[CPCursor disappearingItemCursor]],
+                                                         cursor:[CPCursor disappearingItemCursor]],
         verticalTextCursorTester = [[CursorTester alloc] initWithText:@"Vertical text cursor"
                                                                origin:CGPointMake(x, y+=yInc)
                                                                cursor:[CPCursor IBeamCursorForVerticalLayout]];

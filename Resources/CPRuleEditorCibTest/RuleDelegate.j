@@ -106,7 +106,7 @@ var CPRuleEditorCustomControlClass = @"CPRuleEditorCustomControlClass";
     {
         var compound_type = [criterion objectForKey:CPRuleEditorPredicateCompoundType];
         if (compound_type != nil)
-        	[predicatePartsForCriterion setObject:compound_type forKey:CPRuleEditorPredicateCompoundType];
+            [predicatePartsForCriterion setObject:compound_type forKey:CPRuleEditorPredicateCompoundType];
         return predicatePartsForCriterion;
     }
 
@@ -131,8 +131,8 @@ var CPRuleEditorCustomControlClass = @"CPRuleEditorCustomControlClass";
             predicatePart = [CPExpression expressionForConstantValue:transformedValue];
         }
         else if ([key isEqualToString:CPRuleEditorPredicateOperatorType] ||
-        		 [key isEqualToString:CPRuleEditorPredicateCustomSelector] ||
-        		 [key isEqualToString:CPRuleEditorPredicateOptions])
+                 [key isEqualToString:CPRuleEditorPredicateCustomSelector] ||
+                 [key isEqualToString:CPRuleEditorPredicateOptions])
         {
             var value = [criterion objectForKey:key];
             if (value != nil) predicatePart = value;
