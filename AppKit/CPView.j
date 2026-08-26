@@ -1489,7 +1489,6 @@ var CPViewHighDPIDrawingEnabled = YES;
         _isScaled = (_scaleSize.width !== 1.0 || _scaleSize.height !== 1.0);
         [self didChangeValueForKey:@"scaleSize"];
 
-        // Only traverse the view hierarchy if there is a genuine change in the scale state
         [self _scaleSizeUnitSquareToSize:CGSizeMake(1.0, 1.0)];
     }
 
