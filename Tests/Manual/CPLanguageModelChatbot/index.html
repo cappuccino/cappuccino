@@ -9,7 +9,7 @@
 -->
     <head>
         <meta charset="utf-8">
-        <meta name="google" content="notranslate" />
+
         <!--[if lte IE 8]>
         <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7, chrome=1">
         <![endif]-->
@@ -36,11 +36,7 @@
             // This will affect only Objective-J code that is compiled when loading the application. It will not affect precompiled
             // code like the Cappuccino frameworks.
             // Uncomment or comment on the line below to change the flags
-            //
-            // Macros for the precompiler can also be added. It is 100% compatible with the Macros and Conditionals preprocessor
-            // directives defined in the GNU C 11.0 Preprocessor User Guide. (https://gcc.gnu.org/onlinedocs/gcc-11.2.0/cpp/)
-            // Example: OBJJ_COMPILER_FLAGS = [..., "-DMyMax(x,y)=((x)>(y))?(x):(y)]", "-DMYMACRO", "-DMYMACRO2=42"];
-            OBJJ_COMPILER_FLAGS = [/*"IncludeDebugSymbols",*/ "IncludeTypeSignatures"/*, "SourceMap"*/, "InlineMsgSend"];
+            OBJJ_COMPILER_FLAGS = ["IncludeDebugSymbols", "IncludeTypeSignatures", "SourceMap", "InlineMsgSend"];
 
             var progressBar = null;
 
@@ -57,12 +53,10 @@
 
             var loadingHTML =
                     '<div id="loading">' +
-	                '    <div style="flex-grow: 35"></div>' +
-	                '    <div id="loading-text">Loading...</div>' +
-	                '    <div id="progress-indicator">' +
-	                '        <span id="progress-bar" style="width:0%"></span>' +
-	                '    </div>' +
-	                '    <div style="flex-grow: 65"></div>' +
+                    '    <div id="loading-text">Loading...</div>' +
+                    '    <div id="progress-indicator">' +
+                    '        <span id="progress-bar" style="width:0%"></span>' +
+                    '    </div>' +
                     '</div>';
         </script>
 
@@ -99,11 +93,8 @@
             }
 
             #loading {
-                height: 100%;
-                display:flex;
-                flex-direction:column;
-                flex-wrap:nowrap;
-                justify-content: space-evenly;
+                position: relative;
+                top: 35%;
             }
 
             #loading-text {
@@ -154,9 +145,9 @@
     <body>
         <div id="cappuccino-body">
             <div class="container">
-                <div class="content" id="loadingDiv">
+                <div class="content">
                     <script type="text/javascript">
-                        document.getElementById("loadingDiv").innerHTML = loadingHTML;
+                        document.write(loadingHTML);
                     </script>
                 </div>
             </div>

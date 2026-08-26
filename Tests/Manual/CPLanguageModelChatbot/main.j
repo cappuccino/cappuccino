@@ -1,9 +1,9 @@
 /*
  * AppController.j
- * TestSheet
+ * CPLevelIndicator
  *
- * Created by You on April 14, 2012.
- * Copyright 2012, Your Company All rights reserved.
+ * Created by Alexander Ljungberg on May 28, 2011.
+ * Copyright 2011, WireLoad All rights reserved.
  */
 
 @import <Foundation/Foundation.j>
@@ -14,6 +14,5 @@
 
 function main(args, namedArgs)
 {
-    CPLogRegister(CPLogDefault);
     CPApplicationMain(args, namedArgs);
 }
