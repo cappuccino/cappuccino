@@ -149,6 +149,7 @@ var CPSystemTypesetterFactory,
 
     // Search for the first custom tab stop strictly greater than aWidth
     var nextCustomTab = nil;
+
     if (tabStops)
     {
         var l = [tabStops count];
