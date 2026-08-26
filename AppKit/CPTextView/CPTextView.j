@@ -2754,12 +2754,22 @@ var compareTabStops = function(obj1, obj2, context) {
 
     var theString = [_textStorage string],
         minLocation = 0.0,
+        containerWidth = [_textContainer containerSize].width,
+        maxLocation = containerWidth,
         currentParagraphStyle = [_textStorage attribute:CPParagraphStyleAttributeName atIndex:targetRange.location effectiveRange:nil] || [CPParagraphStyle defaultParagraphStyle],
-        tabStops = [currentParagraphStyle tabStops] || [];
+        tabStops = [currentParagraphStyle tabStops] || [],
+        tabCount = [tabStops count];
 
-    // Find which tab stop index this marker represents
+    // 1. Right boundary: Tail indent (if configured)
+    var tailIndent = [currentParagraphStyle tailIndent];
+    if (tailIndent > 0.0)
+        maxLocation = Math.min(maxLocation, tailIndent);
+    else if (tailIndent < 0.0)
+        maxLocation = Math.min(maxLocation, containerWidth + tailIndent);
+
+    // 2. Identify active tab stop index
     var targetTabIndex = -1;
-    for (var i = 0; i < [tabStops count]; i++)
+    for (var i = 0; i < tabCount; i++)
     {
         var tab = [tabStops objectAtIndex:i];
         if (tab === rep || ([tab location] === [rep location] && [tab alignment] === [rep alignment]))
@@ -2769,6 +2779,39 @@ var compareTabStops = function(obj1, obj2, context) {
         }
     }
 
+    // 3. Constrain to neighboring tab stops (Left and Right)
+    var safetySpacer = 2.0;
+
+    if (targetTabIndex !== -1)
+    {
+        // Left neighbor constraint (previous tab stop)
+        if (targetTabIndex > 0)
+        {
+            var prevTab = [tabStops objectAtIndex:targetTabIndex - 1];
+            minLocation = Math.max(minLocation, [prevTab location] + safetySpacer);
+        }
+
+        // Right neighbor constraint (next tab stop)
+        if (targetTabIndex + 1 < tabCount)
+        {
+            var nextTab = [tabStops objectAtIndex:targetTabIndex + 1];
+            maxLocation = Math.min(maxLocation, [nextTab location] - safetySpacer);
+        }
+    }
+    else
+    {
+        // For new markers being added between existing tab stops
+        for (var i = 0; i < tabCount; i++)
+        {
+            var tabLoc = [[tabStops objectAtIndex:i] location];
+            if (tabLoc < proposedLocation)
+                minLocation = Math.max(minLocation, tabLoc + safetySpacer);
+            else if (tabLoc > proposedLocation)
+                maxLocation = Math.min(maxLocation, tabLoc - safetySpacer);
+        }
+    }
+
+    // 4. Constrain to preceding text on active lines
     var start = targetRange.location,
         end = CPMaxRange(targetRange),
         tabCountInLine = 0,
@@ -2786,7 +2829,6 @@ var compareTabStops = function(obj1, obj2, context) {
 
         if (charCode === 9) // '\t'
         {
-            // If this tab corresponds to the marker being dragged
             if (tabCountInLine === targetTabIndex || targetTabIndex === -1)
             {
                 var precedingX = 0.0;
@@ -2797,21 +2839,23 @@ var compareTabStops = function(obj1, obj2, context) {
                 }
                 else
                 {
-                    // Find right edge of glyph immediately preceding the tab
                     var glyphRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(i - 1, 1) inTextContainer:_textContainer];
                     precedingX = CGRectGetMaxX(glyphRect);
                 }
 
-                // Minimum safety spacer (e.g. + 2px after the preceding glyph)
-                var limit = precedingX + 2.0;
-                if (limit > minLocation)
-                    minLocation = limit;
+                var textLimit = precedingX + safetySpacer;
+                if (textLimit > minLocation)
+                    minLocation = textLimit;
             }
             tabCountInLine++;
         }
     }
 
-    return Math.max(minLocation, proposedLocation);
+    if (minLocation > maxLocation)
+        minLocation = maxLocation;
+
+    // 5. Clamp proposedLocation within [minLocation, maxLocation]
+    return Math.min(maxLocation, Math.max(minLocation, proposedLocation));
 }
 
 - (float)rulerView:(CPRulerView)aRulerView willAddMarker:(CPRulerMarker)aMarker atLocation:(float)proposedLocation
