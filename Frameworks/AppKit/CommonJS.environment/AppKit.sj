@@ -72107,7 +72107,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTextView.jt;218940;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPTextContainer.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;218722;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
+p;12;CPTextView.jt;221145;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPTextContainer.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;220927;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
 ;
 ;
 ;
@@ -74397,16 +74397,49 @@ class_addMethods(the_class, [new objj_method(sel_getUid("updateRuler"), function
     ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_validateLayoutAndGlyphs"] || _objj_forward)(___r1, "_validateLayoutAndGlyphs"));
     var theString = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["string"] || _objj_forward)(___r1, "string")),
         minLocation = 0.0,
+        containerWidth = ((___r1 = self._textContainer), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["containerSize"] || _objj_forward)(___r1, "containerSize")).width,
+        maxLocation = containerWidth,
         currentParagraphStyle = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attribute:atIndex:effectiveRange:"] || _objj_forward)(___r1, "attribute:atIndex:effectiveRange:", CPParagraphStyleAttributeName, targetRange.location, nil)) || (CPParagraphStyle.isa.method_msgSend["defaultParagraphStyle"] || _objj_forward)(CPParagraphStyle, "defaultParagraphStyle"),
-        tabStops = (currentParagraphStyle == null ? currentParagraphStyle : (currentParagraphStyle.isa.method_msgSend["tabStops"] || _objj_forward)(currentParagraphStyle, "tabStops")) || [];
+        tabStops = (currentParagraphStyle == null ? currentParagraphStyle : (currentParagraphStyle.isa.method_msgSend["tabStops"] || _objj_forward)(currentParagraphStyle, "tabStops")) || [],
+        tabCount = (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["count"] || _objj_forward)(tabStops, "count"));
+    var tailIndent = (currentParagraphStyle == null ? currentParagraphStyle : (currentParagraphStyle.isa.method_msgSend["tailIndent"] || _objj_forward)(currentParagraphStyle, "tailIndent"));
+    if (tailIndent > 0.0)
+        maxLocation = Math.min(maxLocation, tailIndent);
+    else if (tailIndent < 0.0)
+        maxLocation = Math.min(maxLocation, containerWidth + tailIndent);
     var targetTabIndex = -1;
-    for (var i = 0; i < (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["count"] || _objj_forward)(tabStops, "count")); i++)
+    for (var i = 0; i < tabCount; i++)
     {
         var tab = (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(tabStops, "objectAtIndex:", i));
         if (tab === rep || (tab == null ? tab : (tab.isa.method_msgSend["location"] || _objj_forward)(tab, "location")) === (rep == null ? rep : (rep.isa.method_msgSend["location"] || _objj_forward)(rep, "location")) && (tab == null ? tab : (tab.isa.method_msgSend["alignment"] || _objj_forward)(tab, "alignment")) === (rep == null ? rep : (rep.isa.method_msgSend["alignment"] || _objj_forward)(rep, "alignment")))
         {
             targetTabIndex = i;
             break;
+        }
+    }
+    var safetySpacer = 2.0;
+    if (targetTabIndex !== -1)
+    {
+        if (targetTabIndex > 0)
+        {
+            var prevTab = (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(tabStops, "objectAtIndex:", targetTabIndex - 1));
+            minLocation = Math.max(minLocation, (prevTab == null ? prevTab : (prevTab.isa.method_msgSend["location"] || _objj_forward)(prevTab, "location")) + safetySpacer);
+        }
+        if (targetTabIndex + 1 < tabCount)
+        {
+            var nextTab = (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(tabStops, "objectAtIndex:", targetTabIndex + 1));
+            maxLocation = Math.min(maxLocation, (nextTab == null ? nextTab : (nextTab.isa.method_msgSend["location"] || _objj_forward)(nextTab, "location")) - safetySpacer);
+        }
+    }
+    else
+    {
+        for (var i = 0; i < tabCount; i++)
+        {
+            var tabLoc = ((___r1 = (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(tabStops, "objectAtIndex:", i))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["location"] || _objj_forward)(___r1, "location"));
+            if (tabLoc < proposedLocation)
+                minLocation = Math.max(minLocation, tabLoc + safetySpacer);
+            else if (tabLoc > proposedLocation)
+                maxLocation = Math.min(maxLocation, tabLoc - safetySpacer);
         }
     }
     var start = targetRange.location,
@@ -74437,14 +74470,16 @@ class_addMethods(the_class, [new objj_method(sel_getUid("updateRuler"), function
                     var glyphRect = ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["boundingRectForGlyphRange:inTextContainer:"] || _objj_forward)(___r1, "boundingRectForGlyphRange:inTextContainer:", CPMakeRange(i - 1, 1), self._textContainer));
                     precedingX = CGRectGetMaxX(glyphRect);
                 }
-                var limit = precedingX + 2.0;
-                if (limit > minLocation)
-                    minLocation = limit;
+                var textLimit = precedingX + safetySpacer;
+                if (textLimit > minLocation)
+                    minLocation = textLimit;
             }
             tabCountInLine++;
         }
     }
-    return Math.max(minLocation, proposedLocation);
+    if (minLocation > maxLocation)
+        minLocation = maxLocation;
+    return Math.min(maxLocation, Math.max(minLocation, proposedLocation));
     var ___r1;
 }
 
