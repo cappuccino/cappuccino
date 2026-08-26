@@ -73169,7 +73169,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithParagraphStyle:
 
 ,["id","CPZone"])]);
 }
-p;13;CPRulerView.jt;46070;@STATIC;1.0;I;21;Foundation/CPObject.ji;8;CPView.ji;13;CPTextField.ji;9;CPColor.ji;8;CPFont.ji;8;CPMenu.ji;12;CPMenuItem.jt;45940;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPMenuItem.j", YES);{var the_typedef = objj_allocateTypeDef("CPRulerOrientation");
+p;13;CPRulerView.jt;46908;@STATIC;1.0;I;21;Foundation/CPObject.ji;8;CPView.ji;13;CPTextField.ji;9;CPColor.ji;8;CPFont.ji;8;CPMenu.ji;12;CPMenuItem.jt;46778;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPMenuItem.j", YES);{var the_typedef = objj_allocateTypeDef("CPRulerOrientation");
 objj_registerTypeDef(the_typedef);
 }CPHorizontalRuler = 0;
 CPVerticalRuler = 1;
@@ -73552,9 +73552,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("scrollView"), function 
     }
     else
     {
+        var client = (self.isa.method_msgSend["clientView"] || _objj_forward)(self, "clientView");
+        if (client && (client == null ? client : (client.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(client, "respondsToSelector:", sel_getUid("rulerView:willAddMarker:atLocation:"))))
+            rulerLocation = (client == null ? client : (client.isa.method_msgSend["rulerView:willAddMarker:atLocation:"] || _objj_forward)(client, "rulerView:willAddMarker:atLocation:", self, nil, rulerLocation));
         var newMarker = ((___r1 = (CPRulerMarker.isa.method_msgSend["alloc"] || _objj_forward)(CPRulerMarker, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithRulerView:markerLocation:imageValue:representedObject:"] || _objj_forward)(___r1, "initWithRulerView:markerLocation:imageValue:representedObject:", self, rulerLocation, rulerLocation, nil));
         (self.isa.method_msgSend["addMarker:"] || _objj_forward)(self, "addMarker:", newMarker);
-        var client = (self.isa.method_msgSend["clientView"] || _objj_forward)(self, "clientView");
         if (client && (client == null ? client : (client.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(client, "respondsToSelector:", sel_getUid("rulerView:didAddMarker:"))))
             (client == null ? client : (client.isa.method_msgSend["rulerView:didAddMarker:"] || _objj_forward)(client, "rulerView:didAddMarker:", self, newMarker));
         self._draggingMarker = newMarker;
@@ -73573,6 +73575,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("scrollView"), function 
         isHorizontal = self._orientation === CPHorizontalRuler || self._orientation === CPRulerOrientationHorizontal;
     var delta = isHorizontal ? localPoint.x - self._dragStartPoint.x : localPoint.y - self._dragStartPoint.y,
         newLocation = Math.max(0.0, self._dragStartLocation + delta);
+    var client = (self.isa.method_msgSend["clientView"] || _objj_forward)(self, "clientView");
+    if (client && (client == null ? client : (client.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(client, "respondsToSelector:", sel_getUid("rulerView:willMoveMarker:toLocation:"))))
+        newLocation = (client == null ? client : (client.isa.method_msgSend["rulerView:willMoveMarker:toLocation:"] || _objj_forward)(client, "rulerView:willMoveMarker:toLocation:", self, self._draggingMarker, newLocation));
     ((___r1 = self._draggingMarker), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setImageValue:"] || _objj_forward)(___r1, "setImageValue:", newLocation));
     (self.isa.method_msgSend["_positionMarker:"] || _objj_forward)(self, "_positionMarker:", self._draggingMarker);
     var rep = ((___r1 = self._draggingMarker), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["representedObject"] || _objj_forward)(___r1, "representedObject")),
@@ -73588,7 +73593,6 @@ class_addMethods(the_class, [new objj_method(sel_getUid("scrollView"), function 
         ((___r1 = self._draggingMarker), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setAlphaValue:"] || _objj_forward)(___r1, "setAlphaValue:", 1.0));
         ((___r1 = ((___r2 = self._draggingMarker), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["label"] || _objj_forward)(___r2, "label"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setTextColor:"] || _objj_forward)(___r1, "setTextColor:", (CPColor.isa.method_msgSend["colorWithWhite:alpha:"] || _objj_forward)(CPColor, "colorWithWhite:alpha:", 0.2, 1.0)));
     }
-    var client = (self.isa.method_msgSend["clientView"] || _objj_forward)(self, "clientView");
     if (client && (client == null ? client : (client.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(client, "respondsToSelector:", sel_getUid("rulerView:didMoveMarker:"))))
         (client == null ? client : (client.isa.method_msgSend["rulerView:didMoveMarker:"] || _objj_forward)(client, "rulerView:didMoveMarker:", self, self._draggingMarker));
     var ___r1, ___r2;
@@ -74269,7 +74273,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTextView.jt;228816;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPTextContainer.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;228598;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
+p;12;CPTextView.jt;234012;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPTextContainer.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;233794;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
 ;
 ;
 ;
@@ -76585,7 +76589,80 @@ class_addMethods(the_class, [new objj_method(sel_getUid("updateRuler"), function
     var ___r1;
 }
 
-,["void","CPRulerView","CPRulerMarker","id"])]);
+,["void","CPRulerView","CPRulerMarker","id"]), new objj_method(sel_getUid("rulerView:willMoveMarker:toLocation:"), function $CPTextView__rulerView_willMoveMarker_toLocation_(self, _cmd, aRulerView, aMarker, proposedLocation)
+{
+    var rep = (aMarker == null ? aMarker : (aMarker.isa.method_msgSend["representedObject"] || _objj_forward)(aMarker, "representedObject"));
+    if (rep === "CPFirstLineIndent" || rep === "CPHeadIndent" || rep === "CPTailIndent")
+        return Math.max(0.0, proposedLocation);
+    var textLength = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["length"] || _objj_forward)(___r1, "length"));
+    if (textLength === 0)
+        return Math.max(0.0, proposedLocation);
+    var selectedRange = (self.isa.method_msgSend["selectedRange"] || _objj_forward)(self, "selectedRange"),
+        targetRange = selectedRange;
+    if (targetRange.length === 0)
+        targetRange = (self.isa.method_msgSend["selectionRangeForProposedRange:granularity:"] || _objj_forward)(self, "selectionRangeForProposedRange:granularity:", CPMakeRange(targetRange.location, 0), CPSelectByParagraph);
+    if (targetRange.length === 0)
+        return Math.max(0.0, proposedLocation);
+    ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_validateLayoutAndGlyphs"] || _objj_forward)(___r1, "_validateLayoutAndGlyphs"));
+    var theString = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["string"] || _objj_forward)(___r1, "string")),
+        minLocation = 0.0,
+        currentParagraphStyle = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attribute:atIndex:effectiveRange:"] || _objj_forward)(___r1, "attribute:atIndex:effectiveRange:", CPParagraphStyleAttributeName, targetRange.location, nil)) || (CPParagraphStyle.isa.method_msgSend["defaultParagraphStyle"] || _objj_forward)(CPParagraphStyle, "defaultParagraphStyle"),
+        tabStops = (currentParagraphStyle == null ? currentParagraphStyle : (currentParagraphStyle.isa.method_msgSend["tabStops"] || _objj_forward)(currentParagraphStyle, "tabStops")) || [];
+    var targetTabIndex = -1;
+    for (var i = 0; i < (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["count"] || _objj_forward)(tabStops, "count")); i++)
+    {
+        var tab = (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(tabStops, "objectAtIndex:", i));
+        if (tab === rep || (tab == null ? tab : (tab.isa.method_msgSend["location"] || _objj_forward)(tab, "location")) === (rep == null ? rep : (rep.isa.method_msgSend["location"] || _objj_forward)(rep, "location")) && (tab == null ? tab : (tab.isa.method_msgSend["alignment"] || _objj_forward)(tab, "alignment")) === (rep == null ? rep : (rep.isa.method_msgSend["alignment"] || _objj_forward)(rep, "alignment")))
+        {
+            targetTabIndex = i;
+            break;
+        }
+    }
+    var start = targetRange.location,
+        end = CPMaxRange(targetRange),
+        tabCountInLine = 0,
+        lineStart = start;
+    for (var i = start; i < end; i++)
+    {
+        var charCode = theString.charCodeAt(i);
+        if (charCode === 10 || charCode === 13)
+        {
+            tabCountInLine = 0;
+            lineStart = i + 1;
+            continue;
+        }
+        if (charCode === 9)
+        {
+            if (tabCountInLine === targetTabIndex || targetTabIndex === -1)
+            {
+                var precedingX = 0.0;
+                if (i === lineStart)
+                {
+                    var isFirstLine = lineStart === 0 || theString.charCodeAt(lineStart - 1) === 10 || theString.charCodeAt(lineStart - 1) === 13;
+                    precedingX = isFirstLine ? (currentParagraphStyle == null ? currentParagraphStyle : (currentParagraphStyle.isa.method_msgSend["firstLineHeadIndent"] || _objj_forward)(currentParagraphStyle, "firstLineHeadIndent")) : (currentParagraphStyle == null ? currentParagraphStyle : (currentParagraphStyle.isa.method_msgSend["headIndent"] || _objj_forward)(currentParagraphStyle, "headIndent"));
+                }
+                else
+                {
+                    var glyphRect = ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["boundingRectForGlyphRange:inTextContainer:"] || _objj_forward)(___r1, "boundingRectForGlyphRange:inTextContainer:", CPMakeRange(i - 1, 1), self._textContainer));
+                    precedingX = CGRectGetMaxX(glyphRect);
+                }
+                var limit = precedingX + 2.0;
+                if (limit > minLocation)
+                    minLocation = limit;
+            }
+            tabCountInLine++;
+        }
+    }
+    return Math.max(minLocation, proposedLocation);
+    var ___r1;
+}
+
+,["float","CPRulerView","CPRulerMarker","float"]), new objj_method(sel_getUid("rulerView:willAddMarker:atLocation:"), function $CPTextView__rulerView_willAddMarker_atLocation_(self, _cmd, aRulerView, aMarker, proposedLocation)
+{
+    return (self.isa.method_msgSend["rulerView:willMoveMarker:toLocation:"] || _objj_forward)(self, "rulerView:willMoveMarker:toLocation:", aRulerView, aMarker, proposedLocation);
+}
+
+,["float","CPRulerView","CPRulerMarker","float"])]);
 }
 {
 var the_class = objj_getClass("CPTextView")
@@ -77058,7 +77135,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("setPlaceholderValue:wit
 
 ,["void","id","CPString"])]);
 }
-p;14;CPTypesetter.jt;29295;@STATIC;1.0;I;21;Foundation/CPObject.ji;18;CPParagraphStyle.ji;15;CPTextStorage.ji;8;CPFont.jt;29194;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPFont.j", YES);CPTypesetterZeroAdvancementAction = 1 << 0;
+p;14;CPTypesetter.jt;28988;@STATIC;1.0;I;21;Foundation/CPObject.ji;18;CPParagraphStyle.ji;15;CPTextStorage.ji;8;CPFont.jt;28887;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPFont.j", YES);CPTypesetterZeroAdvancementAction = 1 << 0;
 CPTypesetterWhitespaceAction = 1 << 1;
 CPSTypesetterHorizontalTabAction = 1 << 2;
 CPTypesetterLineBreakAction = 1 << 3;
@@ -77145,24 +77222,18 @@ class_addMethods(the_class, [new objj_method(sel_getUid("layoutManager"), functi
 {
     var tabStops = ((___r1 = self._currentParagraph), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["tabStops"] || _objj_forward)(___r1, "tabStops")),
         defaultInterval = ((___r1 = self._currentParagraph), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["defaultTabInterval"] || _objj_forward)(___r1, "defaultTabInterval")) || 28.0;
-    var nextDefaultLocation = (Math.floor(aWidth / defaultInterval) + 1) * defaultInterval;
-    var nextCustomTab = nil;
-    if (tabStops)
+    var l = tabStops ? (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["count"] || _objj_forward)(tabStops, "count")) : 0;
+    if (l > 0)
     {
-        var l = (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["count"] || _objj_forward)(tabStops, "count"));
         for (var i = 0; i < l; i++)
         {
             var tab = (tabStops == null ? tabStops : (tabStops.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(tabStops, "objectAtIndex:", i));
             if ((tab == null ? tab : (tab.isa.method_msgSend["location"] || _objj_forward)(tab, "location")) > aWidth)
-            {
-                nextCustomTab = tab;
-                break;
-            }
+                return tab;
         }
     }
-    if (nextCustomTab && (nextCustomTab == null ? nextCustomTab : (nextCustomTab.isa.method_msgSend["location"] || _objj_forward)(nextCustomTab, "location")) <= nextDefaultLocation)
-        return nextCustomTab;
-    return ((___r1 = (CPTextTab.isa.method_msgSend["alloc"] || _objj_forward)(CPTextTab, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithType:location:"] || _objj_forward)(___r1, "initWithType:location:", CPLeftTextAlignment, nextDefaultLocation));
+    var nextLocation = (Math.floor(aWidth / defaultInterval) + 1) * defaultInterval;
+    return ((___r1 = (CPTextTab.isa.method_msgSend["alloc"] || _objj_forward)(CPTextTab, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithType:location:"] || _objj_forward)(___r1, "initWithType:location:", CPLeftTextAlignment, nextLocation));
     var ___r1;
 }
 
