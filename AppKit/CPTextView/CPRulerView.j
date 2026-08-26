@@ -377,13 +377,17 @@ CPRulerOrientationVertical = 1;
     }
     else
     {
+        // Allow client view to constrain initial placement
+        var client = [self clientView];
+        if (client && [client respondsToSelector:@selector(rulerView:willAddMarker:atLocation:)])
+            rulerLocation = [client rulerView:self willAddMarker:nil atLocation:rulerLocation];
+
         var newMarker = [[CPRulerMarker alloc] initWithRulerView:self 
                                                   markerLocation:rulerLocation 
                                                       imageValue:rulerLocation 
                                                representedObject:nil];
         [self addMarker:newMarker];
 
-        var client = [self clientView];
         if (client && [client respondsToSelector:@selector(rulerView:didAddMarker:)])
             [client rulerView:self didAddMarker:newMarker];
 
@@ -404,6 +408,12 @@ CPRulerOrientationVertical = 1;
 
     var delta = isHorizontal ? (localPoint.x - _dragStartPoint.x) : (localPoint.y - _dragStartPoint.y),
         newLocation = Math.max(0.0, _dragStartLocation + delta);
+
+    // Constrain marker location to last possible position
+    var client = [self clientView];
+
+    if (client && [client respondsToSelector:@selector(rulerView:willMoveMarker:toLocation:)])
+        newLocation = [client rulerView:self willMoveMarker:_draggingMarker toLocation:newLocation];
 
     [_draggingMarker setImageValue:newLocation];
     [self _positionMarker:_draggingMarker];
@@ -426,7 +436,6 @@ CPRulerOrientationVertical = 1;
         [[_draggingMarker label] setTextColor:[CPColor colorWithWhite:0.2 alpha:1.0]];
     }
 
-    var client = [self clientView];
     if (client && [client respondsToSelector:@selector(rulerView:didMoveMarker:)])
         [client rulerView:self didMoveMarker:_draggingMarker];
 }
