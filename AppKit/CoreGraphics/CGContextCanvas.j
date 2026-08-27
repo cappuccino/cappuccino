@@ -3,7 +3,6 @@
  * AppKit
  *
  * Created by Francisco Tolmasky.
- * Modified by David Richardson.
  * Copyright 2008, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -37,8 +36,7 @@ const CANVAS_COMPOSITE_TABLE = [ "source-over", "source-over", "source-over", "s
 
 // In Cocoa, all primitives excepts rects and arcs cannot be added to the context's path
 // until a move to point has been done, because an empty path has no current point.
-// MODIFICATION: Converted to const function expression and applied Allman formatting.
-const hasPath = function(aContext, methodName)
+var hasPath = function(aContext, methodName)
 {
     if (!aContext.hasPath)
     {
@@ -390,11 +388,11 @@ function CGContextSetFillColor(aContext, aColor)
 }
 
 /*!
- Creates a context into which you can render a fill pattern
- of the given size. Once the pattern is rendered, you can
- set the fill or stroke pattern to the rendered pattern
- with CGContextSetFillPattern or CGContextSetStrokePattern.
- */
+    Creates a context into which you can render a fill pattern
+    of the given size. Once the pattern is rendered, you can
+    set the fill or stroke pattern to the rendered pattern
+    with CGContextSetFillPattern or CGContextSetStrokePattern.
+*/
 function CGContextCreatePatternContext(aContext, aSize)
 {
     const pattern = document.createElement("canvas");
@@ -406,9 +404,9 @@ function CGContextCreatePatternContext(aContext, aSize)
 }
 
 /*!
- Sets the fill pattern for aContext to the rendered pattern context
- returned by CGContextCreatePatternContext.
- */
+    Sets the fill pattern for aContext to the rendered pattern context
+    returned by CGContextCreatePatternContext.
+*/
 function CGContextSetFillPattern(aContext, aPatternContext)
 {
     const pattern = aContext.createPattern(aPatternContext.canvas, "repeat");
@@ -416,9 +414,9 @@ function CGContextSetFillPattern(aContext, aPatternContext)
 }
 
 /*!
- Sets the stroke pattern for aContext to the rendered pattern context
- returned by CGContextCreatePatternContext.
- */
+    Sets the stroke pattern for aContext to the rendered pattern context
+    returned by CGContextCreatePatternContext.
+*/
 function CGContextSetStrokePattern(aContext, aPatternContext)
 {
     const pattern = aContext.createPattern(aPatternContext.canvas, "repeat");
@@ -471,11 +469,11 @@ function CGContextTranslateCTM(aContext, tx, ty)
     aContext.translate(tx, ty);
 }
 
-// MODIFICATION: Removed legacy mathematical fallback macros (scale_rotate, rotate_scale, eigen).
-// MODIFICATION: Removed CPFeatureIsCompatible(CPJavaScriptCanvasTransformFeature) branch.
-// Modern target environments inherently support native canvas transformations.
 
-function CGContextConcatCTM(aContext, anAffineTransform)
+if (CPFeatureIsCompatible(CPJavaScriptCanvasTransformFeature))
+{
+
+CGContextConcatCTM = function(aContext, anAffineTransform)
 {
     aContext.transform(anAffineTransform.a, anAffineTransform.b, anAffineTransform.c, anAffineTransform.d, anAffineTransform.tx, anAffineTransform.ty);
 }

@@ -38,7 +38,11 @@ function CABackingStoreCreate()
     return { context:DOMElement.getContext("2d"), buffer:DOMElement, _image:DOMElement };
 }
 
-function CABackingStoreSetSize(aBackingStore, aSize)
+    // FIXME: Consolidate drawImage to support this.
+    return { context:DOMElement.getContext("2d"), buffer:DOMElement, _image:DOMElement };
+};
+
+CABackingStoreSetSize = function(aBackingStore, aSize)
 {
     const buffer = aBackingStore.buffer;
 
@@ -48,4 +52,6 @@ function CABackingStoreSetSize(aBackingStore, aSize)
     buffer.style.width = aSize.width + "px";
     buffer.style.height = aSize.height + "px";
 }
+else
+{
 

@@ -37,12 +37,11 @@
 
 #if PLATFORM(DOM)
 
-// MODIFICATION: Removed #define macros for SUPPRESS_CAPPUCCINO_CUT/PASTE.
-// Property assignments are now inlined directly at call sites for readability.
+#define SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent) anEvent._suppressCappuccinoCut = YES
+#define SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT(anEvent) anEvent._suppressCappuccinoPaste = YES
 
 var hasEditableTarget = function(aDOMEvent)
 {
-    // MODIFICATION: Removed IE 'srcElement' fallback. Replaced 'var' with 'let'.
     let target = aDOMEvent.target;
 
     if (!target)
@@ -51,7 +50,6 @@ var hasEditableTarget = function(aDOMEvent)
     if (target.contentEditable == "true")
         return YES;
 
-    // MODIFICATION: Replaced 'var' with 'let'.
     let nodeName = target.nodeName.toUpperCase();
 
     return nodeName === "INPUT" || nodeName == "TEXTAREA";
@@ -111,9 +109,8 @@ var hasEditableTarget = function(aDOMEvent)
 
 - (void)createDOMElements
 {
-    // MODIFICATION: Replaced 'var' with 'const'/'let'.
     const theDocument = _DOMWindow.document,
-    _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
+          _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
 
     // Create Native Pasteboard handler.
     _DOMPasteboardElement = theDocument.createElement("textarea");
@@ -199,7 +196,6 @@ var hasEditableTarget = function(aDOMEvent)
         return;
     }
 
-    // MODIFICATION: Replaced 'var' with 'const'.
     const modifierFlags = [anEvent modifierFlags];
 
     if (!(modifierFlags & (CPControlKeyMask | CPCommandKeyMask)))
@@ -263,10 +259,8 @@ var hasEditableTarget = function(aDOMEvent)
 
     if (!currentEventShouldBeSuppressed)
     {
-        // MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT macro.
         if (characters === "v")
             anEvent._suppressCappuccinoPaste = YES;
-        // MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT macro.
         else if (characters === "x")
             anEvent._suppressCappuccinoCut = YES;
     }
@@ -297,16 +291,15 @@ var hasEditableTarget = function(aDOMEvent)
 
 - (CPEvent)_fakeClipboardEvent:(DOMEvent)aDOMEvent type:(CPString)aType
 {
-    // MODIFICATION: Replaced 'var' with 'const'.
     const keyCode = aType === "x" ? CPKeyCodes.X : (aType === "c" ? CPKeyCodes.C : CPKeyCodes.V),
-    characters = aType,
-    timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
-    windowNumber = [[CPApp keyWindow] windowNumber],
-    modifierFlags = CPPlatformActionKeyMask,
-    location = [[CPApp currentEvent] locationInWindow],
-    anEvent = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
-                              timestamp:timestamp windowNumber:windowNumber context:nil
-                             characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode isActionKey:YES];
+          characters = aType,
+          timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
+          windowNumber = [[CPApp keyWindow] windowNumber],
+          modifierFlags = CPPlatformActionKeyMask,
+          location = [[CPApp currentEvent] locationInWindow],
+           anEvent = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
+                                     timestamp:timestamp windowNumber:windowNumber context:nil
+                                    characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode isActionKey:YES];
 
     anEvent._data1 = @{ "simulated": YES };
     anEvent._DOMEvent = aDOMEvent;
@@ -319,7 +312,6 @@ var hasEditableTarget = function(aDOMEvent)
     if ([self _mayRequireDOMPasteboardElementHack:aDOMEvent flags:CPPlatformActionKeyMask] && !_ignoreNativeCopyOrCutEvent)
     {
         // we have to send out a fake copy or cut event so that we can force the copy/cut mechanisms to take place
-        // MODIFICATION: Replaced 'var' with 'const'.
         const anEvent = [self _fakeClipboardEvent:aDOMEvent type:(aDOMEvent.type === "beforecut" ? "x" : "c")];
 
         [CPApp sendEvent:anEvent];
@@ -351,8 +343,8 @@ var hasEditableTarget = function(aDOMEvent)
 }
 
 /*
- Return true if the event may be a copy and paste event, but the target is not an input or text area.
- */
+Return true if the event may be a copy and paste event, but the target is not an input or text area.
+*/
 - (BOOL)_mayRequireDOMPasteboardElementHack:(DOMEvent)aDOMEvent flags:(unsigned)modifierFlags
 {
     return !hasEditableTarget(aDOMEvent) && (modifierFlags & CPPlatformActionKeyMask);
@@ -360,7 +352,6 @@ var hasEditableTarget = function(aDOMEvent)
 
 - (void)_primeDOMPasteboardElement
 {
-    // MODIFICATION: Replaced 'var' with 'const'.
     const pasteboard = [CPPasteboard generalPasteboard],
     types = [pasteboard types];
 
@@ -386,12 +377,10 @@ var hasEditableTarget = function(aDOMEvent)
         return;
     }
 
-    // MODIFICATION: Replaced 'var' with 'const'.
     const value = _DOMPasteboardElement.value;
 
     if ([value length])
     {
-        // MODIFICATION: Replaced 'var' with 'const'.
         const pasteboard = [CPPasteboard generalPasteboard],
         cappString = [pasteboard stringForType:CPStringPboardType];
 
@@ -424,7 +413,6 @@ var hasEditableTarget = function(aDOMEvent)
     if (hasEditableTarget(aDOMEvent))
         return true;
 
-    // MODIFICATION: Replaced 'var' with 'let'.
     let returnValue = YES;
 
     switch (aDOMEvent.type)
@@ -452,8 +440,8 @@ var hasEditableTarget = function(aDOMEvent)
     if (!supportsNativeCopyAndPaste)
         return;
 
-    // MODIFICATION: Replaced 'var' with 'let'.
     let value;
+
     if (aDOMEvent.clipboardData && aDOMEvent.clipboardData.setData)
         value = aDOMEvent.clipboardData.getData('text/plain');
     else
@@ -461,9 +449,8 @@ var hasEditableTarget = function(aDOMEvent)
 
     if ([value length])
     {
-        // MODIFICATION: Replaced 'var' with 'const'.
         const pasteboard = [CPPasteboard generalPasteboard],
-        cappString = [pasteboard stringForType:CPStringPboardType];
+              cappString = [pasteboard stringForType:CPStringPboardType];
 
         if (cappString != value)
         {
@@ -472,11 +459,9 @@ var hasEditableTarget = function(aDOMEvent)
         }
     }
 
-    // MODIFICATION: Replaced 'var' with 'const'.
     const anEvent = [self _fakeClipboardEvent:aDOMEvent type:"v"],
-    platformWindow = [[anEvent window] platformWindow];
+          platformWindow = [[anEvent window] platformWindow];
 
-    // MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT macro.
     anEvent._suppressCappuccinoPaste = YES;
 
     // By default we'll stop the native handling of the event since we're handling it ourselves. However, we need to
@@ -500,11 +485,9 @@ var hasEditableTarget = function(aDOMEvent)
     if (!supportsNativeCopyAndPaste)
         return;
 
-    // MODIFICATION: Replaced 'var' with 'const'.
     const anEvent = [self _fakeClipboardEvent:aDOMEvent type:(aDOMEvent.type.indexOf("cut") != CPNotFound ? "x" : "c")],
-    platformWindow = [[anEvent window] platformWindow];
+          platformWindow = [[anEvent window] platformWindow];
 
-    // MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT macro.
     anEvent._suppressCappuccinoCut = YES;
 
     [platformWindow _propagateCurrentDOMEvent:NO];
@@ -521,12 +504,10 @@ var hasEditableTarget = function(aDOMEvent)
         // to write it to the system board.
         _CPDOMEventStop(aDOMEvent, self);
 
-        // MODIFICATION: Replaced 'var' with 'const'.
         const pasteboard = [CPPasteboard generalPasteboard];
 
         if ([[pasteboard types] containsObject:CPStringPboardType])
         {
-            // MODIFICATION: Replaced 'var' with 'const'.
             const stringValue = [pasteboard stringForType:CPStringPboardType];
 
             if (aDOMEvent.clipboardData && aDOMEvent.clipboardData.setData)

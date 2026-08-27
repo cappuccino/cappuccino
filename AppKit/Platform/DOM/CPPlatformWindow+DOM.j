@@ -483,7 +483,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
         _DOMWindow.addEventListener("pagehide", function()
         {
-            _DOMWindow.removeEventListener("unload", arguments.callee, NO);
+            _DOMWindow.removeEventListener("pagehide", arguments.callee, NO);
 
             [self blurEvent:nil];
             [self _notifyPlatformWindowWillClose];
