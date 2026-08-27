@@ -83037,14 +83037,14 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithLevel:"), funct
 
 ,["void","CPWindow"])]);
 }
-p;22;CPPlatformPasteboard.jt;24508;@STATIC;1.0;I;21;Foundation/CPObject.jI;22;Foundation/CPRunLoop.ji;17;CPCompatibility.ji;9;CPEvent.ji;14;CPPasteboard.ji;12;CPPlatform.ji;26;CPPlatformWindow+DOMKeys.jt;24333;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPPlatformWindow+DOMKeys.j", YES);var hasEditableTarget = function(aDOMEvent)
+p;22;CPPlatformPasteboard.jt;24307;@STATIC;1.0;I;21;Foundation/CPObject.jI;22;Foundation/CPRunLoop.ji;17;CPCompatibility.ji;9;CPEvent.ji;14;CPPasteboard.ji;12;CPPlatform.ji;26;CPPlatformWindow+DOMKeys.jt;24132;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPPlatformWindow+DOMKeys.j", YES);var hasEditableTarget = function(aDOMEvent)
 {
-    var target = aDOMEvent.target || aDOMEvent.srcElement;
+    let target = aDOMEvent.target;
     if (!target)
         return NO;
     if (target.contentEditable == "true")
         return YES;
-    var nodeName = target.nodeName.toUpperCase();
+    let nodeName = target.nodeName.toUpperCase();
     return nodeName === "INPUT" || nodeName == "TEXTAREA";
 };
 
@@ -83074,7 +83074,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
 
 ,["void","DOMWindow"]), new objj_method(sel_getUid("createDOMElements"), function $CPPlatformPasteboard__createDOMElements(self, _cmd)
 {
-    var theDocument = self._DOMWindow.document,
+    const theDocument = self._DOMWindow.document,
         _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
     self._DOMPasteboardElement = theDocument.createElement("textarea");
     self._DOMPasteboardElement.style.position = "absolute";
@@ -83083,7 +83083,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
     self._DOMPasteboardElement.className = "cpdontremove";
     _DOMBodyElement.appendChild(self._DOMPasteboardElement);
     self._DOMPasteboardElement.blur();
-    var copyEventCallback =     function(anEvent)
+    const copyEventCallback =     function(anEvent)
     {
         return (self.isa.method_msgSend["beforeCopyEvent:"] || _objj_forward)(self, "beforeCopyEvent:", anEvent);
     },
@@ -83103,50 +83103,44 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
     {
         return (self.isa.method_msgSend["nativePasteEvent:"] || _objj_forward)(self, "nativePasteEvent:", anEvent);
     };
-    if (theDocument.addEventListener)
+    if (self.supportsNativeCopyAndPaste)
     {
-        if (self.supportsNativeCopyAndPaste)
-        {
-            self._DOMWindow.addEventListener("beforecopy", nativeBeforeClipboardEventCallback, NO);
-            self._DOMWindow.addEventListener("beforecut", nativeBeforeClipboardEventCallback, NO);
-            self._DOMWindow.addEventListener("beforepaste", nativeBeforeClipboardEventCallback, NO);
-            self._DOMWindow.addEventListener("copy", nativeCopyOrCutEventCallback, NO);
-            self._DOMWindow.addEventListener("cut", nativeCopyOrCutEventCallback, NO);
-            self._DOMWindow.addEventListener("paste", nativePasteEventCallback, NO);
-        }
-        else
-        {
-            theDocument.addEventListener("beforepaste", pasteEventCallback, NO);
-            theDocument.addEventListener("beforecopy", copyEventCallback, NO);
-            theDocument.addEventListener("beforecut", copyEventCallback, NO);
-        }
-        self._DOMWindow.addEventListener("unload",         function()
-        {
-            if (self.supportsNativeCopyAndPaste)
-            {
-                self._DOMWindow.removeEventListener("beforecopy", nativeBeforeClipboardEventCallback, NO);
-                self._DOMWindow.removeEventListener("beforecut", nativeBeforeClipboardEventCallback, NO);
-                self._DOMWindow.removeEventListener("beforepaste", nativeBeforeClipboardEventCallback, NO);
-                self._DOMWindow.removeEventListener("copy", nativeCopyOrCutEventCallback, NO);
-                self._DOMWindow.removeEventListener("cut", nativeCopyOrCutEventCallback, NO);
-                self._DOMWindow.removeEventListener("paste", nativePasteEventCallback, NO);
-            }
-            else
-            {
-                theDocument.removeEventListener("beforepaste", pasteEventCallback, NO);
-                theDocument.removeEventListener("beforecopy", copyEventCallback, NO);
-                theDocument.removeEventListener("beforecut", copyEventCallback, NO);
-            }
-        }, NO);
+        self._DOMWindow.addEventListener("beforecopy", nativeBeforeClipboardEventCallback, NO);
+        self._DOMWindow.addEventListener("beforecut", nativeBeforeClipboardEventCallback, NO);
+        self._DOMWindow.addEventListener("beforepaste", nativeBeforeClipboardEventCallback, NO);
+        self._DOMWindow.addEventListener("copy", nativeCopyOrCutEventCallback, NO);
+        self._DOMWindow.addEventListener("cut", nativeCopyOrCutEventCallback, NO);
+        self._DOMWindow.addEventListener("paste", nativePasteEventCallback, NO);
     }
     else
     {
+        theDocument.addEventListener("beforepaste", pasteEventCallback, NO);
+        theDocument.addEventListener("beforecopy", copyEventCallback, NO);
+        theDocument.addEventListener("beforecut", copyEventCallback, NO);
     }
+    self._DOMWindow.addEventListener("unload",     function()
+    {
+        if (self.supportsNativeCopyAndPaste)
+        {
+            self._DOMWindow.removeEventListener("beforecopy", nativeBeforeClipboardEventCallback, NO);
+            self._DOMWindow.removeEventListener("beforecut", nativeBeforeClipboardEventCallback, NO);
+            self._DOMWindow.removeEventListener("beforepaste", nativeBeforeClipboardEventCallback, NO);
+            self._DOMWindow.removeEventListener("copy", nativeCopyOrCutEventCallback, NO);
+            self._DOMWindow.removeEventListener("cut", nativeCopyOrCutEventCallback, NO);
+            self._DOMWindow.removeEventListener("paste", nativePasteEventCallback, NO);
+        }
+        else
+        {
+            theDocument.removeEventListener("beforepaste", pasteEventCallback, NO);
+            theDocument.removeEventListener("beforecopy", copyEventCallback, NO);
+            theDocument.removeEventListener("beforecut", copyEventCallback, NO);
+        }
+    }, NO);
 }
 
 ,["void"]), new objj_method(sel_getUid("destroyDOMElements"), function $CPPlatformPasteboard__destroyDOMElements(self, _cmd)
 {
-    var theDocument = self._DOMWindow.document,
+    const theDocument = self._DOMWindow.document,
         _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
     _DOMBodyElement.removeChild(self._DOMPasteboardElement);
     self._DOMPasteboardElement = nil;
@@ -83167,10 +83161,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
         self._ignoreNativeCopyOrCutEvent = NO;
         return;
     }
-    var modifierFlags = (anEvent == null ? anEvent : (anEvent.isa.method_msgSend["modifierFlags"] || _objj_forward)(anEvent, "modifierFlags"));
+    const modifierFlags = (anEvent == null ? anEvent : (anEvent.isa.method_msgSend["modifierFlags"] || _objj_forward)(anEvent, "modifierFlags"));
     if (!(modifierFlags & (CPControlKeyMask | CPCommandKeyMask)))
         return;
-    var aDOMEvent = anEvent._DOMEvent,
+    const aDOMEvent = anEvent._DOMEvent,
         characters = (anEvent == null ? anEvent : (anEvent.isa.method_msgSend["characters"] || _objj_forward)(anEvent, "characters")),
         mayRequireDOMPasteboardElement = (self.isa.method_msgSend["_mayRequireDOMPasteboardElementHack:flags:"] || _objj_forward)(self, "_mayRequireDOMPasteboardElementHack:flags:", aDOMEvent, modifierFlags);
     if (characters === "v" && mayRequireDOMPasteboardElement)
@@ -83239,7 +83233,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
 
 ,["BOOL"]), new objj_method(sel_getUid("_fakeClipboardEvent:type:"), function $CPPlatformPasteboard___fakeClipboardEvent_type_(self, _cmd, aDOMEvent, aType)
 {
-    var keyCode = aType === "x" ? CPKeyCodes.X : aType === "c" ? CPKeyCodes.C : CPKeyCodes.V,
+    const keyCode = aType === "x" ? CPKeyCodes.X : aType === "c" ? CPKeyCodes.C : CPKeyCodes.V,
         characters = aType,
         timestamp = (CPEvent.isa.method_msgSend["currentTimestamp"] || _objj_forward)(CPEvent, "currentTimestamp"),
         windowNumber = ((___r1 = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["keyWindow"] || _objj_forward)(CPApp, "keyWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["windowNumber"] || _objj_forward)(___r1, "windowNumber")),
@@ -83256,7 +83250,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
 {
     if ((self.isa.method_msgSend["_mayRequireDOMPasteboardElementHack:flags:"] || _objj_forward)(self, "_mayRequireDOMPasteboardElementHack:flags:", aDOMEvent, CPPlatformActionKeyMask) && !self._ignoreNativeCopyOrCutEvent)
     {
-        var anEvent = (self.isa.method_msgSend["_fakeClipboardEvent:type:"] || _objj_forward)(self, "_fakeClipboardEvent:type:", aDOMEvent, aDOMEvent.type === "beforecut" ? "x" : "c");
+        const anEvent = (self.isa.method_msgSend["_fakeClipboardEvent:type:"] || _objj_forward)(self, "_fakeClipboardEvent:type:", aDOMEvent, aDOMEvent.type === "beforecut" ? "x" : "c");
         (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["sendEvent:"] || _objj_forward)(CPApp, "sendEvent:", anEvent));
         (self.isa.method_msgSend["_primeDOMPasteboardElement"] || _objj_forward)(self, "_primeDOMPasteboardElement");
         self._ignoreNativeCopyOrCutEvent = YES;
@@ -83285,7 +83279,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
 
 ,["BOOL","DOMEvent","unsigned"]), new objj_method(sel_getUid("_primeDOMPasteboardElement"), function $CPPlatformPasteboard___primeDOMPasteboardElement(self, _cmd)
 {
-    var pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard"),
+    const pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard"),
         types = (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["types"] || _objj_forward)(pasteboard, "types"));
     if (types.length)
     {
@@ -83309,10 +83303,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
         (self.isa.method_msgSend["_clearDOMPasteboardElement"] || _objj_forward)(self, "_clearDOMPasteboardElement");
         return;
     }
-    var value = self._DOMPasteboardElement.value;
+    const value = self._DOMPasteboardElement.value;
     if ((value == null ? value : (value.isa.method_msgSend["length"] || _objj_forward)(value, "length")))
     {
-        var pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard"),
+        const pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard"),
             cappString = (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", CPStringPboardType));
         if (cappString != value)
         {
@@ -83336,7 +83330,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
 {
     if (hasEditableTarget(aDOMEvent))
         return true;
-    var returnValue = YES;
+    let returnValue = YES;
     switch(aDOMEvent.type) {
         case "beforecopy":
             returnValue = !(CPApp == null ? CPApp : (CPApp.isa.method_msgSend["targetForAction:"] || _objj_forward)(CPApp, "targetForAction:", sel_getUid("copy:")));
@@ -83357,14 +83351,14 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
 {
     if (!self.supportsNativeCopyAndPaste)
         return;
-    var value;
+    let value;
     if (aDOMEvent.clipboardData && aDOMEvent.clipboardData.setData)
         value = aDOMEvent.clipboardData.getData('text/plain');
     else
         value = self._DOMWindow.clipboardData.getData("Text");
     if ((value == null ? value : (value.isa.method_msgSend["length"] || _objj_forward)(value, "length")))
     {
-        var pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard"),
+        const pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard"),
             cappString = (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", CPStringPboardType));
         if (cappString != value)
         {
@@ -83372,7 +83366,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
             (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setString:forType:"] || _objj_forward)(pasteboard, "setString:forType:", value, CPStringPboardType));
         }
     }
-    var anEvent = (self.isa.method_msgSend["_fakeClipboardEvent:type:"] || _objj_forward)(self, "_fakeClipboardEvent:type:", aDOMEvent, "v"),
+    const anEvent = (self.isa.method_msgSend["_fakeClipboardEvent:type:"] || _objj_forward)(self, "_fakeClipboardEvent:type:", aDOMEvent, "v"),
         platformWindow = ((___r1 = (anEvent == null ? anEvent : (anEvent.isa.method_msgSend["window"] || _objj_forward)(anEvent, "window"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["platformWindow"] || _objj_forward)(___r1, "platformWindow"));
     anEvent._suppressCappuccinoPaste = YES;
     (platformWindow == null ? platformWindow : (platformWindow.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(platformWindow, "_propagateCurrentDOMEvent:", NO));
@@ -83388,7 +83382,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
 {
     if (!self.supportsNativeCopyAndPaste)
         return;
-    var anEvent = (self.isa.method_msgSend["_fakeClipboardEvent:type:"] || _objj_forward)(self, "_fakeClipboardEvent:type:", aDOMEvent, aDOMEvent.type.indexOf("cut") != CPNotFound ? "x" : "c"),
+    const anEvent = (self.isa.method_msgSend["_fakeClipboardEvent:type:"] || _objj_forward)(self, "_fakeClipboardEvent:type:", aDOMEvent, aDOMEvent.type.indexOf("cut") != CPNotFound ? "x" : "c"),
         platformWindow = ((___r1 = (anEvent == null ? anEvent : (anEvent.isa.method_msgSend["window"] || _objj_forward)(anEvent, "window"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["platformWindow"] || _objj_forward)(___r1, "platformWindow"));
     anEvent._suppressCappuccinoCut = YES;
     (platformWindow == null ? platformWindow : (platformWindow.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(platformWindow, "_propagateCurrentDOMEvent:", NO));
@@ -83397,10 +83391,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
     if (!(platformWindow == null ? platformWindow : (platformWindow.isa.method_msgSend["_willPropagateCurrentDOMEvent"] || _objj_forward)(platformWindow, "_willPropagateCurrentDOMEvent")))
     {
         _CPDOMEventStop(aDOMEvent, self);
-        var pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard");
+        const pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard");
         if (((___r1 = (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["types"] || _objj_forward)(pasteboard, "types"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["containsObject:"] || _objj_forward)(___r1, "containsObject:", CPStringPboardType)))
         {
-            var stringValue = (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", CPStringPboardType));
+            const stringValue = (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", CPStringPboardType));
             if (aDOMEvent.clipboardData && aDOMEvent.clipboardData.setData)
                 aDOMEvent.clipboardData.setData('text/plain', stringValue);
             else
