@@ -21,38 +21,54 @@
  */
 
 @import "CGGeometry.j"
-// REMOVED: @import "CPCompatibility.j" - Obsolete legacy compatibility layer removed.
+@import "CPCompatibility.j"
 
-// REMOVED: #define PIXEL(pixels) macro - Eliminated in favour of native inline string concatenation.
+#define PIXEL(pixels) pixels + "px";
+
 
 function CABackingStoreGetContext(aBackingStore)
 {
-	return aBackingStore.context;
-}
+    return aBackingStore.context;
+};
 
-// REMOVED: if (CPFeatureIsCompatible(CPHTMLCanvasFeature)) - HTMLCanvasElement is natively supported across modern targets. Legacy fallback block completely removed.
-function CABackingStoreCreate()
+if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
-	// MODERNIZED: Replaced legacy 'var' with block-scoped 'const' for immutable DOM reference.
-	const DOMElement = document.createElement("canvas");
 
-	DOMElement.style.position = "absolute";
-
-	// FIXME: Consolidate drawImage to support this.
-	return { context:DOMElement.getContext("2d"), buffer:DOMElement, _image:DOMElement };
-}
-
-function CABackingStoreSetSize(aBackingStore, aSize)
+CABackingStoreCreate = function()
 {
-	// MODERNIZED: Replaced legacy 'var' with block-scoped 'const'.
-	const buffer = aBackingStore.buffer;
+    var DOMElement = document.createElement("canvas");
 
-	buffer.width = aSize.width;
-	buffer.height = aSize.height;
+    DOMElement.style.position = "absolute";
 
-	// MODERNIZED: Replaced macro expansion with native inline evaluation.
-	buffer.style.width = aSize.width + "px";
-	buffer.style.height = aSize.height + "px";
+    // FIXME: Consolidate drawImage to support this.
+    return { context:DOMElement.getContext("2d"), buffer:DOMElement, _image:DOMElement };
+};
+
+CABackingStoreSetSize = function(aBackingStore, aSize)
+{
+    var buffer = aBackingStore.buffer;
+
+    buffer.width = aSize.width;
+    buffer.height = aSize.height;
+    buffer.style.width = PIXEL(aSize.width);
+    buffer.style.height = PIXEL(aSize.height);
+};
+
 }
+else
+{
 
-// REMOVED: Legacy else block utilizing CGBitmapGraphicsContextCreate due to guaranteed canvas support.
+CABackingStoreCreate = function()
+{
+    var context = CGBitmapGraphicsContextCreate();
+
+    context.buffer = "";
+
+    return { context:context };
+};
+
+CABackingStoreSetSize = function(aBackingStore, aSize)
+{
+};
+
+}
