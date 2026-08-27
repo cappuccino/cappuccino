@@ -127,14 +127,12 @@ var hasEditableTarget = function(aDOMEvent)
 
 	_DOMPasteboardElement.blur();
 
-	// MODIFICATION: Replaced 'var' with 'const'.
 	const copyEventCallback = function (anEvent) { return [self beforeCopyEvent:anEvent]; },
 	nativeBeforeClipboardEventCallback = function (anEvent) { return [self nativeBeforeClipboardEvent:anEvent]; },
 	nativeCopyOrCutEventCallback = function (anEvent) { return [self nativeCopyOrCutEvent:anEvent]; },
 	pasteEventCallback = function (anEvent) { return [self beforePasteEvent:anEvent]; },
 	nativePasteEventCallback = function (anEvent) { return [self nativePasteEvent:anEvent]; };
 
-	// MODIFICATION: Removed the 'if (theDocument.addEventListener)' check and the IE 'else' block.
 	// Modern browsers natively support addEventListener.
 	if (supportsNativeCopyAndPaste)
 	{
@@ -174,9 +172,8 @@ var hasEditableTarget = function(aDOMEvent)
 
 - (void)destroyDOMElements
 {
-	// MODIFICATION: Replaced 'var' with 'const'.
 	const theDocument = _DOMWindow.document,
-	_DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
+          _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
 
 	_DOMBodyElement.removeChild(_DOMPasteboardElement);
 	_DOMPasteboardElement = nil;
