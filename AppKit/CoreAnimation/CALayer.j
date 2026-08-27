@@ -31,7 +31,6 @@
 @import "CPView.j"
 @import "CAMediaTimingFunction.j"
 
-// IMPROVEMENT: Removed DOM macro in favour of explicit property access for clarity.
 
 var CALayerGeometryBoundsMask               = 1,
 CALayerGeometryPositionMask                 = 2,
@@ -456,7 +455,6 @@ var CALayerRegisteredRunLoopUpdates         = nil;
  */
 - (void)composite
 {
-    // IMPROVEMENT: Added explicit parentheses for logical clarity in operator precedence.
     if ((USE_BUFFER && !_contents) || !_context)
         return;
 
@@ -664,7 +662,6 @@ var CALayerRegisteredRunLoopUpdates         = nil;
     return _superlayer;
 }
 
-// IMPROVEMENT: Removed ADJUST_CONTENTS_ZINDEX macro in favor of inline replacement to eliminate preprocessor dependency.
 
 /*!
  Adds the specified layer as a sublayer of the receiver.
@@ -718,7 +715,6 @@ var CALayerRegisteredRunLoopUpdates         = nil;
     else if (superlayer != nil)
         [aLayer removeFromSuperlayer];
 
-    // IMPROVEMENT: Inlined ADJUST_CONTENTS_ZINDEX logic.
     if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         _DOMContentsElement.style.zIndex -= 100.0;
 
@@ -726,10 +722,8 @@ var CALayerRegisteredRunLoopUpdates         = nil;
 
 #if PLATFORM(DOM)
     if (anIndex >= _sublayers.length - 1)
-        // IMPROVEMENT: Inlined DOM element property access.
         _DOMElement.appendChild(aLayer._DOMElement);
     else
-        // IMPROVEMENT: Inlined DOM element property access.
         _DOMElement.insertBefore(aLayer._DOMElement, _sublayers[anIndex + 1]._DOMElement);
 #endif
 
@@ -784,13 +778,11 @@ var CALayerRegisteredRunLoopUpdates         = nil;
         return;
     }
 
-    // IMPROVEMENT: Inlined ADJUST_CONTENTS_ZINDEX logic.
     if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         _DOMContentsElement.style.zIndex -= 100.0;
 
     [_sublayers replaceObjectAtIndex:[_sublayers indexOfObjectIdenticalTo:aSublayer] withObject:aLayer];
 
-    // IMPROVEMENT: Inlined DOM element property access.
     _DOMElement.replaceChild(aLayer._DOMElement, aSublayer._DOMElement);
 }
 
@@ -1358,7 +1350,6 @@ function _CALayerRecalculateGeometry(aLayer, aGeometryChange)
 
     if (superlayer)
     {
-        // IMPROVEMENT: Renamed local 'bounds' to 'superlayerBounds' to prevent shadowing of outer 'bounds' declaration.
         var superlayerBounds = [superlayer bounds],
         frame = [superlayer convertRect:superlayerBounds toLayer:nil];
 

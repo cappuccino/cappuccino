@@ -21,19 +21,15 @@
  */
 
 @import "CGGeometry.j"
-// REMOVED: @import "CPCompatibility.j" - Obsolete legacy compatibility layer removed.
 
-// REMOVED: #define PIXEL(pixels) macro - Eliminated in favour of native inline string concatenation.
 
 function CABackingStoreGetContext(aBackingStore)
 {
     return aBackingStore.context;
 }
 
-// REMOVED: if (CPFeatureIsCompatible(CPHTMLCanvasFeature)) - HTMLCanvasElement is natively supported across modern targets. Legacy fallback block completely removed.
 function CABackingStoreCreate()
 {
-    // MODERNIZED: Replaced legacy 'var' with block-scoped 'const' for immutable DOM reference.
     const DOMElement = document.createElement("canvas");
 
     DOMElement.style.position = "absolute";
@@ -44,15 +40,12 @@ function CABackingStoreCreate()
 
 function CABackingStoreSetSize(aBackingStore, aSize)
 {
-    // MODERNIZED: Replaced legacy 'var' with block-scoped 'const'.
     const buffer = aBackingStore.buffer;
 
     buffer.width = aSize.width;
     buffer.height = aSize.height;
 
-    // MODERNIZED: Replaced macro expansion with native inline evaluation.
     buffer.style.width = aSize.width + "px";
     buffer.style.height = aSize.height + "px";
 }
 
-// REMOVED: Legacy else block utilizing CGBitmapGraphicsContextCreate due to guaranteed canvas support.
