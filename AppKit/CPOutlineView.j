@@ -2008,6 +2008,17 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 /*!
     @ignore
+*/
+- (CGRect)_rectForDropHighlightViewOnRow:(CPInteger)theRowIndex
+{
+    var rect = [super _rectForDropHighlightViewOnRow:theRowIndex];
+    rect.size.height += 2.0;
+
+    return rect;
+}
+
+/*!
+    @ignore
     We need to move the disclosure control too.
 */
 - (void)_layoutViewsForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
