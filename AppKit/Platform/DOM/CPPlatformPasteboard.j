@@ -42,19 +42,19 @@
 
 var hasEditableTarget = function(aDOMEvent)
 {
-	// MODIFICATION: Removed IE 'srcElement' fallback. Replaced 'var' with 'let'.
-	let target = aDOMEvent.target;
+    // MODIFICATION: Removed IE 'srcElement' fallback. Replaced 'var' with 'let'.
+    let target = aDOMEvent.target;
 
-	if (!target)
-		return NO;
+    if (!target)
+        return NO;
 
-	if (target.contentEditable == "true")
-		return YES;
+    if (target.contentEditable == "true")
+        return YES;
 
-	// MODIFICATION: Replaced 'var' with 'let'.
-	let nodeName = target.nodeName.toUpperCase();
+    // MODIFICATION: Replaced 'var' with 'let'.
+    let nodeName = target.nodeName.toUpperCase();
 
-	return nodeName === "INPUT" || nodeName == "TEXTAREA";
+    return nodeName === "INPUT" || nodeName == "TEXTAREA";
 }
 
 /*
@@ -65,289 +65,289 @@ var hasEditableTarget = function(aDOMEvent)
  */
 @implementation CPPlatformPasteboard : CPObject
 {
-	DOMWindow   _DOMWindow;
+    DOMWindow   _DOMWindow;
 
-	DOMElement  _DOMPasteboardElement;
+    DOMElement  _DOMPasteboardElement;
 
-	BOOL        supportsNativeCopyAndPaste;
-	BOOL        hasBugWhichPreventsNonEditablePaste;
-	BOOL        hasBugWhichPreventsNonEditablePasteRedirect;
+    BOOL        supportsNativeCopyAndPaste;
+    BOOL        hasBugWhichPreventsNonEditablePaste;
+    BOOL        hasBugWhichPreventsNonEditablePasteRedirect;
 
-	BOOL        currentEventIsNativePasteEvent;
-	BOOL        currentEventIsNativeCopyOrCutEvent;
-	BOOL        currentEventShouldBeSuppressed;
-	BOOL        currentEventShouldDefinitelyBubble;
-	BOOL        currentEventShouldDefinitelyNotBubble;
+    BOOL        currentEventIsNativePasteEvent;
+    BOOL        currentEventIsNativeCopyOrCutEvent;
+    BOOL        currentEventShouldBeSuppressed;
+    BOOL        currentEventShouldDefinitelyBubble;
+    BOOL        currentEventShouldDefinitelyNotBubble;
 
-	BOOL        _ignoreNativeCopyOrCutEvent;
-	BOOL        _ignoreNativePastePreparation;
+    BOOL        _ignoreNativeCopyOrCutEvent;
+    BOOL        _ignoreNativePastePreparation;
 }
 
 - (id)init
 {
-	if (self = [super init])
-	{
-		supportsNativeCopyAndPaste                  = CPFeatureIsCompatible(CPJavaScriptClipboardEventsFeature);
-		hasBugWhichPreventsNonEditablePaste         = CPPlatformHasBug(CPJavaScriptPasteRequiresEditableTarget);
-		hasBugWhichPreventsNonEditablePasteRedirect = CPPlatformHasBug(CPJavaScriptPasteCantRefocus);
-	}
+    if (self = [super init])
+    {
+        supportsNativeCopyAndPaste                  = CPFeatureIsCompatible(CPJavaScriptClipboardEventsFeature);
+        hasBugWhichPreventsNonEditablePaste         = CPPlatformHasBug(CPJavaScriptPasteRequiresEditableTarget);
+        hasBugWhichPreventsNonEditablePasteRedirect = CPPlatformHasBug(CPJavaScriptPasteCantRefocus);
+    }
 
-	return self;
+    return self;
 }
 
 - (void)setDOMWindow:(DOMWindow)aDOMWindow
 {
-	if (_DOMWindow === aDOMWindow)
-		return;
+    if (_DOMWindow === aDOMWindow)
+        return;
 
-	if (_DOMWindow)
-		[self destroyDOMElements];
+    if (_DOMWindow)
+        [self destroyDOMElements];
 
-	_DOMWindow = aDOMWindow;
+    _DOMWindow = aDOMWindow;
 
-	if (_DOMWindow)
-		[self createDOMElements];
+    if (_DOMWindow)
+        [self createDOMElements];
 }
 
 - (void)createDOMElements
 {
-	// MODIFICATION: Replaced 'var' with 'const'/'let'.
-	const theDocument = _DOMWindow.document,
-	_DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
+    // MODIFICATION: Replaced 'var' with 'const'/'let'.
+    const theDocument = _DOMWindow.document,
+    _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
 
-	// Create Native Pasteboard handler.
-	_DOMPasteboardElement = theDocument.createElement("textarea");
+    // Create Native Pasteboard handler.
+    _DOMPasteboardElement = theDocument.createElement("textarea");
 
-	_DOMPasteboardElement.style.position = "absolute";
-	_DOMPasteboardElement.style.top = "-10000px";
-	_DOMPasteboardElement.style.zIndex = "999";
-	_DOMPasteboardElement.className = "cpdontremove";
+    _DOMPasteboardElement.style.position = "absolute";
+    _DOMPasteboardElement.style.top = "-10000px";
+    _DOMPasteboardElement.style.zIndex = "999";
+    _DOMPasteboardElement.className = "cpdontremove";
 
-	_DOMBodyElement.appendChild(_DOMPasteboardElement);
+    _DOMBodyElement.appendChild(_DOMPasteboardElement);
 
-	_DOMPasteboardElement.blur();
+    _DOMPasteboardElement.blur();
 
-	const copyEventCallback = function (anEvent) { return [self beforeCopyEvent:anEvent]; },
-	nativeBeforeClipboardEventCallback = function (anEvent) { return [self nativeBeforeClipboardEvent:anEvent]; },
-	nativeCopyOrCutEventCallback = function (anEvent) { return [self nativeCopyOrCutEvent:anEvent]; },
-	pasteEventCallback = function (anEvent) { return [self beforePasteEvent:anEvent]; },
-	nativePasteEventCallback = function (anEvent) { return [self nativePasteEvent:anEvent]; };
+    const copyEventCallback = function (anEvent) { return [self beforeCopyEvent:anEvent]; },
+    nativeBeforeClipboardEventCallback = function (anEvent) { return [self nativeBeforeClipboardEvent:anEvent]; },
+    nativeCopyOrCutEventCallback = function (anEvent) { return [self nativeCopyOrCutEvent:anEvent]; },
+    pasteEventCallback = function (anEvent) { return [self beforePasteEvent:anEvent]; },
+    nativePasteEventCallback = function (anEvent) { return [self nativePasteEvent:anEvent]; };
 
-	// Modern browsers natively support addEventListener.
-	if (supportsNativeCopyAndPaste)
-	{
-		_DOMWindow.addEventListener("beforecopy", nativeBeforeClipboardEventCallback, NO);
-		_DOMWindow.addEventListener("beforecut", nativeBeforeClipboardEventCallback, NO);
-		_DOMWindow.addEventListener("beforepaste", nativeBeforeClipboardEventCallback, NO);
-		_DOMWindow.addEventListener("copy", nativeCopyOrCutEventCallback, NO);
-		_DOMWindow.addEventListener("cut", nativeCopyOrCutEventCallback, NO);
-		_DOMWindow.addEventListener("paste", nativePasteEventCallback, NO);
-	}
-	else
-	{
-		theDocument.addEventListener("beforepaste", pasteEventCallback, NO);
-		theDocument.addEventListener("beforecopy", copyEventCallback, NO);
-		theDocument.addEventListener("beforecut", copyEventCallback, NO);
-	}
+    // Modern browsers natively support addEventListener.
+    if (supportsNativeCopyAndPaste)
+    {
+        _DOMWindow.addEventListener("beforecopy", nativeBeforeClipboardEventCallback, NO);
+        _DOMWindow.addEventListener("beforecut", nativeBeforeClipboardEventCallback, NO);
+        _DOMWindow.addEventListener("beforepaste", nativeBeforeClipboardEventCallback, NO);
+        _DOMWindow.addEventListener("copy", nativeCopyOrCutEventCallback, NO);
+        _DOMWindow.addEventListener("cut", nativeCopyOrCutEventCallback, NO);
+        _DOMWindow.addEventListener("paste", nativePasteEventCallback, NO);
+    }
+    else
+    {
+        theDocument.addEventListener("beforepaste", pasteEventCallback, NO);
+        theDocument.addEventListener("beforecopy", copyEventCallback, NO);
+        theDocument.addEventListener("beforecut", copyEventCallback, NO);
+    }
 
-	_DOMWindow.addEventListener("unload", function()
-								{
-		if (supportsNativeCopyAndPaste)
-		{
-			_DOMWindow.removeEventListener("beforecopy", nativeBeforeClipboardEventCallback, NO);
-			_DOMWindow.removeEventListener("beforecut", nativeBeforeClipboardEventCallback, NO);
-			_DOMWindow.removeEventListener("beforepaste", nativeBeforeClipboardEventCallback, NO);
-			_DOMWindow.removeEventListener("copy", nativeCopyOrCutEventCallback, NO);
-			_DOMWindow.removeEventListener("cut", nativeCopyOrCutEventCallback, NO);
-			_DOMWindow.removeEventListener("paste", nativePasteEventCallback, NO);
-		}
-		else
-		{
-			theDocument.removeEventListener("beforepaste", pasteEventCallback, NO);
-			theDocument.removeEventListener("beforecopy", copyEventCallback, NO);
-			theDocument.removeEventListener("beforecut", copyEventCallback, NO);
-		}
-	}, NO);
+    _DOMWindow.addEventListener("unload", function()
+                                {
+        if (supportsNativeCopyAndPaste)
+        {
+            _DOMWindow.removeEventListener("beforecopy", nativeBeforeClipboardEventCallback, NO);
+            _DOMWindow.removeEventListener("beforecut", nativeBeforeClipboardEventCallback, NO);
+            _DOMWindow.removeEventListener("beforepaste", nativeBeforeClipboardEventCallback, NO);
+            _DOMWindow.removeEventListener("copy", nativeCopyOrCutEventCallback, NO);
+            _DOMWindow.removeEventListener("cut", nativeCopyOrCutEventCallback, NO);
+            _DOMWindow.removeEventListener("paste", nativePasteEventCallback, NO);
+        }
+        else
+        {
+            theDocument.removeEventListener("beforepaste", pasteEventCallback, NO);
+            theDocument.removeEventListener("beforecopy", copyEventCallback, NO);
+            theDocument.removeEventListener("beforecut", copyEventCallback, NO);
+        }
+    }, NO);
 }
 
 - (void)destroyDOMElements
 {
-	const theDocument = _DOMWindow.document,
+    const theDocument = _DOMWindow.document,
           _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
 
-	_DOMBodyElement.removeChild(_DOMPasteboardElement);
-	_DOMPasteboardElement = nil;
+    _DOMBodyElement.removeChild(_DOMPasteboardElement);
+    _DOMPasteboardElement = nil;
 }
 
 - (void)windowMaySendKeyEvent:(CPEvent)anEvent
 {
-	// Reset our opinions.
-	currentEventIsNativePasteEvent          = NO;
-	currentEventIsNativeCopyOrCutEvent      = NO;
-	currentEventShouldBeSuppressed          = NO;
-	currentEventShouldDefinitelyNotBubble   = NO;
-	currentEventShouldDefinitelyBubble      = NO;
+    // Reset our opinions.
+    currentEventIsNativePasteEvent          = NO;
+    currentEventIsNativeCopyOrCutEvent      = NO;
+    currentEventShouldBeSuppressed          = NO;
+    currentEventShouldDefinitelyNotBubble   = NO;
+    currentEventShouldDefinitelyBubble      = NO;
 
-	if (!anEvent)
-		return;
+    if (!anEvent)
+        return;
 
-	if ([anEvent type] !== CPKeyDown)
-	{
-		// Reset these flags on key up.
-		_ignoreNativePastePreparation = NO;
-		_ignoreNativeCopyOrCutEvent = NO;
-		return;
-	}
+    if ([anEvent type] !== CPKeyDown)
+    {
+        // Reset these flags on key up.
+        _ignoreNativePastePreparation = NO;
+        _ignoreNativeCopyOrCutEvent = NO;
+        return;
+    }
 
-	// MODIFICATION: Replaced 'var' with 'const'.
-	const modifierFlags = [anEvent modifierFlags];
+    // MODIFICATION: Replaced 'var' with 'const'.
+    const modifierFlags = [anEvent modifierFlags];
 
-	if (!(modifierFlags & (CPControlKeyMask | CPCommandKeyMask)))
-		return;
+    if (!(modifierFlags & (CPControlKeyMask | CPCommandKeyMask)))
+        return;
 
-	const aDOMEvent = anEvent._DOMEvent,
-	characters = [anEvent characters],
-	mayRequireDOMPasteboardElement = [self _mayRequireDOMPasteboardElementHack:aDOMEvent flags:modifierFlags];
+    const aDOMEvent = anEvent._DOMEvent,
+    characters = [anEvent characters],
+    mayRequireDOMPasteboardElement = [self _mayRequireDOMPasteboardElementHack:aDOMEvent flags:modifierFlags];
 
-	if (characters === "v" && mayRequireDOMPasteboardElement)
-	{
-		if (supportsNativeCopyAndPaste && hasBugWhichPreventsNonEditablePaste && hasBugWhichPreventsNonEditablePasteRedirect && !hasEditableTarget(aDOMEvent))
-		{
-			// You can't paste from the system clipboard into a non-editable area in Safari, neither using native
-			// copy and paste nor our _DOMPasteboardElement hack. We will paste from the Cappuccino pasteboard only
-			// and allow Safari to "beep" to indicate something went wrong.
+    if (characters === "v" && mayRequireDOMPasteboardElement)
+    {
+        if (supportsNativeCopyAndPaste && hasBugWhichPreventsNonEditablePaste && hasBugWhichPreventsNonEditablePasteRedirect && !hasEditableTarget(aDOMEvent))
+        {
+            // You can't paste from the system clipboard into a non-editable area in Safari, neither using native
+            // copy and paste nor our _DOMPasteboardElement hack. We will paste from the Cappuccino pasteboard only
+            // and allow Safari to "beep" to indicate something went wrong.
 
-			// The key down will not result in a paste event being sent by Safari, so it's not a paste event.
-			currentEventIsNativePasteEvent = NO;
-			// Yes to get the beep.
-			currentEventShouldDefinitelyBubble = YES;
-		}
-		else if (!(supportsNativeCopyAndPaste || hasBugWhichPreventsNonEditablePaste) && !_ignoreNativePastePreparation)
-		{
-			// We don't support native copy and paste so we must focus the _DOMPasteboardElement to receive the
-			// paste content. This needs to be done at keyDown time (or in the case of modern Safari, before the keyDown,
-			// which unfortunately isn't possible. See above.)
-			_DOMPasteboardElement.focus();
-			_DOMPasteboardElement.select();
-			_DOMPasteboardElement.value = "";
-			_DOMWindow.setNativeTimeout(function () { [self _checkDOMPasteboardElement]; }, 0);
+            // The key down will not result in a paste event being sent by Safari, so it's not a paste event.
+            currentEventIsNativePasteEvent = NO;
+            // Yes to get the beep.
+            currentEventShouldDefinitelyBubble = YES;
+        }
+        else if (!(supportsNativeCopyAndPaste || hasBugWhichPreventsNonEditablePaste) && !_ignoreNativePastePreparation)
+        {
+            // We don't support native copy and paste so we must focus the _DOMPasteboardElement to receive the
+            // paste content. This needs to be done at keyDown time (or in the case of modern Safari, before the keyDown,
+            // which unfortunately isn't possible. See above.)
+            _DOMPasteboardElement.focus();
+            _DOMPasteboardElement.select();
+            _DOMPasteboardElement.value = "";
+            _DOMWindow.setNativeTimeout(function () { [self _checkDOMPasteboardElement]; }, 0);
 
-			currentEventIsNativePasteEvent = YES;
-		}
-		else if (supportsNativeCopyAndPaste)
-			currentEventIsNativePasteEvent = YES;
+            currentEventIsNativePasteEvent = YES;
+        }
+        else if (supportsNativeCopyAndPaste)
+            currentEventIsNativePasteEvent = YES;
 
-		if (currentEventIsNativePasteEvent)
-		{
-			// We need the event to propagate or nothing will be pasted.
-			currentEventShouldDefinitelyBubble = YES;
+        if (currentEventIsNativePasteEvent)
+        {
+            // We need the event to propagate or nothing will be pasted.
+            currentEventShouldDefinitelyBubble = YES;
 
-			// And we don't send the keydown because either our native paste envent handler will send it,
-			// or the _checkDOMPasteboardElement check will.
-			currentEventShouldBeSuppressed = YES;
-		}
-	}
-	else if ((characters == "c" || characters == "x") && mayRequireDOMPasteboardElement)
-	{
-		currentEventIsNativeCopyOrCutEvent = YES;
+            // And we don't send the keydown because either our native paste envent handler will send it,
+            // or the _checkDOMPasteboardElement check will.
+            currentEventShouldBeSuppressed = YES;
+        }
+    }
+    else if ((characters == "c" || characters == "x") && mayRequireDOMPasteboardElement)
+    {
+        currentEventIsNativeCopyOrCutEvent = YES;
 
-		// If _ignoreNativeCopyOrCutEvent, we already handled the copy/cut in beforeCopyEvent:.
-		// If supportsNativeCopyAndPaste, we will be handling it in the nativebeforeCopyEvent: handler.
-		// In both of those cases we don't want to send the event on keydown too, or we'll get 2X copy/cut operations.
-		if (supportsNativeCopyAndPaste || _ignoreNativeCopyOrCutEvent)
-			currentEventShouldBeSuppressed = YES;
-	}
+        // If _ignoreNativeCopyOrCutEvent, we already handled the copy/cut in beforeCopyEvent:.
+        // If supportsNativeCopyAndPaste, we will be handling it in the nativebeforeCopyEvent: handler.
+        // In both of those cases we don't want to send the event on keydown too, or we'll get 2X copy/cut operations.
+        if (supportsNativeCopyAndPaste || _ignoreNativeCopyOrCutEvent)
+            currentEventShouldBeSuppressed = YES;
+    }
 
-	if (CPFeatureIsCompatible(CPBackspaceTriggersPageBack) && characters === CPDeleteCharacter && !hasEditableTarget(aDOMEvent))
-		currentEventShouldBeSuppressed = YES;
+    if (CPFeatureIsCompatible(CPBackspaceTriggersPageBack) && characters === CPDeleteCharacter && !hasEditableTarget(aDOMEvent))
+        currentEventShouldBeSuppressed = YES;
 
-	if (!currentEventShouldBeSuppressed)
-	{
-		// MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT macro.
-		if (characters === "v")
-			anEvent._suppressCappuccinoPaste = YES;
-		// MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT macro.
-		else if (characters === "x")
-			anEvent._suppressCappuccinoCut = YES;
-	}
+    if (!currentEventShouldBeSuppressed)
+    {
+        // MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT macro.
+        if (characters === "v")
+            anEvent._suppressCappuccinoPaste = YES;
+        // MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT macro.
+        else if (characters === "x")
+            anEvent._suppressCappuccinoCut = YES;
+    }
 }
 
 - (BOOL)windowShouldSuppressKeyEvent
 {
-	return currentEventShouldBeSuppressed;
+    return currentEventShouldBeSuppressed;
 }
 
 - (void)windowDidSendKeyEvent:(CPEvent)anEvent
 {
-	// Now that the copy event has been sent through the Cappuccino event stack, we can load any Cappuccino
-	// pasteboard string into our DOMPasteboardElement hack, if necessary.
-	if (!supportsNativeCopyAndPaste && currentEventIsNativeCopyOrCutEvent)
-		[self _primeDOMPasteboardElement];
+    // Now that the copy event has been sent through the Cappuccino event stack, we can load any Cappuccino
+    // pasteboard string into our DOMPasteboardElement hack, if necessary.
+    if (!supportsNativeCopyAndPaste && currentEventIsNativeCopyOrCutEvent)
+        [self _primeDOMPasteboardElement];
 }
 
 - (BOOL)windowShouldStopPropagation
 {
-	return currentEventShouldDefinitelyNotBubble;
+    return currentEventShouldDefinitelyNotBubble;
 }
 
 - (BOOL)windowShouldNotStopPropagation
 {
-	return currentEventShouldDefinitelyBubble;
+    return currentEventShouldDefinitelyBubble;
 }
 
 - (CPEvent)_fakeClipboardEvent:(DOMEvent)aDOMEvent type:(CPString)aType
 {
-	// MODIFICATION: Replaced 'var' with 'const'.
-	const keyCode = aType === "x" ? CPKeyCodes.X : (aType === "c" ? CPKeyCodes.C : CPKeyCodes.V),
-	characters = aType,
-	timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
-	windowNumber = [[CPApp keyWindow] windowNumber],
-	modifierFlags = CPPlatformActionKeyMask,
-	location = [[CPApp currentEvent] locationInWindow],
-	anEvent = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
-							  timestamp:timestamp windowNumber:windowNumber context:nil
-							 characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode isActionKey:YES];
+    // MODIFICATION: Replaced 'var' with 'const'.
+    const keyCode = aType === "x" ? CPKeyCodes.X : (aType === "c" ? CPKeyCodes.C : CPKeyCodes.V),
+    characters = aType,
+    timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
+    windowNumber = [[CPApp keyWindow] windowNumber],
+    modifierFlags = CPPlatformActionKeyMask,
+    location = [[CPApp currentEvent] locationInWindow],
+    anEvent = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
+                              timestamp:timestamp windowNumber:windowNumber context:nil
+                             characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode isActionKey:YES];
 
-	anEvent._data1 = @{ "simulated": YES };
-	anEvent._DOMEvent = aDOMEvent;
+    anEvent._data1 = @{ "simulated": YES };
+    anEvent._DOMEvent = aDOMEvent;
 
-	return anEvent;
+    return anEvent;
 }
 
 - (void)beforeCopyEvent:(DOMEvent)aDOMEvent
 {
-	if ([self _mayRequireDOMPasteboardElementHack:aDOMEvent flags:CPPlatformActionKeyMask] && !_ignoreNativeCopyOrCutEvent)
-	{
-		// we have to send out a fake copy or cut event so that we can force the copy/cut mechanisms to take place
-		// MODIFICATION: Replaced 'var' with 'const'.
-		const anEvent = [self _fakeClipboardEvent:aDOMEvent type:(aDOMEvent.type === "beforecut" ? "x" : "c")];
+    if ([self _mayRequireDOMPasteboardElementHack:aDOMEvent flags:CPPlatformActionKeyMask] && !_ignoreNativeCopyOrCutEvent)
+    {
+        // we have to send out a fake copy or cut event so that we can force the copy/cut mechanisms to take place
+        // MODIFICATION: Replaced 'var' with 'const'.
+        const anEvent = [self _fakeClipboardEvent:aDOMEvent type:(aDOMEvent.type === "beforecut" ? "x" : "c")];
 
-		[CPApp sendEvent:anEvent];
+        [CPApp sendEvent:anEvent];
 
-		// Once we've sent it, we can load the copy information into the pasteboard hack.
-		[self _primeDOMPasteboardElement];
+        // Once we've sent it, we can load the copy information into the pasteboard hack.
+        [self _primeDOMPasteboardElement];
 
-		//then we have to IGNORE the real keyboard event to prevent a double copy
-		//safari also sends the beforecopy event twice, so we additionally check here and prevent two events
-		_ignoreNativeCopyOrCutEvent = YES;
-	}
+        //then we have to IGNORE the real keyboard event to prevent a double copy
+        //safari also sends the beforecopy event twice, so we additionally check here and prevent two events
+        _ignoreNativeCopyOrCutEvent = YES;
+    }
 
-	[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 - (BOOL)beforePasteEvent:(DOMEvent)aDOMEvent
 {
-	// Set up to capture the paste in a temporary input field. We'll send the event after capture.
-	if ([self _mayRequireDOMPasteboardElementHack:aDOMEvent flags:CPPlatformActionKeyMask])
-	{
-		_DOMPasteboardElement.focus();
-		_DOMPasteboardElement.select();
-		_DOMPasteboardElement.value = "";
+    // Set up to capture the paste in a temporary input field. We'll send the event after capture.
+    if ([self _mayRequireDOMPasteboardElementHack:aDOMEvent flags:CPPlatformActionKeyMask])
+    {
+        _DOMPasteboardElement.focus();
+        _DOMPasteboardElement.select();
+        _DOMPasteboardElement.value = "";
 
-		_ignoreNativePastePreparation = YES;
-	}
+        _ignoreNativePastePreparation = YES;
+    }
 
-	[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 /*
@@ -355,188 +355,188 @@ var hasEditableTarget = function(aDOMEvent)
  */
 - (BOOL)_mayRequireDOMPasteboardElementHack:(DOMEvent)aDOMEvent flags:(unsigned)modifierFlags
 {
-	return !hasEditableTarget(aDOMEvent) && (modifierFlags & CPPlatformActionKeyMask);
+    return !hasEditableTarget(aDOMEvent) && (modifierFlags & CPPlatformActionKeyMask);
 }
 
 - (void)_primeDOMPasteboardElement
 {
-	// MODIFICATION: Replaced 'var' with 'const'.
-	const pasteboard = [CPPasteboard generalPasteboard],
-	types = [pasteboard types];
+    // MODIFICATION: Replaced 'var' with 'const'.
+    const pasteboard = [CPPasteboard generalPasteboard],
+    types = [pasteboard types];
 
-	if (types.length)
-	{
-		if ([types indexOfObjectIdenticalTo:CPStringPboardType] !== CPNotFound)
-			_DOMPasteboardElement.value = [pasteboard stringForType:CPStringPboardType];
-		else
-			_DOMPasteboardElement.value = [pasteboard _generateStateUID];
+    if (types.length)
+    {
+        if ([types indexOfObjectIdenticalTo:CPStringPboardType] !== CPNotFound)
+            _DOMPasteboardElement.value = [pasteboard stringForType:CPStringPboardType];
+        else
+            _DOMPasteboardElement.value = [pasteboard _generateStateUID];
 
-		_DOMPasteboardElement.focus();
-		_DOMPasteboardElement.select();
+        _DOMPasteboardElement.focus();
+        _DOMPasteboardElement.select();
 
-		window.setNativeTimeout(function() { [self _clearDOMPasteboardElement]; }, 0);
-	}
+        window.setNativeTimeout(function() { [self _clearDOMPasteboardElement]; }, 0);
+    }
 }
 
 - (void)_checkDOMPasteboardElement
 {
-	if (supportsNativeCopyAndPaste)
-	{
-		[self _clearDOMPasteboardElement];
-		return;
-	}
+    if (supportsNativeCopyAndPaste)
+    {
+        [self _clearDOMPasteboardElement];
+        return;
+    }
 
-	// MODIFICATION: Replaced 'var' with 'const'.
-	const value = _DOMPasteboardElement.value;
+    // MODIFICATION: Replaced 'var' with 'const'.
+    const value = _DOMPasteboardElement.value;
 
-	if ([value length])
-	{
-		// MODIFICATION: Replaced 'var' with 'const'.
-		const pasteboard = [CPPasteboard generalPasteboard],
-		cappString = [pasteboard stringForType:CPStringPboardType];
+    if ([value length])
+    {
+        // MODIFICATION: Replaced 'var' with 'const'.
+        const pasteboard = [CPPasteboard generalPasteboard],
+        cappString = [pasteboard stringForType:CPStringPboardType];
 
-		if (cappString != value)
-		{
-			[pasteboard declareTypes:[CPStringPboardType] owner:self];
-			[pasteboard setString:value forType:CPStringPboardType];
-		}
-	}
+        if (cappString != value)
+        {
+            [pasteboard declareTypes:[CPStringPboardType] owner:self];
+            [pasteboard setString:value forType:CPStringPboardType];
+        }
+    }
 
-	[self _clearDOMPasteboardElement];
+    [self _clearDOMPasteboardElement];
 
-	[CPApp sendEvent:[self _fakeClipboardEvent:nil type:@"v"]];
+    [CPApp sendEvent:[self _fakeClipboardEvent:nil type:@"v"]];
 
-	[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 - (void)_clearDOMPasteboardElement
 {
-	_DOMPasteboardElement.value = "";
-	_DOMPasteboardElement.blur();
+    _DOMPasteboardElement.value = "";
+    _DOMPasteboardElement.blur();
 }
 
 - (BOOL)nativeBeforeClipboardEvent:(DOMEvent)aDOMEvent
 {
-	// Our job here is to return "false" if the given clipboard operation should be enabled even in a situation where
-	// the browser might normally grey the option out.
+    // Our job here is to return "false" if the given clipboard operation should be enabled even in a situation where
+    // the browser might normally grey the option out.
 
-	// Allow these fields to do their own thing.
-	if (hasEditableTarget(aDOMEvent))
-		return true;
+    // Allow these fields to do their own thing.
+    if (hasEditableTarget(aDOMEvent))
+        return true;
 
-	// MODIFICATION: Replaced 'var' with 'let'.
-	let returnValue = YES;
+    // MODIFICATION: Replaced 'var' with 'let'.
+    let returnValue = YES;
 
-	switch (aDOMEvent.type)
-	{
-		case "beforecopy":
-			returnValue = !([CPApp targetForAction:@selector(copy:)]);
-			break;
-		case "beforecut":
-			returnValue = !([CPApp targetForAction:@selector(cut:)]);
-			break;
-		case "beforepaste":
-			returnValue = !([CPApp targetForAction:@selector(paste:)]);
-			break;
-	}
+    switch (aDOMEvent.type)
+    {
+        case "beforecopy":
+            returnValue = !([CPApp targetForAction:@selector(copy:)]);
+            break;
+        case "beforecut":
+            returnValue = !([CPApp targetForAction:@selector(cut:)]);
+            break;
+        case "beforepaste":
+            returnValue = !([CPApp targetForAction:@selector(paste:)]);
+            break;
+    }
 
-	if (!returnValue)
-		_CPDOMEventStop(aDOMEvent, self);
+    if (!returnValue)
+        _CPDOMEventStop(aDOMEvent, self);
 
-	return returnValue;
+    return returnValue;
 }
 
 - (BOOL)nativePasteEvent:(DOMEvent)aDOMEvent
 {
-	// This shouldn't happen.
-	if (!supportsNativeCopyAndPaste)
-		return;
+    // This shouldn't happen.
+    if (!supportsNativeCopyAndPaste)
+        return;
 
-	// MODIFICATION: Replaced 'var' with 'let'.
-	let value;
-	if (aDOMEvent.clipboardData && aDOMEvent.clipboardData.setData)
-		value = aDOMEvent.clipboardData.getData('text/plain');
-	else
-		value = _DOMWindow.clipboardData.getData("Text");
+    // MODIFICATION: Replaced 'var' with 'let'.
+    let value;
+    if (aDOMEvent.clipboardData && aDOMEvent.clipboardData.setData)
+        value = aDOMEvent.clipboardData.getData('text/plain');
+    else
+        value = _DOMWindow.clipboardData.getData("Text");
 
-	if ([value length])
-	{
-		// MODIFICATION: Replaced 'var' with 'const'.
-		const pasteboard = [CPPasteboard generalPasteboard],
-		cappString = [pasteboard stringForType:CPStringPboardType];
+    if ([value length])
+    {
+        // MODIFICATION: Replaced 'var' with 'const'.
+        const pasteboard = [CPPasteboard generalPasteboard],
+        cappString = [pasteboard stringForType:CPStringPboardType];
 
-		if (cappString != value)
-		{
-			[pasteboard declareTypes:[CPStringPboardType] owner:self];
-			[pasteboard setString:value forType:CPStringPboardType];
-		}
-	}
+        if (cappString != value)
+        {
+            [pasteboard declareTypes:[CPStringPboardType] owner:self];
+            [pasteboard setString:value forType:CPStringPboardType];
+        }
+    }
 
-	// MODIFICATION: Replaced 'var' with 'const'.
-	const anEvent = [self _fakeClipboardEvent:aDOMEvent type:"v"],
-	platformWindow = [[anEvent window] platformWindow];
+    // MODIFICATION: Replaced 'var' with 'const'.
+    const anEvent = [self _fakeClipboardEvent:aDOMEvent type:"v"],
+    platformWindow = [[anEvent window] platformWindow];
 
-	// MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT macro.
-	anEvent._suppressCappuccinoPaste = YES;
+    // MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT macro.
+    anEvent._suppressCappuccinoPaste = YES;
 
-	// By default we'll stop the native handling of the event since we're handling it ourselves. However, we need to
-	// stop it before we send the event so that the event can overrule our choice. CPTextField for instance wants the
-	// default handling when focused (which is to insert into the field).
-	[platformWindow _propagateCurrentDOMEvent:NO];
+    // By default we'll stop the native handling of the event since we're handling it ourselves. However, we need to
+    // stop it before we send the event so that the event can overrule our choice. CPTextField for instance wants the
+    // default handling when focused (which is to insert into the field).
+    [platformWindow _propagateCurrentDOMEvent:NO];
 
-	[CPApp sendEvent:anEvent];
+    [CPApp sendEvent:anEvent];
 
-	[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-	if (![platformWindow _willPropagateCurrentDOMEvent])
-		_CPDOMEventStop(aDOMEvent, self);
+    if (![platformWindow _willPropagateCurrentDOMEvent])
+        _CPDOMEventStop(aDOMEvent, self);
 
-	return false;
+    return false;
 }
 
 - (BOOL)nativeCopyOrCutEvent:(DOMEvent)aDOMEvent
 {
-	// This shouldn't happen.
-	if (!supportsNativeCopyAndPaste)
-		return;
+    // This shouldn't happen.
+    if (!supportsNativeCopyAndPaste)
+        return;
 
-	// MODIFICATION: Replaced 'var' with 'const'.
-	const anEvent = [self _fakeClipboardEvent:aDOMEvent type:(aDOMEvent.type.indexOf("cut") != CPNotFound ? "x" : "c")],
-	platformWindow = [[anEvent window] platformWindow];
+    // MODIFICATION: Replaced 'var' with 'const'.
+    const anEvent = [self _fakeClipboardEvent:aDOMEvent type:(aDOMEvent.type.indexOf("cut") != CPNotFound ? "x" : "c")],
+    platformWindow = [[anEvent window] platformWindow];
 
-	// MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT macro.
-	anEvent._suppressCappuccinoCut = YES;
+    // MODIFICATION: Inlined the SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT macro.
+    anEvent._suppressCappuccinoCut = YES;
 
-	[platformWindow _propagateCurrentDOMEvent:NO];
+    [platformWindow _propagateCurrentDOMEvent:NO];
 
-	// Let the app react through copy: and cut: actions.
-	[CPApp sendEvent:anEvent];
-	[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    // Let the app react through copy: and cut: actions.
+    [CPApp sendEvent:anEvent];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-	// If StopDOMEventPropagation was set to NO, we don't try to write to the system clipboard. The control that did this
-	// wants to use the default copy/cut functionality.
-	if (![platformWindow _willPropagateCurrentDOMEvent])
-	{
-		// Now the app should have written whatever it wants to have copied to the Cappuccino clipboard. So now we need
-		// to write it to the system board.
-		_CPDOMEventStop(aDOMEvent, self);
+    // If StopDOMEventPropagation was set to NO, we don't try to write to the system clipboard. The control that did this
+    // wants to use the default copy/cut functionality.
+    if (![platformWindow _willPropagateCurrentDOMEvent])
+    {
+        // Now the app should have written whatever it wants to have copied to the Cappuccino clipboard. So now we need
+        // to write it to the system board.
+        _CPDOMEventStop(aDOMEvent, self);
 
-		// MODIFICATION: Replaced 'var' with 'const'.
-		const pasteboard = [CPPasteboard generalPasteboard];
+        // MODIFICATION: Replaced 'var' with 'const'.
+        const pasteboard = [CPPasteboard generalPasteboard];
 
-		if ([[pasteboard types] containsObject:CPStringPboardType])
-		{
-			// MODIFICATION: Replaced 'var' with 'const'.
-			const stringValue = [pasteboard stringForType:CPStringPboardType];
+        if ([[pasteboard types] containsObject:CPStringPboardType])
+        {
+            // MODIFICATION: Replaced 'var' with 'const'.
+            const stringValue = [pasteboard stringForType:CPStringPboardType];
 
-			if (aDOMEvent.clipboardData && aDOMEvent.clipboardData.setData)
-				aDOMEvent.clipboardData.setData('text/plain', stringValue);
-			else
-				_DOMWindow.clipboardData.setData('Text', stringValue);
-		}
-	}
+            if (aDOMEvent.clipboardData && aDOMEvent.clipboardData.setData)
+                aDOMEvent.clipboardData.setData('text/plain', stringValue);
+            else
+                _DOMWindow.clipboardData.setData('Text', stringValue);
+        }
+    }
 
-	return ![platformWindow _willPropagateCurrentDOMEvent];
+    return ![platformWindow _willPropagateCurrentDOMEvent];
 }
 
 @end
