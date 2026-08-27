@@ -63,8 +63,8 @@ var rootItems = [CPArray arrayWithObject:[CPDictionary dictionaryWithObjectsAndK
 
 - (void)_saveSmartFolders
 {
-	var defaults = [CPUserDefaults standardUserDefaults];
-	[defaults setObject:smartFolders forKey:@"SmartFolders"];
+    var defaults = [CPUserDefaults standardUserDefaults];
+    [defaults setObject:smartFolders forKey:@"SmartFolders"];
 }
 
 - (void)awakeFromCib
@@ -204,7 +204,7 @@ var rootItems = [CPArray arrayWithObject:[CPDictionary dictionaryWithObjectsAndK
 - (IBAction)closeSheet:(id)sender
 {
     if ([sender tag] == CPOKButton)
-    	[predicateEditor reloadPredicate];
+        [predicateEditor reloadPredicate];
 
     [CPApp endSheet:predicateSheet returnCode:[sender tag]];
 }
@@ -218,13 +218,13 @@ var rootItems = [CPArray arrayWithObject:[CPDictionary dictionaryWithObjectsAndK
         var predicate = [predicateEditor objectValue];
         [self setFilterPredicate:predicate];
 
-    	[folder setObject:predicate forKey:@"predicate"];
-    	[folder setObject:name forKey:@"name"];
+        [folder setObject:predicate forKey:@"predicate"];
+        [folder setObject:name forKey:@"name"];
         [folder setObject:[[tableController arrangedObjects] count] forKey:@"count"];
-    	[smartOutlineView reloadData];
+        [smartOutlineView reloadData];
 
-    	[self saveSmartFolders];
-    	[aSheet orderOut:nil];
+        [self saveSmartFolders];
+        [aSheet orderOut:nil];
     }
 }
 // convenience method

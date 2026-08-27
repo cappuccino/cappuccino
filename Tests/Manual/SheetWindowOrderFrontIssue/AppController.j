@@ -38,7 +38,7 @@
 
 - (IBAction)closeSheet:(idf)sender
 {
-	[CPApp endSheet:sheetWindow];
+    [CPApp endSheet:sheetWindow];
 }
 
 @end

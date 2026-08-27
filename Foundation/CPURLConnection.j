@@ -161,14 +161,14 @@ var CPURLConnectionDelegate = nil;
     
     Typical use can be like this:
 
-	- (async @action)doAction:(id)sender {
-	    const { response, data, error } = await [CPURLConnection sendAsynchronousRequest:[CPURLRequest requestWithURL:@"http://cappuccino.dev"]];
-	    if (error == nil) {
-		//do the stuff...
-	    } else {
-		// Handle errors
-	    }
-	}
+    - (async @action)doAction:(id)sender {
+        const { response, data, error } = await [CPURLConnection sendAsynchronousRequest:[CPURLRequest requestWithURL:@"http://cappuccino.dev"]];
+        if (error == nil) {
+        //do the stuff...
+        } else {
+        // Handle errors
+        }
+    }
 */
 + (async JSObject /* { response: CPURLResponse, data: CPData, error: CPError } */)sendAsynchronousRequest:(CPURLRequest)aRequest
 {
@@ -218,15 +218,15 @@ var CPURLConnectionDelegate = nil;
 
 - (void)_initWithRequest:(CPURLRequest)aRequest
 {
-	_request = aRequest;
+    _request = aRequest;
     _originalRequest = [aRequest copy];
-	_isCanceled = NO;
+    _isCanceled = NO;
 
-	var URL = [_request URL],
-	    scheme = [URL scheme];
+    var URL = [_request URL],
+        scheme = [URL scheme];
 
-	// Browsers use "file:", Titanium uses "app:"
-	_isLocalFileConnection =    scheme === "file" ||
+    // Browsers use "file:", Titanium uses "app:"
+    _isLocalFileConnection =    scheme === "file" ||
                                 ((scheme === "http" || scheme === "https") &&
                                  window.location &&
                                  (window.location.protocol === "file:" || window.location.protocol === "app:"));

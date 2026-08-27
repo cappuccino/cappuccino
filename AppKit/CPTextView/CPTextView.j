@@ -2472,6 +2472,10 @@ Sets the selection to a range of characters in response to user action.
     if (!ruler)
         return;
 
+    // Do not rebuild markers if user is currently dragging one
+    if ([ruler draggingMarker])
+        return;
+
     var selectedRange = [self selectedRange],
         paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
         currentAttributes = _typingAttributes;
@@ -2480,10 +2484,10 @@ Sets the selection to a range of characters in response to user action.
     if (textLength > 0)
     {
         var charIndex = selectedRange.location;
-        
-        // Safety bounds checks for cursor placements
+
         if (charIndex >= textLength)
             charIndex = textLength - 1;
+
         if (charIndex < 0)
             charIndex = 0;
 
@@ -2497,7 +2501,6 @@ Sets the selection to a range of characters in response to user action.
         tabStops = [paragraphStyle tabStops],
         count = [tabStops count];
 
-    // A. Load existing tab stop markers onto the ruler
     for (var i = 0; i < count; i++)
     {
         var tab = [tabStops objectAtIndex:i],
@@ -2508,7 +2511,6 @@ Sets the selection to a range of characters in response to user action.
         [markers addObject:marker];
     }
 
-    // B. Add Indentation Handles (First line indent & Head indent)
     var firstLineMarker = [[CPRulerMarker alloc] initWithRulerView:ruler 
                                                     markerLocation:[paragraphStyle firstLineHeadIndent] 
                                                         imageValue:[paragraphStyle firstLineHeadIndent] 
@@ -2524,7 +2526,6 @@ Sets the selection to a range of characters in response to user action.
     [ruler setMarkers:markers];
 }
 
-// Local comparison function helper for tab sorting
 var compareTabStops = function(obj1, obj2, context) {
     if ([obj1 location] < [obj2 location]) return CPOrderedAscending;
     if ([obj1 location] > [obj2 location]) return CPOrderedDescending;
@@ -2533,72 +2534,6 @@ var compareTabStops = function(obj1, obj2, context) {
 
 - (void)rulerView:(CPRulerView)rulerView didAddMarker:(CPRulerMarker)marker
 {
-    if (![self _didBeginEditing] || ![self shouldChangeTextInRange:_selectionRange replacementString:nil])
-        return;
-
-    var selectedRange = [self selectedRange],
-        paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
-        currentAttributes = _typingAttributes;
-
-    // Retrieve active attributes at the cursor position if there is no selection
-    var textLength = [_textStorage length],
-        charIndex = selectedRange.location;
-
-    if (textLength > 0)
-    {
-        if (charIndex >= textLength)
-            charIndex = textLength - 1;
-        if (charIndex < 0)
-            charIndex = 0;
-
-        currentAttributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
-    }
-
-    if ([currentAttributes objectForKey:CPParagraphStyleAttributeName])
-        paragraphStyle = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
-
-    var mutableStyle = [paragraphStyle mutableCopy];
-
-    // Create a new Left-aligned tab stop where the user clicked
-    var newTab = [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:[marker imageValue]],
-        tabs = [[mutableStyle tabStops] mutableCopy];
-
-    [tabs addObject:newTab];
-
-    // Sort tabs by location ascending
-    [tabs sortUsingFunction:compareTabStops context:nil];
-
-    [mutableStyle setTabStops:tabs];
-    [marker setRepresentedObject:newTab];
-
-    // Find the target text range to modify (selection or containing paragraph)
-    var targetRange = selectedRange;
-    if (targetRange.length === 0)
-        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
-
-    if (targetRange.length > 0)
-    {
-        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
-        
-        [_layoutManager textStorage:_textStorage 
-                             edited:0 
-                              range:CPMakeRangeCopy(targetRange) 
-                     changeInLength:0 
-                   invalidatedRange:CPMakeRangeCopy(targetRange)];
-    }
-
-    if (selectedRange.length === 0)
-    {
-        [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
-        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
-    }
-}
-
-- (void)rulerView:(CPRulerView)rulerView didMoveMarker:(CPRulerMarker)marker
-{
-    if (![self _didBeginEditing] || ![self shouldChangeTextInRange:_selectionRange replacementString:nil])
-        return;
-
     var selectedRange = [self selectedRange],
         paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
         currentAttributes = _typingAttributes;
@@ -2610,6 +2545,7 @@ var compareTabStops = function(obj1, obj2, context) {
     {
         if (charIndex >= textLength)
             charIndex = textLength - 1;
+
         if (charIndex < 0)
             charIndex = 0;
 
@@ -2620,69 +2556,31 @@ var compareTabStops = function(obj1, obj2, context) {
         paragraphStyle = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
 
     var mutableStyle = [paragraphStyle mutableCopy],
-        oldTab = [marker representedObject];
+        newTab = [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:[marker imageValue]],
+        tabs = [[mutableStyle tabStops] mutableCopy];
 
-    if (!oldTab)
-        return;
+    [tabs addObject:newTab];
+    [tabs sortUsingFunction:compareTabStops context:nil];
 
-    // A. Handle standard tab stops
-    if ([oldTab isKindOfClass:[CPTextTab class]])
-    {
-        var newTab = [[CPTextTab alloc] initWithType:[oldTab alignment] location:[marker imageValue]],
-            tabs = [[mutableStyle tabStops] mutableCopy];
+    [mutableStyle setTabStops:tabs];
+    [marker setRepresentedObject:newTab];
 
-        [tabs removeObject:oldTab];
-        [tabs addObject:newTab];
-
-        // Sort tabs by location ascending
-        [tabs sortUsingFunction:compareTabStops context:nil];
-
-        [mutableStyle setTabStops:tabs];
-        [marker setRepresentedObject:newTab];
-    }
-    // B. Handle Indentation Marker drags (First Line, Left, and Right indents)
-    else if ([oldTab isKindOfClass:[CPString class]])
-    {
-        if (oldTab === @"CPFirstLineIndent")
-            [mutableStyle setFirstLineHeadIndent:[marker imageValue]];
-        else if (oldTab === @"CPHeadIndent")
-            [mutableStyle setHeadIndent:[marker imageValue]];
-        else if (oldTab === @"CPTailIndent")
-            [mutableStyle setTailIndent:[marker imageValue]];
-    }
-
-    // Find the target text range to modify (selection or containing paragraph)
     var targetRange = selectedRange;
-    if (targetRange.length === 0)
+    if (targetRange.length === 0 && textLength > 0)
         targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
 
     if (targetRange.length > 0)
     {
         [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
-        
-        [_layoutManager textStorage:_textStorage 
-                             edited:0 
-                              range:CPMakeRangeCopy(targetRange) 
-                     changeInLength:0 
-                   invalidatedRange:CPMakeRangeCopy(targetRange)];
+        [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(targetRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(targetRange)];
     }
 
-    if (selectedRange.length === 0)
-    {
-        [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
-        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
-    }
-
-    [_layoutManager _validateLayoutAndGlyphs];
-    [self sizeToFit];
-    [self setNeedsDisplay:YES];
+    [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
 }
 
-- (void)rulerView:(CPRulerView)rulerView didRemoveMarker:(CPRulerMarker)marker
+- (void)rulerView:(CPRulerView)rulerView didMoveMarker:(CPRulerMarker)marker
 {
-    if (![self _didBeginEditing] || ![self shouldChangeTextInRange:_selectionRange replacementString:nil])
-        return;
-
     var selectedRange = [self selectedRange],
         paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
         currentAttributes = _typingAttributes;
@@ -2694,9 +2592,75 @@ var compareTabStops = function(obj1, obj2, context) {
     {
         if (charIndex >= textLength)
             charIndex = textLength - 1;
+
         if (charIndex < 0)
             charIndex = 0;
 
+        currentAttributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
+    }
+
+    if ([currentAttributes objectForKey:CPParagraphStyleAttributeName])
+        paragraphStyle = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
+
+    var mutableStyle = [paragraphStyle mutableCopy],
+        rep = [marker representedObject];
+
+    if (!rep)
+        return;
+
+    // A. Handle standard tab stops
+    if ([rep isKindOfClass:[CPTextTab class]])
+    {
+        var newTab = [[CPTextTab alloc] initWithType:[rep alignment] location:[marker imageValue]],
+            tabs = [[mutableStyle tabStops] mutableCopy];
+
+        [tabs removeObject:rep];
+        [tabs addObject:newTab];
+        [tabs sortUsingFunction:compareTabStops context:nil];
+
+        [mutableStyle setTabStops:tabs];
+        [marker setRepresentedObject:newTab];
+    }
+
+    // B. Handle Indentation Marker drags directly by string literal
+    else if (rep === @"CPFirstLineIndent")
+        [mutableStyle setFirstLineHeadIndent:[marker imageValue]];
+    else if (rep === @"CPHeadIndent")
+        [mutableStyle setHeadIndent:[marker imageValue]];
+    else if (rep === @"CPTailIndent")
+        [mutableStyle setTailIndent:[marker imageValue]];
+
+    var targetRange = selectedRange;
+
+    if (targetRange.length === 0 && textLength > 0)
+        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
+
+    if (targetRange.length > 0)
+    {
+        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
+        [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(targetRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(targetRange)];
+    }
+
+    [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
+
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
+}
+
+- (void)rulerView:(CPRulerView)rulerView didRemoveMarker:(CPRulerMarker)marker
+{
+    var selectedRange = [self selectedRange],
+        paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
+        currentAttributes = _typingAttributes;
+
+    var textLength = [_textStorage length],
+        charIndex = selectedRange.location;
+
+    if (textLength > 0)
+    {
+        if (charIndex >= textLength) charIndex = textLength - 1;
+        if (charIndex < 0) charIndex = 0;
         currentAttributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
     }
 
@@ -2711,31 +2675,20 @@ var compareTabStops = function(obj1, obj2, context) {
 
     var tabs = [[mutableStyle tabStops] mutableCopy];
     [tabs removeObject:oldTab];
-
     [mutableStyle setTabStops:tabs];
 
-    // Find the target text range to modify (selection or containing paragraph)
     var targetRange = selectedRange;
-    
-    if (targetRange.length === 0)
+    if (targetRange.length === 0 && textLength > 0)
         targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
 
     if (targetRange.length > 0)
     {
         [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
-        
-        [_layoutManager textStorage:_textStorage 
-                             edited:0 
-                              range:CPMakeRangeCopy(targetRange) 
-                     changeInLength:0 
-                   invalidatedRange:CPMakeRangeCopy(targetRange)];
+        [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(targetRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(targetRange)];
     }
 
-    if (selectedRange.length === 0)
-    {
-        [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
-        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
-    }
+    [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
 }
 
 - (void)rulerView:(CPRulerView)rulerView didUpdateMarker:(CPRulerMarker)marker oldTab:(id)oldTab
@@ -2759,19 +2712,11 @@ var compareTabStops = function(obj1, obj2, context) {
 
     [tabs removeObject:oldTab];
     [tabs addObject:newTab];
-
-    // Sort tabs ascending
     [tabs sortUsingFunction:compareTabStops context:nil];
-
     [mutableStyle setTabStops:tabs];
 
     [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
-    
-    [_layoutManager textStorage:_textStorage 
-                         edited:0 
-                          range:CPMakeRangeCopy(targetRange) 
-                 changeInLength:0 
-               invalidatedRange:CPMakeRangeCopy(targetRange)];
+    [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(targetRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(targetRange)];
 
     if (selectedRange.length === 0)
     {
@@ -2779,10 +2724,143 @@ var compareTabStops = function(obj1, obj2, context) {
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
     }
 
-    // Force layouts and view canvas update
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
     [self setNeedsDisplay:YES];
+}
+
+- (float)rulerView:(CPRulerView)aRulerView willMoveMarker:(CPRulerMarker)aMarker toLocation:(float)proposedLocation
+{
+    var rep = [aMarker representedObject];
+
+    // Indent markers can be dragged anywhere >= 0
+    if (rep === @"CPFirstLineIndent" || rep === @"CPHeadIndent" || rep === @"CPTailIndent")
+        return Math.max(0.0, proposedLocation);
+
+    var textLength = [_textStorage length];
+    if (textLength === 0)
+        return Math.max(0.0, proposedLocation);
+
+    var selectedRange = [self selectedRange],
+        targetRange = selectedRange;
+
+    if (targetRange.length === 0)
+        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
+
+    if (targetRange.length === 0)
+        return Math.max(0.0, proposedLocation);
+
+    [_layoutManager _validateLayoutAndGlyphs];
+
+    var theString = [_textStorage string],
+        minLocation = 0.0,
+        containerWidth = [_textContainer containerSize].width,
+        maxLocation = containerWidth,
+        currentParagraphStyle = [_textStorage attribute:CPParagraphStyleAttributeName atIndex:targetRange.location effectiveRange:nil] || [CPParagraphStyle defaultParagraphStyle],
+        tabStops = [currentParagraphStyle tabStops] || [],
+        tabCount = [tabStops count];
+
+    // 1. Right boundary: Tail indent (if configured)
+    var tailIndent = [currentParagraphStyle tailIndent];
+    if (tailIndent > 0.0)
+        maxLocation = Math.min(maxLocation, tailIndent);
+    else if (tailIndent < 0.0)
+        maxLocation = Math.min(maxLocation, containerWidth + tailIndent);
+
+    // 2. Identify active tab stop index
+    var targetTabIndex = -1;
+    for (var i = 0; i < tabCount; i++)
+    {
+        var tab = [tabStops objectAtIndex:i];
+        if (tab === rep || ([tab location] === [rep location] && [tab alignment] === [rep alignment]))
+        {
+            targetTabIndex = i;
+            break;
+        }
+    }
+
+    // 3. Constrain to neighboring tab stops (Left and Right)
+    var safetySpacer = 2.0;
+
+    if (targetTabIndex !== -1)
+    {
+        // Left neighbor constraint (previous tab stop)
+        if (targetTabIndex > 0)
+        {
+            var prevTab = [tabStops objectAtIndex:targetTabIndex - 1];
+            minLocation = Math.max(minLocation, [prevTab location] + safetySpacer);
+        }
+
+        // Right neighbor constraint (next tab stop)
+        if (targetTabIndex + 1 < tabCount)
+        {
+            var nextTab = [tabStops objectAtIndex:targetTabIndex + 1];
+            maxLocation = Math.min(maxLocation, [nextTab location] - safetySpacer);
+        }
+    }
+    else
+    {
+        // For new markers being added between existing tab stops
+        for (var i = 0; i < tabCount; i++)
+        {
+            var tabLoc = [[tabStops objectAtIndex:i] location];
+            if (tabLoc < proposedLocation)
+                minLocation = Math.max(minLocation, tabLoc + safetySpacer);
+            else if (tabLoc > proposedLocation)
+                maxLocation = Math.min(maxLocation, tabLoc - safetySpacer);
+        }
+    }
+
+    // 4. Constrain to preceding text on active lines
+    var start = targetRange.location,
+        end = CPMaxRange(targetRange),
+        tabCountInLine = 0,
+        lineStart = start;
+
+    for (var i = start; i < end; i++)
+    {
+        var charCode = theString.charCodeAt(i);
+        if (charCode === 10 || charCode === 13)
+        {
+            tabCountInLine = 0;
+            lineStart = i + 1;
+            continue;
+        }
+
+        if (charCode === 9) // '\t'
+        {
+            if (tabCountInLine === targetTabIndex || targetTabIndex === -1)
+            {
+                var precedingX = 0.0;
+                if (i === lineStart)
+                {
+                    var isFirstLine = (lineStart === 0 || theString.charCodeAt(lineStart - 1) === 10 || theString.charCodeAt(lineStart - 1) === 13);
+                    precedingX = isFirstLine ? [currentParagraphStyle firstLineHeadIndent] : [currentParagraphStyle headIndent];
+                }
+                else
+                {
+                    var glyphRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(i - 1, 1) inTextContainer:_textContainer];
+                    precedingX = CGRectGetMaxX(glyphRect);
+                }
+
+                var textLimit = precedingX + safetySpacer;
+                if (textLimit > minLocation)
+                    minLocation = textLimit;
+            }
+            tabCountInLine++;
+        }
+    }
+
+    if (minLocation > maxLocation)
+        minLocation = maxLocation;
+
+    // 5. Clamp proposedLocation within [minLocation, maxLocation]
+    return Math.min(maxLocation, Math.max(minLocation, proposedLocation));
+}
+
+- (float)rulerView:(CPRulerView)aRulerView willAddMarker:(CPRulerMarker)aMarker atLocation:(float)proposedLocation
+{
+    return [self rulerView:aRulerView willMoveMarker:aMarker toLocation:proposedLocation];
 }
 
 @end
@@ -3088,8 +3166,8 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 {
     var rect = [_textView._layoutManager boundingRectForGlyphRange:CPMakeRange(aLoc, 1) inTextContainer:_textView._textContainer];
 
-	if (aLoc >= [_textView._layoutManager numberOfCharacters])
-		rect.origin.x = CGRectGetMaxX(rect);
+    if (aLoc >= [_textView._layoutManager numberOfCharacters])
+        rect.origin.x = CGRectGetMaxX(rect);
 
     [self setRect:rect];
 }

@@ -252,8 +252,8 @@ if (Error.prototype._userInfo !== null)
 
 function _CPMethodCallString(anObject, aSelector)
 {
-	var prefix = class_isMetaClass(anObject.isa) ? "+" : "-";
-	return prefix + "[" + [anObject className] + " " + aSelector + "]: ";
+    var prefix = class_isMetaClass(anObject.isa) ? "+" : "-";
+    return prefix + "[" + [anObject className] + " " + aSelector + "]: ";
 }
 
 function _CPRaiseInvalidAbstractInvocation(anObject, aSelector)

@@ -36,14 +36,14 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 @implementation CPTimer : CPObject
 {
-	CPTimeInterval      _timeInterval;
-	CPInvocation        _invocation;
-	Function            _callback;
+    CPTimeInterval      _timeInterval;
+    CPInvocation        _invocation;
+    Function            _callback;
 
-	BOOL                _repeats;
-	BOOL                _isValid;
-	CPDate              _fireDate;
-	id                  _userInfo;
+    BOOL                _repeats;
+    BOOL                _isValid;
+    CPDate              _fireDate;
+    id                  _userInfo;
 }
 
 /*!
@@ -51,11 +51,11 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 + (CPTimer)scheduledTimerWithTimeInterval:(CPTimeInterval)seconds invocation:(CPInvocation)anInvocation repeats:(BOOL)shouldRepeat
 {
-	const timer = [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds invocation:anInvocation repeats:shouldRepeat];
+    const timer = [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds invocation:anInvocation repeats:shouldRepeat];
 
-	[[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
+    [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
 
-	return timer;
+    return timer;
 }
 
 /*!
@@ -63,11 +63,11 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 + (CPTimer)scheduledTimerWithTimeInterval:(CPTimeInterval)seconds target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)shouldRepeat
 {
-	const timer = [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds target:aTarget selector:aSelector userInfo:userInfo repeats:shouldRepeat];
+    const timer = [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds target:aTarget selector:aSelector userInfo:userInfo repeats:shouldRepeat];
 
-	[[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
+    [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
 
-	return timer;
+    return timer;
 }
 
 /*!
@@ -75,11 +75,11 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 + (CPTimer)scheduledTimerWithTimeInterval:(CPTimeInterval)seconds callback:(Function)aFunction repeats:(BOOL)shouldRepeat
 {
-	const timer = [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds callback:aFunction repeats:shouldRepeat];
+    const timer = [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds callback:aFunction repeats:shouldRepeat];
 
-	[[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
+    [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
 
-	return timer;
+    return timer;
 }
 
 /*!
@@ -87,7 +87,7 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds invocation:(CPInvocation)anInvocation repeats:(BOOL)shouldRepeat
 {
-	return [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds invocation:anInvocation repeats:shouldRepeat];
+    return [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds invocation:anInvocation repeats:shouldRepeat];
 }
 
 /*!
@@ -95,7 +95,7 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)shouldRepeat
 {
-	return [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds target:aTarget selector:aSelector userInfo:userInfo repeats:shouldRepeat];
+    return [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds target:aTarget selector:aSelector userInfo:userInfo repeats:shouldRepeat];
 }
 
 /*!
@@ -103,7 +103,7 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds callback:(Function)aFunction repeats:(BOOL)shouldRepeat
 {
-	return [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds callback:aFunction repeats:shouldRepeat];
+    return [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds callback:aFunction repeats:shouldRepeat];
 }
 
 /*!
@@ -111,18 +111,18 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 - (id)initWithFireDate:(CPDate)aDate interval:(CPTimeInterval)seconds invocation:(CPInvocation)anInvocation repeats:(BOOL)shouldRepeat
 {
-	self = [super init];
+    self = [super init];
 
-	if (self)
-	{
-		_timeInterval = (seconds <= 0) ? CPTimerDefaultTimeInterval : seconds;
-		_invocation = anInvocation;
-		_repeats = shouldRepeat;
-		_isValid = YES;
-		_fireDate = aDate;
-	}
+    if (self)
+    {
+        _timeInterval = (seconds <= 0) ? CPTimerDefaultTimeInterval : seconds;
+        _invocation = anInvocation;
+        _repeats = shouldRepeat;
+        _isValid = YES;
+        _fireDate = aDate;
+    }
 
-	return self;
+    return self;
 }
 
 /*!
@@ -130,18 +130,18 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 - (id)initWithFireDate:(CPDate)aDate interval:(CPTimeInterval)seconds target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)shouldRepeat
 {
-	const invocation = [CPInvocation invocationWithMethodSignature:1];
+    const invocation = [CPInvocation invocationWithMethodSignature:1];
 
-	[invocation setTarget:aTarget];
-	[invocation setSelector:aSelector];
-	[invocation setArgument:self atIndex:2];
+    [invocation setTarget:aTarget];
+    [invocation setSelector:aSelector];
+    [invocation setArgument:self atIndex:2];
 
-	self = [self initWithFireDate:aDate interval:seconds invocation:invocation repeats:shouldRepeat];
+    self = [self initWithFireDate:aDate interval:seconds invocation:invocation repeats:shouldRepeat];
 
-	if (self)
-		_userInfo = userInfo;
+    if (self)
+        _userInfo = userInfo;
 
-	return self;
+    return self;
 }
 
 /*!
@@ -149,18 +149,18 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 - (id)initWithFireDate:(CPDate)aDate interval:(CPTimeInterval)seconds callback:(Function)aFunction repeats:(BOOL)shouldRepeat
 {
-	self = [super init];
+    self = [super init];
 
-	if (self)
-	{
-		_timeInterval = (seconds <= 0) ? CPTimerDefaultTimeInterval : seconds;
-		_callback = aFunction;
-		_repeats = shouldRepeat;
-		_isValid = YES;
-		_fireDate = aDate;
-	}
+    if (self)
+    {
+        _timeInterval = (seconds <= 0) ? CPTimerDefaultTimeInterval : seconds;
+        _callback = aFunction;
+        _repeats = shouldRepeat;
+        _isValid = YES;
+        _fireDate = aDate;
+    }
 
-	return self;
+    return self;
 }
 
 /*!
@@ -168,7 +168,7 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 - (CPTimeInterval)timeInterval
 {
-	return _timeInterval;
+    return _timeInterval;
 }
 
 /*!
@@ -176,7 +176,7 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 - (CPDate)fireDate
 {
-	return _fireDate;
+    return _fireDate;
 }
 
 /*!
@@ -184,7 +184,7 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 - (void)setFireDate:(CPDate)aDate
 {
-	_fireDate = aDate;
+    _fireDate = aDate;
 }
 
 /*!
@@ -192,21 +192,21 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 - (void)fire
 {
-	if (!_isValid)
-		return;
+    if (!_isValid)
+        return;
 
-	if (_callback)
-		_callback();
-	else
-		[_invocation invoke];
+    if (_callback)
+        _callback();
+    else
+        [_invocation invoke];
 
-	if (!_isValid)
-		return;
+    if (!_isValid)
+        return;
 
-	if (_repeats)
-		_fireDate = [CPDate dateWithTimeIntervalSinceNow:_timeInterval];
-	else
-		[self invalidate];
+    if (_repeats)
+        _fireDate = [CPDate dateWithTimeIntervalSinceNow:_timeInterval];
+    else
+        [self invalidate];
 }
 
 /*!
@@ -214,7 +214,7 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 - (BOOL)isValid
 {
-	return _isValid;
+    return _isValid;
 }
 
 /*!
@@ -222,10 +222,10 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 - (void)invalidate
 {
-	_isValid = NO;
-	_userInfo = nil;
-	_invocation = nil;
-	_callback = nil;
+    _isValid = NO;
+    _userInfo = nil;
+    _invocation = nil;
+    _callback = nil;
 }
 
 /*!
@@ -233,7 +233,7 @@ const CPTimerDefaultTimeInterval = 0.1;
  */
 - (id)userInfo
 {
-	return _userInfo;
+    return _userInfo;
 }
 
 @end
@@ -250,68 +250,68 @@ const CPTimersForTimeoutIDs = {};
 
 const _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functionArgs)
 {
-	const timeoutID = CPTimersTimeoutID++;
-	let theFunction = nil;
+    const timeoutID = CPTimersTimeoutID++;
+    let theFunction = nil;
 
-	if (typeof codeOrFunction === "string")
-	{
-		// FIXME: Anti-pattern: Dynamic Evaluation. Evaluating string payloads via `new Function`
-		// is a strict Content Security Policy (CSP) violation.
-		theFunction = function()
-		{
-			new Function(codeOrFunction)();
+    if (typeof codeOrFunction === "string")
+    {
+        // FIXME: Anti-pattern: Dynamic Evaluation. Evaluating string payloads via `new Function`
+        // is a strict Content Security Policy (CSP) violation.
+        theFunction = function()
+        {
+            new Function(codeOrFunction)();
 
-			if (!shouldRepeat)
-				delete CPTimersForTimeoutIDs[timeoutID];
-		}
-	}
-	else
-	{
-		if (!functionArgs)
-			functionArgs = [];
+            if (!shouldRepeat)
+                delete CPTimersForTimeoutIDs[timeoutID];
+        }
+    }
+    else
+    {
+        if (!functionArgs)
+            functionArgs = [];
 
-		theFunction = function()
-		{
-			codeOrFunction.apply(window, functionArgs);
+        theFunction = function()
+        {
+            codeOrFunction.apply(window, functionArgs);
 
-			if (!shouldRepeat)
-				delete CPTimersForTimeoutIDs[timeoutID];
-		}
-	}
+            if (!shouldRepeat)
+                delete CPTimersForTimeoutIDs[timeoutID];
+        }
+    }
 
-	// A call such as setTimeout(f) is technically invalid but browsers seem to treat it as setTimeout(f, 0), so so will we.
-	aDelay = aDelay | 0.0;
+    // A call such as setTimeout(f) is technically invalid but browsers seem to treat it as setTimeout(f, 0), so so will we.
+    aDelay = aDelay | 0.0;
 
-	CPTimersForTimeoutIDs[timeoutID] = [CPTimer scheduledTimerWithTimeInterval:aDelay / 1000 callback:theFunction repeats:shouldRepeat];
+    CPTimersForTimeoutIDs[timeoutID] = [CPTimer scheduledTimerWithTimeInterval:aDelay / 1000 callback:theFunction repeats:shouldRepeat];
 
-	return timeoutID;
+    return timeoutID;
 };
 
 // Avoid "TypeError: Result of expression 'window' [undefined] is not an object" when running unit tests.
 if (typeof(window) !== 'undefined')
 {
-	window.setTimeout = function(codeOrFunction, aDelay)
-	{
-		return _CPTimerBridgeTimer(codeOrFunction, aDelay, NO, Array.prototype.slice.apply(arguments, [2]));
-	};
+    window.setTimeout = function(codeOrFunction, aDelay)
+    {
+        return _CPTimerBridgeTimer(codeOrFunction, aDelay, NO, Array.prototype.slice.apply(arguments, [2]));
+    };
 
-	window.clearTimeout = function(aTimeoutID)
-	{
-		const timer = CPTimersForTimeoutIDs[aTimeoutID];
+    window.clearTimeout = function(aTimeoutID)
+    {
+        const timer = CPTimersForTimeoutIDs[aTimeoutID];
 
-		if (timer)
-			[timer invalidate];
+        if (timer)
+            [timer invalidate];
 
-		delete CPTimersForTimeoutIDs[aTimeoutID];
-	};
+        delete CPTimersForTimeoutIDs[aTimeoutID];
+    };
 
-	window.setInterval = function(codeOrFunction, aDelay, functionArgs)
-	{
-		return _CPTimerBridgeTimer(codeOrFunction, aDelay, YES, Array.prototype.slice.apply(arguments, [2]));
-	};
+    window.setInterval = function(codeOrFunction, aDelay, functionArgs)
+    {
+        return _CPTimerBridgeTimer(codeOrFunction, aDelay, YES, Array.prototype.slice.apply(arguments, [2]));
+    };
 
-	window.clearInterval = function(aTimeoutID)
-	{
-		window.clearTimeout(aTimeoutID);
-	};
+    window.clearInterval = function(aTimeoutID)
+    {
+        window.clearTimeout(aTimeoutID);
+    };
 }
