@@ -428,13 +428,13 @@
 
 
     // 3. Test on an empty set
-	/*
-	 The bound variable must be explicitly read to satisfy the static analyzer.
+    /*
+     The bound variable must be explicitly read to satisfy the static analyzer.
      Standard JavaScript idioms for unused variables, such as the `_` identifier
      or the `void` operator, either fail linting or trigger AST collisions in the
      legacy Node.js parser. Evaluating the variable via a standard Objective-J
      message send resolves the warning while preserving parser stability.
-	 */
+     */
 
     var emptySet = [CPSet set];
     var iterations = 0;
