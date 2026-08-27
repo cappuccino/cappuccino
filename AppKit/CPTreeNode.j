@@ -233,12 +233,11 @@
             [_childNodes removeObjectAtIndex:originalIndex];
 
             /*
-             * The removal shifts the array elements.
-             * Adjust the target index to maintain the position relative to the original array.
-             * This matches the Cocoa move semantics.
+             * No index adjustment here. anIndex is the target position in
+             * the final array, per the KVC to-many contract. The array
+             * above is already one element short from the removal, so
+             * inserting at anIndex against it lands the node correctly.
              */
-            if (originalIndex < anIndex)
-                --anIndex;
         }
         else
         {
@@ -308,8 +307,12 @@
         aTreeNode._parentNode = nil;
         [_childNodes removeObjectAtIndex:replacementIndex];
 
-        if (replacementIndex < anIndex)
-            --anIndex;
+        /*
+         * No index adjustment here. anIndex is the target position in the
+         * final array, per the KVC to-many contract. The array above is
+         * already one element short from the removal, so replacing at
+         * anIndex against it lands the node correctly.
+         */
     }
     else if (oldParent)
     {

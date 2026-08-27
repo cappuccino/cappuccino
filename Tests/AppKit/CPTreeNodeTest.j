@@ -131,7 +131,7 @@
 // 9. index paths
 - (void)testIndexPaths
 {
-    [self assert:nil equals:[root indexPath]];
+    [self assert:[CPIndexPath indexPathWithIndexes:[]] equals:[root indexPath]];
 
     [root insertObject:child1 inChildNodesAtIndex:0];
     [self assert:[CPIndexPath indexPathWithIndex:0] equals:[child1 indexPath]];
