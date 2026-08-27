@@ -44931,7 +44931,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithController:"), 
 
 ,["BOOL"])]);
 }
-p;8;CPView.jt;144183;@STATIC;1.0;I;20;Foundation/CPArray.jI;26;Foundation/CPObjJRuntime.jI;18;Foundation/CPSet.ji;17;_CPObject+Theme.ji;19;CGAffineTransform.ji;12;CGGeometry.ji;14;CPAppearance.ji;9;CPColor.ji;19;CPGraphicsContext.ji;13;CPResponder.ji;9;CPTheme.ji;16;CPTrackingArea.ji;20;CPWindow_Constants.ji;18;_CPDisplayServer.jt;143864;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObjJRuntime.j", NO);objj_executeFile("Foundation/CPSet.j", NO);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CGAffineTransform.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAppearance.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPGraphicsContext.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPTheme.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPDisplayServer.j", YES);{var the_typedef = objj_allocateTypeDef("_CPViewFullScreenModeState");
+p;8;CPView.jt;145052;@STATIC;1.0;I;20;Foundation/CPArray.jI;26;Foundation/CPObjJRuntime.jI;18;Foundation/CPSet.ji;17;_CPObject+Theme.ji;19;CGAffineTransform.ji;12;CGGeometry.ji;14;CPAppearance.ji;9;CPColor.ji;19;CPGraphicsContext.ji;13;CPResponder.ji;9;CPTheme.ji;16;CPTrackingArea.ji;20;CPWindow_Constants.ji;18;_CPDisplayServer.jt;144733;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObjJRuntime.j", NO);objj_executeFile("Foundation/CPSet.j", NO);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CGAffineTransform.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAppearance.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPGraphicsContext.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPTheme.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPDisplayServer.j", YES);{var the_typedef = objj_allocateTypeDef("_CPViewFullScreenModeState");
 objj_registerTypeDef(the_typedef);
 }CPViewNotSizable = 0;
 CPViewMinXMargin = 1;
@@ -45616,6 +45616,19 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
         origin.x *= size.width / frameSize.width;
         origin.y *= size.height / frameSize.height;
     }
+    var newScaleSize;
+    if (size && size.width !== 0 && size.height !== 0 && frameSize)
+        newScaleSize = CGSizeMake(frameSize.width / size.width, frameSize.height / size.height);
+    else
+        newScaleSize = CGSizeMake(1.0, 1.0);
+    if (!CGSizeEqualToSize(self._scaleSize, newScaleSize))
+    {
+        (self.isa.method_msgSend["willChangeValueForKey:"] || _objj_forward)(self, "willChangeValueForKey:", "scaleSize");
+        self._scaleSize = newScaleSize;
+        self._isScaled = self._scaleSize.width !== 1.0 || self._scaleSize.height !== 1.0;
+        (self.isa.method_msgSend["didChangeValueForKey:"] || _objj_forward)(self, "didChangeValueForKey:", "scaleSize");
+        (self.isa.method_msgSend["_scaleSizeUnitSquareToSize:"] || _objj_forward)(self, "_scaleSizeUnitSquareToSize:", CGSizeMake(1.0, 1.0));
+    }
     if (self._layer)
         ((___r1 = self._layer), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_owningViewBoundsChanged"] || _objj_forward)(___r1, "_owningViewBoundsChanged"));
     if (self._postsBoundsChangedNotifications && !self._inhibitFrameAndBoundsChangedNotifications)
@@ -46128,7 +46141,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
 
 ,["void","CGSize"]), new objj_method(sel_getUid("_scaleSizeUnitSquareToSize:"), function $CPView___scaleSizeUnitSquareToSize_(self, _cmd, aSize)
 {
-    self._hierarchyScaleSize = CGSizeMakeCopy(((___r1 = self._superview), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_hierarchyScaleSize"] || _objj_forward)(___r1, "_hierarchyScaleSize")));
+    self._hierarchyScaleSize = self._superview ? CGSizeMakeCopy(((___r1 = self._superview), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_hierarchyScaleSize"] || _objj_forward)(___r1, "_hierarchyScaleSize"))) : CGSizeMake(1.0, 1.0);
     if (self._isScaled)
     {
         self._hierarchyScaleSize.width *= self._scaleSize.width;
