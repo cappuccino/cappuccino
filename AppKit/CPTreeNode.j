@@ -35,17 +35,20 @@
 @implementation CPTreeNode : CPObject
 {
     /*
-     * KVO notifications on childNodes and parentNode are not reliable during
-     * internal structural moves. insertObject:inChildNodesAtIndex: and
-     * replaceObjectInChildNodesAtIndex:withObject: detach a node from its
-     * prior position by mutating _childNodes directly, or through
-     * _removeChildNode:, bypassing the KVC proxy for that step. An observer
-     * of the old parent's childNodes, or of a moved node's parentNode, can
-     * miss the change entirely or see it reported as the wrong kind of
-     * change. This is a deliberate trade against the cost of routing every
-     * internal detach through the proxy. Do not rely on these two
-     * properties for observation during a move; rely only on the state
-     * after the call returns.
+     * KVO notifications on parentNode are never delivered: there is no
+     * setParentNode: for the swizzling machinery to intercept, so there is
+     * no selector to instrument, in any code path.
+     *
+     * KVO notifications on childNodes are reliable for
+     * insertObject:inChildNodesAtIndex:, including same-parent and
+     * cross-parent moves: all detach paths for that method route through
+     * the KVC accessors. replaceObjectInChildNodesAtIndex:withObject:
+     * still detaches a same-parent replacement node by mutating
+     * _childNodes directly, bypassing the KVC proxy for that step; an
+     * observer of that node's former parent's childNodes can miss that
+     * specific removal, or see it reported as the wrong kind of change.
+     * Do not rely on childNodes observation during a same-parent replace;
+     * rely only on the state after the call returns.
      */
     id              _representedObject  @accessors(readonly, property=representedObject);
     CPTreeNode      _parentNode         @accessors(readonly, property=parentNode);
@@ -110,9 +113,9 @@
 }
 
 /*
- * Remove a child node directly.
- * This method bypasses the KVC proxy methods.
- * Use this method for internal structural changes to prevent KVO overhead.
+ * Remove a child node by delegating to the public KVC accessor.
+ * Use this method for internal structural changes across a parent
+ * boundary, so an observer of this node's childNodes sees the removal.
  */
 - (void)_removeChildNode:(CPTreeNode)aNode
 {
@@ -132,8 +135,7 @@
                     reason:"CPTreeNode parent and child relationship is inconsistent."];
     }
 
-    aNode._parentNode = nil;
-    [_childNodes removeObjectAtIndex:index];
+    [self removeObjectFromChildNodesAtIndex:index];
 }
 
 - (CPIndexPath)indexPath
@@ -227,18 +229,17 @@
             var originalIndex = [_childNodes indexOfObjectIdenticalTo:aTreeNode];
 
             /*
-             * Bypass KVO for this internal structural adjustment.
+             * Route the detach through the KVC accessor, not direct array
+             * mutation, so an observer of childNodes sees the removal.
              */
-            aTreeNode._parentNode = nil;
-            [_childNodes removeObjectAtIndex:originalIndex];
+            [self removeObjectFromChildNodesAtIndex:originalIndex];
 
             /*
-             * The removal shifts the array elements.
-             * Adjust the target index to maintain the position relative to the original array.
-             * This matches the Cocoa move semantics.
+             * No index adjustment here. anIndex is the target position in
+             * the final array, per the KVC to-many contract. The array
+             * above is already one element short from the removal, so
+             * inserting at anIndex against it lands the node correctly.
              */
-            if (originalIndex < anIndex)
-                --anIndex;
         }
         else
         {
@@ -308,6 +309,15 @@
         aTreeNode._parentNode = nil;
         [_childNodes removeObjectAtIndex:replacementIndex];
 
+        /*
+         * Unlike insertObject:inChildNodesAtIndex:, anIndex here cannot be
+         * treated as a plain final-array position: replace requires an
+         * existing slot, it cannot append past the end. The removal above
+         * already took a slot out of the array ahead of the target
+         * whenever the replacement's original position was before it.
+         * Shift anIndex down by one in that case, to keep it pointing at
+         * the same physical slot the caller named.
+         */
         if (replacementIndex < anIndex)
             --anIndex;
     }
