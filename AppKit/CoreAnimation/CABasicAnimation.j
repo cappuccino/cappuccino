@@ -3,14 +3,9 @@
 @import "CAPropertyAnimation.j"
 
 /*!
-    A CABasicAnimation is a simple animation that moves a
-    CALayer from one point to another over a specified
-    period of time.
-*/
-/*!
-    A CABasicAnimation is a simple animation that moves a
-    CALayer from one point to another over a specified
-    period of time.
+    @ingroup appkit
+    @class CABasicAnimation
+    A CABasicAnimation provides basic single-keyframe interpolation for a layer property over a specified duration.
 */
 @implementation CABasicAnimation : CAPropertyAnimation
 {
@@ -19,6 +14,10 @@
     id  _byValue;
 }
 
+/*!
+    Initializes a newly allocated basic animation instance with default values.
+    @return the initialized animation instance
+*/
 - (id)init
 {
     self = [super init];
@@ -31,8 +30,8 @@
 }
 
 /*!
-    Sets the starting position for the animation.
-    @param aValue the animation starting position
+    Sets the starting value for the animated property.
+    @param aValue the starting value
 */
 - (void)setFromValue:(id)aValue
 {
@@ -40,7 +39,8 @@
 }
 
 /*!
-    Returns the animation's starting position.
+    Returns the starting value of the animated property.
+    @return the starting value
 */
 - (id)fromValue
 {
@@ -48,8 +48,8 @@
 }
 
 /*!
-    Sets the ending position for the animation.
-    @param aValue the animation ending position
+    Sets the ending value for the animated property.
+    @param aValue the ending value
 */
 - (void)setToValue:(id)aValue
 {
@@ -57,7 +57,8 @@
 }
 
 /*!
-    Returns the animation's ending position.
+    Returns the ending value of the animated property.
+    @return the ending value
 */
 - (id)toValue
 {
@@ -65,8 +66,8 @@
 }
 
 /*!
-    Sets the optional byValue for animation interpolation.
-    @param aValue the byValue
+    Sets the relative value by which the property is modified during animation.
+    @param aValue the relative change value
 */
 - (void)setByValue:(id)aValue
 {
@@ -74,7 +75,8 @@
 }
 
 /*!
-    Returns the animation's byValue.
+    Returns the relative value by which the property is modified during animation.
+    @return the relative change value
 */
 - (id)byValue
 {
