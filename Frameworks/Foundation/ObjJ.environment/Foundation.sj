@@ -7131,7 +7131,7 @@ if (CFError.prototype.isa !== CPError)
 {
     Object.defineProperties(CFError.prototype, {isa: {value: CPError, enumerable: false, writable: true}});
 }
-p;13;CPException.jt;8908;@STATIC;1.0;i;10;CPObject.ji;10;CPString.jt;8859;objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);CPInvalidArgumentException = "CPInvalidArgumentException";
+p;13;CPException.jt;8948;@STATIC;1.0;i;10;CPObject.ji;10;CPString.jt;8899;objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);CPInvalidArgumentException = "CPInvalidArgumentException";
 CPUnsupportedMethodException = "CPUnsupportedMethodException";
 CPRangeException = "CPRangeException";
 CPInternalInconsistencyException = "CPInternalInconsistencyException";
@@ -7272,11 +7272,11 @@ _CPRaiseInvalidAbstractInvocation = function(anObject, aSelector)
 }
 _CPRaiseInvalidArgumentException = function(anObject, aSelector, aMessage)
 {
-    (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, METHOD_CALL_STRING() + aMessage);
+    (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, _CPMethodCallString(anObject, aSelector) + aMessage);
 }
 _CPRaiseRangeException = function(anObject, aSelector, anIndex, aCount)
 {
-    (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPRangeException, METHOD_CALL_STRING() + "index (" + anIndex + ") beyond bounds (" + aCount + ")");
+    (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPRangeException, _CPMethodCallString(anObject, aSelector) + "index (" + anIndex + ") beyond bounds (" + aCount + ")");
 }
 _CPReportLenientDeprecation = function(aClass, oldSelector, newSelector)
 {
