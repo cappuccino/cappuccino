@@ -289,12 +289,14 @@ function _abbreviationForNameAndDate(tzName, date)
         @"IST" :    330,
         @"JST" :    540,
         @"KST" :    540,
-        @"MDT" :    -300,
-        @"MSD" :    240,
-        @"MSK" :    240,
+        @"MDT" :    -360,
+        @"MSD" :    240,   // Stale: Russia abolished DST in 2014. No current offset
+                            // is correct for a distinct "Moscow Summer Time"; left
+                            // unfixed rather than fabricated. See CPTimeZone redesign.
+        @"MSK" :    180,
         @"MST" :    -420,
-        @"NZDT" :   900,
-        @"NZST" :   900,
+        @"NZDT" :   780,
+        @"NZST" :   720,
         @"PDT" :    -420,
         @"PET" :    -300,
         @"PHT" :    480,
@@ -302,10 +304,10 @@ function _abbreviationForNameAndDate(tzName, date)
         @"PST" :    -480,
         @"SGT" :    480,
         @"UTC" :    0,
-        @"WAT" :    -540,
+        @"WAT" :    60,
         @"WEST" :   60,
         @"WET" :    0,
-        @"WIT" :    540
+        @"WIT" :    420
     };
 
     var englishLocalizedName = @{
