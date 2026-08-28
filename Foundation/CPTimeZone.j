@@ -47,30 +47,26 @@ var abbreviationDictionary,
 
 function abbreviationForDate(date)
 {
-    // Strategy 1: Parse date.toString() as it's more reliable than toLocaleString.
-    // Format is usually: "Day Mon dd yyyy hh:mm:ss GMT+XXXX (Time Zone Name)"
-    var dateString = date.toString();
+    // Strategy 1: ask Intl directly for the short time zone name (e.g. "PDT") of
+    // the runtime's local zone, which correctly reflects DST for this date.
+    // Replaces the previous date.toString() parenthesis-scraping and
+    // long-name-to-acronym regex guessing, which broke for locales and
+    // engines that don't format Date#toString the way that logic assumed.
+    try {
+        var parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(date),
+            tzPart = parts.filter(function (p) { return p.type === 'timeZoneName'; })[0];
 
-    // Check for a long name within parentheses, e.g., (Pacific Daylight Time)
-    var longNameMatch = dateString.match(/\(([^)]+)\)/);
-    if (longNameMatch) {
-        var timeZoneComponent = longNameMatch[1];
-
-        // If the component is already a known abbreviation (e.g., "EST"), return it.
-        if ([abbreviationDictionary objectForKey:timeZoneComponent]) {
-            return timeZoneComponent;
-        }
-
-        // If it's a long name (e.g., "Eastern Daylight Time"), create an acronym.
-        if (timeZoneComponent.indexOf(' ') > -1) {
-            var generatedAbbr = timeZoneComponent.split(' ').map(function(word) { return word[0]; }).join('');
-            if ([abbreviationDictionary objectForKey:generatedAbbr]) {
-                return generatedAbbr;
-            }
-        }
+        if (tzPart && [abbreviationDictionary objectForKey:tzPart.value])
+            return tzPart.value;
+    } catch (e) {
+        // Intl API not supported, or it failed. Fall through to strategy 2.
     }
 
-    // Strategy 2: If string parsing fails (e.g., for "GMT-04:00"), use the modern and reliable Intl API.
+    // Strategy 2: if the short name Intl returned isn't one of our known
+    // abbreviations (e.g. it returned "GMT-04:00" for a zone with no common
+    // three/four-letter abbreviation), resolve the runtime's IANA zone and
+    // pick whichever known abbreviation for that zone matches the date's
+    // current UTC offset.
     try {
         var ianaName = new Intl.DateTimeFormat().resolvedOptions().timeZone;
         var currentOffset = -date.getTimezoneOffset(); // in minutes
@@ -108,28 +104,18 @@ function abbreviationForDate(date)
 
 function _abbreviationForNameAndDate(tzName, date)
 {
-    // This is a helper function based on the existing `abbreviationForDate`.
-    // It determines the abbreviation for a given IANA name based on the provided date,
-    // which allows it to respect daylight saving time.
+    // Determines the abbreviation for a given IANA name based on the provided
+    // date, which allows it to respect daylight saving time. Reads the short
+    // time zone name directly from Intl.formatToParts, rather than parsing
+    // a long name out of toLocaleString's locale-formatted output.
     try {
-        var options = {
-            timeZone: tzName,
-            timeZoneName: 'long'
-        };
-        // The 'en-US' locale provides a predictable format for parsing.
-        var dateString = date.toLocaleString('en-US', options);
+        var parts = new Intl.DateTimeFormat('en-US', { timeZone: tzName, timeZoneName: 'short' }).formatToParts(date),
+            tzPart = parts.filter(function (p) { return p.type === 'timeZoneName'; })[0];
 
-        // This regex is copied from the global 'abbreviationForDate' function.
-        // It strips the date and time, leaving the long time zone name.
-        var longTZName = dateString.replace(/^([0]?\d|[1][0-2])\/((?:[0]?|[1-2])\d|[3][0-1])\/([2][01]|[1][6-9])\d{2}(,?\s*([0]?\d|[1][0-2])(\:[0-5]\d){1,2})*\s*([aApP][mM]{0,2})?\s*/, "");
-
-        // Create the abbreviation from the long name (e.g., "Pacific Daylight Time" -> "PDT")
-        var abbreviation = longTZName.split(" ").map(function(l) { return l[0]}).join("");
-
-        return abbreviation;
+        return tzPart ? tzPart.value : nil;
     } catch (e) {
-        // The tzName might be invalid for toLocaleString, which throws a RangeError.
-        // In this case, we can't determine the abbreviation.
+        // The tzName might be invalid for Intl.DateTimeFormat, which throws a
+        // RangeError. In this case, we can't determine the abbreviation.
         return nil;
     }
 }
@@ -204,6 +190,24 @@ function _abbreviationForNameAndDate(tzName, date)
         @"Europe/Lisbon",
         @"Asia/Jakarta"
      ];
+
+    // Prefer the runtime's own IANA database, when it exposes one, over the
+    // hardcoded 48-city list above: it's the full current set, not a snapshot
+    // that will silently drift the way the hand-maintained tables above have.
+    if (typeof Intl !== "undefined" && typeof Intl.supportedValuesOf === "function")
+    {
+        try
+        {
+            var supportedZones = Intl.supportedValuesOf("timeZone");
+
+            if (supportedZones && supportedZones.length > 0)
+                knownTimeZoneNames = supportedZones;
+        }
+        catch (e)
+        {
+            // Fall through, keep the hardcoded list above.
+        }
+    }
 
     abbreviationDictionary = @{
         @"ADT" :   @"America/Halifax",
