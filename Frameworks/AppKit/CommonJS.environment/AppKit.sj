@@ -44413,7 +44413,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTreeNode.jt;16998;@STATIC;1.0;I;21;Foundation/CPObject.jI;24;Foundation/CPIndexPath.jI;20;Foundation/CPArray.jt;16898;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPIndexPath.j", NO);objj_executeFile("Foundation/CPArray.j", NO);
+p;12;CPTreeNode.jt;16804;@STATIC;1.0;I;21;Foundation/CPObject.jI;24;Foundation/CPIndexPath.jI;20;Foundation/CPArray.jt;16704;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPIndexPath.j", NO);objj_executeFile("Foundation/CPArray.j", NO);
 {var the_class = objj_allocateClassPair(CPObject, "CPTreeNode"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_representedObject", "id"), new objj_ivar("_parentNode", "CPTreeNode"), new objj_ivar("_childNodes", "CPMutableArray")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("representedObject"), function $CPTreeNode__representedObject(self, _cmd)
@@ -44467,8 +44467,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("representedObject"), fu
     {
         (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInternalInconsistencyException, "CPTreeNode parent and child relationship is inconsistent.");
     }
-    aNode._parentNode = nil;
-    ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectAtIndex:"] || _objj_forward)(___r1, "removeObjectAtIndex:", index));
+    (self.isa.method_msgSend["removeObjectFromChildNodesAtIndex:"] || _objj_forward)(self, "removeObjectFromChildNodesAtIndex:", index);
     var ___r1;
 }
 
@@ -44531,10 +44530,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("representedObject"), fu
         if (aTreeNode._parentNode === self)
         {
             var originalIndex = ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexOfObjectIdenticalTo:"] || _objj_forward)(___r1, "indexOfObjectIdenticalTo:", aTreeNode));
-            aTreeNode._parentNode = nil;
-            ((___r1 = self._childNodes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectAtIndex:"] || _objj_forward)(___r1, "removeObjectAtIndex:", originalIndex));
-            if (originalIndex < anIndex)
-                --anIndex;
+            (self.isa.method_msgSend["removeObjectFromChildNodesAtIndex:"] || _objj_forward)(self, "removeObjectFromChildNodesAtIndex:", originalIndex);
         }
         else
         {
