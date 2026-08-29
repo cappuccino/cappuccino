@@ -71012,7 +71012,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithParagraphStyle:
 
 ,["id","CPZone"])]);
 }
-p;13;CPRulerView.jt;46908;@STATIC;1.0;I;21;Foundation/CPObject.ji;8;CPView.ji;13;CPTextField.ji;9;CPColor.ji;8;CPFont.ji;8;CPMenu.ji;12;CPMenuItem.jt;46778;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPMenuItem.j", YES);{var the_typedef = objj_allocateTypeDef("CPRulerOrientation");
+p;13;CPRulerView.jt;46963;@STATIC;1.0;I;21;Foundation/CPObject.ji;8;CPView.ji;13;CPTextField.ji;9;CPColor.ji;8;CPFont.ji;8;CPMenu.ji;12;CPMenuItem.jt;46833;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPMenuItem.j", YES);{var the_typedef = objj_allocateTypeDef("CPRulerOrientation");
 objj_registerTypeDef(the_typedef);
 }CPHorizontalRuler = 0;
 CPVerticalRuler = 1;
@@ -71210,7 +71210,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("rulerView"), function $
 }
 
 {var the_class = objj_allocateClassPair(CPView, "CPRulerView"),
-meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_scrollView", "CPScrollView"), new objj_ivar("_orientation", "CPRulerOrientation"), new objj_ivar("_ruleThickness", "float"), new objj_ivar("_reservedThicknessForMarkers", "float"), new objj_ivar("_markers", "CPArray"), new objj_ivar("_draggingMarker", "CPRulerMarker"), new objj_ivar("_dragStartPoint", "CGPoint"), new objj_ivar("_dragStartLocation", "float")]);objj_registerClassPair(the_class);
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_scrollView", "CPScrollView"), new objj_ivar("_orientation", "CPRulerOrientation"), new objj_ivar("_clientView", "CPView"), new objj_ivar("_ruleThickness", "float"), new objj_ivar("_reservedThicknessForMarkers", "float"), new objj_ivar("_markers", "CPArray"), new objj_ivar("_draggingMarker", "CPRulerMarker"), new objj_ivar("_dragStartPoint", "CGPoint"), new objj_ivar("_dragStartLocation", "float")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("scrollView"), function $CPRulerView__scrollView(self, _cmd)
 {
     return self._scrollView;
@@ -71257,7 +71257,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("scrollView"), function 
     {
         self._scrollView = aScrollView;
         self._orientation = anOrientation;
-        _clientView = (aScrollView == null ? aScrollView : (aScrollView.isa.method_msgSend["documentView"] || _objj_forward)(aScrollView, "documentView"));
+        self._clientView = (aScrollView == null ? aScrollView : (aScrollView.isa.method_msgSend["documentView"] || _objj_forward)(aScrollView, "documentView"));
         self._ruleThickness = anOrientation === CPHorizontalRuler ? 16.0 : 24.0;
         self._reservedThicknessForMarkers = 0.0;
         self._markers = [];
@@ -71274,13 +71274,13 @@ class_addMethods(the_class, [new objj_method(sel_getUid("scrollView"), function 
 
 ,["void","CGRect"]), new objj_method(sel_getUid("clientView"), function $CPRulerView__clientView(self, _cmd)
 {
-    return _clientView || ((___r1 = self._scrollView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["documentView"] || _objj_forward)(___r1, "documentView"));
+    return self._clientView || ((___r1 = self._scrollView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["documentView"] || _objj_forward)(___r1, "documentView"));
     var ___r1;
 }
 
 ,["CPView"]), new objj_method(sel_getUid("setClientView:"), function $CPRulerView__setClientView_(self, _cmd, aView)
 {
-    _clientView = aView;
+    self._clientView = aView;
 }
 
 ,["void","CPView"]), new objj_method(sel_getUid("addMarker:"), function $CPRulerView__addMarker_(self, _cmd, aMarker)
