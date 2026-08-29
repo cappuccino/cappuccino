@@ -47,7 +47,7 @@ var abbreviationDictionary,
 
 function abbreviationForDate(date)
 {
-    // Strategy 1: ask Intl directly for the short time zone name (e.g. "PDT") of
+    // First, ask Intl directly for the short time zone name (e.g. "PDT") of
     // the runtime's local zone, which correctly reflects DST for this date.
     // Replaces the previous date.toString() parenthesis-scraping and
     // long-name-to-acronym regex guessing, which broke for locales and
@@ -59,14 +59,13 @@ function abbreviationForDate(date)
         if (tzPart && [abbreviationDictionary objectForKey:tzPart.value])
             return tzPart.value;
     } catch (e) {
-        // Intl API not supported, or it failed. Fall through to strategy 2.
+        // Intl API not supported, or it failed. Fall through to the next attempt.
     }
 
-    // Strategy 2: if the short name Intl returned isn't one of our known
-    // abbreviations (e.g. it returned "GMT-04:00" for a zone with no common
-    // three/four-letter abbreviation), resolve the runtime's IANA zone and
-    // pick whichever known abbreviation for that zone matches the date's
-    // current UTC offset.
+    // If that short name isn't one of our known abbreviations (e.g. it
+    // returned "GMT-04:00" for a zone with no common three/four-letter
+    // abbreviation), resolve the runtime's IANA zone and pick whichever
+    // known abbreviation for that zone matches the date's current UTC offset.
     try {
         var ianaName = new Intl.DateTimeFormat().resolvedOptions().timeZone;
         var currentOffset = -date.getTimezoneOffset(); // in minutes
@@ -94,8 +93,22 @@ function abbreviationForDate(date)
         if (possibleAbbrs.length > 0) {
             return possibleAbbrs[0];
         }
+
+        // Neither attempt above found a match by name. Fall back to any
+        // known abbreviation whose stored offset matches the system's
+        // current UTC offset. Several abbreviations legitimately share an
+        // offset (GMT, UTC, and WET all correctly resolve to 0, for example),
+        // so this returns one of them rather than none.
+        var offsetKeys = [timeDifferenceFromUTC keyEnumerator],
+            offsetKey;
+
+        while (offsetKey = [offsetKeys nextObject]) {
+            if ([timeDifferenceFromUTC valueForKey:offsetKey] === currentOffset) {
+                return offsetKey;
+            }
+        }
     } catch (e) {
-        // Intl API not supported, or it failed. We cannot proceed with this strategy.
+        // Intl API not supported, or it failed.
     }
 
     // Return nil if no valid abbreviation could be determined.
