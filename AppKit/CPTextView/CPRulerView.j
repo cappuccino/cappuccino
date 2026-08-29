@@ -215,6 +215,8 @@ CPRulerOrientationVertical = 1;
     CPScrollView        _scrollView             @accessors(property=scrollView);
     CPRulerOrientation  _orientation            @accessors(property=orientation);
 
+    CPView              _clientView;
+
     float               _ruleThickness          @accessors(property=ruleThickness);
     float               _reservedThicknessForMarkers;
     CPArray             _markers;
