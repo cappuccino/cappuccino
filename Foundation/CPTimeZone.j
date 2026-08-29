@@ -173,7 +173,7 @@ function _abbreviationForNameAndDate(tzName, date)
         @"Asia/Dhaka",
         @"Asia/Dubai",
         @"Asia/Hong_Kong",
-        @"Asia/Jakarta"
+        @"Asia/Jakarta",
         @"Asia/Karachi",
         @"Asia/Manila",
         @"Asia/Seoul",
@@ -202,23 +202,38 @@ function _abbreviationForNameAndDate(tzName, date)
 
             if (supportedZones && supportedZones.length > 0)
             {
-                // Create a shallow copy to prevent mutation of the global Intl environment array.
-                var zones = supportedZones.slice();
+                var zones = [];
+                var hasGMT = false;
+                var hasUTC = false;
+                var count = supportedZones.length;
 
-                /*
-                 Restore legacy aliases present in the static fallback array.
-                 Engines adhering strictly to canonical IANA identifiers omit "GMT".
-                 abbreviationDictionary maps "GMT" to "GMT", requiring its explicit
-                 presence in knownTimeZoneNames to successfully initialize localTimeZone
-                 in UTC-bound CI environments.
-                 if (zones.indexOf(@"GMT") === -1)
-                    zones.push(@"GMT");
+                // Iterate using primitive property access.
+                // The array returned by Intl across the runtime bridge may lack
+                // standard Array prototypes (e.g., slice, indexOf). A standard loop
+                // ensures safe data extraction into a local array without triggering
+                // prototype resolution exceptions or relying on CPArray.
+                for (var i = 0; i < count; i++)
+                {
+                    var zone = supportedZones[i];
+                    zones[i] = zone;
 
-                 if (zones.indexOf(@"UTC") === -1)
-                    zones.push(@"UTC");
+                    if (zone === @"GMT")
+                        hasGMT = true;
+                    else if (zone === @"UTC")
+                        hasUTC = true;
+                }
 
-                 knownTimeZoneNames = zones;
-                 */
+                // Explicitly restore legacy aliases if the host engine omits them.
+                // Engines adhering strictly to canonical IANA identifiers omit "GMT"
+                // and "UTC". CPTimeZone's static dictionaries map these directly,
+                // requiring their presence to initialize localTimeZone in UTC environments.
+                if (!hasGMT)
+                    zones[zones.length] = @"GMT";
+
+                if (!hasUTC)
+                    zones[zones.length] = @"UTC";
+
+                knownTimeZoneNames = zones;
             }
         }
         catch (e)
@@ -226,7 +241,6 @@ function _abbreviationForNameAndDate(tzName, date)
             // Fall through, keep the hardcoded list above.
         }
     }
-
 
     abbreviationDictionary = @{
         @"ADT" :   @"America/Halifax",
