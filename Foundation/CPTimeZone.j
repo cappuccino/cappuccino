@@ -154,54 +154,41 @@ function _abbreviationForNameAndDate(tzName, date)
         return;
 
     knownTimeZoneNames = [
-        @"America/Halifax",
-        @"America/Juneau",
-        @"America/Juneau",
-        @"America/Argentina/Buenos_Aires",
-        @"America/Halifax",
-        @"Asia/Dhaka",
-        @"America/Sao_Paulo",
-        @"America/Sao_Paulo",
-        @"Europe/London",
+        @"Africa/Addis_Ababa",
         @"Africa/Harare",
-        @"America/Chicago",
-        @"Europe/Paris",
-        @"Europe/Paris",
-        @"America/Santiago",
-        @"America/Santiago",
+        @"Africa/Lagos",
+        @"America/Argentina/Buenos_Aires",
         @"America/Bogota",
         @"America/Chicago",
-        @"Africa/Addis_Ababa",
+        @"America/Denver",
+        @"America/Halifax",
+        @"America/Juneau",
+        @"America/Lima",
+        @"America/Los_Angeles",
         @"America/New_York",
-        @"Europe/Istanbul",
-        @"Europe/Istanbul",
-        @"America/New_York",
-        @"GMT",
+        @"America/Santiago",
+        @"America/Sao_Paulo",
+        @"Asia/Bangkok",
+        @"Asia/Calcutta",
+        @"Asia/Dhaka",
         @"Asia/Dubai",
         @"Asia/Hong_Kong",
-        @"Pacific/Honolulu",
-        @"Asia/Bangkok",
-        @"Asia/Tehran",
-        @"Asia/Calcutta",
-        @"Asia/Tokyo",
-        @"Asia/Seoul",
-        @"America/Denver",
-        @"Europe/Moscow",
-        @"Europe/Moscow",
-        @"America/Denver",
-        @"Pacific/Auckland",
-        @"Pacific/Auckland",
-        @"America/Los_Angeles",
-        @"America/Lima",
-        @"Asia/Manila",
-        @"Asia/Karachi",
-        @"America/Los_Angeles",
-        @"Asia/Singapore",
-        @"UTC",
-        @"Africa/Lagos",
-        @"Europe/Lisbon",
-        @"Europe/Lisbon",
         @"Asia/Jakarta"
+        @"Asia/Karachi",
+        @"Asia/Manila",
+        @"Asia/Seoul",
+        @"Asia/Singapore",
+        @"Asia/Tehran",
+        @"Asia/Tokyo",
+        @"Europe/Istanbul",
+        @"Europe/Lisbon",
+        @"Europe/London",
+        @"Europe/Moscow",
+        @"Europe/Paris",
+        @"GMT",
+        @"Pacific/Auckland",
+        @"Pacific/Honolulu",
+        @"UTC",
      ];
 
     // Prefer the runtime's own IANA database, when it exposes one, over the
@@ -214,13 +201,32 @@ function _abbreviationForNameAndDate(tzName, date)
             var supportedZones = Intl.supportedValuesOf("timeZone");
 
             if (supportedZones && supportedZones.length > 0)
-                knownTimeZoneNames = supportedZones;
+            {
+                // Create a shallow copy to prevent mutation of the global Intl environment array.
+                var zones = supportedZones.slice();
+
+                /*
+                 Restore legacy aliases present in the static fallback array.
+                 Engines adhering strictly to canonical IANA identifiers omit "GMT".
+                 abbreviationDictionary maps "GMT" to "GMT", requiring its explicit
+                 presence in knownTimeZoneNames to successfully initialize localTimeZone
+                 in UTC-bound CI environments.
+                 if (zones.indexOf(@"GMT") === -1)
+                    zones.push(@"GMT");
+
+                 if (zones.indexOf(@"UTC") === -1)
+                    zones.push(@"UTC");
+
+                 knownTimeZoneNames = zones;
+                 */
+            }
         }
         catch (e)
         {
             // Fall through, keep the hardcoded list above.
         }
     }
+
 
     abbreviationDictionary = @{
         @"ADT" :   @"America/Halifax",
