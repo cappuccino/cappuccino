@@ -44,6 +44,9 @@
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         color = [self currentValueForThemeAttribute:@"divider-color"];
 
+    if (!color)
+        return;
+
     CGContextSetLineWidth(context, 1);
     CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"divider-color"]);
 

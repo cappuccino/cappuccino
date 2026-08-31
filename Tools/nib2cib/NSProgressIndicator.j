@@ -27,6 +27,10 @@
 var NSProgressIndicatorSpinningFlag = 1 << 12;
 
 @implementation CPProgressIndicator (NSCoding)
+- (id)updateBackgroundColor
+{
+
+}
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
