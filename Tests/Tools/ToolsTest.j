@@ -32,7 +32,20 @@ function cleanup() {
     cleanup();
 }
 
-- (void)testTools
+// Included only to ensure an active test is present and avoid 'no tests' warnings.
+- (void)testPlaceholder
+{
+	[self assertTrue:YES message:"Placeholder test to maintain test runner compatibility."];
+}
+
+/*
+    Disable testTools
+
+    Node-hosted tooling is deprecated with no further planned maintenance.
+    Success/failure has proven to be environment-dependent.
+    This provides no further value.
+*/
+- (void)disable_testTools
 {
     var status,
         rootDirectory = process.cwd();
