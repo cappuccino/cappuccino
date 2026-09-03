@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9060" systemVersion="15C50" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1050" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9060"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -293,7 +294,6 @@
                             <customView id="Sze-Eb-8Fx">
                                 <rect key="frame" x="0.0" y="0.0" width="59" height="73"/>
                                 <autoresizingMask key="autoresizingMask"/>
-                                <animations/>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
                                         <color key="value" red="0.0" green="0.53140729870000003" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -303,7 +303,6 @@
                             <customView id="59Y-bY-6NO">
                                 <rect key="frame" x="60" y="0.0" width="59" height="73"/>
                                 <autoresizingMask key="autoresizingMask"/>
-                                <animations/>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
                                         <color key="value" red="0.56690436239999997" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -313,7 +312,6 @@
                             <customView id="e86-da-1nH">
                                 <rect key="frame" x="120" y="0.0" width="94" height="73"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
                                         <color key="value" red="0.57639149440000004" green="0.59769631410000001" blue="0.53293551319999999" alpha="1" colorSpace="calibratedRGB"/>
@@ -321,7 +319,6 @@
                                 </userDefinedRuntimeAttributes>
                             </customView>
                         </subviews>
-                        <animations/>
                         <holdingPriorities>
                             <real value="250"/>
                             <real value="250"/>
@@ -335,7 +332,6 @@
                             <customView id="Eb6-2a-ijs">
                                 <rect key="frame" x="0.0" y="0.0" width="214" height="45"/>
                                 <autoresizingMask key="autoresizingMask"/>
-                                <animations/>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
                                         <color key="value" red="0.0" green="0.2389628775" blue="0.64796560400000003" alpha="1" colorSpace="calibratedRGB"/>
@@ -345,7 +341,6 @@
                             <customView id="sJR-ny-vXH">
                                 <rect key="frame" x="0.0" y="54" width="214" height="48"/>
                                 <autoresizingMask key="autoresizingMask"/>
-                                <animations/>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
                                         <color key="value" red="0.4716600252" green="0.3736891779" blue="0.17221581380000001" alpha="1" colorSpace="calibratedRGB"/>
@@ -353,7 +348,6 @@
                                 </userDefinedRuntimeAttributes>
                             </customView>
                         </subviews>
-                        <animations/>
                         <holdingPriorities>
                             <real value="250"/>
                             <real value="250"/>
@@ -364,7 +358,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <clipView key="contentView" id="Tsy-28-w1p">
                             <rect key="frame" x="1" y="1" width="275" height="161"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <autoresizingMask key="autoresizingMask"/>
                             <subviews>
                                 <view id="35c-jE-A9i">
                                     <rect key="frame" x="0.0" y="0.0" width="290" height="346"/>
@@ -373,44 +367,36 @@
                                         <customView id="qhh-BF-uJV" customClass="SensibleView">
                                             <rect key="frame" x="56" y="46" width="163" height="96"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                            <animations/>
                                         </customView>
                                     </subviews>
-                                    <animations/>
                                 </view>
                             </subviews>
-                            <animations/>
                         </clipView>
-                        <animations/>
-                        <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="haI-QJ-idG">
+                        <scroller key="horizontalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="haI-QJ-idG">
                             <rect key="frame" x="1" y="146" width="275" height="16"/>
                             <autoresizingMask key="autoresizingMask"/>
-                            <animations/>
                         </scroller>
-                        <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="en7-ag-3l6">
+                        <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="en7-ag-3l6">
                             <rect key="frame" x="261" y="1" width="15" height="161"/>
                             <autoresizingMask key="autoresizingMask"/>
-                            <animations/>
                         </scroller>
                     </scrollView>
                     <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="F6I-OP-yvg">
                         <rect key="frame" x="940" y="377" width="277" height="119"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <clipView key="contentView" id="mCM-Xi-afN">
-                            <rect key="frame" x="1" y="23" width="275" height="95"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <rect key="frame" x="1" y="1" width="275" height="117"/>
+                            <autoresizingMask key="autoresizingMask"/>
                             <subviews>
                                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" headerView="ZTR-Tg-hlW" id="soC-Ts-qCo">
-                                    <rect key="frame" x="0.0" y="0.0" width="275" height="95"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <animations/>
+                                    <rect key="frame" x="0.0" y="0.0" width="275" height="94"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <size key="intercellSpacing" width="3" height="2"/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                     <tableColumns>
                                         <tableColumn width="78.77734375" minWidth="40" maxWidth="1000" id="ce2-Dt-Q9a">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="First">
-                                                <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                             </tableHeaderCell>
@@ -423,7 +409,6 @@
                                         </tableColumn>
                                         <tableColumn width="106.203125" minWidth="40" maxWidth="1000" id="oyN-zb-Aen">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Second">
-                                                <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                             </tableHeaderCell>
@@ -434,9 +419,8 @@
                                             </textFieldCell>
                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                         </tableColumn>
-                                        <tableColumn width="81" minWidth="10" maxWidth="3.4028234663852886e+38" id="4WF-b2-Qjp">
+                                        <tableColumn width="52" minWidth="10" maxWidth="3.4028234663852886e+38" id="4WF-b2-Qjp">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Third">
-                                                <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                             </tableHeaderCell>
@@ -450,32 +434,25 @@
                                     </tableColumns>
                                 </tableView>
                             </subviews>
-                            <animations/>
-                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </clipView>
-                        <animations/>
-                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="vti-fg-vzI">
+                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="vti-fg-vzI">
                             <rect key="frame" x="1" y="231" width="307" height="15"/>
                             <autoresizingMask key="autoresizingMask"/>
-                            <animations/>
                         </scroller>
-                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="EWM-fi-aQY">
+                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="EWM-fi-aQY">
                             <rect key="frame" x="224" y="17" width="15" height="102"/>
                             <autoresizingMask key="autoresizingMask"/>
-                            <animations/>
                         </scroller>
                         <tableHeaderView key="headerView" id="ZTR-Tg-hlW">
                             <rect key="frame" x="0.0" y="0.0" width="275" height="23"/>
                             <autoresizingMask key="autoresizingMask"/>
-                            <animations/>
                         </tableHeaderView>
                     </scrollView>
                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="USC-6c-rhh">
                         <rect key="frame" x="1223" y="452" width="88" height="44"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <animations/>
                         <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPTableHeaderView now using tracking areas for cursor updates" id="yKB-Vw-OTW">
-                            <font key="font" metaFont="system" size="9"/>
+                            <font key="font" metaFont="miniSystem"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
@@ -483,9 +460,8 @@
                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="tjU-JO-PMX">
                         <rect key="frame" x="1223" y="621" width="78" height="55"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <animations/>
                         <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPScrollView (scroll down to view and test a view with tracking area)" id="t8v-6H-YXg">
-                            <font key="font" metaFont="system" size="9"/>
+                            <font key="font" metaFont="miniSystem"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
@@ -493,9 +469,8 @@
                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="5Zj-ir-6wr">
                         <rect key="frame" x="1160" y="820" width="78" height="55"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <animations/>
                         <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPSplitView with thin vertical dividers, using tracking area for cursor updates" id="sLE-AN-vtO">
-                            <font key="font" metaFont="system" size="9"/>
+                            <font key="font" metaFont="miniSystem"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
@@ -503,15 +478,13 @@
                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="NBW-q0-pOz">
                         <rect key="frame" x="1160" y="730" width="78" height="39"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <animations/>
                         <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPSplitView with thick horizontal dividers" id="LoF-bh-fEg">
-                            <font key="font" metaFont="system" size="9"/>
+                            <font key="font" metaFont="miniSystem"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                 </subviews>
-                <animations/>
             </view>
             <point key="canvasLocation" x="625" y="736.5"/>
         </window>
