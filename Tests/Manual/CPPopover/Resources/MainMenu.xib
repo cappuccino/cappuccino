@@ -1,134 +1,134 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1050" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
-        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <deployment version="1050" identifier="macosx" />
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506" />
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0" />
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
             <connections>
-                <outlet property="delegate" destination="450" id="451"/>
+                <outlet property="delegate" destination="450" id="451" />
             </connections>
         </customObject>
-        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder" />
+        <customObject id="-3" userLabel="Application" />
         <customObject id="450" customClass="AppController">
             <connections>
-                <outlet property="nestedPopover" destination="579" id="582"/>
-                <outlet property="popover" destination="461" id="473"/>
-                <outlet property="popoverWindow" destination="502" id="555"/>
-                <outlet property="titleLabel" destination="464" id="585"/>
-                <outlet property="windowPopover" destination="507" id="519"/>
+                <outlet property="nestedPopover" destination="579" id="582" />
+                <outlet property="popover" destination="461" id="473" />
+                <outlet property="popoverWindow" destination="502" id="555" />
+                <outlet property="titleLabel" destination="464" id="585" />
+                <outlet property="windowPopover" destination="507" id="519" />
             </connections>
         </customObject>
         <viewController id="460" userLabel="Popover View Controller">
             <connections>
-                <outlet property="view" destination="463" id="468"/>
+                <outlet property="view" destination="463" id="468" />
             </connections>
         </viewController>
         <popover behavior="t" id="461">
             <connections>
-                <outlet property="contentViewController" destination="460" id="462"/>
+                <outlet property="contentViewController" destination="460" id="462" />
             </connections>
         </popover>
         <customView id="463">
-            <rect key="frame" x="0.0" y="0.0" width="301" height="261"/>
-            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <rect key="frame" x="0.0" y="0.0" width="301" height="261" />
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
             <subviews>
                 <textField verticalHuggingPriority="750" id="464">
-                    <rect key="frame" x="28" y="185" width="245" height="32"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <rect key="frame" x="28" y="185" width="245" height="32" />
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                     <textFieldCell key="cell" lineBreakMode="charWrapping" sendsActionOnEndEditing="YES" alignment="center" title="I’m a popover!" id="465">
-                        <font key="font" metaFont="systemBold" size="20"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        <font key="font" metaFont="systemBold" size="20" />
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                     </textFieldCell>
                 </textField>
                 <button verticalHuggingPriority="750" id="466">
-                    <rect key="frame" x="87" y="82" width="126" height="32"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <rect key="frame" x="87" y="82" width="126" height="32" />
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES" />
                     <buttonCell key="cell" type="push" title="performClose" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="467">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                        <font key="font" metaFont="system" />
                     </buttonCell>
                     <connections>
-                        <action selector="performClose:" target="461" id="484"/>
+                        <action selector="performClose:" target="461" id="484" />
                     </connections>
                 </button>
                 <button verticalHuggingPriority="750" id="488">
-                    <rect key="frame" x="113" y="18" width="74" height="32"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <rect key="frame" x="113" y="18" width="74" height="32" />
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES" />
                     <buttonCell key="cell" type="push" title="Move" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="489">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                        <font key="font" metaFont="system" />
                     </buttonCell>
                     <connections>
-                        <action selector="movePopover:" target="450" id="550"/>
+                        <action selector="movePopover:" target="450" id="550" />
                     </connections>
                 </button>
                 <button verticalHuggingPriority="750" id="556">
-                    <rect key="frame" x="114" y="50" width="73" height="32"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <rect key="frame" x="114" y="50" width="73" height="32" />
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES" />
                     <buttonCell key="cell" type="push" title="close" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="557">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                        <font key="font" metaFont="system" />
                     </buttonCell>
                     <connections>
-                        <action selector="closePopover:" target="450" id="559"/>
+                        <action selector="closePopover:" target="450" id="559" />
                     </connections>
                 </button>
                 <textField verticalHuggingPriority="750" id="476">
-                    <rect key="frame" x="31" y="137" width="239" height="22"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                    <rect key="frame" x="31" y="137" width="239" height="22" />
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES" />
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Write something" drawsBackground="YES" id="477">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <font key="font" metaFont="system" />
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                     </textFieldCell>
                 </textField>
             </subviews>
         </customView>
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" visibleAtLaunch="NO" animationBehavior="default" id="502">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
-            <rect key="contentRect" x="181" y="548" width="212" height="167"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" />
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES" />
+            <rect key="contentRect" x="181" y="548" width="212" height="167" />
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878" />
             <view key="contentView" id="503">
-                <rect key="frame" x="0.0" y="0.0" width="212" height="167"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <rect key="frame" x="0.0" y="0.0" width="212" height="167" />
+                <autoresizingMask key="autoresizingMask" />
                 <subviews>
                     <button verticalHuggingPriority="750" id="504">
-                        <rect key="frame" x="61" y="66" width="91" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                        <rect key="frame" x="61" y="66" width="91" height="32" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES" />
                         <buttonCell key="cell" type="push" title="Popover" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="505">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <connections>
-                            <action selector="openWindowPopover:" target="450" id="521"/>
+                            <action selector="openWindowPopover:" target="450" id="521" />
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" id="587">
-                        <rect key="frame" x="58" y="22" width="97" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                        <rect key="frame" x="58" y="22" width="97" height="32" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES" />
                         <buttonCell key="cell" type="push" title="orderOut" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="588">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <connections>
-                            <action selector="orderOut:" target="502" id="590"/>
+                            <action selector="orderOut:" target="502" id="590" />
                         </connections>
                     </button>
                     <button id="562">
-                        <rect key="frame" x="66" y="120" width="82" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                        <rect key="frame" x="66" y="120" width="82" height="18" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES" />
                         <buttonCell key="cell" type="check" title="Transient" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="563">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <connections>
-                            <action selector="setTransient:" target="450" id="586"/>
+                            <action selector="setTransient:" target="450" id="586" />
                         </connections>
                     </button>
                 </subviews>
@@ -136,228 +136,228 @@
         </window>
         <viewController id="506" userLabel="Window Popover View Controller">
             <connections>
-                <outlet property="view" destination="510" id="529"/>
+                <outlet property="view" destination="510" id="529" />
             </connections>
         </viewController>
         <popover behavior="t" id="507" userLabel="Window Popover">
             <connections>
-                <outlet property="contentViewController" destination="506" id="508"/>
+                <outlet property="contentViewController" destination="506" id="508" />
             </connections>
         </popover>
         <customView id="510" userLabel="Parent View">
-            <rect key="frame" x="0.0" y="0.0" width="201" height="168"/>
-            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <rect key="frame" x="0.0" y="0.0" width="201" height="168" />
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
             <subviews>
                 <textField verticalHuggingPriority="750" id="511">
-                    <rect key="frame" x="56" y="131" width="89" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <rect key="frame" x="56" y="131" width="89" height="17" />
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="From window" id="512">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        <font key="font" metaFont="system" />
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                     </textFieldCell>
                 </textField>
                 <button verticalHuggingPriority="750" id="551">
-                    <rect key="frame" x="37" y="13" width="126" height="32"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <rect key="frame" x="37" y="13" width="126" height="32" />
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES" />
                     <buttonCell key="cell" type="push" title="performClose" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="552">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                        <font key="font" metaFont="system" />
                     </buttonCell>
                     <connections>
-                        <action selector="performClose:" target="507" id="554"/>
+                        <action selector="performClose:" target="507" id="554" />
                     </connections>
                 </button>
                 <button verticalHuggingPriority="750" id="564">
-                    <rect key="frame" x="27" y="51" width="147" height="32"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <rect key="frame" x="27" y="51" width="147" height="32" />
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES" />
                     <buttonCell key="cell" type="push" title="Another popover" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="565">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                        <font key="font" metaFont="system" />
                     </buttonCell>
                     <connections>
-                        <action selector="openNestedPopover:" target="450" id="584"/>
+                        <action selector="openNestedPopover:" target="450" id="584" />
                     </connections>
                 </button>
                 <textField verticalHuggingPriority="750" id="560">
-                    <rect key="frame" x="52" y="94" width="96" height="22"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <rect key="frame" x="52" y="94" width="96" height="22" />
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="561">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <font key="font" metaFont="system" />
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                     </textFieldCell>
                 </textField>
             </subviews>
         </customView>
         <textField verticalHuggingPriority="750" id="535">
-            <rect key="frame" x="0.0" y="0.0" width="38" height="17"/>
-            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <rect key="frame" x="0.0" y="0.0" width="38" height="17" />
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="536">
-                <font key="font" metaFont="system"/>
-                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                <font key="font" metaFont="system" />
+                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
             </textFieldCell>
         </textField>
         <customView id="567" userLabel="Parent View">
-            <rect key="frame" x="0.0" y="0.0" width="201" height="168"/>
-            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <rect key="frame" x="0.0" y="0.0" width="201" height="168" />
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
             <subviews>
                 <textField verticalHuggingPriority="750" id="571">
-                    <rect key="frame" x="52" y="131" width="97" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <rect key="frame" x="52" y="131" width="97" height="17" />
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="From popover" id="572">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        <font key="font" metaFont="system" />
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                     </textFieldCell>
                 </textField>
                 <button verticalHuggingPriority="750" id="570">
-                    <rect key="frame" x="37" y="13" width="126" height="32"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <rect key="frame" x="37" y="13" width="126" height="32" />
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES" />
                     <buttonCell key="cell" type="push" title="performClose" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="573">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                        <font key="font" metaFont="system" />
                     </buttonCell>
                     <connections>
-                        <action selector="performClose:" target="579" id="583"/>
+                        <action selector="performClose:" target="579" id="583" />
                     </connections>
                 </button>
                 <textField verticalHuggingPriority="750" id="568">
-                    <rect key="frame" x="52" y="94" width="96" height="22"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <rect key="frame" x="52" y="94" width="96" height="22" />
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="575">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <font key="font" metaFont="system" />
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                     </textFieldCell>
                 </textField>
             </subviews>
         </customView>
         <viewController id="578" userLabel="Nested popover view controller">
             <connections>
-                <outlet property="view" destination="567" id="581"/>
+                <outlet property="view" destination="567" id="581" />
             </connections>
         </viewController>
         <popover behavior="t" id="579" userLabel="Nested popover">
             <connections>
-                <outlet property="contentViewController" destination="578" id="580"/>
+                <outlet property="contentViewController" destination="578" id="580" />
             </connections>
         </popover>
         <menu title="AMainMenu" systemMenu="main" id="591" userLabel="MainMenu">
             <items>
-                <menuItem title="NewApplication" id="597">
-                    <menu key="submenu" title="NewApplication" systemMenu="apple" id="604">
+                <menuItem title="CPPopover" id="597">
+                    <menu key="submenu" title="CPPopover" systemMenu="apple" id="604">
                         <items>
-                            <menuItem title="About NewApplication" id="615">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="About CPPopover" id="615">
+                                <modifierMask key="keyEquivalentModifierMask" />
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="608">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Preferences…" keyEquivalent="," id="610"/>
+                            <menuItem title="Preferences…" keyEquivalent="," id="610" />
                             <menuItem isSeparatorItem="YES" id="609">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Services" id="607">
-                                <menu key="submenu" title="Services" systemMenu="services" id="616"/>
+                                <menu key="submenu" title="Services" systemMenu="services" id="616" />
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="611">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Hide NewApplication" keyEquivalent="h" id="614"/>
+                            <menuItem title="Hide CPPopover" keyEquivalent="h" id="614" />
                             <menuItem title="Hide Others" keyEquivalent="h" id="605">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES" />
                             </menuItem>
-                            <menuItem title="Show All" id="613"/>
+                            <menuItem title="Show All" id="613" />
                             <menuItem isSeparatorItem="YES" id="606">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Quit NewApplication" keyEquivalent="q" id="612"/>
+                            <menuItem title="Quit CPPopover" keyEquivalent="q" id="612" />
                         </items>
                     </menu>
                 </menuItem>
                 <menuItem title="File" id="594">
                     <menu key="submenu" title="File" id="651">
                         <items>
-                            <menuItem title="New" keyEquivalent="n" id="658"/>
-                            <menuItem title="Open…" keyEquivalent="o" id="659"/>
+                            <menuItem title="New" keyEquivalent="n" id="658" />
+                            <menuItem title="Open…" keyEquivalent="o" id="659" />
                             <menuItem title="Open Recent" id="657">
                                 <menu key="submenu" title="Open Recent" systemMenu="recentDocuments" id="663">
                                     <items>
-                                        <menuItem title="Clear Menu" id="664"/>
+                                        <menuItem title="Clear Menu" id="664" />
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="654">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Close" keyEquivalent="w" id="655"/>
-                            <menuItem title="Save" keyEquivalent="s" id="662"/>
+                            <menuItem title="Close" keyEquivalent="w" id="655" />
+                            <menuItem title="Save" keyEquivalent="s" id="662" />
                             <menuItem title="Save As…" keyEquivalent="S" id="661">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                             </menuItem>
                             <menuItem title="Revert to Saved" id="653">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <modifierMask key="keyEquivalentModifierMask" />
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="652">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Page Setup..." keyEquivalent="P" id="656">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                             </menuItem>
-                            <menuItem title="Print…" keyEquivalent="p" id="660"/>
+                            <menuItem title="Print…" keyEquivalent="p" id="660" />
                         </items>
                     </menu>
                 </menuItem>
                 <menuItem title="Edit" id="595">
                     <menu key="submenu" title="Edit" id="619">
                         <items>
-                            <menuItem title="Undo" keyEquivalent="z" id="630"/>
+                            <menuItem title="Undo" keyEquivalent="z" id="630" />
                             <menuItem title="Redo" keyEquivalent="Z" id="624">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="625">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Cut" keyEquivalent="x" id="628"/>
-                            <menuItem title="Copy" keyEquivalent="c" id="626"/>
-                            <menuItem title="Paste" keyEquivalent="v" id="627"/>
-                            <menuItem title="Delete" id="632"/>
-                            <menuItem title="Select All" keyEquivalent="a" id="631"/>
+                            <menuItem title="Cut" keyEquivalent="x" id="628" />
+                            <menuItem title="Copy" keyEquivalent="c" id="626" />
+                            <menuItem title="Paste" keyEquivalent="v" id="627" />
+                            <menuItem title="Delete" id="632" />
+                            <menuItem title="Select All" keyEquivalent="a" id="631" />
                             <menuItem isSeparatorItem="YES" id="629">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Find" id="623">
                                 <menu key="submenu" title="Find" id="633">
                                     <items>
-                                        <menuItem title="Find…" tag="1" keyEquivalent="f" id="634"/>
-                                        <menuItem title="Find Next" tag="2" keyEquivalent="g" id="635"/>
+                                        <menuItem title="Find…" tag="1" keyEquivalent="f" id="634" />
+                                        <menuItem title="Find Next" tag="2" keyEquivalent="g" id="635" />
                                         <menuItem title="Find Previous" tag="3" keyEquivalent="G" id="638">
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                         </menuItem>
-                                        <menuItem title="Use Selection for Find" tag="7" keyEquivalent="e" id="636"/>
-                                        <menuItem title="Jump to Selection" keyEquivalent="j" id="637"/>
+                                        <menuItem title="Use Selection for Find" tag="7" keyEquivalent="e" id="636" />
+                                        <menuItem title="Jump to Selection" keyEquivalent="j" id="637" />
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem title="Spelling and Grammar" id="622">
                                 <menu key="submenu" title="Spelling and Grammar" id="639">
                                     <items>
-                                        <menuItem title="Show Spelling…" keyEquivalent=":" id="641"/>
-                                        <menuItem title="Check Spelling" keyEquivalent=";" id="642"/>
-                                        <menuItem title="Check Spelling While Typing" id="643"/>
-                                        <menuItem title="Check Grammar With Spelling" id="640"/>
+                                        <menuItem title="Show Spelling…" keyEquivalent=":" id="641" />
+                                        <menuItem title="Check Spelling" keyEquivalent=";" id="642" />
+                                        <menuItem title="Check Spelling While Typing" id="643" />
+                                        <menuItem title="Check Grammar With Spelling" id="640" />
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem title="Substitutions" id="620">
                                 <menu key="submenu" title="Substitutions" id="647">
                                     <items>
-                                        <menuItem title="Smart Copy/Paste" tag="1" keyEquivalent="f" id="650"/>
-                                        <menuItem title="Smart Quotes" tag="2" keyEquivalent="g" id="649"/>
+                                        <menuItem title="Smart Copy/Paste" tag="1" keyEquivalent="f" id="650" />
+                                        <menuItem title="Smart Quotes" tag="2" keyEquivalent="g" id="649" />
                                         <menuItem title="Smart Links" tag="3" keyEquivalent="G" id="648">
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                         </menuItem>
                                     </items>
                                 </menu>
@@ -365,8 +365,8 @@
                             <menuItem title="Speech" id="621">
                                 <menu key="submenu" title="Speech" id="644">
                                     <items>
-                                        <menuItem title="Start Speaking" id="645"/>
-                                        <menuItem title="Stop Speaking" id="646"/>
+                                        <menuItem title="Start Speaking" id="645" />
+                                        <menuItem title="Stop Speaking" id="646" />
                                     </items>
                                 </menu>
                             </menuItem>
@@ -374,109 +374,109 @@
                     </menu>
                 </menuItem>
                 <menuItem title="Format" id="592">
-                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <modifierMask key="keyEquivalentModifierMask" />
                     <menu key="submenu" title="Format" id="668">
                         <items>
                             <menuItem title="Font" id="670">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <modifierMask key="keyEquivalentModifierMask" />
                                 <menu key="submenu" title="Font" systemMenu="font" id="671">
                                     <items>
-                                        <menuItem title="Show Fonts" keyEquivalent="t" id="687"/>
-                                        <menuItem title="Bold" tag="2" keyEquivalent="b" id="686"/>
-                                        <menuItem title="Italic" tag="1" keyEquivalent="i" id="685"/>
-                                        <menuItem title="Underline" keyEquivalent="u" id="684"/>
-                                        <menuItem isSeparatorItem="YES" id="683"/>
-                                        <menuItem title="Bigger" tag="3" keyEquivalent="+" id="682"/>
-                                        <menuItem title="Smaller" tag="4" keyEquivalent="-" id="681"/>
-                                        <menuItem isSeparatorItem="YES" id="680"/>
+                                        <menuItem title="Show Fonts" keyEquivalent="t" id="687" />
+                                        <menuItem title="Bold" tag="2" keyEquivalent="b" id="686" />
+                                        <menuItem title="Italic" tag="1" keyEquivalent="i" id="685" />
+                                        <menuItem title="Underline" keyEquivalent="u" id="684" />
+                                        <menuItem isSeparatorItem="YES" id="683" />
+                                        <menuItem title="Bigger" tag="3" keyEquivalent="+" id="682" />
+                                        <menuItem title="Smaller" tag="4" keyEquivalent="-" id="681" />
+                                        <menuItem isSeparatorItem="YES" id="680" />
                                         <menuItem title="Kern" id="679">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <modifierMask key="keyEquivalentModifierMask" />
                                             <menu key="submenu" title="Kern" id="688">
                                                 <items>
                                                     <menuItem title="Use Default" id="692">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Use None" id="691">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Tighten" id="690">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Loosen" id="689">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                 </items>
                                             </menu>
                                         </menuItem>
                                         <menuItem title="Ligature" id="678">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <modifierMask key="keyEquivalentModifierMask" />
                                             <menu key="submenu" title="Ligature" id="693">
                                                 <items>
                                                     <menuItem title="Use Default" id="696">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Use None" id="695">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Use All" id="694">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                 </items>
                                             </menu>
                                         </menuItem>
                                         <menuItem title="Baseline" id="677">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <modifierMask key="keyEquivalentModifierMask" />
                                             <menu key="submenu" title="Baseline" id="697">
                                                 <items>
                                                     <menuItem title="Use Default" id="702">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Superscript" id="701">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Subscript" id="700">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Raise" id="699">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Lower" id="698">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                 </items>
                                             </menu>
                                         </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="676"/>
-                                        <menuItem title="Show Colors" keyEquivalent="C" id="675"/>
-                                        <menuItem isSeparatorItem="YES" id="674"/>
+                                        <menuItem isSeparatorItem="YES" id="676" />
+                                        <menuItem title="Show Colors" keyEquivalent="C" id="675" />
+                                        <menuItem isSeparatorItem="YES" id="674" />
                                         <menuItem title="Copy Style" keyEquivalent="c" id="673">
-                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES" />
                                         </menuItem>
                                         <menuItem title="Paste Style" keyEquivalent="v" id="672">
-                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES" />
                                         </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem title="Text" id="669">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <modifierMask key="keyEquivalentModifierMask" />
                                 <menu key="submenu" title="Text" id="703">
                                     <items>
-                                        <menuItem title="Align Left" keyEquivalent="{" id="711"/>
-                                        <menuItem title="Center" keyEquivalent="|" id="710"/>
+                                        <menuItem title="Align Left" keyEquivalent="{" id="711" />
+                                        <menuItem title="Center" keyEquivalent="|" id="710" />
                                         <menuItem title="Justify" id="709">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <modifierMask key="keyEquivalentModifierMask" />
                                         </menuItem>
-                                        <menuItem title="Align Right" keyEquivalent="}" id="708"/>
-                                        <menuItem isSeparatorItem="YES" id="707"/>
+                                        <menuItem title="Align Right" keyEquivalent="}" id="708" />
+                                        <menuItem isSeparatorItem="YES" id="707" />
                                         <menuItem title="Show Ruler" id="706">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <modifierMask key="keyEquivalentModifierMask" />
                                         </menuItem>
                                         <menuItem title="Copy Ruler" keyEquivalent="c" id="705">
-                                            <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES" />
                                         </menuItem>
                                         <menuItem title="Paste Ruler" keyEquivalent="v" id="704">
-                                            <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES" />
                                         </menuItem>
                                     </items>
                                 </menu>
@@ -488,28 +488,28 @@
                     <menu key="submenu" title="View" id="665">
                         <items>
                             <menuItem title="Show Toolbar" keyEquivalent="t" id="667">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES" />
                             </menuItem>
-                            <menuItem title="Customize Toolbar…" id="666"/>
+                            <menuItem title="Customize Toolbar…" id="666" />
                         </items>
                     </menu>
                 </menuItem>
                 <menuItem title="Window" id="598">
                     <menu key="submenu" title="Window" systemMenu="window" id="599">
                         <items>
-                            <menuItem title="Minimize" keyEquivalent="m" id="600"/>
-                            <menuItem title="Zoom" id="601"/>
+                            <menuItem title="Minimize" keyEquivalent="m" id="600" />
+                            <menuItem title="Zoom" id="601" />
                             <menuItem isSeparatorItem="YES" id="603">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Bring All to Front" id="602"/>
+                            <menuItem title="Bring All to Front" id="602" />
                         </items>
                     </menu>
                 </menuItem>
                 <menuItem title="Help" id="596">
                     <menu key="submenu" title="Help" id="617">
                         <items>
-                            <menuItem title="NewApplication Help" keyEquivalent="?" id="618"/>
+                            <menuItem title="CPPopover Help" keyEquivalent="?" id="618" />
                         </items>
                     </menu>
                 </menuItem>
