@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10109" systemVersion="15D21" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10109"/>
-        <capability name="box content view" minToolsVersion="7.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -11,7 +11,7 @@
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <window title="CPButton Image Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -35,7 +35,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <popUpButtonCell key="cell" type="push" title="No Image" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="1153" id="1151">
                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <font key="font" metaFont="message"/>
                             <menu key="menu" title="OtherViews" id="1152">
                                 <items>
                                     <menuItem title="No Image" state="on" id="1153"/>
@@ -159,7 +159,7 @@
                 <outlet property="toggleButton" destination="1216" id="1222"/>
             </connections>
         </customObject>
-        <window title="Continuous Button Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" animationBehavior="default" id="1183">
+        <window title="Continuous Button Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="1183">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="200" y="1000" width="318" height="85"/>
@@ -211,7 +211,7 @@
                 </subviews>
             </view>
         </window>
-        <window title="CPButton Button Type Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" showsToolbarButton="NO" animationBehavior="default" id="1210">
+        <window title="CPButton Button Type Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="1210">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="1000" y="1000" width="271" height="156"/>
@@ -255,7 +255,7 @@
                 </subviews>
             </view>
         </window>
-        <window title="Monkey Button Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" showsToolbarButton="NO" animationBehavior="default" id="1224" userLabel="Window - Monkey Button Test">
+        <window title="Monkey Button Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="1224" userLabel="Window - Monkey Button Test">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="1000" y="500" width="480" height="220"/>
@@ -275,15 +275,15 @@
                             <action selector="monkeyClick:" target="450" id="1259"/>
                         </connections>
                     </button>
-                    <box autoresizesSubviews="NO" title="Highlights By" borderType="line" id="1228">
+                    <box autoresizesSubviews="NO" borderType="line" title="Highlights By" id="1228">
                         <rect key="frame" x="17" y="16" width="222" height="114"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="Lxr-8q-OWd">
-                            <rect key="frame" x="1" y="1" width="220" height="98"/>
+                            <rect key="frame" x="4" y="5" width="214" height="94"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <button tag="2" id="1230">
-                                    <rect key="frame" x="16" y="72" width="137" height="18"/>
+                                    <rect key="frame" x="16" y="68" width="137" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPPushInCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1231">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -294,7 +294,7 @@
                                     </connections>
                                 </button>
                                 <button tag="1" id="1232">
-                                    <rect key="frame" x="16" y="52" width="152" height="18"/>
+                                    <rect key="frame" x="16" y="48" width="152" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPContentsCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1233">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -305,7 +305,7 @@
                                     </connections>
                                 </button>
                                 <button tag="4" id="1234">
-                                    <rect key="frame" x="16" y="32" width="172" height="18"/>
+                                    <rect key="frame" x="16" y="28" width="172" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeGrayCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1235">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -316,7 +316,7 @@
                                     </connections>
                                 </button>
                                 <button tag="8" id="1236">
-                                    <rect key="frame" x="16" y="12" width="218" height="18"/>
+                                    <rect key="frame" x="16" y="8" width="218" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeBackgroundCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1237">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -328,18 +328,16 @@
                                 </button>
                             </subviews>
                         </view>
-                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </box>
-                    <box autoresizesSubviews="NO" title="Shows State By" borderType="line" id="1238">
+                    <box autoresizesSubviews="NO" borderType="line" title="Shows State By" id="1238">
                         <rect key="frame" x="241" y="16" width="222" height="114"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="rZ3-3d-f31">
-                            <rect key="frame" x="1" y="1" width="220" height="98"/>
+                            <rect key="frame" x="4" y="5" width="214" height="94"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <button tag="2" id="1242">
-                                    <rect key="frame" x="16" y="72" width="137" height="18"/>
+                                    <rect key="frame" x="16" y="68" width="137" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPPushInCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1243">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -350,7 +348,7 @@
                                     </connections>
                                 </button>
                                 <button tag="1" id="1241">
-                                    <rect key="frame" x="16" y="52" width="152" height="18"/>
+                                    <rect key="frame" x="16" y="48" width="152" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPContentsCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1244">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -361,7 +359,7 @@
                                     </connections>
                                 </button>
                                 <button tag="4" id="1240">
-                                    <rect key="frame" x="16" y="32" width="172" height="18"/>
+                                    <rect key="frame" x="16" y="28" width="172" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeGrayCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1245">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -372,7 +370,7 @@
                                     </connections>
                                 </button>
                                 <button tag="8" id="1239">
-                                    <rect key="frame" x="16" y="12" width="218" height="18"/>
+                                    <rect key="frame" x="16" y="8" width="218" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeBackgroundCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1246">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -384,8 +382,6 @@
                                 </button>
                             </subviews>
                         </view>
-                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </box>
                     <textField verticalHuggingPriority="750" id="1256">
                         <rect key="frame" x="332" y="152" width="131" height="17"/>
@@ -419,7 +415,7 @@
                 </subviews>
             </view>
         </window>
-        <window title="Image Scaling" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" frameAutosaveName="" animationBehavior="default" id="Tpo-En-p6a">
+        <window title="Image Scaling" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="" animationBehavior="default" id="Tpo-En-p6a">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="1069" y="674" width="480" height="170"/>
@@ -503,7 +499,7 @@
     </objects>
     <resources>
         <image name="Image-132x44" width="26.879999160766602" height="80.639999389648438"/>
-        <image name="NSAddTemplate" width="11" height="11"/>
-        <image name="NSRemoveTemplate" width="11" height="11"/>
+        <image name="NSAddTemplate" width="18" height="16"/>
+        <image name="NSRemoveTemplate" width="18" height="4"/>
     </resources>
 </document>
