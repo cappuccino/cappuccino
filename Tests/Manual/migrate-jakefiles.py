@@ -38,7 +38,7 @@ detected by the presence of Info.plist or index.html with no sibling
 Jakefile, and are reported and skipped rather than guessed at.
 
 Usage:
-    python3 migrate_jakefiles.py [root] [--apply]
+    python3 migrate-jakefiles.py [--apply]
 
 Default is a dry run: prints what would happen, writes nothing.
 --apply performs the migration.
@@ -84,7 +84,8 @@ var ENV = process.env,
     app = CAPPUCCINO.Jake.applicationtask.app,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
     OS = require("os"),
-    projectName = "$project_name";
+    projectName = "$project_name",
+    productName = "$product_name";
 
 var buildDir = path.resolve(ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build");
 
@@ -98,7 +99,7 @@ app (projectName, function(task)
     task.setBuildIntermediatesPath(path.join(buildDir, projectName + ".build", configuration));
     task.setBuildPath(path.join(buildDir, configuration));
 
-    task.setProductName("$product_name");
+    task.setProductName(productName);
     task.setIdentifier("$identifier");
     task.setVersion("$version");
     task.setAuthor("$author");
@@ -139,25 +140,25 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    OS.system(["open", path.join(buildDir, "Debug", projectName, "index.html")]);
+    OS.system(["open", path.join(buildDir, "Debug", productName, "index.html")]);
 });
 
 task ("run-release", ["release"], function()
 {
-    OS.system(["open", path.join(buildDir, "Release", projectName, "index.html")]);
+    OS.system(["open", path.join(buildDir, "Release", productName, "index.html")]);
 });
 
 task ("deploy", ["release"], function()
 {
-    FILE.mkdirs(path.join(buildDir, "Deployment", projectName));
-    OS.system(["press", "-f", path.join(buildDir, "Release", projectName), path.join(buildDir, "Deployment", projectName)]);
+    FILE.mkdirs(path.join(buildDir, "Deployment", productName));
+    OS.system(["press", "-f", path.join(buildDir, "Release", productName), path.join(buildDir, "Deployment", productName)]);
     printResults("Deployment")
 });
 
 function printResults(configuration)
 {
     console.log("----------------------------");
-    console.log(configuration+" app built at path: " + path.join(buildDir, configuration, projectName));
+    console.log(configuration+" app built at path: " + path.join(buildDir, configuration, productName));
     console.log("----------------------------");
 }
 
@@ -165,7 +166,7 @@ function updateApplicationSize()
 {
     console.log("Calculating application file sizes...");
 
-    var contents = fs.readFileSync(path.join(buildDir, configuration, projectName, "Info.plist"), { encoding: "utf8" }),
+    var contents = fs.readFileSync(path.join(buildDir, configuration, productName, "Info.plist"), { encoding: "utf8" }),
         format = CFPropertyList.sniffedFormatOfString(contents),
         plist = CFPropertyList.propertyListFromString(contents),
         totalBytes = {executable:0, data:0, mhtml:0};
@@ -201,7 +202,7 @@ function updateApplicationSize()
         addBundleFileSizes(themePath, totalBytes);
 
     // Add sizes for the app
-    addBundleFileSizes(path.join(buildDir, configuration, projectName), totalBytes);
+    addBundleFileSizes(path.join(buildDir, configuration, productName), totalBytes);
 
     console.log("Executables: " + totalBytes.executable + ", sprite data: " + totalBytes.data + ", total: " + (totalBytes.executable + totalBytes.data));
 
@@ -212,7 +213,7 @@ function updateApplicationSize()
     dict.setValueForKey("mhtml", totalBytes.mhtml);
 
     plist.setValueForKey("CPApplicationSize", dict);
-    fs.writeFileSync(path.join(buildDir, configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { encoding: "utf8" });
+    fs.writeFileSync(path.join(buildDir, configuration, productName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { encoding: "utf8" });
 }
 
 function addBundleFileSizes(bundlePath, totalBytes)
@@ -265,7 +266,9 @@ def migrate_file(jakefile_path, apply_changes):
     new_content = (header + "\n\n" if header else "") + body
 
     if apply_changes:
-        shutil.copy2(jakefile_path, jakefile_path.with_name("JakefileBackup"))
+        backup_path = jakefile_path.with_name("JakefileBackup")
+        if not backup_path.exists():
+            shutil.copy2(jakefile_path, backup_path)
         jakefile_path.write_text(new_content)
 
 
@@ -275,6 +278,8 @@ def find_missing_jakefile_dirs(root, jakefile_dirs):
     candidates = set()
     for marker in ("Info.plist", "index.html"):
         for p in root.rglob(marker):
+            if any(part in ("Frameworks", ".Frameworks") for part in p.parts):
+                continue
             candidates.add(p.parent)
     return sorted(candidates - jakefile_dirs)
 
@@ -283,16 +288,18 @@ def main():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("root", nargs="?", default="Tests/Manual",
-                         help="root directory to search (default: Tests/Manual)")
     parser.add_argument("--apply", action="store_true", help="write changes (default is dry run)")
     args = parser.parse_args()
 
-    root = Path(args.root)
-    if not root.is_dir():
-        sys.exit(f"error: {root} is not a directory")
+    root = Path(".")
 
-    jakefiles = sorted(root.rglob("Jakefile"))
+    manual_jakefile = (root / "Jakefile").resolve()
+
+    jakefiles = sorted(
+        p for p in root.rglob("Jakefile")
+        if not any(part in ("Frameworks", ".Frameworks") for part in p.parts)
+        and p.resolve() != manual_jakefile
+    )
     jakefile_dirs = {jf.parent for jf in jakefiles}
     missing_dirs = find_missing_jakefile_dirs(root, jakefile_dirs)
 
