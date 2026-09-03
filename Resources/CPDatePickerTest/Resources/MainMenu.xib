@@ -1,39 +1,39 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1050" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
-        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <deployment version="1050" identifier="macosx" />
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506" />
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0" />
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
             <connections>
-                <outlet property="delegate" destination="450" id="451"/>
+                <outlet property="delegate" destination="450" id="451" />
             </connections>
         </customObject>
-        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder" />
+        <customObject id="-3" userLabel="Application" />
         <menu title="AMainMenu" systemMenu="main" id="29" userLabel="MainMenu">
             <items>
-                <menuItem title="NewApplication" id="56">
-                    <menu key="submenu" title="NewApplication" systemMenu="apple" id="57">
+                <menuItem title="CPDatePickerTest" id="56">
+                    <menu key="submenu" title="CPDatePickerTest" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About NewApplication" id="58">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="About CPDatePickerTest" id="58">
+                                <modifierMask key="keyEquivalentModifierMask" />
                                 <connections>
-                                    <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
+                                    <action selector="orderFrontStandardAboutPanel:" target="-2" id="142" />
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="236">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Preferences…" keyEquivalent="," id="129"/>
+                            <menuItem title="Preferences…" keyEquivalent="," id="129" />
                             <menuItem isSeparatorItem="YES" id="143">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Quit NewApplication" keyEquivalent="q" id="136">
+                            <menuItem title="Quit CPDatePickerTest" keyEquivalent="q" id="136">
                                 <connections>
-                                    <action selector="terminate:" target="-3" id="449"/>
+                                    <action selector="terminate:" target="-3" id="449" />
                                 </connections>
                             </menuItem>
                         </items>
@@ -44,12 +44,12 @@
                         <items>
                             <menuItem title="New" keyEquivalent="n" id="82">
                                 <connections>
-                                    <action selector="newDocument:" target="-1" id="373"/>
+                                    <action selector="newDocument:" target="-1" id="373" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Open…" keyEquivalent="o" id="72">
                                 <connections>
-                                    <action selector="openDocument:" target="-1" id="374"/>
+                                    <action selector="openDocument:" target="-1" id="374" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Open Recent" id="124">
@@ -57,35 +57,35 @@
                                     <items>
                                         <menuItem title="Clear Menu" id="126">
                                             <connections>
-                                                <action selector="clearRecentDocuments:" target="-1" id="127"/>
+                                                <action selector="clearRecentDocuments:" target="-1" id="127" />
                                             </connections>
                                         </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="79">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Close" keyEquivalent="w" id="73">
                                 <connections>
-                                    <action selector="performClose:" target="-1" id="193"/>
+                                    <action selector="performClose:" target="-1" id="193" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Save" keyEquivalent="s" id="75">
                                 <connections>
-                                    <action selector="saveDocument:" target="-1" id="362"/>
+                                    <action selector="saveDocument:" target="-1" id="362" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Save As…" keyEquivalent="S" id="80">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                 <connections>
-                                    <action selector="saveDocumentAs:" target="-1" id="363"/>
+                                    <action selector="saveDocumentAs:" target="-1" id="363" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Revert to Saved" id="112">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <modifierMask key="keyEquivalentModifierMask" />
                                 <connections>
-                                    <action selector="revertDocumentToSaved:" target="-1" id="364"/>
+                                    <action selector="revertDocumentToSaved:" target="-1" id="364" />
                                 </connections>
                             </menuItem>
                         </items>
@@ -96,62 +96,62 @@
                         <items>
                             <menuItem title="Undo" keyEquivalent="z" id="207">
                                 <connections>
-                                    <action selector="undo:" target="-1" id="223"/>
+                                    <action selector="undo:" target="-1" id="223" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Redo" keyEquivalent="Z" id="215">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                 <connections>
-                                    <action selector="redo:" target="-1" id="231"/>
+                                    <action selector="redo:" target="-1" id="231" />
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="206">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Cut" keyEquivalent="x" id="199">
                                 <connections>
-                                    <action selector="cut:" target="-1" id="228"/>
+                                    <action selector="cut:" target="-1" id="228" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Copy" keyEquivalent="c" id="197">
                                 <connections>
-                                    <action selector="copy:" target="-1" id="224"/>
+                                    <action selector="copy:" target="-1" id="224" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Paste" keyEquivalent="v" id="203">
                                 <connections>
-                                    <action selector="paste:" target="-1" id="226"/>
+                                    <action selector="paste:" target="-1" id="226" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Delete" id="202">
                                 <connections>
-                                    <action selector="delete:" target="-1" id="235"/>
+                                    <action selector="delete:" target="-1" id="235" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Select All" keyEquivalent="a" id="198">
                                 <connections>
-                                    <action selector="selectAll:" target="-1" id="232"/>
+                                    <action selector="selectAll:" target="-1" id="232" />
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="214">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Find" id="218">
                                 <menu key="submenu" title="Find" id="220">
                                     <items>
                                         <menuItem title="Find…" tag="1" keyEquivalent="f" id="209">
                                             <connections>
-                                                <action selector="performFindPanelAction:" target="-1" id="241"/>
+                                                <action selector="performFindPanelAction:" target="-1" id="241" />
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Find Next" tag="2" keyEquivalent="g" id="208"/>
+                                        <menuItem title="Find Next" tag="2" keyEquivalent="g" id="208" />
                                         <menuItem title="Find Previous" tag="3" keyEquivalent="G" id="213">
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                         </menuItem>
-                                        <menuItem title="Use Selection for Find" tag="7" keyEquivalent="e" id="221"/>
+                                        <menuItem title="Use Selection for Find" tag="7" keyEquivalent="e" id="221" />
                                         <menuItem title="Jump to Selection" keyEquivalent="j" id="210">
                                             <connections>
-                                                <action selector="centerSelectionInVisibleArea:" target="-1" id="245"/>
+                                                <action selector="centerSelectionInVisibleArea:" target="-1" id="245" />
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -162,22 +162,22 @@
                                     <items>
                                         <menuItem title="Show Spelling…" keyEquivalent=":" id="204">
                                             <connections>
-                                                <action selector="showGuessPanel:" target="-1" id="230"/>
+                                                <action selector="showGuessPanel:" target="-1" id="230" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Check Spelling" keyEquivalent=";" id="201">
                                             <connections>
-                                                <action selector="checkSpelling:" target="-1" id="225"/>
+                                                <action selector="checkSpelling:" target="-1" id="225" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Check Spelling While Typing" id="219">
                                             <connections>
-                                                <action selector="toggleContinuousSpellChecking:" target="-1" id="222"/>
+                                                <action selector="toggleContinuousSpellChecking:" target="-1" id="222" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Check Grammar With Spelling" id="346">
                                             <connections>
-                                                <action selector="toggleGrammarChecking:" target="-1" id="347"/>
+                                                <action selector="toggleGrammarChecking:" target="-1" id="347" />
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -188,18 +188,18 @@
                                     <items>
                                         <menuItem title="Smart Copy/Paste" tag="1" keyEquivalent="f" id="350">
                                             <connections>
-                                                <action selector="toggleSmartInsertDelete:" target="-1" id="355"/>
+                                                <action selector="toggleSmartInsertDelete:" target="-1" id="355" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Smart Quotes" tag="2" keyEquivalent="g" id="351">
                                             <connections>
-                                                <action selector="toggleAutomaticQuoteSubstitution:" target="-1" id="356"/>
+                                                <action selector="toggleAutomaticQuoteSubstitution:" target="-1" id="356" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Smart Links" tag="3" keyEquivalent="G" id="354">
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                             <connections>
-                                                <action selector="toggleAutomaticLinkDetection:" target="-1" id="357"/>
+                                                <action selector="toggleAutomaticLinkDetection:" target="-1" id="357" />
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -210,12 +210,12 @@
                                     <items>
                                         <menuItem title="Start Speaking" id="196">
                                             <connections>
-                                                <action selector="startSpeaking:" target="-1" id="233"/>
+                                                <action selector="startSpeaking:" target="-1" id="233" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Stop Speaking" id="195">
                                             <connections>
-                                                <action selector="stopSpeaking:" target="-1" id="227"/>
+                                                <action selector="stopSpeaking:" target="-1" id="227" />
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -228,14 +228,14 @@
                     <menu key="submenu" title="View" id="296">
                         <items>
                             <menuItem title="Show Toolbar" keyEquivalent="t" id="297">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES" />
                                 <connections>
-                                    <action selector="toggleToolbarShown:" target="-1" id="366"/>
+                                    <action selector="toggleToolbarShown:" target="-1" id="366" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Customize Toolbar…" id="298">
                                 <connections>
-                                    <action selector="runToolbarCustomizationPalette:" target="-1" id="365"/>
+                                    <action selector="runToolbarCustomizationPalette:" target="-1" id="365" />
                                 </connections>
                             </menuItem>
                         </items>
@@ -246,20 +246,20 @@
                         <items>
                             <menuItem title="Minimize" keyEquivalent="m" id="23">
                                 <connections>
-                                    <action selector="performMiniaturize:" target="-1" id="37"/>
+                                    <action selector="performMiniaturize:" target="-1" id="37" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Zoom" id="239">
                                 <connections>
-                                    <action selector="performZoom:" target="-1" id="240"/>
+                                    <action selector="performZoom:" target="-1" id="240" />
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="92">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Bring All to Front" id="5">
                                 <connections>
-                                    <action selector="arrangeInFront:" target="-1" id="39"/>
+                                    <action selector="arrangeInFront:" target="-1" id="39" />
                                 </connections>
                             </menuItem>
                         </items>
@@ -268,9 +268,9 @@
                 <menuItem title="Help" id="103">
                     <menu key="submenu" title="Help" id="106">
                         <items>
-                            <menuItem title="NewApplication Help" keyEquivalent="?" id="111">
+                            <menuItem title="CPDatePickerTest Help" keyEquivalent="?" id="111">
                                 <connections>
-                                    <action selector="showHelp:" target="-1" id="360"/>
+                                    <action selector="showHelp:" target="-1" id="360" />
                                 </connections>
                             </menuItem>
                         </items>
@@ -280,374 +280,374 @@
         </menu>
         <objectController objectClassName="NSDatePicker" id="799" userLabel="DatePickerStyleController">
             <connections>
-                <outlet property="content" destination="538" id="800"/>
+                <outlet property="content" destination="538" id="800" />
             </connections>
         </objectController>
         <customObject id="450" customClass="AppController">
             <connections>
-                <outlet property="buttonElementsDate" destination="554" id="809"/>
-                <outlet property="buttonElementsTime" destination="572" id="810"/>
-                <outlet property="buttonStyle" destination="542" id="776"/>
-                <outlet property="pickerCurrentDate" destination="594" id="757"/>
-                <outlet property="pickerMaxDate" destination="590" id="756"/>
-                <outlet property="pickerMinDate" destination="582" id="755"/>
-                <outlet property="pickerTarget" destination="538" id="758"/>
-                <outlet property="theWindow" destination="371" id="459"/>
+                <outlet property="buttonElementsDate" destination="554" id="809" />
+                <outlet property="buttonElementsTime" destination="572" id="810" />
+                <outlet property="buttonStyle" destination="542" id="776" />
+                <outlet property="pickerCurrentDate" destination="594" id="757" />
+                <outlet property="pickerMaxDate" destination="590" id="756" />
+                <outlet property="pickerMinDate" destination="582" id="755" />
+                <outlet property="pickerTarget" destination="538" id="758" />
+                <outlet property="theWindow" destination="371" id="459" />
             </connections>
         </customObject>
         <window title="CPDatePicker Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="371">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="133" y="289" width="885" height="477"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" />
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES" />
+            <rect key="contentRect" x="133" y="289" width="885" height="477" />
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878" />
             <view key="contentView" id="372">
-                <rect key="frame" x="0.0" y="0.0" width="885" height="477"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <rect key="frame" x="0.0" y="0.0" width="885" height="477" />
+                <autoresizingMask key="autoresizingMask" />
                 <subviews>
                     <datePicker verticalHuggingPriority="750" id="538">
-                        <rect key="frame" x="456" y="167" width="277" height="148"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="456" y="167" width="277" height="148" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <datePickerCell key="cell" borderStyle="bezel" alignment="left" datePickerMode="range" datePickerStyle="clockAndCalendar" id="539">
-                            <font key="font" metaFont="system"/>
+                            <font key="font" metaFont="system" />
                             <date key="date" timeIntervalSinceReferenceDate="377037012">
-                                <!--2012-12-12 20:30:12 +0000-->
+                                
                             </date>
                             <date key="minDate" timeIntervalSinceReferenceDate="-63113861222">
-                                <!--0001-01-03 11:52:58 +0000-->
+                                
                             </date>
                             <date key="maxDate" timeIntervalSinceReferenceDate="63113947200">
-                                <!--4001-01-01 12:00:00 +0000-->
+                                
                             </date>
-                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <datePickerElements key="datePickerElements" era="YES" year="YES" month="YES" day="YES" timeZone="YES" hour="YES" minute="YES" second="YES"/>
+                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <datePickerElements key="datePickerElements" era="YES" year="YES" month="YES" day="YES" timeZone="YES" hour="YES" minute="YES" second="YES" />
                         </datePickerCell>
                         <connections>
-                            <binding destination="450" name="maxValue" keyPath="pickerMaxDate.objectValue" id="768"/>
-                            <binding destination="450" name="minValue" keyPath="pickerMinDate.objectValue" previousBinding="768" id="774"/>
-                            <binding destination="450" name="value" keyPath="pickerCurrentDate.objectValue" previousBinding="774" id="789"/>
+                            <binding destination="450" name="maxValue" keyPath="pickerMaxDate.objectValue" id="768" />
+                            <binding destination="450" name="minValue" keyPath="pickerMinDate.objectValue" previousBinding="768" id="774" />
+                            <binding destination="450" name="value" keyPath="pickerCurrentDate.objectValue" previousBinding="774" id="789" />
                         </connections>
                     </datePicker>
                     <textField verticalHuggingPriority="750" id="540">
-                        <rect key="frame" x="17" y="428" width="168" height="29"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="17" y="428" width="168" height="29" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="CPDatePicker test" id="541">
-                            <font key="font" metaFont="systemBold" size="17"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="systemBold" size="17" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <box autoresizesSubviews="NO" borderType="line" title="Parameters" titlePosition="noTitle" id="822">
-                        <rect key="frame" x="17" y="16" width="363" height="388"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="17" y="16" width="363" height="388" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <view key="contentView" id="pa8-eK-A0d">
-                            <rect key="frame" x="4" y="5" width="355" height="380"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <rect key="frame" x="4" y="5" width="355" height="380" />
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES" />
                             <subviews>
                                 <datePicker verticalHuggingPriority="750" id="582">
-                                    <rect key="frame" x="104" y="161" width="230" height="27"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="104" y="161" width="230" height="27" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <datePickerCell key="cell" borderStyle="bezel" alignment="left" id="583">
-                                        <font key="font" metaFont="system"/>
+                                        <font key="font" metaFont="system" />
                                         <date key="date" timeIntervalSinceReferenceDate="-63113861222">
-                                            <!--0001-01-03 11:52:58 +0000-->
+                                            
                                         </date>
-                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <datePickerElements key="datePickerElements" year="YES" month="YES" day="YES" hour="YES" minute="YES" second="YES"/>
+                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <datePickerElements key="datePickerElements" year="YES" month="YES" day="YES" hour="YES" minute="YES" second="YES" />
                                     </datePickerCell>
                                     <connections>
-                                        <binding destination="450" name="value" keyPath="pickerTarget.minDate" id="832"/>
-                                        <outlet property="nextKeyView" destination="590" id="816"/>
+                                        <binding destination="450" name="value" keyPath="pickerTarget.minDate" id="832" />
+                                        <outlet property="nextKeyView" destination="590" id="816" />
                                     </connections>
                                 </datePicker>
                                 <popUpButton verticalHuggingPriority="750" id="542">
-                                    <rect key="frame" x="102" y="337" width="232" height="26"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="102" y="337" width="232" height="26" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <popUpButtonCell key="cell" type="push" title="Graphical" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="1" imageScaling="proportionallyDown" inset="2" selectedItem="547" id="543">
-                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES" />
+                                        <font key="font" metaFont="system" />
                                         <menu key="menu" title="OtherViews" id="544">
                                             <items>
                                                 <menuItem title="Textual" tag="2" id="545">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                                 <menuItem title="Textual with Stepper" id="546">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                                 <menuItem title="Graphical" state="on" tag="1" id="547">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                             </items>
                                         </menu>
                                     </popUpButtonCell>
                                     <connections>
-                                        <binding destination="799" name="selectedTag" keyPath="selection.datePickerStyle" id="806"/>
+                                        <binding destination="799" name="selectedTag" keyPath="selection.datePickerStyle" id="806" />
                                     </connections>
                                 </popUpButton>
                                 <popUpButton verticalHuggingPriority="750" id="548">
-                                    <rect key="frame" x="102" y="307" width="232" height="26"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="102" y="307" width="232" height="26" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <popUpButtonCell key="cell" type="push" title="Date Range" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="1" imageScaling="proportionallyDown" inset="2" selectedItem="552" id="549">
-                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES" />
+                                        <font key="font" metaFont="system" />
                                         <menu key="menu" title="OtherViews" id="550">
                                             <items>
                                                 <menuItem title="Single Date" id="553">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                                 <menuItem title="Date Range" state="on" tag="1" id="552">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                             </items>
                                         </menu>
                                     </popUpButtonCell>
                                     <connections>
-                                        <binding destination="799" name="selectedTag" keyPath="selection.datePickerMode" id="808"/>
+                                        <binding destination="799" name="selectedTag" keyPath="selection.datePickerMode" id="808" />
                                     </connections>
                                 </popUpButton>
                                 <popUpButton verticalHuggingPriority="750" id="554">
-                                    <rect key="frame" x="102" y="276" width="232" height="26"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="102" y="276" width="232" height="26" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <popUpButtonCell key="cell" type="push" title="Month, Day and Year" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="2" imageScaling="proportionallyDown" inset="2" selectedItem="557" id="555">
-                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES" />
+                                        <font key="font" metaFont="system" />
                                         <menu key="menu" title="OtherViews" id="556">
                                             <items>
                                                 <menuItem title="Month, Day and Year" state="on" tag="2" id="557">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                                 <menuItem title="Month and Year" tag="1" id="558">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                                 <menuItem title="None" id="559">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                             </items>
                                         </menu>
                                     </popUpButtonCell>
                                     <connections>
-                                        <action selector="updateElements:" target="450" id="812"/>
+                                        <action selector="updateElements:" target="450" id="812" />
                                     </connections>
                                 </popUpButton>
                                 <popUpButton verticalHuggingPriority="750" id="572">
-                                    <rect key="frame" x="102" y="245" width="232" height="26"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="102" y="245" width="232" height="26" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <popUpButtonCell key="cell" type="push" title="Hour, Minute and Second" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="2" imageScaling="proportionallyDown" inset="2" selectedItem="577" id="573">
-                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES" />
+                                        <font key="font" metaFont="system" />
                                         <menu key="menu" title="OtherViews" id="574">
                                             <items>
                                                 <menuItem title="Hour, Minute and Second" state="on" tag="2" id="577">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                                 <menuItem title="Hour and Minute" tag="1" id="576">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                                 <menuItem title="None" id="575">
-                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <modifierMask key="keyEquivalentModifierMask" />
                                                 </menuItem>
                                             </items>
                                         </menu>
                                     </popUpButtonCell>
                                     <connections>
-                                        <action selector="updateElements:" target="450" id="811"/>
+                                        <action selector="updateElements:" target="450" id="811" />
                                     </connections>
                                 </popUpButton>
                                 <textField verticalHuggingPriority="750" id="560">
-                                    <rect key="frame" x="15" y="345" width="84" height="17"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="15" y="345" width="84" height="17" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Style" id="561">
-                                        <font key="font" metaFont="systemBold"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        <font key="font" metaFont="systemBold" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                                     </textFieldCell>
                                 </textField>
                                 <textField verticalHuggingPriority="750" id="562">
-                                    <rect key="frame" x="15" y="313" width="84" height="17"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="15" y="313" width="84" height="17" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Selects" id="563">
-                                        <font key="font" metaFont="systemBold"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        <font key="font" metaFont="systemBold" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                                     </textFieldCell>
                                 </textField>
                                 <textField verticalHuggingPriority="750" id="586">
-                                    <rect key="frame" x="15" y="189" width="84" height="17"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="15" y="189" width="84" height="17" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Constraints" id="587">
-                                        <font key="font" metaFont="systemBold"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        <font key="font" metaFont="systemBold" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                                     </textFieldCell>
                                 </textField>
                                 <textField verticalHuggingPriority="750" id="596">
-                                    <rect key="frame" x="15" y="73" width="84" height="17"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="15" y="73" width="84" height="17" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Date" id="597">
-                                        <font key="font" metaFont="systemBold"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        <font key="font" metaFont="systemBold" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                                     </textFieldCell>
                                 </textField>
                                 <textField verticalHuggingPriority="750" id="602">
-                                    <rect key="frame" x="15" y="48" width="84" height="17"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="15" y="48" width="84" height="17" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Display" id="603">
-                                        <font key="font" metaFont="systemBold"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        <font key="font" metaFont="systemBold" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                                     </textFieldCell>
                                 </textField>
                                 <textField verticalHuggingPriority="750" id="564">
-                                    <rect key="frame" x="15" y="282" width="84" height="17"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="15" y="282" width="84" height="17" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Elements" id="565">
-                                        <font key="font" metaFont="systemBold"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        <font key="font" metaFont="systemBold" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                                     </textFieldCell>
                                 </textField>
                                 <button id="578">
-                                    <rect key="frame" x="102" y="221" width="89" height="18"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="102" y="221" width="89" height="18" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <buttonCell key="cell" type="check" title="Time zone" bezelStyle="regularSquare" imagePosition="left" enabled="NO" state="on" inset="2" id="579">
-                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                        <font key="font" metaFont="system" />
                                     </buttonCell>
                                 </button>
                                 <button id="588">
-                                    <rect key="frame" x="102" y="189" width="113" height="18"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="102" y="189" width="113" height="18" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <buttonCell key="cell" type="check" title="Minimum date" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="589">
-                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                        <font key="font" metaFont="system" />
                                     </buttonCell>
                                     <connections>
-                                        <action selector="updateHasMinConstraint:" target="450" id="823"/>
+                                        <action selector="updateHasMinConstraint:" target="450" id="823" />
                                     </connections>
                                 </button>
                                 <datePicker verticalHuggingPriority="750" id="590">
-                                    <rect key="frame" x="104" y="109" width="230" height="27"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="104" y="109" width="230" height="27" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <datePickerCell key="cell" borderStyle="bezel" alignment="left" id="593">
-                                        <font key="font" metaFont="system"/>
+                                        <font key="font" metaFont="system" />
                                         <date key="date" timeIntervalSinceReferenceDate="63113947200">
-                                            <!--4001-01-01 12:00:00 +0000-->
+                                            
                                         </date>
-                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <datePickerElements key="datePickerElements" year="YES" month="YES" day="YES" hour="YES" minute="YES" second="YES"/>
+                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <datePickerElements key="datePickerElements" year="YES" month="YES" day="YES" hour="YES" minute="YES" second="YES" />
                                     </datePickerCell>
                                     <connections>
-                                        <binding destination="450" name="value" keyPath="pickerTarget.maxDate" id="835"/>
-                                        <outlet property="nextKeyView" destination="594" id="817"/>
+                                        <binding destination="450" name="value" keyPath="pickerTarget.maxDate" id="835" />
+                                        <outlet property="nextKeyView" destination="594" id="817" />
                                     </connections>
                                 </datePicker>
                                 <datePicker verticalHuggingPriority="750" id="594">
-                                    <rect key="frame" x="104" y="70" width="230" height="27"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="104" y="70" width="230" height="27" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <datePickerCell key="cell" borderStyle="bezel" alignment="left" id="595">
-                                        <font key="font" metaFont="system"/>
+                                        <font key="font" metaFont="system" />
                                         <date key="date" timeIntervalSinceReferenceDate="377035932">
-                                            <!--2012-12-12 20:12:12 +0000-->
+                                            
                                         </date>
-                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <datePickerElements key="datePickerElements" year="YES" month="YES" day="YES" hour="YES" minute="YES" second="YES"/>
+                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <datePickerElements key="datePickerElements" year="YES" month="YES" day="YES" hour="YES" minute="YES" second="YES" />
                                     </datePickerCell>
                                     <connections>
-                                        <binding destination="450" name="value" keyPath="pickerTarget.dateValue" id="828"/>
-                                        <outlet property="nextKeyView" destination="582" id="821"/>
+                                        <binding destination="450" name="value" keyPath="pickerTarget.dateValue" id="828" />
+                                        <outlet property="nextKeyView" destination="582" id="821" />
                                     </connections>
                                 </datePicker>
                                 <button id="591">
-                                    <rect key="frame" x="102" y="137" width="116" height="18"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="102" y="137" width="116" height="18" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <buttonCell key="cell" type="check" title="Maximum date" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="592">
-                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                        <font key="font" metaFont="system" />
                                     </buttonCell>
                                     <connections>
-                                        <action selector="updateHasMaxConstraint:" target="450" id="824"/>
+                                        <action selector="updateHasMaxConstraint:" target="450" id="824" />
                                     </connections>
                                 </button>
                                 <button id="580">
-                                    <rect key="frame" x="195" y="221" width="76" height="18"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="195" y="221" width="76" height="18" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <buttonCell key="cell" type="check" title="Era" bezelStyle="regularSquare" imagePosition="left" enabled="NO" state="on" inset="2" id="581">
-                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                        <font key="font" metaFont="system" />
                                     </buttonCell>
                                 </button>
                                 <button id="598">
-                                    <rect key="frame" x="102" y="46" width="97" height="18"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="102" y="46" width="97" height="18" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <buttonCell key="cell" type="check" title="Background" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="601">
-                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                        <font key="font" metaFont="system" />
                                     </buttonCell>
                                     <connections>
-                                        <binding destination="450" name="value" keyPath="pickerTarget.drawsBackground" id="870"/>
+                                        <binding destination="450" name="value" keyPath="pickerTarget.drawsBackground" id="870" />
                                     </connections>
                                 </button>
                                 <button id="599">
-                                    <rect key="frame" x="102" y="26" width="97" height="18"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="102" y="26" width="97" height="18" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <buttonCell key="cell" type="check" title="Border" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="600">
-                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                        <font key="font" metaFont="system" />
                                     </buttonCell>
                                     <connections>
-                                        <binding destination="450" name="value" keyPath="pickerTarget.bordered" id="867"/>
+                                        <binding destination="450" name="value" keyPath="pickerTarget.bordered" id="867" />
                                     </connections>
                                 </button>
                                 <box autoresizesSubviews="NO" verticalHuggingPriority="750" boxType="separator" id="837">
-                                    <rect key="frame" x="2" y="212" width="357" height="5"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="2" y="212" width="357" height="5" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                 </box>
                                 <box autoresizesSubviews="NO" verticalHuggingPriority="750" boxType="separator" id="838">
-                                    <rect key="frame" x="2" y="98" width="357" height="5"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="2" y="98" width="357" height="5" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                 </box>
                                 <button id="854">
-                                    <rect key="frame" x="102" y="6" width="97" height="18"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="102" y="6" width="97" height="18" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <buttonCell key="cell" type="check" title="Enabled" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="855">
-                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                        <font key="font" metaFont="system" />
                                     </buttonCell>
                                     <connections>
-                                        <binding destination="450" name="value" keyPath="pickerTarget.enabled" id="859"/>
+                                        <binding destination="450" name="value" keyPath="pickerTarget.enabled" id="859" />
                                     </connections>
                                 </button>
                             </subviews>
                         </view>
                     </box>
                     <textField verticalHuggingPriority="750" id="842">
-                        <rect key="frame" x="413" y="381" width="362" height="21"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="413" y="381" width="362" height="21" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Label" id="843">
-                            <font key="font" metaFont="system" size="17"/>
-                            <color key="textColor" red="0.34552848339999997" green="0.34552848339999997" blue="0.34552848339999997" alpha="1" colorSpace="calibratedRGB"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" size="17" />
+                            <color key="textColor" red="0.34552848339999997" green="0.34552848339999997" blue="0.34552848339999997" alpha="1" colorSpace="calibratedRGB" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                         <connections>
-                            <binding destination="450" name="value" keyPath="pickerTarget.objectValue" id="847"/>
+                            <binding destination="450" name="value" keyPath="pickerTarget.objectValue" id="847" />
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" id="848">
-                        <rect key="frame" x="413" y="352" width="362" height="21"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="413" y="352" width="362" height="21" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Label" id="849">
-                            <font key="font" metaFont="system" size="17"/>
-                            <color key="textColor" red="0.34552848339999997" green="0.34552848339999997" blue="0.34552848339999997" alpha="1" colorSpace="calibratedRGB"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" size="17" />
+                            <color key="textColor" red="0.34552848339999997" green="0.34552848339999997" blue="0.34552848339999997" alpha="1" colorSpace="calibratedRGB" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                         <connections>
                             <binding destination="450" name="value" keyPath="pickerTarget.timeInterval" id="860">
                                 <dictionary key="options">
-                                    <integer key="NSConditionallySetsHidden" value="1"/>
+                                    <integer key="NSConditionallySetsHidden" value="1" />
                                 </dictionary>
                             </binding>
                         </connections>
@@ -655,6 +655,6 @@
                 </subviews>
             </view>
         </window>
-        <userDefaultsController representsSharedInstance="YES" id="790"/>
+        <userDefaultsController representsSharedInstance="YES" id="790" />
     </objects>
 </document>
