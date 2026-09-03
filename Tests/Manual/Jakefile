@@ -1,0 +1,153 @@
+/*
+ * Jakefile
+ * Tests/Manual
+ *
+ * Provisions ./Frameworks for every manual integration test app.
+ * See FRAMEWORKS-PROVISIONING-PLAN.md for the reasoning behind this design.
+ *
+ * Scope: this file only manages Frameworks symlinks. It does not build,
+ * run, or modify any individual test app.
+ */
+
+const path = require("path");
+const fs = require("fs");
+
+var ENV = process.env,
+    task = JAKE.task;
+
+// Single source of truth for the merge: every app links to this, and
+// this links into dist. A dist rebuild is then visible everywhere with
+// no re-provisioning.
+var SHARED_FRAMEWORKS = ".Frameworks";
+
+// Left side: name under Tests/Manual/.Frameworks (and .../Debug).
+// Right side: path under dist, relative to Tests/Manual.
+var RELEASE_MEMBERS = {
+    "AppKit":      path.join("..", "..", "dist", "cappuccino", "Frameworks", "AppKit"),
+    "BlendKit":    path.join("..", "..", "dist", "cappuccino", "Frameworks", "BlendKit"),
+    "Foundation":  path.join("..", "..", "dist", "cappuccino", "Frameworks", "Foundation"),
+    "Objective-J": path.join("..", "..", "dist", "objective-j", "Frameworks", "Objective-J")
+};
+
+var DEBUG_MEMBERS = {
+    "AppKit":      path.join("..", "..", "dist", "cappuccino", "Frameworks", "Debug", "AppKit"),
+    "BlendKit":    path.join("..", "..", "dist", "cappuccino", "Frameworks", "Debug", "BlendKit"),
+    "Foundation":  path.join("..", "..", "dist", "cappuccino", "Frameworks", "Debug", "Foundation"),
+    "Objective-J": path.join("..", "..", "dist", "objective-j", "Frameworks", "Debug", "Objective-J")
+};
+
+// lstat, not stat -- a broken symlink must be seen as "exists, is a
+// symlink", not thrown away as ENOENT.
+function lstatOrNull(aPath)
+{
+    try
+    {
+        return fs.lstatSync(aPath);
+    }
+    catch (e)
+    {
+        return null;
+    }
+}
+
+// Creates or repairs a single symlink. Safe to call every time: skips
+// when the link is already correct, so a repeat `configure` costs one
+// lstat and one readlink per member when nothing changed.
+function ensureSymlink(linkPath, targetPath)
+{
+    var desiredRelative = path.relative(path.dirname(linkPath), targetPath);
+    var info = lstatOrNull(linkPath);
+
+    if (info)
+    {
+        if (info.isSymbolicLink() && fs.readlinkSync(linkPath) === desiredRelative)
+            return;
+
+        if (info.isSymbolicLink())
+            fs.unlinkSync(linkPath);
+        else
+        {
+            console.log("configure: replacing non-symlink at " + linkPath);
+            fs.rmSync(linkPath, { recursive: true, force: true });
+        }
+    }
+
+    fs.symlinkSync(desiredRelative, linkPath, "dir");
+}
+
+function buildSharedFrameworks()
+{
+    fs.mkdirSync(path.join(SHARED_FRAMEWORKS, "Debug"), { recursive: true });
+
+    Object.keys(RELEASE_MEMBERS).forEach(function(name)
+    {
+        ensureSymlink(path.join(SHARED_FRAMEWORKS, name), RELEASE_MEMBERS[name]);
+    });
+
+    Object.keys(DEBUG_MEMBERS).forEach(function(name)
+    {
+        ensureSymlink(path.join(SHARED_FRAMEWORKS, "Debug", name), DEBUG_MEMBERS[name]);
+    });
+}
+
+// An app directory is anything under Tests/Manual with Info.plist or
+// index.html -- the same test migrate_jakefiles.py already uses to
+// find app roots. Excludes the shared cache and any dotfile entries.
+function listAppDirs()
+{
+    return fs.readdirSync(".", { withFileTypes: true })
+        .filter(function(entry)
+        {
+            if (!entry.isDirectory())
+                return false;
+            if (entry.name.charAt(0) === ".")
+                return false;
+
+            return fs.existsSync(path.join(entry.name, "Info.plist")) ||
+                   fs.existsSync(path.join(entry.name, "index.html"));
+        })
+        .map(function(entry) { return entry.name; });
+}
+
+function linkAllApps()
+{
+    listAppDirs().forEach(function(appDir)
+    {
+        ensureSymlink(path.join(appDir, "Frameworks"), SHARED_FRAMEWORKS);
+    });
+}
+
+task ("refresh-dist", function()
+{
+    JAKE.subjake(["../.."], "dist", ENV);
+});
+
+task ("configure", ["refresh-dist"], function()
+{
+    buildSharedFrameworks();
+    linkAllApps();
+});
+
+task ("clean", function()
+{
+    listAppDirs().forEach(function(appDir)
+    {
+        var linkPath = path.join(appDir, "Frameworks");
+        var info = lstatOrNull(linkPath);
+
+        if (!info)
+            return;
+
+        if (info.isSymbolicLink())
+            fs.unlinkSync(linkPath);
+        else
+            console.log("clean: skipping non-symlink at " + linkPath);
+    });
+});
+
+task ("clobber", ["clean"], function()
+{
+    fs.rmSync(SHARED_FRAMEWORKS, { recursive: true, force: true });
+});
+
+task ("default", ["configure"]);
