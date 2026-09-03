@@ -27,3 +27,4 @@ node_modules
 /dist/cappuccino/lib
 /dist/cappuccino/bin
 Tests/Manual/.Frameworks
+/Tests/Manual/index.html
