@@ -115,12 +115,74 @@ function buildIndexHtml()
         :root { --bg: #ffffff; --text: #333333; --border: #e1e4e8; --row-alt: #f6f8fa; --row-hover: #f0f3f6; }
         body { font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; color: var(--text); max-width: 960px; margin: 0 auto; padding: 2rem; background: #fbfbfb; }
         .container { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-        .header { padding: 20px; border-bottom: 1px solid var(--border); }
-        .brand { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-        .brand img { height: 36px; width: auto; display: block; }
-        .brand h1 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1; }
-        p { margin: 0; color: #586069; }
-        input[type="text"] { width: 100%; padding: 8px 12px; margin-top: 16px; border: 1px solid var(--border); border-radius: 4px; font-family: inherit; font-size: 14px; box-sizing: border-box; }
+        .header {
+            background-color: #242a35;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.03),
+                rgba(255, 255, 255, 0.03) 1px,
+                transparent 1px,
+                transparent 4px
+            );
+            color: #ffffff;
+            padding: 18px 24px;
+            border-bottom: 1px solid #1a1e27;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+
+        .brand img {
+            height: 38px;
+            width: auto;
+            display: block;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 19px;
+            font-weight: 600;
+            line-height: 1;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+        }
+
+        .header p {
+            margin: 0;
+            color: #9aa5b5;
+            font-size: 13px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 9px 14px;
+            margin-top: 14px;
+            background-color: #171b22;
+            color: #e6edf3;
+            border: 1px solid #0d1015;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 13px;
+            box-sizing: border-box;
+            outline: none;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+
+        input[type="text"]::placeholder {
+            color: #626e7f;
+        }
+
+        input[type="text"]:focus {
+            background-color: #1c212a;
+            border-color: #3b4556;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 0 1px #3b4556;
+        }
+
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { padding: 12px 20px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border); }
         th { background: var(--bg); font-weight: 600; color: #586069; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
@@ -130,10 +192,10 @@ function buildIndexHtml()
         tbody tr:last-child td { border-bottom: none; }
         .badge { display: inline-block; padding: 4px 10px; margin: 2px 6px 2px 0; border-radius: 2em; font-size: 12px; font-weight: 600; text-decoration: none; color: white; transition: opacity 0.2s; }
         .badge:hover { opacity: 0.85; }
-        .badge-source { background-color: #6a737d; }
-        .badge-source-debug { background-color: #6f42c1; }
-        .badge-built-debug { background-color: #0366d6; }
-        .badge-built-release { background-color: #28a745; }
+        .badge-source { background-color: #2d7d46; }
+        .badge-source-debug { background-color: #0066cc; }
+        .badge-built-debug { background-color: #0066cc; }
+        .badge-built-release { background-color: #6a737d; }
     `;
 
     var js = `
