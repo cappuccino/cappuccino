@@ -1,489 +1,489 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1050" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
-        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <deployment version="1050" identifier="macosx" />
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506" />
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0" />
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
             <connections>
-                <outlet property="delegate" destination="450" id="451"/>
+                <outlet property="delegate" destination="450" id="451" />
             </connections>
         </customObject>
-        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder" />
+        <customObject id="-3" userLabel="Application" />
         <customObject id="450" customClass="AppController">
             <connections>
-                <outlet property="keyWindow" destination="498" id="783"/>
+                <outlet property="keyWindow" destination="498" id="783" />
             </connections>
         </customObject>
         <window title="Custom - no initial" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="498">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
-            <rect key="contentRect" x="27" y="660" width="246" height="161"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" />
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES" />
+            <rect key="contentRect" x="27" y="660" width="246" height="161" />
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878" />
             <view key="contentView" id="499">
-                <rect key="frame" x="0.0" y="0.0" width="246" height="161"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <rect key="frame" x="0.0" y="0.0" width="246" height="161" />
+                <autoresizingMask key="autoresizingMask" />
                 <subviews>
                     <textField verticalHuggingPriority="750" id="500">
-                        <rect key="frame" x="20" y="56" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="20" y="56" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="509">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                         <connections>
-                            <outlet property="nextKeyView" destination="502" id="510"/>
+                            <outlet property="nextKeyView" destination="502" id="510" />
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" id="501">
-                        <rect key="frame" x="130" y="56" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="130" y="56" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="508">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                         <connections>
-                            <outlet property="nextKeyView" destination="500" id="512"/>
+                            <outlet property="nextKeyView" destination="500" id="512" />
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" id="502">
-                        <rect key="frame" x="20" y="18" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="20" y="18" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="507">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                         <connections>
-                            <outlet property="nextKeyView" destination="501" id="511"/>
+                            <outlet property="nextKeyView" destination="501" id="511" />
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" id="503">
-                        <rect key="frame" x="68" y="124" width="111" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="68" y="124" width="111" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Custom key loop" id="506">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="504">
-                        <rect key="frame" x="43" y="99" width="160" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="43" y="99" width="160" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="No initialFirstResponder" id="505">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                 </subviews>
             </view>
         </window>
         <window title="Custom - initial" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="529">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
-            <rect key="contentRect" x="27" y="470" width="246" height="161"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" />
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES" />
+            <rect key="contentRect" x="27" y="470" width="246" height="161" />
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878" />
             <view key="contentView" id="530">
-                <rect key="frame" x="0.0" y="0.0" width="246" height="161"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <rect key="frame" x="0.0" y="0.0" width="246" height="161" />
+                <autoresizingMask key="autoresizingMask" />
                 <subviews>
                     <textField verticalHuggingPriority="750" id="535">
-                        <rect key="frame" x="20" y="58" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="20" y="58" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="536">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                         <connections>
-                            <outlet property="nextKeyView" destination="533" id="541"/>
+                            <outlet property="nextKeyView" destination="533" id="541" />
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" id="534">
-                        <rect key="frame" x="130" y="58" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="130" y="58" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="537">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                         <connections>
-                            <outlet property="nextKeyView" destination="535" id="542"/>
+                            <outlet property="nextKeyView" destination="535" id="542" />
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" id="533">
-                        <rect key="frame" x="20" y="20" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="20" y="20" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="538">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                         <connections>
-                            <outlet property="nextKeyView" destination="534" id="543"/>
+                            <outlet property="nextKeyView" destination="534" id="543" />
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" id="532">
-                        <rect key="frame" x="68" y="124" width="111" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="68" y="124" width="111" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Custom key loop" id="539">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="531">
-                        <rect key="frame" x="54" y="99" width="138" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="54" y="99" width="138" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="initialFirstResponder" id="540">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                 </subviews>
             </view>
             <connections>
-                <outlet property="initialFirstResponder" destination="534" id="544"/>
+                <outlet property="initialFirstResponder" destination="534" id="544" />
             </connections>
         </window>
         <window title="Auto - no initial" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="708">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
-            <rect key="contentRect" x="293" y="660" width="246" height="161"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" />
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES" />
+            <rect key="contentRect" x="293" y="660" width="246" height="161" />
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878" />
             <view key="contentView" id="709">
-                <rect key="frame" x="0.0" y="0.0" width="246" height="161"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <rect key="frame" x="0.0" y="0.0" width="246" height="161" />
+                <autoresizingMask key="autoresizingMask" />
                 <subviews>
                     <textField verticalHuggingPriority="750" id="714">
-                        <rect key="frame" x="20" y="58" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="20" y="58" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="715">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="713">
-                        <rect key="frame" x="130" y="58" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="130" y="58" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="716">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="712">
-                        <rect key="frame" x="20" y="20" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="20" y="20" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="717">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="711">
-                        <rect key="frame" x="67" y="126" width="111" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="67" y="126" width="111" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Auto key loop" id="718">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="710">
-                        <rect key="frame" x="43" y="101" width="160" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="43" y="101" width="160" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="No initialFirstResponder" id="719">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                 </subviews>
             </view>
         </window>
         <window title="Auto - initial" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="723">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
-            <rect key="contentRect" x="293" y="470" width="246" height="161"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" />
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES" />
+            <rect key="contentRect" x="293" y="470" width="246" height="161" />
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878" />
             <view key="contentView" id="724">
-                <rect key="frame" x="0.0" y="0.0" width="246" height="161"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <rect key="frame" x="0.0" y="0.0" width="246" height="161" />
+                <autoresizingMask key="autoresizingMask" />
                 <subviews>
                     <textField verticalHuggingPriority="750" id="725">
-                        <rect key="frame" x="20" y="56" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="20" y="56" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="734">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="726">
-                        <rect key="frame" x="130" y="56" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="130" y="56" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="733">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="727">
-                        <rect key="frame" x="20" y="20" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="20" y="20" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="732">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="728">
-                        <rect key="frame" x="66.5" y="124" width="111" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="66.5" y="124" width="111" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Auto key loop" id="731">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="729">
-                        <rect key="frame" x="53.5" y="99" width="138" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="53.5" y="99" width="138" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="initialFirstResponder" id="730">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                 </subviews>
             </view>
             <connections>
-                <outlet property="initialFirstResponder" destination="726" id="735"/>
+                <outlet property="initialFirstResponder" destination="726" id="735" />
             </connections>
         </window>
         <window title="Don’t autorecalculate" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="737" customClass="MyWindow">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
-            <rect key="contentRect" x="559" y="660" width="246" height="161"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" />
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES" />
+            <rect key="contentRect" x="559" y="660" width="246" height="161" />
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878" />
             <view key="contentView" id="750">
-                <rect key="frame" x="0.0" y="0.0" width="246" height="161"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <rect key="frame" x="0.0" y="0.0" width="246" height="161" />
+                <autoresizingMask key="autoresizingMask" />
                 <subviews>
                     <textField verticalHuggingPriority="750" tag="1" id="751">
-                        <rect key="frame" x="19.5" y="88" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="19.5" y="88" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="760">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="752">
-                        <rect key="frame" x="128.5" y="88" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="128.5" y="88" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="759">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="754">
-                        <rect key="frame" x="13" y="124" width="218" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="13" y="124" width="218" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="autorecalculatesKeyViewLoop:NO" id="757">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <button verticalHuggingPriority="750" id="762">
-                        <rect key="frame" x="19" y="45" width="97" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="19" y="45" width="97" height="32" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <buttonCell key="cell" type="push" title="Add field" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="763">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <connections>
-                            <action selector="addField:" target="737" id="764"/>
+                            <action selector="addField:" target="737" id="764" />
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" id="776">
-                        <rect key="frame" x="121" y="45" width="111" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="121" y="45" width="111" height="32" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <buttonCell key="cell" type="push" title="Recalculate" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="777">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <connections>
-                            <action selector="recalc:" target="737" id="779"/>
+                            <action selector="recalc:" target="737" id="779" />
                         </connections>
                     </button>
                 </subviews>
             </view>
         </window>
         <window title="Autorecalculate" allowsToolTipsWhenApplicationIsInactive="NO" animationBehavior="default" id="765" customClass="MyWindow">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
-            <rect key="contentRect" x="559" y="470" width="246" height="161"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" />
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES" />
+            <rect key="contentRect" x="559" y="470" width="246" height="161" />
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878" />
             <view key="contentView" id="766">
-                <rect key="frame" x="0.0" y="0.0" width="246" height="161"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <rect key="frame" x="0.0" y="0.0" width="246" height="161" />
+                <autoresizingMask key="autoresizingMask" />
                 <subviews>
                     <textField verticalHuggingPriority="750" tag="1" id="770">
-                        <rect key="frame" x="19.5" y="88" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="19.5" y="88" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="771">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="769">
-                        <rect key="frame" x="130.5" y="88" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="130.5" y="88" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="772">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="768">
-                        <rect key="frame" x="13" y="124" width="221" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="13" y="124" width="221" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="autorecalculatesKeyViewLoop:YES" id="773">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <button verticalHuggingPriority="750" id="767">
-                        <rect key="frame" x="75" y="46" width="97" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="75" y="46" width="97" height="32" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <buttonCell key="cell" type="push" title="Add field" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="774">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <connections>
-                            <action selector="addField:" target="765" id="775"/>
+                            <action selector="addField:" target="765" id="775" />
                         </connections>
                     </button>
                 </subviews>
             </view>
         </window>
         <window title="Nested views" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="784">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
-            <rect key="contentRect" x="27" y="210" width="461" height="224"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" />
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES" />
+            <rect key="contentRect" x="27" y="210" width="461" height="224" />
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878" />
             <view key="contentView" id="785">
-                <rect key="frame" x="0.0" y="0.0" width="461" height="224"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <rect key="frame" x="0.0" y="0.0" width="461" height="224" />
+                <autoresizingMask key="autoresizingMask" />
                 <subviews>
                     <textField verticalHuggingPriority="750" id="790">
-                        <rect key="frame" x="31" y="182" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="31" y="182" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="1" drawsBackground="YES" id="791">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="817">
-                        <rect key="frame" x="31" y="20" width="96" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="31" y="20" width="96" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="10" drawsBackground="YES" id="818">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <box autoresizesSubviews="NO" borderType="bezel" title="Box" titlePosition="noTitle" id="802">
-                        <rect key="frame" x="17" y="61" width="340" height="105"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="17" y="61" width="340" height="105" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <view key="contentView" id="mec-On-ZVt">
-                            <rect key="frame" x="4" y="5" width="332" height="97"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <rect key="frame" x="4" y="5" width="332" height="97" />
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES" />
                             <subviews>
                                 <textField verticalHuggingPriority="750" id="803">
-                                    <rect key="frame" x="15" y="49" width="67" height="22"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="15" y="49" width="67" height="22" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="2" drawsBackground="YES" id="804">
-                                        <font key="font" metaFont="system"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        <font key="font" metaFont="system" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                                     </textFieldCell>
                                 </textField>
                                 <textField verticalHuggingPriority="750" id="805">
-                                    <rect key="frame" x="15" y="10" width="67" height="22"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="15" y="10" width="67" height="22" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="3" drawsBackground="YES" id="806">
-                                        <font key="font" metaFont="system"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        <font key="font" metaFont="system" />
+                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                                     </textFieldCell>
                                 </textField>
                                 <box autoresizesSubviews="NO" borderType="bezel" title="Box" titlePosition="noTitle" id="807">
-                                    <rect key="frame" x="103" y="4" width="99" height="87"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="103" y="4" width="99" height="87" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <view key="contentView" id="3tF-nu-l14">
-                                        <rect key="frame" x="4" y="5" width="91" height="79"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <rect key="frame" x="4" y="5" width="91" height="79" />
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES" />
                                         <subviews>
                                             <textField verticalHuggingPriority="750" id="809">
-                                                <rect key="frame" x="15" y="45" width="61" height="22"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                <rect key="frame" x="15" y="45" width="61" height="22" />
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="4" drawsBackground="YES" id="810">
-                                                    <font key="font" metaFont="system"/>
-                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <font key="font" metaFont="system" />
+                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                                                 </textFieldCell>
                                             </textField>
                                             <textField verticalHuggingPriority="750" id="808">
-                                                <rect key="frame" x="15" y="8" width="61" height="22"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                <rect key="frame" x="15" y="8" width="61" height="22" />
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="5" drawsBackground="YES" id="811">
-                                                    <font key="font" metaFont="system"/>
-                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <font key="font" metaFont="system" />
+                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                                                 </textFieldCell>
                                             </textField>
                                         </subviews>
                                     </view>
                                 </box>
                                 <box autoresizesSubviews="NO" borderType="bezel" title="Box" titlePosition="noTitle" id="812">
-                                    <rect key="frame" x="222" y="4" width="99" height="87"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <rect key="frame" x="222" y="4" width="99" height="87" />
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                                     <view key="contentView" id="Ejc-KM-UWS">
-                                        <rect key="frame" x="4" y="5" width="91" height="79"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <rect key="frame" x="4" y="5" width="91" height="79" />
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES" />
                                         <subviews>
                                             <textField verticalHuggingPriority="750" id="814">
-                                                <rect key="frame" x="15" y="45" width="61" height="22"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                <rect key="frame" x="15" y="45" width="61" height="22" />
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="6" drawsBackground="YES" id="815">
-                                                    <font key="font" metaFont="system"/>
-                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <font key="font" metaFont="system" />
+                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                                                 </textFieldCell>
                                             </textField>
                                             <textField verticalHuggingPriority="750" id="813">
-                                                <rect key="frame" x="15" y="8" width="61" height="22"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                <rect key="frame" x="15" y="8" width="61" height="22" />
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="7" drawsBackground="YES" id="816">
-                                                    <font key="font" metaFont="system"/>
-                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <font key="font" metaFont="system" />
+                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                                                 </textFieldCell>
                                             </textField>
                                         </subviews>
@@ -493,21 +493,21 @@
                         </view>
                     </box>
                     <textField verticalHuggingPriority="750" id="819">
-                        <rect key="frame" x="374" y="128" width="67" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="374" y="128" width="67" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="8" drawsBackground="YES" id="820">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="821">
-                        <rect key="frame" x="374" y="88" width="67" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="374" y="88" width="67" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="9" drawsBackground="YES" id="822">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                 </subviews>
@@ -515,55 +515,55 @@
         </window>
         <menu title="AMainMenu" systemMenu="main" id="823" userLabel="MainMenu">
             <items>
-                <menuItem title="NewApplication" id="829">
-                    <menu key="submenu" title="NewApplication" systemMenu="apple" id="836">
+                <menuItem title="panel" id="829">
+                    <menu key="submenu" title="panel" systemMenu="apple" id="836">
                         <items>
-                            <menuItem title="About NewApplication" id="847">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="About panel" id="847">
+                                <modifierMask key="keyEquivalentModifierMask" />
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="840">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Preferences…" keyEquivalent="," id="842" userLabel="121"/>
+                            <menuItem title="Preferences…" keyEquivalent="," id="842" userLabel="121" />
                             <menuItem isSeparatorItem="YES" id="841">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Services" id="839">
-                                <menu key="submenu" title="Services" systemMenu="services" id="848"/>
+                                <menu key="submenu" title="Services" systemMenu="services" id="848" />
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="843">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Hide NewApplication" keyEquivalent="h" id="846"/>
+                            <menuItem title="Hide panel" keyEquivalent="h" id="846" />
                             <menuItem title="Hide Others" keyEquivalent="h" id="837">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES" />
                             </menuItem>
-                            <menuItem title="Show All" id="845"/>
+                            <menuItem title="Show All" id="845" />
                             <menuItem isSeparatorItem="YES" id="838">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Quit NewApplication" keyEquivalent="q" id="844" userLabel="1111"/>
+                            <menuItem title="Quit panel" keyEquivalent="q" id="844" userLabel="1111" />
                         </items>
                     </menu>
                 </menuItem>
                 <menuItem title="File" id="827">
                     <menu key="submenu" title="File" id="851">
                         <items>
-                            <menuItem title="New Window" keyEquivalent="n" id="859" userLabel="9"/>
-                            <menuItem title="New Modal Window" keyEquivalent="N" id="854" userLabel="9"/>
-                            <menuItem title="New Sheet" keyEquivalent="s" id="853" userLabel="9"/>
-                            <menuItem title="New Modal Sheet" keyEquivalent="S" id="852" userLabel="9"/>
+                            <menuItem title="New Window" keyEquivalent="n" id="859" userLabel="9" />
+                            <menuItem title="New Modal Window" keyEquivalent="N" id="854" userLabel="9" />
+                            <menuItem title="New Sheet" keyEquivalent="s" id="853" userLabel="9" />
+                            <menuItem title="New Modal Sheet" keyEquivalent="S" id="852" userLabel="9" />
                             <menuItem isSeparatorItem="YES" id="856" userLabel="7">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Close" keyEquivalent="w" id="857" userLabel="1"/>
+                            <menuItem title="Close" keyEquivalent="w" id="857" userLabel="1" />
                             <menuItem isSeparatorItem="YES" id="855" userLabel="2">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Page Setup..." keyEquivalent="P" id="858" userLabel="5">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                             </menuItem>
-                            <menuItem title="Print…" keyEquivalent="p" id="860" userLabel="6"/>
+                            <menuItem title="Print…" keyEquivalent="p" id="860" userLabel="6" />
                         </items>
                     </menu>
                 </menuItem>
@@ -572,73 +572,73 @@
                         <items>
                             <menuItem title="Undo" keyEquivalent="z" id="875">
                                 <connections>
-                                    <action selector="undo:" target="-1" id="945"/>
+                                    <action selector="undo:" target="-1" id="945" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Redo" keyEquivalent="Z" id="869">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="870">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Cut" keyEquivalent="x" id="873">
                                 <connections>
-                                    <action selector="cut:" target="-1" id="940"/>
+                                    <action selector="cut:" target="-1" id="940" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Copy" keyEquivalent="c" id="871">
                                 <connections>
-                                    <action selector="copy:" target="-1" id="941"/>
+                                    <action selector="copy:" target="-1" id="941" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Paste" keyEquivalent="v" id="872">
                                 <connections>
-                                    <action selector="paste:" target="-1" id="942"/>
+                                    <action selector="paste:" target="-1" id="942" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Delete" id="877">
                                 <connections>
-                                    <action selector="delete:" target="-1" id="943"/>
+                                    <action selector="delete:" target="-1" id="943" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Select All" keyEquivalent="a" id="876">
                                 <connections>
-                                    <action selector="selectAll:" target="-1" id="944"/>
+                                    <action selector="selectAll:" target="-1" id="944" />
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="874">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Find" id="868">
                                 <menu key="submenu" title="Find" id="878">
                                     <items>
-                                        <menuItem title="Find…" tag="1" keyEquivalent="f" id="879"/>
-                                        <menuItem title="Find Next" tag="2" keyEquivalent="g" id="880"/>
+                                        <menuItem title="Find…" tag="1" keyEquivalent="f" id="879" />
+                                        <menuItem title="Find Next" tag="2" keyEquivalent="g" id="880" />
                                         <menuItem title="Find Previous" tag="3" keyEquivalent="G" id="883">
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                         </menuItem>
-                                        <menuItem title="Use Selection for Find" tag="7" keyEquivalent="e" id="881"/>
-                                        <menuItem title="Jump to Selection" keyEquivalent="j" id="882"/>
+                                        <menuItem title="Use Selection for Find" tag="7" keyEquivalent="e" id="881" />
+                                        <menuItem title="Jump to Selection" keyEquivalent="j" id="882" />
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem title="Spelling and Grammar" id="867">
                                 <menu key="submenu" title="Spelling and Grammar" id="884">
                                     <items>
-                                        <menuItem title="Show Spelling…" keyEquivalent=":" id="886"/>
-                                        <menuItem title="Check Spelling" keyEquivalent=";" id="887"/>
-                                        <menuItem title="Check Spelling While Typing" id="888"/>
-                                        <menuItem title="Check Grammar With Spelling" id="885"/>
+                                        <menuItem title="Show Spelling…" keyEquivalent=":" id="886" />
+                                        <menuItem title="Check Spelling" keyEquivalent=";" id="887" />
+                                        <menuItem title="Check Spelling While Typing" id="888" />
+                                        <menuItem title="Check Grammar With Spelling" id="885" />
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem title="Substitutions" id="865">
                                 <menu key="submenu" title="Substitutions" id="892">
                                     <items>
-                                        <menuItem title="Smart Copy/Paste" tag="1" keyEquivalent="f" id="895"/>
-                                        <menuItem title="Smart Quotes" tag="2" keyEquivalent="g" id="894"/>
+                                        <menuItem title="Smart Copy/Paste" tag="1" keyEquivalent="f" id="895" />
+                                        <menuItem title="Smart Quotes" tag="2" keyEquivalent="g" id="894" />
                                         <menuItem title="Smart Links" tag="3" keyEquivalent="G" id="893">
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                         </menuItem>
                                     </items>
                                 </menu>
@@ -646,8 +646,8 @@
                             <menuItem title="Speech" id="866">
                                 <menu key="submenu" title="Speech" id="889">
                                     <items>
-                                        <menuItem title="Start Speaking" id="890"/>
-                                        <menuItem title="Stop Speaking" id="891"/>
+                                        <menuItem title="Start Speaking" id="890" />
+                                        <menuItem title="Stop Speaking" id="891" />
                                     </items>
                                 </menu>
                             </menuItem>
@@ -655,109 +655,109 @@
                     </menu>
                 </menuItem>
                 <menuItem title="Format" id="824">
-                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <modifierMask key="keyEquivalentModifierMask" />
                     <menu key="submenu" title="Format" id="896">
                         <items>
                             <menuItem title="Font" id="898">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <modifierMask key="keyEquivalentModifierMask" />
                                 <menu key="submenu" title="Font" systemMenu="font" id="899">
                                     <items>
-                                        <menuItem title="Show Fonts" keyEquivalent="t" id="915"/>
-                                        <menuItem title="Bold" tag="2" keyEquivalent="b" id="914"/>
-                                        <menuItem title="Italic" tag="1" keyEquivalent="i" id="913"/>
-                                        <menuItem title="Underline" keyEquivalent="u" id="912"/>
-                                        <menuItem isSeparatorItem="YES" id="911"/>
-                                        <menuItem title="Bigger" tag="3" keyEquivalent="+" id="910"/>
-                                        <menuItem title="Smaller" tag="4" keyEquivalent="-" id="909"/>
-                                        <menuItem isSeparatorItem="YES" id="908"/>
+                                        <menuItem title="Show Fonts" keyEquivalent="t" id="915" />
+                                        <menuItem title="Bold" tag="2" keyEquivalent="b" id="914" />
+                                        <menuItem title="Italic" tag="1" keyEquivalent="i" id="913" />
+                                        <menuItem title="Underline" keyEquivalent="u" id="912" />
+                                        <menuItem isSeparatorItem="YES" id="911" />
+                                        <menuItem title="Bigger" tag="3" keyEquivalent="+" id="910" />
+                                        <menuItem title="Smaller" tag="4" keyEquivalent="-" id="909" />
+                                        <menuItem isSeparatorItem="YES" id="908" />
                                         <menuItem title="Kern" id="907">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <modifierMask key="keyEquivalentModifierMask" />
                                             <menu key="submenu" title="Kern" id="916">
                                                 <items>
                                                     <menuItem title="Use Default" id="920">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Use None" id="919">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Tighten" id="918">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Loosen" id="917">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                 </items>
                                             </menu>
                                         </menuItem>
                                         <menuItem title="Ligature" id="906">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <modifierMask key="keyEquivalentModifierMask" />
                                             <menu key="submenu" title="Ligature" id="921">
                                                 <items>
                                                     <menuItem title="Use Default" id="924">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Use None" id="923">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Use All" id="922">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                 </items>
                                             </menu>
                                         </menuItem>
                                         <menuItem title="Baseline" id="905">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <modifierMask key="keyEquivalentModifierMask" />
                                             <menu key="submenu" title="Baseline" id="925">
                                                 <items>
                                                     <menuItem title="Use Default" id="930">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Superscript" id="929">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Subscript" id="928">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Raise" id="927">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                     <menuItem title="Lower" id="926">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <modifierMask key="keyEquivalentModifierMask" />
                                                     </menuItem>
                                                 </items>
                                             </menu>
                                         </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="904"/>
-                                        <menuItem title="Show Colors" keyEquivalent="C" id="903"/>
-                                        <menuItem isSeparatorItem="YES" id="902"/>
+                                        <menuItem isSeparatorItem="YES" id="904" />
+                                        <menuItem title="Show Colors" keyEquivalent="C" id="903" />
+                                        <menuItem isSeparatorItem="YES" id="902" />
                                         <menuItem title="Copy Style" keyEquivalent="c" id="901">
-                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES" />
                                         </menuItem>
                                         <menuItem title="Paste Style" keyEquivalent="v" id="900">
-                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES" />
                                         </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem title="Text" id="897">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <modifierMask key="keyEquivalentModifierMask" />
                                 <menu key="submenu" title="Text" id="931">
                                     <items>
-                                        <menuItem title="Align Left" keyEquivalent="{" id="939"/>
-                                        <menuItem title="Center" keyEquivalent="|" id="938"/>
+                                        <menuItem title="Align Left" keyEquivalent="{" id="939" />
+                                        <menuItem title="Center" keyEquivalent="|" id="938" />
                                         <menuItem title="Justify" id="937">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <modifierMask key="keyEquivalentModifierMask" />
                                         </menuItem>
-                                        <menuItem title="Align Right" keyEquivalent="}" id="936"/>
-                                        <menuItem isSeparatorItem="YES" id="935"/>
+                                        <menuItem title="Align Right" keyEquivalent="}" id="936" />
+                                        <menuItem isSeparatorItem="YES" id="935" />
                                         <menuItem title="Show Ruler" id="934">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <modifierMask key="keyEquivalentModifierMask" />
                                         </menuItem>
                                         <menuItem title="Copy Ruler" keyEquivalent="c" id="933">
-                                            <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES" />
                                         </menuItem>
                                         <menuItem title="Paste Ruler" keyEquivalent="v" id="932">
-                                            <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES" />
                                         </menuItem>
                                     </items>
                                 </menu>
@@ -769,28 +769,28 @@
                     <menu key="submenu" title="View" id="861">
                         <items>
                             <menuItem title="Show Toolbar" keyEquivalent="t" id="863">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES" />
                             </menuItem>
-                            <menuItem title="Customize Toolbar…" id="862"/>
+                            <menuItem title="Customize Toolbar…" id="862" />
                         </items>
                     </menu>
                 </menuItem>
                 <menuItem title="Window" id="830">
                     <menu key="submenu" title="Window" systemMenu="window" id="831">
                         <items>
-                            <menuItem title="Minimize" keyEquivalent="m" id="832"/>
-                            <menuItem title="Zoom" id="833"/>
+                            <menuItem title="Minimize" keyEquivalent="m" id="832" />
+                            <menuItem title="Zoom" id="833" />
                             <menuItem isSeparatorItem="YES" id="835">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Bring All to Front" id="834"/>
+                            <menuItem title="Bring All to Front" id="834" />
                         </items>
                     </menu>
                 </menuItem>
                 <menuItem title="Help" id="828" userLabel="1">
                     <menu key="submenu" title="Help" id="849" userLabel="2">
                         <items>
-                            <menuItem title="NewApplication Help" keyEquivalent="?" id="850"/>
+                            <menuItem title="panel Help" keyEquivalent="?" id="850" />
                         </items>
                     </menu>
                 </menuItem>

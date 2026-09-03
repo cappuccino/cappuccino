@@ -1,39 +1,39 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1050" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
-        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <deployment version="1050" identifier="macosx" />
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506" />
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0" />
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
             <connections>
-                <outlet property="delegate" destination="450" id="451"/>
+                <outlet property="delegate" destination="450" id="451" />
             </connections>
         </customObject>
-        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder" />
+        <customObject id="-3" userLabel="Application" />
         <menu title="AMainMenu" systemMenu="main" id="29" userLabel="MainMenu">
             <items>
-                <menuItem title="NewApplication" id="56">
-                    <menu key="submenu" title="NewApplication" systemMenu="apple" id="57">
+                <menuItem title="CPRadioBindings" id="56">
+                    <menu key="submenu" title="CPRadioBindings" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About NewApplication" id="58">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="About CPRadioBindings" id="58">
+                                <modifierMask key="keyEquivalentModifierMask" />
                                 <connections>
-                                    <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
+                                    <action selector="orderFrontStandardAboutPanel:" target="-2" id="142" />
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="236">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Preferences…" keyEquivalent="," id="129"/>
+                            <menuItem title="Preferences…" keyEquivalent="," id="129" />
                             <menuItem isSeparatorItem="YES" id="143">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
-                            <menuItem title="Quit NewApplication" keyEquivalent="q" id="136">
+                            <menuItem title="Quit CPRadioBindings" keyEquivalent="q" id="136">
                                 <connections>
-                                    <action selector="terminate:" target="-3" id="449"/>
+                                    <action selector="terminate:" target="-3" id="449" />
                                 </connections>
                             </menuItem>
                         </items>
@@ -44,12 +44,12 @@
                         <items>
                             <menuItem title="New" keyEquivalent="n" id="82">
                                 <connections>
-                                    <action selector="newDocument:" target="-1" id="373"/>
+                                    <action selector="newDocument:" target="-1" id="373" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Open…" keyEquivalent="o" id="72">
                                 <connections>
-                                    <action selector="openDocument:" target="-1" id="374"/>
+                                    <action selector="openDocument:" target="-1" id="374" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Open Recent" id="124">
@@ -57,35 +57,35 @@
                                     <items>
                                         <menuItem title="Clear Menu" id="126">
                                             <connections>
-                                                <action selector="clearRecentDocuments:" target="-1" id="127"/>
+                                                <action selector="clearRecentDocuments:" target="-1" id="127" />
                                             </connections>
                                         </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="79">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Close" keyEquivalent="w" id="73">
                                 <connections>
-                                    <action selector="performClose:" target="-1" id="193"/>
+                                    <action selector="performClose:" target="-1" id="193" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Save" keyEquivalent="s" id="75">
                                 <connections>
-                                    <action selector="saveDocument:" target="-1" id="362"/>
+                                    <action selector="saveDocument:" target="-1" id="362" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Save As…" keyEquivalent="S" id="80">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                 <connections>
-                                    <action selector="saveDocumentAs:" target="-1" id="363"/>
+                                    <action selector="saveDocumentAs:" target="-1" id="363" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Revert to Saved" id="112">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <modifierMask key="keyEquivalentModifierMask" />
                                 <connections>
-                                    <action selector="revertDocumentToSaved:" target="-1" id="364"/>
+                                    <action selector="revertDocumentToSaved:" target="-1" id="364" />
                                 </connections>
                             </menuItem>
                         </items>
@@ -96,62 +96,62 @@
                         <items>
                             <menuItem title="Undo" keyEquivalent="z" id="207">
                                 <connections>
-                                    <action selector="undo:" target="-1" id="223"/>
+                                    <action selector="undo:" target="-1" id="223" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Redo" keyEquivalent="Z" id="215">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                 <connections>
-                                    <action selector="redo:" target="-1" id="231"/>
+                                    <action selector="redo:" target="-1" id="231" />
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="206">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Cut" keyEquivalent="x" id="199">
                                 <connections>
-                                    <action selector="cut:" target="-1" id="228"/>
+                                    <action selector="cut:" target="-1" id="228" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Copy" keyEquivalent="c" id="197">
                                 <connections>
-                                    <action selector="copy:" target="-1" id="224"/>
+                                    <action selector="copy:" target="-1" id="224" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Paste" keyEquivalent="v" id="203">
                                 <connections>
-                                    <action selector="paste:" target="-1" id="226"/>
+                                    <action selector="paste:" target="-1" id="226" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Delete" id="202">
                                 <connections>
-                                    <action selector="delete:" target="-1" id="235"/>
+                                    <action selector="delete:" target="-1" id="235" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Select All" keyEquivalent="a" id="198">
                                 <connections>
-                                    <action selector="selectAll:" target="-1" id="232"/>
+                                    <action selector="selectAll:" target="-1" id="232" />
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="214">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Find" id="218">
                                 <menu key="submenu" title="Find" id="220">
                                     <items>
                                         <menuItem title="Find…" tag="1" keyEquivalent="f" id="209">
                                             <connections>
-                                                <action selector="performFindPanelAction:" target="-1" id="241"/>
+                                                <action selector="performFindPanelAction:" target="-1" id="241" />
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Find Next" tag="2" keyEquivalent="g" id="208"/>
+                                        <menuItem title="Find Next" tag="2" keyEquivalent="g" id="208" />
                                         <menuItem title="Find Previous" tag="3" keyEquivalent="G" id="213">
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                         </menuItem>
-                                        <menuItem title="Use Selection for Find" tag="7" keyEquivalent="e" id="221"/>
+                                        <menuItem title="Use Selection for Find" tag="7" keyEquivalent="e" id="221" />
                                         <menuItem title="Jump to Selection" keyEquivalent="j" id="210">
                                             <connections>
-                                                <action selector="centerSelectionInVisibleArea:" target="-1" id="245"/>
+                                                <action selector="centerSelectionInVisibleArea:" target="-1" id="245" />
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -162,22 +162,22 @@
                                     <items>
                                         <menuItem title="Show Spelling…" keyEquivalent=":" id="204">
                                             <connections>
-                                                <action selector="showGuessPanel:" target="-1" id="230"/>
+                                                <action selector="showGuessPanel:" target="-1" id="230" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Check Spelling" keyEquivalent=";" id="201">
                                             <connections>
-                                                <action selector="checkSpelling:" target="-1" id="225"/>
+                                                <action selector="checkSpelling:" target="-1" id="225" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Check Spelling While Typing" id="219">
                                             <connections>
-                                                <action selector="toggleContinuousSpellChecking:" target="-1" id="222"/>
+                                                <action selector="toggleContinuousSpellChecking:" target="-1" id="222" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Check Grammar With Spelling" id="346">
                                             <connections>
-                                                <action selector="toggleGrammarChecking:" target="-1" id="347"/>
+                                                <action selector="toggleGrammarChecking:" target="-1" id="347" />
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -188,18 +188,18 @@
                                     <items>
                                         <menuItem title="Smart Copy/Paste" tag="1" keyEquivalent="f" id="350">
                                             <connections>
-                                                <action selector="toggleSmartInsertDelete:" target="-1" id="355"/>
+                                                <action selector="toggleSmartInsertDelete:" target="-1" id="355" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Smart Quotes" tag="2" keyEquivalent="g" id="351">
                                             <connections>
-                                                <action selector="toggleAutomaticQuoteSubstitution:" target="-1" id="356"/>
+                                                <action selector="toggleAutomaticQuoteSubstitution:" target="-1" id="356" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Smart Links" tag="3" keyEquivalent="G" id="354">
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES" />
                                             <connections>
-                                                <action selector="toggleAutomaticLinkDetection:" target="-1" id="357"/>
+                                                <action selector="toggleAutomaticLinkDetection:" target="-1" id="357" />
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -210,12 +210,12 @@
                                     <items>
                                         <menuItem title="Start Speaking" id="196">
                                             <connections>
-                                                <action selector="startSpeaking:" target="-1" id="233"/>
+                                                <action selector="startSpeaking:" target="-1" id="233" />
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Stop Speaking" id="195">
                                             <connections>
-                                                <action selector="stopSpeaking:" target="-1" id="227"/>
+                                                <action selector="stopSpeaking:" target="-1" id="227" />
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -228,14 +228,14 @@
                     <menu key="submenu" title="View" id="296">
                         <items>
                             <menuItem title="Show Toolbar" keyEquivalent="t" id="297">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES" />
                                 <connections>
-                                    <action selector="toggleToolbarShown:" target="-1" id="366"/>
+                                    <action selector="toggleToolbarShown:" target="-1" id="366" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Customize Toolbar…" id="298">
                                 <connections>
-                                    <action selector="runToolbarCustomizationPalette:" target="-1" id="365"/>
+                                    <action selector="runToolbarCustomizationPalette:" target="-1" id="365" />
                                 </connections>
                             </menuItem>
                         </items>
@@ -246,20 +246,20 @@
                         <items>
                             <menuItem title="Minimize" keyEquivalent="m" id="23">
                                 <connections>
-                                    <action selector="performMiniaturize:" target="-1" id="37"/>
+                                    <action selector="performMiniaturize:" target="-1" id="37" />
                                 </connections>
                             </menuItem>
                             <menuItem title="Zoom" id="239">
                                 <connections>
-                                    <action selector="performZoom:" target="-1" id="240"/>
+                                    <action selector="performZoom:" target="-1" id="240" />
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="92">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                <modifierMask key="keyEquivalentModifierMask" command="YES" />
                             </menuItem>
                             <menuItem title="Bring All to Front" id="5">
                                 <connections>
-                                    <action selector="arrangeInFront:" target="-1" id="39"/>
+                                    <action selector="arrangeInFront:" target="-1" id="39" />
                                 </connections>
                             </menuItem>
                         </items>
@@ -268,9 +268,9 @@
                 <menuItem title="Help" id="103">
                     <menu key="submenu" title="Help" id="106">
                         <items>
-                            <menuItem title="NewApplication Help" keyEquivalent="?" id="111">
+                            <menuItem title="CPRadioBindings Help" keyEquivalent="?" id="111">
                                 <connections>
-                                    <action selector="showHelp:" target="-1" id="360"/>
+                                    <action selector="showHelp:" target="-1" id="360" />
                                 </connections>
                             </menuItem>
                         </items>
@@ -279,262 +279,262 @@
             </items>
         </menu>
         <window title="CPRadioGroup Bindings" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="371">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
-            <rect key="contentRect" x="62" y="429" width="394" height="360"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" />
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES" />
+            <rect key="contentRect" x="62" y="429" width="394" height="360" />
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878" />
             <view key="contentView" id="372">
-                <rect key="frame" x="0.0" y="0.0" width="394" height="360"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <rect key="frame" x="0.0" y="0.0" width="394" height="360" />
+                <autoresizingMask key="autoresizingMask" />
                 <subviews>
                     <matrix verticalHuggingPriority="750" allowsEmptySelection="NO" autorecalculatesCellSize="YES" id="460">
-                        <rect key="frame" x="38" y="312" width="191" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        <size key="cellSize" width="61" height="18"/>
-                        <size key="intercellSpacing" width="4" height="2"/>
+                        <rect key="frame" x="38" y="312" width="191" height="18" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
+                        <size key="cellSize" width="61" height="18" />
+                        <size key="intercellSpacing" width="4" height="2" />
                         <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="461">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <cells>
                             <column>
                                 <buttonCell type="radio" title="One" imagePosition="left" alignment="left" state="on" tag="7" inset="2" id="462">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                    <font key="font" metaFont="system" />
                                 </buttonCell>
                             </column>
                             <column>
                                 <buttonCell type="radio" title="Two" imagePosition="left" alignment="left" tag="13" inset="2" id="464">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                    <font key="font" metaFont="system" />
                                 </buttonCell>
                             </column>
                             <column>
                                 <buttonCell type="radio" title="Three" imagePosition="left" alignment="left" tag="27" inset="2" id="465">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                    <font key="font" metaFont="system" />
                                 </buttonCell>
                             </column>
                         </cells>
                         <connections>
-                            <binding destination="492" name="selectedValue" keyPath="selection.title" id="535"/>
+                            <binding destination="492" name="selectedValue" keyPath="selection.title" id="535" />
                         </connections>
                     </matrix>
                     <matrix verticalHuggingPriority="750" allowsEmptySelection="NO" autorecalculatesCellSize="YES" id="522">
-                        <rect key="frame" x="38" y="166" width="191" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        <size key="cellSize" width="61" height="18"/>
-                        <size key="intercellSpacing" width="4" height="2"/>
+                        <rect key="frame" x="38" y="166" width="191" height="18" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
+                        <size key="cellSize" width="61" height="18" />
+                        <size key="intercellSpacing" width="4" height="2" />
                         <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="526">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <cells>
                             <column>
                                 <buttonCell type="radio" title="One" imagePosition="left" alignment="left" state="on" tag="7" inset="2" id="525">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                    <font key="font" metaFont="system" />
                                 </buttonCell>
                             </column>
                             <column>
                                 <buttonCell type="radio" title="Two" imagePosition="left" alignment="left" tag="13" inset="2" id="524">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                    <font key="font" metaFont="system" />
                                 </buttonCell>
                             </column>
                             <column>
                                 <buttonCell type="radio" title="Three" imagePosition="left" alignment="left" tag="27" inset="2" id="523">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                    <font key="font" metaFont="system" />
                                 </buttonCell>
                             </column>
                         </cells>
                         <connections>
                             <binding destination="492" name="enabled2" keyPath="selection.index" previousBinding="578" id="590">
                                 <dictionary key="options">
-                                    <integer key="NSMultipleValuesPlaceholder" value="-1"/>
-                                    <integer key="NSNoSelectionPlaceholder" value="-1"/>
-                                    <integer key="NSNotApplicablePlaceholder" value="-1"/>
-                                    <integer key="NSNullPlaceholder" value="-1"/>
+                                    <integer key="NSMultipleValuesPlaceholder" value="-1" />
+                                    <integer key="NSNoSelectionPlaceholder" value="-1" />
+                                    <integer key="NSNotApplicablePlaceholder" value="-1" />
+                                    <integer key="NSNullPlaceholder" value="-1" />
                                 </dictionary>
                             </binding>
-                            <binding destination="492" name="enabled" keyPath="selection.enabled" id="578"/>
+                            <binding destination="492" name="enabled" keyPath="selection.enabled" id="578" />
                             <binding destination="492" name="hidden" keyPath="selection.visible" previousBinding="590" id="591">
                                 <dictionary key="options">
                                     <string key="NSValueTransformerName">NSNegateBoolean</string>
                                 </dictionary>
                             </binding>
-                            <binding destination="492" name="selectedIndex" keyPath="selection.index" id="543"/>
+                            <binding destination="492" name="selectedIndex" keyPath="selection.index" id="543" />
                         </connections>
                     </matrix>
                     <textField verticalHuggingPriority="750" id="484">
-                        <rect key="frame" x="39" y="264" width="32" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="39" y="264" width="32" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Title" id="485">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="520">
-                        <rect key="frame" x="39" y="131" width="40" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="39" y="131" width="40" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Index" id="521">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="486">
-                        <rect key="frame" x="82" y="262" width="185" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="82" y="262" width="185" height="22" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="487">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                         <connections>
-                            <binding destination="492" name="value" keyPath="selection.title" id="536"/>
+                            <binding destination="492" name="value" keyPath="selection.title" id="536" />
                         </connections>
                     </textField>
                     <popUpButton verticalHuggingPriority="750" id="502">
-                        <rect key="frame" x="79" y="225" width="160" height="26"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="79" y="225" width="160" height="26" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <popUpButtonCell key="cell" type="push" title="One" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="505" id="503">
-                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES" />
+                            <font key="font" metaFont="system" />
                             <menu key="menu" title="OtherViews" id="504">
                                 <items>
-                                    <menuItem title="One" state="on" id="505"/>
-                                    <menuItem title="Two" id="506"/>
-                                    <menuItem title="Three" id="507"/>
+                                    <menuItem title="One" state="on" id="505" />
+                                    <menuItem title="Two" id="506" />
+                                    <menuItem title="Three" id="507" />
                                 </items>
                             </menu>
                         </popUpButtonCell>
                         <connections>
-                            <binding destination="492" name="selectedValue" keyPath="selection.title" id="537"/>
+                            <binding destination="492" name="selectedValue" keyPath="selection.title" id="537" />
                         </connections>
                     </popUpButton>
                     <popUpButton verticalHuggingPriority="750" id="528">
-                        <rect key="frame" x="86" y="125" width="73" height="26"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="86" y="125" width="73" height="26" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <popUpButtonCell key="cell" type="push" title="0" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="533" id="529">
-                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES" />
+                            <font key="font" metaFont="system" />
                             <menu key="menu" title="OtherViews" id="530">
                                 <items>
-                                    <menuItem title="0" state="on" id="533"/>
-                                    <menuItem title="1" id="532"/>
-                                    <menuItem title="2" id="531"/>
+                                    <menuItem title="0" state="on" id="533" />
+                                    <menuItem title="1" id="532" />
+                                    <menuItem title="2" id="531" />
                                 </items>
                             </menu>
                         </popUpButtonCell>
                         <connections>
-                            <binding destination="492" name="selectedIndex" keyPath="selection.index" id="541"/>
+                            <binding destination="492" name="selectedIndex" keyPath="selection.index" id="541" />
                         </connections>
                     </popUpButton>
                     <matrix verticalHuggingPriority="750" allowsEmptySelection="NO" autorecalculatesCellSize="YES" id="544">
-                        <rect key="frame" x="38" y="66" width="257" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        <size key="cellSize" width="83" height="18"/>
-                        <size key="intercellSpacing" width="4" height="2"/>
+                        <rect key="frame" x="38" y="66" width="257" height="18" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
+                        <size key="cellSize" width="83" height="18" />
+                        <size key="intercellSpacing" width="4" height="2" />
                         <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="553">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <cells>
                             <column>
                                 <buttonCell type="radio" title="One (7)" imagePosition="left" alignment="left" state="on" tag="7" inset="2" id="554">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                    <font key="font" metaFont="system" />
                                 </buttonCell>
                             </column>
                             <column>
                                 <buttonCell type="radio" title="Two (13)" imagePosition="left" alignment="left" tag="13" inset="2" id="555">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                    <font key="font" metaFont="system" />
                                 </buttonCell>
                             </column>
                             <column>
                                 <buttonCell type="radio" title="Three (27)" imagePosition="left" alignment="left" tag="27" inset="2" id="556">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                                    <font key="font" metaFont="system" />
                                 </buttonCell>
                             </column>
                         </cells>
                         <connections>
-                            <binding destination="492" name="selectedTag" keyPath="selection.tag" id="560"/>
+                            <binding destination="492" name="selectedTag" keyPath="selection.tag" id="560" />
                         </connections>
                     </matrix>
                     <textField verticalHuggingPriority="750" id="545">
-                        <rect key="frame" x="39" y="31" width="28" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="39" y="31" width="28" height="17" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Tag" id="552">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="system" />
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog" />
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog" />
                         </textFieldCell>
                     </textField>
                     <popUpButton verticalHuggingPriority="750" id="546">
-                        <rect key="frame" x="76" y="25" width="73" height="26"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="76" y="25" width="73" height="26" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <popUpButtonCell key="cell" type="push" title="7" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="7" imageScaling="proportionallyDown" inset="2" selectedItem="549" id="547">
-                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES" />
+                            <font key="font" metaFont="system" />
                             <menu key="menu" title="OtherViews" id="548">
                                 <items>
-                                    <menuItem title="7" state="on" tag="7" id="549"/>
-                                    <menuItem title="13" tag="13" id="550"/>
-                                    <menuItem title="27" tag="27" id="551"/>
+                                    <menuItem title="7" state="on" tag="7" id="549" />
+                                    <menuItem title="13" tag="13" id="550" />
+                                    <menuItem title="27" tag="27" id="551" />
                                 </items>
                             </menu>
                         </popUpButtonCell>
                         <connections>
-                            <binding destination="492" name="selectedTag" keyPath="selection.tag" id="566"/>
+                            <binding destination="492" name="selectedTag" keyPath="selection.tag" id="566" />
                         </connections>
                     </popUpButton>
                     <button verticalHuggingPriority="750" id="515">
-                        <rect key="frame" x="248" y="302" width="114" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="248" y="302" width="114" height="32" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <buttonCell key="cell" type="push" title="Select None" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="516">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <connections>
-                            <action selector="deselectAll:" target="450" id="519"/>
+                            <action selector="deselectAll:" target="450" id="519" />
                         </connections>
                     </button>
                     <box autoresizesSubviews="NO" verticalHuggingPriority="750" boxType="separator" id="567">
-                        <rect key="frame" x="38" y="205" width="318" height="5"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="38" y="205" width="318" height="5" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                     </box>
                     <box autoresizesSubviews="NO" verticalHuggingPriority="750" boxType="separator" id="568">
-                        <rect key="frame" x="38" y="104" width="318" height="5"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="38" y="104" width="318" height="5" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                     </box>
                     <button id="569">
-                        <rect key="frame" x="264" y="167" width="72" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="264" y="167" width="72" height="18" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <buttonCell key="cell" type="check" title="Enabled" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="570">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <connections>
-                            <binding destination="492" name="value" keyPath="selection.enabled" id="574"/>
+                            <binding destination="492" name="value" keyPath="selection.enabled" id="574" />
                         </connections>
                     </button>
                     <button id="571">
-                        <rect key="frame" x="264" y="141" width="64" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="264" y="141" width="64" height="18" />
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" />
                         <buttonCell key="cell" type="check" title="Visible" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="572">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES" />
+                            <font key="font" metaFont="system" />
                         </buttonCell>
                         <connections>
-                            <binding destination="492" name="value" keyPath="selection.visible" id="576"/>
+                            <binding destination="492" name="value" keyPath="selection.visible" id="576" />
                         </connections>
                     </button>
                 </subviews>
@@ -542,8 +542,8 @@
         </window>
         <customObject id="450" customClass="AppController">
             <connections>
-                <outlet property="radios" destination="460" id="477"/>
-                <outlet property="theWindow" destination="371" id="459"/>
+                <outlet property="radios" destination="460" id="477" />
+                <outlet property="theWindow" destination="371" id="459" />
             </connections>
         </customObject>
         <objectController id="492">
@@ -555,7 +555,7 @@
                 <string>visible</string>
             </declaredKeys>
             <connections>
-                <outlet property="content" destination="450" id="496"/>
+                <outlet property="content" destination="450" id="496" />
             </connections>
         </objectController>
     </objects>
