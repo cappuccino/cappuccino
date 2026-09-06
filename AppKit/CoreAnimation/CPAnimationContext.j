@@ -1,3 +1,23 @@
+/*
+ * CPAnimationContext.j
+ * AppKit
+ *
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 @import "CABasicAnimation.j"
 @import "CAKeyframeAnimation.j"
 @import "CPView.j"
@@ -7,9 +27,16 @@
 
 @typedef Map;
 
+/* @ignore */
 var _CPAnimationContextStack   = nil,
     _animationFlushingObserver = nil;
 
+/*!
+    @ingroup appkit
+    @class CPAnimationContext
+    CPAnimationContext manages animation groupings, timing parameters, duration,
+    and completion handlers across animated property changes.
+*/
 @implementation CPAnimationContext : CPObject
 {
     double                  _duration               @accessors(property=duration);
@@ -18,6 +45,11 @@ var _CPAnimationContextStack   = nil,
     Map                     _animationsByObject;
 }
 
+/*!
+    Returns the current active animation context on top of the context stack,
+    creating one if none currently exists.
+    @return the current active animation context
+*/
 + (id)currentContext
 {
     var contextStack = [self contextStack],
@@ -34,6 +66,10 @@ var _CPAnimationContextStack   = nil,
     return context;
 }
 
+/*!
+    Returns the array stack of active animation contexts.
+    @return the context stack array
+*/
 + (CPArray)contextStack
 {
     if (!_CPAnimationContextStack)
@@ -42,6 +78,12 @@ var _CPAnimationContextStack   = nil,
     return _CPAnimationContextStack;
 }
 
+/*!
+    Executes a block of animations within a scoped animation grouping and invokes
+    a completion handler when all animations finish.
+    @param animationsBlock a function taking the active \c CPAnimationContext
+    @param aCompletionHandler a function to execute upon completion of all animations
+*/
 + (void)runAnimationGroup:(Function/*(CPAnimationContext context)*/)animationsBlock completionHandler:(Function)aCompletionHandler
 {
     [CPAnimationContext beginGrouping];
@@ -54,6 +96,10 @@ var _CPAnimationContextStack   = nil,
     [CPAnimationContext endGrouping];
 }
 
+/*!
+    Initializes a newly allocated animation context with default duration and linear timing.
+    @return the initialized animation context instance
+*/
 - (id)init
 {
     self = [super init];
@@ -66,6 +112,7 @@ var _CPAnimationContextStack   = nil,
     return self;
 }
 
+/* @ignore */
 + (void)_scheduleAnimationContextStackFlush
 {
     if (!_animationFlushingObserver)
@@ -78,6 +125,10 @@ var _CPAnimationContextStack   = nil,
     }
 }
 
+/*!
+    Pushes a new animation context onto the context stack, inheriting duration and timing
+    parameters from the previous context if available.
+*/
 + (void)beginGrouping
 {
     var newContext = [[CPAnimationContext alloc] init];
@@ -92,6 +143,10 @@ var _CPAnimationContextStack   = nil,
     [_CPAnimationContextStack addObject:newContext];
 }
 
+/*!
+    Flushes animations in the current context, pops it from the stack, and ends the grouping.
+    @return \c YES if a context was popped, \c NO if the stack was already empty
+*/
 + (BOOL)endGrouping
 {
     if (![_CPAnimationContextStack count])
@@ -107,6 +162,7 @@ var _CPAnimationContextStack   = nil,
     return YES;
 }
 
+/* @ignore */
 - (void)_enqueueActionForObject:(id)anObject keyPath:(id)aKeyPath targetValue:(id)aTargetValue animationCompletion:(id)animationCompletion
 {
     var resolvedAction = [self _actionForObject:anObject keyPath:aKeyPath targetValue:aTargetValue animationCompletion:animationCompletion];
@@ -125,6 +181,7 @@ var _CPAnimationContextStack   = nil,
         [animByKeyPath setObject:resolvedAction forKey:aKeyPath];
 }
 
+/* @ignore */
 - (Object)_actionForObject:(id)anObject keyPath:(CPString)aKeyPath targetValue:(id)aTargetValue animationCompletion:(Function)animationCompletion
 {
     var animation,
@@ -164,7 +221,6 @@ var _CPAnimationContextStack   = nil,
 
     if ([animation isKindOfClass:[CAKeyframeAnimation class]])
     {
-
         values = [animation values];
         keyTimes = [animation keyTimes];
         timingFunctions = [animation timingFunctionsControlPoints];
@@ -225,6 +281,7 @@ var _CPAnimationContextStack   = nil,
     }
 }
 
+/* @ignore */
 - (void)_flushAnimations
 {
     if (![_CPAnimationContextStack count])
@@ -244,6 +301,7 @@ var _CPAnimationContextStack   = nil,
         [self _startAnimations];
 }
 
+/* @ignore */
 - (void)_startAnimations
 {
     var cssAnimations = [],
@@ -275,7 +333,7 @@ var _CPAnimationContextStack   = nil,
             _completionHandlerAgent.increment(n);
     }
 
-// start timers
+    // Start timers
     while(k--)
     {
 #if (DEBUG)
@@ -284,7 +342,7 @@ var _CPAnimationContextStack   = nil,
         timers[k].start();
     }
 
-// start css animations
+    // Start CSS animations
     while(n--)
     {
 #if (DEBUG)
@@ -294,6 +352,7 @@ var _CPAnimationContextStack   = nil,
     }
 }
 
+/* @ignore */
 - (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers usingAction:(Object)anAction cssAnimate:(BOOL)needsCSSAnimation
 {
     var values = anAction.values;
@@ -364,6 +423,7 @@ var _CPAnimationContextStack   = nil,
     }
 }
 
+/* @ignore */
 - (Object)actionFromAction:(Object)anAction forAnimatedSubview:(CPView)aView
 {
     var targetValue = [anAction.values lastObject],
@@ -388,6 +448,10 @@ var _CPAnimationContextStack   = nil,
             };
 }
 
+/*!
+    Sets the completion handler function for the current animation grouping.
+    @param aCompletionHandler a callback function executed once all animations in this context finish
+*/
 - (void)setCompletionHandler:(Function)aCompletionHandler
 {
     if (_completionHandlerAgent)
@@ -411,7 +475,11 @@ var _CPAnimationContextStack   = nil,
     }
 }
 
-- (void)completionHandler
+/*!
+    Returns the current completion handler function.
+    @return the completion handler function, or \c nil
+*/
+- (Function)completionHandler
 {
     if (!_completionHandlerAgent)
         return nil;
@@ -421,13 +489,28 @@ var _CPAnimationContextStack   = nil,
 
 @end
 
+/*!
+    @category CPView (CPAnimationContext)
+    Extends \c CPView to support geometric recalculations and animation flag querying.
+*/
 @implementation CPView (CPAnimationContext)
 
+/*!
+    Calculates the frame rectangle of a given subview within a superview of the specified size.
+    @param aView the subview to layout
+    @param aSize the new size of the superview
+    @return the adjusted frame rectangle
+*/
 - (CGRect)frameRectOfView:(CPView)aView inSuperviewSize:(CGSize)aSize
 {
     return [aView frameWithNewSuperviewSize:aSize];
 }
 
+/*!
+    Calculates the receiver's frame rectangle when resizing its superview to the specified size.
+    @param newSize the new superview size
+    @return the adjusted frame rectangle
+*/
 - (CGRect)frameWithNewSuperviewSize:(CGSize)newSize
 {
     var mask = [self autoresizingMask];
@@ -462,11 +545,19 @@ var _CPAnimationContextStack   = nil,
     return newFrame;
 }
 
+/*!
+    Returns whether the view has custom \c drawRect: implementation.
+    @return \c YES if the view implements a custom \c drawRect:
+*/
 - (BOOL)hasCustomDrawRect
 {
    return self._viewClassFlags & 1;
 }
 
+/*!
+    Returns whether the view has custom \c layoutSubviews implementation.
+    @return \c YES if the view implements custom \c layoutSubviews
+*/
 - (BOOL)hasCustomLayoutSubviews
 {
    return self._viewClassFlags & 2;
@@ -474,8 +565,15 @@ var _CPAnimationContextStack   = nil,
 
 @end
 
+/*!
+    @category CAMediaTimingFunction (Additions)
+*/
 @implementation CAMediaTimingFunction (Additions)
 
+/*!
+    Returns the control points of the media timing function as an array.
+    @return an array containing \c [_c1x, _c1y, _c2x, _c2y]
+*/
 - (CPArray)controlPoints
 {
     return [_c1x, _c1y, _c2x, _c2y];
@@ -483,8 +581,15 @@ var _CPAnimationContextStack   = nil,
 
 @end
 
+/*!
+    @category CAAnimation (Additions)
+*/
 @implementation CAAnimation (Additions)
 
+/*!
+    Returns the control points of the animation's timing function, or linear defaults \c [0, 0, 1, 1].
+    @return an array containing the control points
+*/
 - (CPArray)timingFunctionControlPoints
 {
     if (_timingFunction)
@@ -495,8 +600,15 @@ var _CPAnimationContextStack   = nil,
 
 @end
 
+/*!
+    @category CAKeyframeAnimation (Additions)
+*/
 @implementation CAKeyframeAnimation (Additions)
 
+/*!
+    Returns an array containing control point arrays for each timing function in the keyframe animation.
+    @return an array of control point arrays
+*/
 - (CPArray)timingFunctionsControlPoints
 {
     var result = [CPArray array];
@@ -511,8 +623,10 @@ var _CPAnimationContextStack   = nil,
 
 @end
 
+/* @ignore */
 var COMPLETION_AGENT_ID = 0;
 
+/* @ignore */
 var CompletionHandlerAgent = function(aCompletionHandler)
 {
     this._completionHandler = aCompletionHandler;
@@ -521,11 +635,13 @@ var CompletionHandlerAgent = function(aCompletionHandler)
     this.id = COMPLETION_AGENT_ID++;
 };
 
+/* @ignore */
 CompletionHandlerAgent.prototype.completionHandler = function()
 {
     return this._completionHandler;
 };
 
+/* @ignore */
 CompletionHandlerAgent.prototype.fire = function()
 {
     if (this.valid)
@@ -536,11 +652,13 @@ CompletionHandlerAgent.prototype.fire = function()
     }
 };
 
+/* @ignore */
 CompletionHandlerAgent.prototype.increment = function(inc)
 {
     this.total += inc;
 };
 
+/* @ignore */
 CompletionHandlerAgent.prototype.decrement = function()
 {
     if (this.total <= 0)
@@ -554,6 +672,7 @@ CompletionHandlerAgent.prototype.decrement = function()
     }
 };
 
+/* @ignore */
 CompletionHandlerAgent.prototype.invalidate = function()
 {
     this.valid = false;
@@ -561,6 +680,7 @@ CompletionHandlerAgent.prototype.invalidate = function()
     this._completionHandler = null;
 };
 
+/* @ignore */
 var _animationFlushingObserverCallback = function()
 {
 #if (DEBUG)

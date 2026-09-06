@@ -24,14 +24,38 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPString.j>
 
-
+/*!
+    @global
+    Linear pacing animation timing curve.
+*/
 kCAMediaTimingFunctionLinear        = @"kCAMediaTimingFunctionLinear";
+
+/*!
+    @global
+    Ease-in pacing animation timing curve (starts slowly and accelerates towards the end).
+*/
 kCAMediaTimingFunctionEaseIn        = @"kCAMediaTimingFunctionEaseIn";
+
+/*!
+    @global
+    Ease-out pacing animation timing curve (starts quickly and decelerates towards the end).
+*/
 kCAMediaTimingFunctionEaseOut       = @"kCAMediaTimingFunctionEaseOut";
+
+/*!
+    @global
+    Ease-in-ease-out pacing animation timing curve (starts slowly, speeds up in the middle, and slows down at the end).
+*/
 kCAMediaTimingFunctionEaseInEaseOut = @"kCAMediaTimingFunctionEaseInEaseOut";
 
+/* @ignore */
 var CAMediaNamedTimingFunctions = nil;
 
+/*!
+    @ingroup appkit
+    @class CAMediaTimingFunction
+    A CAMediaTimingFunction represents the timing curve of an animation as a cubic Bézier curve.
+*/
 @implementation CAMediaTimingFunction : CPObject
 {
     float _c1x;
@@ -40,6 +64,11 @@ var CAMediaNamedTimingFunctions = nil;
     float _c2y;
 }
 
+/*!
+    Returns a predefined media timing function matching the given name.
+    @param aName the name of the predefined timing curve (e.g. \c kCAMediaTimingFunctionLinear)
+    @return the predefined timing function instance
+*/
 + (id)functionWithName:(CPString)aName
 {
     if (!CAMediaNamedTimingFunctions)
@@ -55,11 +84,27 @@ var CAMediaNamedTimingFunctions = nil;
     return [CAMediaNamedTimingFunctions objectForKey:aName];
 }
 
+/*!
+    Creates and returns a new media timing function with custom cubic Bézier control points.
+    @param c1x the x-coordinate of the first control point
+    @param c1y the y-coordinate of the first control point
+    @param c2x the x-coordinate of the second control point
+    @param c2y the y-coordinate of the second control point
+    @return a new \c CAMediaTimingFunction instance
+*/
 + (id)functionWithControlPoints:(float)c1x :(float)c1y :(float)c2x :(float)c2y
 {
     return [[self alloc] initWithControlPoints:c1x :c1y :c2x :c2y];
 }
 
+/*!
+    Initializes a newly allocated media timing function with custom cubic Bézier control points.
+    @param c1x the x-coordinate of the first control point
+    @param c1y the y-coordinate of the first control point
+    @param c2x the x-coordinate of the second control point
+    @param c2y the y-coordinate of the second control point
+    @return the initialized \c CAMediaTimingFunction instance
+*/
 - (id)initWithControlPoints:(float)c1x :(float)c1y :(float)c2x :(float)c2y
 {
     self = [super init];
@@ -75,6 +120,11 @@ var CAMediaNamedTimingFunctions = nil;
     return self;
 }
 
+/*!
+    Retrieves the coordinates of the control point at the specified index.
+    @param anIndex the index of the control point (0, 1, 2, or 3)
+    @param reference an array of two floats that will receive the (x, y) coordinates
+*/
 - (void)getControlPointAtIndex:(CPUInteger)anIndex values:(float/*[2]*/)reference
 {
     if (anIndex == 0)
