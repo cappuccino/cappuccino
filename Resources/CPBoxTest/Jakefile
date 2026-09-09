@@ -6,19 +6,19 @@
  * Copyright 2012, Your Company All rights reserved.
  */
 
-var ENV = require("system").env,
-    FILE = require("file"),
-    JAKE = require("jake"),
+var ENV = process.env,
+    cp = require("child_process"),
+    fs = require("fs"),
+    path = require("path"),
     task = JAKE.task,
     FileList = JAKE.FileList,
-    app = require("cappuccino/jake").app,
-    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
-    OS = require("os");
+    app = CAPPUCCINO.Jake.applicationtask.app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
 
 app ("CPBoxTest", function(task)
 {
-    task.setBuildIntermediatesPath(FILE.join("Build", "CPBoxTest.build", configuration));
-    task.setBuildPath(FILE.join("Build", configuration));
+    task.setBuildIntermediatesPath(path.join("Build", "CPBoxTest.build", configuration));
+    task.setBuildPath(path.join("Build", configuration));
 
     task.setProductName("CPBoxTest");
     task.setIdentifier("com.yourcompany.CPBoxTest");
@@ -26,7 +26,7 @@ app ("CPBoxTest", function(task)
     task.setAuthor("Your Company");
     task.setEmail("feedback @nospam@ yourcompany.com");
     task.setSummary("CPBoxTest");
-    task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
+    task.setSources((new FileList("**/*.j")).exclude(path.join("Build", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
@@ -59,36 +59,36 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    OS.system(["open", FILE.join("Build", "Debug", "CPBoxTest", "index.html")]);
+    cp.execSync(["open", path.join("Build", "Debug", "CPBoxTest", "index.html")].join(" "), { stdio: "inherit" });
 });
 
 task ("run-release", ["release"], function()
 {
-    OS.system(["open", FILE.join("Build", "Release", "CPBoxTest", "index.html")]);
+    cp.execSync(["open", path.join("Build", "Release", "CPBoxTest", "index.html")].join(" "), { stdio: "inherit" });
 });
 
 task ("deploy", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Deployment", "CPBoxTest"));
-    OS.system(["press", "-f", FILE.join("Build", "Release", "CPBoxTest"), FILE.join("Build", "Deployment", "CPBoxTest")]);
+    fs.mkdirSync(path.join("Build", "Deployment", "CPBoxTest"), { recursive: true });
+    cp.execSync(["press", "-f", path.join("Build", "Release", "CPBoxTest"), path.join("Build", "Deployment", "CPBoxTest")].join(" "), { stdio: "inherit" });
     printResults("Deployment")
 });
 
 task ("desktop", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Desktop", "CPBoxTest"));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "CPBoxTest"), FILE.join("Build", "Desktop", "CPBoxTest", "CPBoxTest.app"));
+    fs.mkdirSync(path.join("Build", "Desktop", "CPBoxTest"), { recursive: true });
+    require("@objj/nativehost").buildNativeHost(path.join("Build", "Release", "CPBoxTest"), path.join("Build", "Desktop", "CPBoxTest", "CPBoxTest.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    OS.system([FILE.join("Build", "Desktop", "CPBoxTest", "CPBoxTest.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+    cp.execSync([path.join("Build", "Desktop", "CPBoxTest", "CPBoxTest.app", "Contents", "MacOS", "NativeHost"), "-i"].join(" "), { stdio: "inherit" });
 });
 
 function printResults(configuration)
 {
-    print("----------------------------");
-    print(configuration+" app built at path: "+FILE.join("Build", configuration, "CPBoxTest"));
-    print("----------------------------");
+    console.log("----------------------------");
+    console.log(configuration+" app built at path: "+path.join("Build", configuration, "CPBoxTest"));
+    console.log("----------------------------");
 }

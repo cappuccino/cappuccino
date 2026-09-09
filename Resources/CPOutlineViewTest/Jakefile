@@ -6,17 +6,17 @@
  * Copyright 2010, Your Company All rights reserved.
  */
 
-var ENV = require("system").env,
+var ENV = process.env, cp = require("child_process"), fs = require("fs"), path = require("path");,
     FILE = require("file"),
     task = require("jake").task,
     FileList = require("jake").FileList,
-    app = require("cappuccino/jake").app,
+    app = CAPPUCCINO.Jake.applicationtask.app,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
 
 app ("outlineview", function(task)
 {
-    task.setBuildIntermediatesPath(FILE.join("Build", "outlineview.build", configuration));
-    task.setBuildPath(FILE.join("Build", configuration));
+    task.setBuildIntermediatesPath(path.join("Build", "outlineview.build", configuration));
+    task.setBuildPath(path.join("Build", configuration));
 
     task.setProductName("outlineview");
     task.setIdentifier("com.yourcompany.outlineview");

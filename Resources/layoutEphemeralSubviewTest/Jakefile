@@ -1,31 +1,31 @@
 /*
  * Jakefile
- * layoutEphemeralSubviewTest
+ * LayoutEphemeralSubviewTest
  *
  * Created by Aparajita Fishman on October 8, 2010.
  */
 
-var ENV = require("system").env,
-    FILE = require("file"),
-    JAKE = require("jake"),
+var ENV = process.env,
+    cp = require("child_process"),
+    fs = require("fs"),
+    path = require("path"),
     task = JAKE.task,
     FileList = JAKE.FileList,
-    app = require("cappuccino/jake").app,
-    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
-    OS = require("os");
+    app = CAPPUCCINO.Jake.applicationtask.app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
 
-app ("layoutEphemeralSubviewTest", function(task)
+app ("LayoutEphemeralSubviewTest", function(task)
 {
-    task.setBuildIntermediatesPath(FILE.join("Build", "layoutEphemeralSubviewTest.build", configuration));
-    task.setBuildPath(FILE.join("Build", configuration));
+    task.setBuildIntermediatesPath(path.join("Build", "LayoutEphemeralSubviewTest.build", configuration));
+    task.setBuildPath(path.join("Build", configuration));
 
-    task.setProductName("layoutEphemeralSubviewTest");
-    task.setIdentifier("com.yourcompany.layoutEphemeralSubviewTest");
+    task.setProductName("LayoutEphemeralSubviewTest");
+    task.setIdentifier("com.yourcompany.LayoutEphemeralSubviewTest");
     task.setVersion("1.0");
     task.setAuthor("WireLoad, LLC");
     task.setEmail("feedback @nospam@ yourcompany.com");
-    task.setSummary("layoutEphemeralSubviewTest");
-    task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
+    task.setSummary("LayoutEphemeralSubviewTest");
+    task.setSources((new FileList("**/*.j")).exclude(path.join("Build", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
@@ -36,7 +36,7 @@ app ("layoutEphemeralSubviewTest", function(task)
         task.setCompilerFlags("-O");
 });
 
-task ("default", ["layoutEphemeralSubviewTest"], function()
+task ("default", ["LayoutEphemeralSubviewTest"], function()
 {
     printResults(configuration);
 });
@@ -57,36 +57,36 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    OS.system(["open", FILE.join("Build", "Debug", "layoutEphemeralSubviewTest", "index.html")]);
+    cp.execSync(["open", path.join("Build", "Debug", "LayoutEphemeralSubviewTest", "index.html")].join(" "), { stdio: "inherit" });
 });
 
 task ("run-release", ["release"], function()
 {
-    OS.system(["open", FILE.join("Build", "Release", "layoutEphemeralSubviewTest", "index.html")]);
+    cp.execSync(["open", path.join("Build", "Release", "LayoutEphemeralSubviewTest", "index.html")].join(" "), { stdio: "inherit" });
 });
 
 task ("deploy", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Deployment", "layoutEphemeralSubviewTest"));
-    OS.system(["press", "-f", FILE.join("Build", "Release", "layoutEphemeralSubviewTest"), FILE.join("Build", "Deployment", "layoutEphemeralSubviewTest")]);
+    fs.mkdirSync(path.join("Build", "Deployment", "LayoutEphemeralSubviewTest"), { recursive: true });
+    cp.execSync(["press", "-f", path.join("Build", "Release", "LayoutEphemeralSubviewTest"), path.join("Build", "Deployment", "LayoutEphemeralSubviewTest")].join(" "), { stdio: "inherit" });
     printResults("Deployment")
 });
 
 task ("desktop", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Desktop", "layoutEphemeralSubviewTest"));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "layoutEphemeralSubviewTest"), FILE.join("Build", "Desktop", "layoutEphemeralSubviewTest", "layoutEphemeralSubviewTest.app"));
+    fs.mkdirSync(path.join("Build", "Desktop", "LayoutEphemeralSubviewTest"), { recursive: true });
+    require("@objj/nativehost").buildNativeHost(path.join("Build", "Release", "LayoutEphemeralSubviewTest"), path.join("Build", "Desktop", "LayoutEphemeralSubviewTest", "LayoutEphemeralSubviewTest.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    OS.system([FILE.join("Build", "Desktop", "layoutEphemeralSubviewTest", "layoutEphemeralSubviewTest.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+    cp.execSync([path.join("Build", "Desktop", "LayoutEphemeralSubviewTest", "LayoutEphemeralSubviewTest.app", "Contents", "MacOS", "NativeHost"), "-i"].join(" "), { stdio: "inherit" });
 });
 
 function printResults(configuration)
 {
-    print("----------------------------");
-    print(configuration+" app built at path: "+FILE.join("Build", configuration, "layoutEphemeralSubviewTest"));
-    print("----------------------------");
+    console.log("----------------------------");
+    console.log(configuration+" app built at path: "+path.join("Build", configuration, "LayoutEphemeralSubviewTest"));
+    console.log("----------------------------");
 }
