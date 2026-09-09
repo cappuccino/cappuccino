@@ -578,7 +578,7 @@
 - (id)objectAtIndex:(CPUInteger)anIndex
 {
     if (anIndex < 0 || anIndex >= [self count])
-        throw "range error";
+        [CPException raise:CPRangeException reason:"index (" + anIndex + ") beyond bounds (" + [self count] + ")"];
 
     return array[anIndex];
 }

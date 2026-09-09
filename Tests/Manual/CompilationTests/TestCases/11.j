@@ -15,14 +15,14 @@ END_EXPECTED
 
 @implementation MySuperclass : CPObject
 {
-	int myIvar;
+    int myIvar;
 }
 
 @end
 
 @implementation MySubclass : MySuperclass
 {
-	int myIvar;
+    int myIvar;
 }
 
 @end

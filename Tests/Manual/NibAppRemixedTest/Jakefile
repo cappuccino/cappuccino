@@ -1,0 +1,94 @@
+/*
+ * Jakefile
+ * NibAppRemixedTest
+ *
+ * Created by Alexander Ljungberg on May 17, 2011.
+ * Copyright 2011, WireLoad All rights reserved.
+ */
+
+var ENV = process.env,
+    cp = require("child_process"),
+    fs = require("fs"),
+    path = require("path"),
+    task = JAKE.task,
+    FileList = JAKE.FileList,
+    app = CAPPUCCINO.Jake.applicationtask.app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
+
+app ("NibAppRemixedTest", function(task)
+{
+    task.setBuildIntermediatesPath(path.join("Build", "NibAppRemixedTest.build", configuration));
+    task.setBuildPath(path.join("Build", configuration));
+
+    task.setProductName("NibApp.new");
+    task.setIdentifier("com.yourcompany.NibAppRemixedTest");
+    task.setVersion("1.0");
+    task.setAuthor("WireLoad");
+    task.setEmail("feedback @nospam@ yourcompany.com");
+    task.setSummary("NibApp.new");
+    task.setSources((new FileList("**/*.j")).exclude(path.join("Build", "**")));
+    task.setResources(new FileList("Resources/**"));
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
+    task.setNib2CibFlags("-R Resources/");
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g");
+    else
+        task.setCompilerFlags("-O");
+});
+
+task ("default", ["NibAppRemixedTest"], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"]);
+
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("run", ["debug"], function()
+{
+    cp.execSync(["open", path.join("Build", "Debug", "NibAppRemixedTest", "index.html")].join(" "), { stdio: "inherit" });
+});
+
+task ("run-release", ["release"], function()
+{
+    cp.execSync(["open", path.join("Build", "Release", "NibAppRemixedTest", "index.html")].join(" "), { stdio: "inherit" });
+});
+
+task ("deploy", ["release"], function()
+{
+    fs.mkdirSync(path.join("Build", "Deployment", "NibAppRemixedTest"), { recursive: true });
+    cp.execSync(["press", "-f", path.join("Build", "Release", "NibAppRemixedTest"), path.join("Build", "Deployment", "NibAppRemixedTest")].join(" "), { stdio: "inherit" });
+    printResults("Deployment")
+});
+
+task ("desktop", ["release"], function()
+{
+    fs.mkdirSync(path.join("Build", "Desktop", "NibAppRemixedTest"), { recursive: true });
+    require("@objj/nativehost").buildNativeHost(path.join("Build", "Release", "NibAppRemixedTest"), path.join("Build", "Desktop", "NibAppRemixedTest", "NibAppRemixedTest.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    cp.execSync([path.join("Build", "Desktop", "NibAppRemixedTest", "NibAppRemixedTest.app", "Contents", "MacOS", "NativeHost"), "-i"].join(" "), { stdio: "inherit" });
+});
+
+function printResults(configuration)
+{
+    console.log("----------------------------");
+    console.log(configuration+" app built at path: "+path.join("Build", configuration, "NibAppRemixedTest"));
+    console.log("----------------------------");
+}

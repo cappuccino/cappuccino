@@ -26,3 +26,5 @@ node_modules
 /dist/cappuccino/package.json
 /dist/cappuccino/lib
 /dist/cappuccino/bin
+Tests/Manual/.Frameworks
+/Tests/Manual/index.html

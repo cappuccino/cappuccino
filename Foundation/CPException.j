@@ -252,8 +252,8 @@ if (Error.prototype._userInfo !== null)
 
 function _CPMethodCallString(anObject, aSelector)
 {
-	var prefix = class_isMetaClass(anObject.isa) ? "+" : "-";
-	return prefix + "[" + [anObject className] + " " + aSelector + "]: ";
+    var prefix = class_isMetaClass(anObject.isa) ? "+" : "-";
+    return prefix + "[" + [anObject className] + " " + aSelector + "]: ";
 }
 
 function _CPRaiseInvalidAbstractInvocation(anObject, aSelector)
@@ -264,13 +264,13 @@ function _CPRaiseInvalidAbstractInvocation(anObject, aSelector)
 function _CPRaiseInvalidArgumentException(anObject, aSelector, aMessage)
 {
     [CPException raise:CPInvalidArgumentException
-                reason:METHOD_CALL_STRING() + aMessage];
+                reason:_CPMethodCallString(anObject, aSelector) + aMessage];
 }
 
 function _CPRaiseRangeException(anObject, aSelector, anIndex, aCount)
 {
     [CPException raise:CPRangeException
-                reason:METHOD_CALL_STRING() + "index (" + anIndex + ") beyond bounds (" + aCount + ")"];
+                reason:_CPMethodCallString(anObject, aSelector) + "index (" + anIndex + ") beyond bounds (" + aCount + ")"];
 }
 
 function _CPReportLenientDeprecation(/*Class*/ aClass, /*SEL*/ oldSelector, /*SEL*/ newSelector)

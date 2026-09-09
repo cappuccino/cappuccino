@@ -231,8 +231,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
             _minimumFractionDigits = 0;
             _maximumFractionDigits = 3;
             // Invalidate the cached number handler.
-			// It rebuilds on next use.
-			// Replaces pre-processor directive, which is incompatible with the new compiler
+            // It rebuilds on next use.
+            // Replaces pre-processor directive, which is incompatible with the new compiler
             _numberHandler = nil;
             break;
 
@@ -240,8 +240,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
             _minimumFractionDigits = 2;
             _maximumFractionDigits = 2;
             // Invalidate the cached number handler.
-			// It rebuilds on next use.
-			// Replaces pre-processor directive, which is incompatible with the new compiler
+            // It rebuilds on next use.
+            // Replaces pre-processor directive, which is incompatible with the new compiler
             _numberHandler = nil;
             break;
     }
@@ -251,8 +251,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 {
     _roundingMode = aRoundingMode;
             // Invalidate the cached number handler.
-			// It rebuilds on next use.
-			// Replaces pre-processor directive, which is incompatible with the new compiler
+            // It rebuilds on next use.
+            // Replaces pre-processor directive, which is incompatible with the new compiler
     _numberHandler = nil;
 }
 
@@ -260,8 +260,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 {
     _minimumFractionDigits = aNumber;
             // Invalidate the cached number handler.
-			// It rebuilds on next use.
-			// Replaces pre-processor directive, which is incompatible with the new compiler
+            // It rebuilds on next use.
+            // Replaces pre-processor directive, which is incompatible with the new compiler
     _numberHandler = nil;
 }
 
@@ -269,8 +269,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 {
     _maximumFractionDigits = aNumber;
             // Invalidate the cached number handler.
-			// It rebuilds on next use.
-			// Replaces pre-processor directive, which is incompatible with the new compiler
+            // It rebuilds on next use.
+            // Replaces pre-processor directive, which is incompatible with the new compiler
     _numberHandler = nil;
 }
 
@@ -278,8 +278,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 {
     _minimum = aNumber;
             // Invalidate the cached number handler.
-			// It rebuilds on next use.
-			// Replaces pre-processor directive, which is incompatible with the new compiler
+            // It rebuilds on next use.
+            // Replaces pre-processor directive, which is incompatible with the new compiler
     _numberHandler = nil;
 }
 
@@ -287,8 +287,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 {
     _maximum = aNumber;
             // Invalidate the cached number handler.
-			// It rebuilds on next use.
-			// Replaces pre-processor directive, which is incompatible with the new compiler
+            // It rebuilds on next use.
+            // Replaces pre-processor directive, which is incompatible with the new compiler
     _numberHandler = nil;
 }
 

@@ -1,0 +1,94 @@
+/*
+ * Jakefile
+ * PredicateWithFormatTest
+ *
+ * Created by aparajita on May 25, 2011.
+ * Copyright 2011, Victory-Heart Productions All rights reserved.
+ */
+
+var ENV = process.env,
+    cp = require("child_process"),
+    fs = require("fs"),
+    path = require("path"),
+    task = JAKE.task,
+    FileList = JAKE.FileList,
+    app = CAPPUCCINO.Jake.applicationtask.app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
+
+app ("PredicateWithFormatTest", function(task)
+{
+    task.setBuildIntermediatesPath(path.join("Build", "PredicateWithFormatTest.build", configuration));
+    task.setBuildPath(path.join("Build", configuration));
+
+    task.setProductName("PredicateWithFormatTest");
+    task.setIdentifier("com.aparajita.PredicateWithFormatTest");
+    task.setVersion("1.0");
+    task.setAuthor("Victory-Heart Productions");
+    task.setEmail("feedback @nospam@ yourcompany.com");
+    task.setSummary("PredicateWithFormatTest");
+    task.setSources((new FileList("**/*.j")).exclude(path.join("Build", "**")));
+    task.setResources(new FileList("Resources/**"));
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
+    task.setNib2CibFlags("-R Resources/");
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g");
+    else
+        task.setCompilerFlags("-O");
+});
+
+task ("default", ["PredicateWithFormatTest"], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"]);
+
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("run", ["debug"], function()
+{
+    cp.execSync(["open", path.join("Build", "Debug", "PredicateWithFormatTest", "index.html")].join(" "), { stdio: "inherit" });
+});
+
+task ("run-release", ["release"], function()
+{
+    cp.execSync(["open", path.join("Build", "Release", "PredicateWithFormatTest", "index.html")].join(" "), { stdio: "inherit" });
+});
+
+task ("deploy", ["release"], function()
+{
+    fs.mkdirSync(path.join("Build", "Deployment", "PredicateWithFormatTest"), { recursive: true });
+    cp.execSync(["press", "-f", path.join("Build", "Release", "PredicateWithFormatTest"), path.join("Build", "Deployment", "PredicateWithFormatTest")].join(" "), { stdio: "inherit" });
+    printResults("Deployment")
+});
+
+task ("desktop", ["release"], function()
+{
+    fs.mkdirSync(path.join("Build", "Desktop", "PredicateWithFormatTest"), { recursive: true });
+    require("@objj/nativehost").buildNativeHost(path.join("Build", "Release", "PredicateWithFormatTest"), path.join("Build", "Desktop", "PredicateWithFormatTest", "PredicateWithFormatTest.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    cp.execSync([path.join("Build", "Desktop", "PredicateWithFormatTest", "PredicateWithFormatTest.app", "Contents", "MacOS", "NativeHost"), "-i"].join(" "), { stdio: "inherit" });
+});
+
+function printResults(configuration)
+{
+    console.log("----------------------------");
+    console.log(configuration+" app built at path: "+path.join("Build", configuration, "PredicateWithFormatTest"));
+    console.log("----------------------------");
+}

@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
+=======
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
+>>>>>>> main
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -316,14 +322,22 @@ DQ
                             <action selector="monkeyClick:" target="450" id="1259"/>
                         </connections>
                     </button>
+<<<<<<< HEAD
                     <box autoresizesSubviews="NO" fixedFrame="YES" borderType="line" title="Highlights By" translatesAutoresizingMaskIntoConstraints="NO" id="1228">
+=======
+                    <box autoresizesSubviews="NO" borderType="line" title="Highlights By" id="1228">
+>>>>>>> main
                         <rect key="frame" x="17" y="16" width="222" height="114"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="Lxr-8q-OWd">
                             <rect key="frame" x="4" y="5" width="214" height="94"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
+<<<<<<< HEAD
                                 <button tag="2" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1230">
+=======
+                                <button tag="2" id="1230">
+>>>>>>> main
                                     <rect key="frame" x="16" y="68" width="137" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPPushInCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1231">
@@ -334,7 +348,11 @@ DQ
                                         <action selector="setMonkeyButtonHighlightedBy:" target="450" id="1247"/>
                                     </connections>
                                 </button>
+<<<<<<< HEAD
                                 <button tag="1" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1232">
+=======
+                                <button tag="1" id="1232">
+>>>>>>> main
                                     <rect key="frame" x="16" y="48" width="152" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPContentsCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1233">
@@ -345,7 +363,11 @@ DQ
                                         <action selector="setMonkeyButtonHighlightedBy:" target="450" id="1248"/>
                                     </connections>
                                 </button>
+<<<<<<< HEAD
                                 <button tag="4" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1234">
+=======
+                                <button tag="4" id="1234">
+>>>>>>> main
                                     <rect key="frame" x="16" y="28" width="172" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeGrayCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1235">
@@ -356,7 +378,11 @@ DQ
                                         <action selector="setMonkeyButtonHighlightedBy:" target="450" id="1249"/>
                                     </connections>
                                 </button>
+<<<<<<< HEAD
                                 <button tag="8" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1236">
+=======
+                                <button tag="8" id="1236">
+>>>>>>> main
                                     <rect key="frame" x="16" y="8" width="218" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeBackgroundCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1237">
@@ -370,14 +396,22 @@ DQ
                             </subviews>
                         </view>
                     </box>
+<<<<<<< HEAD
                     <box autoresizesSubviews="NO" fixedFrame="YES" borderType="line" title="Shows State By" translatesAutoresizingMaskIntoConstraints="NO" id="1238">
+=======
+                    <box autoresizesSubviews="NO" borderType="line" title="Shows State By" id="1238">
+>>>>>>> main
                         <rect key="frame" x="241" y="16" width="222" height="114"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="rZ3-3d-f31">
                             <rect key="frame" x="4" y="5" width="214" height="94"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
+<<<<<<< HEAD
                                 <button tag="2" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1242">
+=======
+                                <button tag="2" id="1242">
+>>>>>>> main
                                     <rect key="frame" x="16" y="68" width="137" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPPushInCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1243">
@@ -388,7 +422,11 @@ DQ
                                         <action selector="setMonkeyButtonShowsStateBy:" target="450" id="1251"/>
                                     </connections>
                                 </button>
+<<<<<<< HEAD
                                 <button tag="1" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1241">
+=======
+                                <button tag="1" id="1241">
+>>>>>>> main
                                     <rect key="frame" x="16" y="48" width="152" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPContentsCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1244">
@@ -399,7 +437,11 @@ DQ
                                         <action selector="setMonkeyButtonShowsStateBy:" target="450" id="1252"/>
                                     </connections>
                                 </button>
+<<<<<<< HEAD
                                 <button tag="4" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1240">
+=======
+                                <button tag="4" id="1240">
+>>>>>>> main
                                     <rect key="frame" x="16" y="28" width="172" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeGrayCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1245">
@@ -410,7 +452,11 @@ DQ
                                         <action selector="setMonkeyButtonShowsStateBy:" target="450" id="1253"/>
                                     </connections>
                                 </button>
+<<<<<<< HEAD
                                 <button tag="8" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1239">
+=======
+                                <button tag="8" id="1239">
+>>>>>>> main
                                     <rect key="frame" x="16" y="8" width="218" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeBackgroundCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1246">
@@ -541,7 +587,12 @@ DQ
     </objects>
     <resources>
         <image name="Image-132x44" width="26.879999160766602" height="80.639999389648438"/>
+<<<<<<< HEAD
         <image name="NSAddTemplate" width="18" height="17"/>
         <image name="NSRemoveTemplate" width="18" height="5"/>
+=======
+        <image name="NSAddTemplate" width="18" height="16"/>
+        <image name="NSRemoveTemplate" width="18" height="4"/>
+>>>>>>> main
     </resources>
 </document>

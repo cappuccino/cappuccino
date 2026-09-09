@@ -6,24 +6,24 @@
  * Copyright 2013, Austin-Soft.com All rights reserved.
  */
 
-var ENV = require("system").env,
-    FILE = require("file"),
-    JAKE = require("jake"),
+var ENV = process.env,
+    cp = require("child_process"),
+    fs = require("fs"),
+    path = require("path"),
     task = JAKE.task,
     FileList = JAKE.FileList,
-    app = require("cappuccino/jake").app,
-    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
-    OS = require("os");
+    app = CAPPUCCINO.Jake.applicationtask.app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
 
 app ("PopUpButtonTest", function(task)
 {
     ENV["OBJJ_INCLUDE_PATHS"] = "Frameworks";
 
     if (configuration === "Debug")
-        ENV["OBJJ_INCLUDE_PATHS"] = FILE.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
+        ENV["OBJJ_INCLUDE_PATHS"] = path.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
 
-    task.setBuildIntermediatesPath(FILE.join("Build", "PopUpButtonTest.build", configuration));
-    task.setBuildPath(FILE.join("Build", configuration));
+    task.setBuildIntermediatesPath(path.join("Build", "PopUpButtonTest.build", configuration));
+    task.setBuildPath(path.join("Build", configuration));
 
     task.setProductName("PopUpButtonTest");
     task.setIdentifier("com.austin-soft.PopUpButtonTest");
@@ -31,7 +31,7 @@ app ("PopUpButtonTest", function(task)
     task.setAuthor("Austin-Soft.com");
     task.setEmail("support@austin-soft.com");
     task.setSummary("PopUpButtonTest");
-    task.setSources(new FileList("**/*.j").exclude(FILE.join("Build", "**")).exclude(FILE.join("Frameworks", "Source", "**")));
+    task.setSources(new FileList("**/*.j").exclude(path.join("Build", "**")).exclude(path.join("Frameworks", "Source", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
@@ -63,36 +63,36 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    OS.system(["open", FILE.join("Build", "Debug", "PopUpButtonTest", "index.html")]);
+    cp.execSync(["open", path.join("Build", "Debug", "PopUpButtonTest", "index.html")].join(" "), { stdio: "inherit" });
 });
 
 task ("run-release", ["release"], function()
 {
-    OS.system(["open", FILE.join("Build", "Release", "PopUpButtonTest", "index.html")]);
+    cp.execSync(["open", path.join("Build", "Release", "PopUpButtonTest", "index.html")].join(" "), { stdio: "inherit" });
 });
 
 task ("deploy", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Deployment", "PopUpButtonTest"));
-    OS.system(["press", "-f", FILE.join("Build", "Release", "PopUpButtonTest"), FILE.join("Build", "Deployment", "PopUpButtonTest")]);
+    fs.mkdirSync(path.join("Build", "Deployment", "PopUpButtonTest"), { recursive: true });
+    cp.execSync(["press", "-f", path.join("Build", "Release", "PopUpButtonTest"), path.join("Build", "Deployment", "PopUpButtonTest")].join(" "), { stdio: "inherit" });
     printResults("Deployment")
 });
 
 task ("desktop", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Desktop", "PopUpButtonTest"));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "PopUpButtonTest"), FILE.join("Build", "Desktop", "PopUpButtonTest", "PopUpButtonTest.app"));
+    fs.mkdirSync(path.join("Build", "Desktop", "PopUpButtonTest"), { recursive: true });
+    require("@objj/nativehost").buildNativeHost(path.join("Build", "Release", "PopUpButtonTest"), path.join("Build", "Desktop", "PopUpButtonTest", "PopUpButtonTest.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    OS.system([FILE.join("Build", "Desktop", "PopUpButtonTest", "PopUpButtonTest.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+    cp.execSync([path.join("Build", "Desktop", "PopUpButtonTest", "PopUpButtonTest.app", "Contents", "MacOS", "NativeHost"), "-i"].join(" "), { stdio: "inherit" });
 });
 
 function printResults(configuration)
 {
-    print("----------------------------");
-    print(configuration+" app built at path: "+FILE.join("Build", configuration, "PopUpButtonTest"));
-    print("----------------------------");
+    console.log("----------------------------");
+    console.log(configuration+" app built at path: "+path.join("Build", configuration, "PopUpButtonTest"));
+    console.log("----------------------------");
 }

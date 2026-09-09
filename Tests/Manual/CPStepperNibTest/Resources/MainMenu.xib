@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="19529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment version="1050" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19529"/>
+=======
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+    <dependencies>
+        <deployment version="1050" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
+>>>>>>> main
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -17,12 +24,20 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="630" y="330" width="480" height="360"/>
+<<<<<<< HEAD
             <rect key="screenRect" x="0.0" y="0.0" width="1792" height="1095"/>
+=======
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1028"/>
+>>>>>>> main
             <view key="contentView" id="372">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                 <subviews>
+<<<<<<< HEAD
                     <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="460">
+=======
+                    <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" id="460">
+>>>>>>> main
                         <rect key="frame" x="283" y="166" width="19" height="27"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                         <stepperCell key="cell" alignment="left" increment="2" minValue="1" maxValue="100" doubleValue="3" autorepeat="NO" valueWraps="YES" id="461"/>
@@ -30,7 +45,11 @@
                             <action selector="takeDoubleValueFrom:" target="463" id="465"/>
                         </connections>
                     </stepper>
+<<<<<<< HEAD
                     <textField verticalHuggingPriority="750" fixedFrame="YES" tag="1004" translatesAutoresizingMaskIntoConstraints="NO" id="463">
+=======
+                    <textField verticalHuggingPriority="750" tag="1004" id="463">
+>>>>>>> main
                         <rect key="frame" x="182" y="169" width="96" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="464">
@@ -39,7 +58,11 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+<<<<<<< HEAD
                     <textField verticalHuggingPriority="750" fixedFrame="YES" tag="1000" translatesAutoresizingMaskIntoConstraints="NO" id="466">
+=======
+                    <textField verticalHuggingPriority="750" tag="1000" id="466">
+>>>>>>> main
                         <rect key="frame" x="364" y="318" width="96" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="467">
@@ -51,7 +74,11 @@
                             <action selector="setIncrement:" target="450" id="485"/>
                         </connections>
                     </textField>
+<<<<<<< HEAD
                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="468">
+=======
+                    <textField verticalHuggingPriority="750" id="468">
+>>>>>>> main
                         <rect key="frame" x="282" y="321" width="72" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Increment:" id="469">
@@ -60,7 +87,11 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+<<<<<<< HEAD
                     <textField verticalHuggingPriority="750" fixedFrame="YES" tag="1001" translatesAutoresizingMaskIntoConstraints="NO" id="470">
+=======
+                    <textField verticalHuggingPriority="750" tag="1001" id="470">
+>>>>>>> main
                         <rect key="frame" x="364" y="288" width="96" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="473">
@@ -72,7 +103,11 @@
                             <action selector="setMin:" target="450" id="484"/>
                         </connections>
                     </textField>
+<<<<<<< HEAD
                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="471">
+=======
+                    <textField verticalHuggingPriority="750" id="471">
+>>>>>>> main
                         <rect key="frame" x="284" y="291" width="70" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Min Value:" id="472">
@@ -81,7 +116,11 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+<<<<<<< HEAD
                     <textField verticalHuggingPriority="750" fixedFrame="YES" tag="1002" translatesAutoresizingMaskIntoConstraints="NO" id="474">
+=======
+                    <textField verticalHuggingPriority="750" tag="1002" id="474">
+>>>>>>> main
                         <rect key="frame" x="364" y="261" width="96" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="477">
@@ -93,7 +132,11 @@
                             <action selector="setMax:" target="450" id="483"/>
                         </connections>
                     </textField>
+<<<<<<< HEAD
                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="475">
+=======
+                    <textField verticalHuggingPriority="750" id="475">
+>>>>>>> main
                         <rect key="frame" x="280" y="264" width="74" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Max Value:" id="476">
@@ -102,7 +145,11 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+<<<<<<< HEAD
                     <button fixedFrame="YES" tag="1003" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="480">
+=======
+                    <button tag="1003" imageHugsTitle="YES" id="480">
+>>>>>>> main
                         <rect key="frame" x="272" y="237" width="109" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="wraps value:" bezelStyle="regularSquare" imagePosition="trailing" alignment="left" state="on" inset="2" id="481">
@@ -113,7 +160,11 @@
                             <action selector="setWraps:" target="450" id="482"/>
                         </connections>
                     </button>
+<<<<<<< HEAD
                     <button fixedFrame="YES" tag="1005" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="486">
+=======
+                    <button tag="1005" imageHugsTitle="YES" id="486">
+>>>>>>> main
                         <rect key="frame" x="281" y="213" width="100" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="autorepeat:" bezelStyle="regularSquare" imagePosition="trailing" alignment="left" state="on" inset="2" id="487">
@@ -126,7 +177,10 @@
                     </button>
                 </subviews>
             </view>
+<<<<<<< HEAD
             <point key="canvasLocation" x="-52" y="55"/>
+=======
+>>>>>>> main
         </window>
         <customObject id="450" customClass="AppController">
             <connections>

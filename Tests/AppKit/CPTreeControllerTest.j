@@ -17,22 +17,21 @@
     CPTreeController    _treeController @accessors(property=treeController);
     CPArray             _contentArray @accessors(property=contentArray);
 
-    CPArray             observations;
-    int                 aCount @accessors;
+    CPMutableArray      _observedKeyPaths;
 }
 
 - (CPArray)makeTestTree
 {
     var engineering = [OrgNode nodeWithName:@"Engineering"],
-    marketing = [OrgNode nodeWithName:@"Marketing"];
+        marketing = [OrgNode nodeWithName:@"Marketing"];
 
     var webTeam = [OrgNode nodeWithName:@"Web Team"],
-    backendTeam = [OrgNode nodeWithName:@"Backend Team"];
+        backendTeam = [OrgNode nodeWithName:@"Backend Team"];
 
     [engineering setChildren:[CPMutableArray arrayWithObjects:webTeam, backendTeam]];
 
     var dev1 = [OrgNode nodeWithName:@"Francisco"],
-    dev2 = [OrgNode nodeWithName:@"Ross"];
+        dev2 = [OrgNode nodeWithName:@"Ross"];
 
     [webTeam setChildren:[CPMutableArray arrayWithObjects:dev1, dev2]];
 
@@ -43,10 +42,21 @@
 {
     [[CPApplication alloc] init];
 
+    _observedKeyPaths = [CPMutableArray array];
     _contentArray = [self makeTestTree];
     _treeController = [[CPTreeController alloc] init];
     [_treeController setChildrenKeyPath:@"children"];
     [_treeController setContent:[_contentArray copy]];
+}
+
+- (void)tearDown
+{
+    _observedKeyPaths = nil;
+}
+
+- (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)aChange context:(id)aContext
+{
+    [_observedKeyPaths addObject:aKeyPath];
 }
 
 - (void)testInitWithContent
@@ -99,7 +109,7 @@
     [controller insertObject:newDev atArrangedObjectIndexPath:insertPath];
 
     var engineering = [[controller contentArray] objectAtIndex:0],
-    backendTeam = [[engineering children] objectAtIndex:1];
+        backendTeam = [[engineering children] objectAtIndex:1];
     [self assert:1 equals:[[backendTeam children] count] message:@"Child should be added to the model object's children array"];
     [self assert:@"Tom" equals:[[[backendTeam children] objectAtIndex:0] name]];
 }
@@ -132,7 +142,7 @@
     [controller removeObjectAtArrangedObjectIndexPath:path];
 
     var engineering = [[controller contentArray] objectAtIndex:0],
-    webTeam = [[engineering children] objectAtIndex:0];
+        webTeam = [[engineering children] objectAtIndex:0];
 
     [self assert:1 equals:[[webTeam children] count] message:@"Francisco should be removed, leaving only Ross"];
     [self assert:@"Ross" equals:[[[webTeam children] objectAtIndex:0] name]];
@@ -176,7 +186,8 @@
     // "Marketing" is now at index 0
     [self assert:[CPIndexPath indexPathWithIndex:0] equals:[controller selectionIndexPath]];
 
-    // Test behavior when AvoidsEmptySelection is NO[controller insertObject:[OrgNode nodeWithName:@"New Dept"] atArrangedObjectIndexPath:[CPIndexPath indexPathWithIndex:1]];
+    // Test behavior when AvoidsEmptySelection is NO
+    [controller insertObject:[OrgNode nodeWithName:@"New Dept"] atArrangedObjectIndexPath:[CPIndexPath indexPathWithIndex:1]];
     [controller setAvoidsEmptySelection:NO];
 
     // Reselect "Marketing" at index 0
@@ -227,6 +238,130 @@
 
     [self assert:1 equals:[selectedObjects count]];
     [self assert:@"Marketing" equals:[[selectedObjects objectAtIndex:0] name]];
+}
+
+/*
+ * New Tests for Selection Bindings, KVO, and UI Action Status
+ */
+
+- (void)testExposedBindings
+{
+    var exposedBindings = [CPTreeController exposedBindings];
+
+    [self assertTrue:[exposedBindings containsObject:@"contentArray"] message:@"contentArray should be exposed"];
+    [self assertTrue:[exposedBindings containsObject:@"sortDescriptors"] message:@"sortDescriptors should be exposed"];
+    [self assertTrue:[exposedBindings containsObject:@"selectionIndexPaths"] message:@"selectionIndexPaths should be exposed"];
+    [self assertTrue:[exposedBindings containsObject:@"selectionIndexPath"] message:@"selectionIndexPath should be exposed"];
+    [self assertTrue:[exposedBindings containsObject:@"selectedObjects"] message:@"selectedObjects should be exposed"];
+}
+
+- (void)testDetailBindingToSelectionProxyUpdatesOnSelectionChange
+{
+    var controller = [self treeController],
+        textField = [[CPTextField alloc] init];
+
+    [textField bind:@"value" toObject:controller withKeyPath:@"selection.name" options:nil];
+
+    // Select "Engineering" (index 0)
+    [controller setSelectionIndexPath:[CPIndexPath indexPathWithIndex:0]];
+    [self assert:@"Engineering" equals:[textField stringValue] message:@"Bound view should reflect root selection"];
+
+    // Select "Web Team" (index [0, 0])
+    var nestedPath = [[CPIndexPath indexPathWithIndex:0] indexPathByAddingIndex:0];
+    [controller setSelectionIndexPath:nestedPath];
+    [self assert:@"Web Team" equals:[textField stringValue] message:@"Bound view should reflect nested selection"];
+
+    // Select "Marketing" (index 1)
+    [controller setSelectionIndexPath:[CPIndexPath indexPathWithIndex:1]];
+    [self assert:@"Marketing" equals:[textField stringValue] message:@"Bound view should reflect changed selection"];
+}
+
+- (void)testDetailBindingUpdatesOnSetContent
+{
+    var controller = [self treeController],
+        textField = [[CPTextField alloc] init];
+
+    [textField bind:@"value" toObject:controller withKeyPath:@"selection.name" options:nil];
+
+    // Select "Engineering"
+    [controller setSelectionIndexPath:[CPIndexPath indexPathWithIndex:0]];
+    [self assert:@"Engineering" equals:[textField stringValue]];
+
+    // Replace content
+    var newDept = [OrgNode nodeWithName:@"Design Dept"];
+    [controller setContent:[CPMutableArray arrayWithObject:newDept]];
+
+    // Detail binding should update to the preserved selection or new root
+    [self assert:@"Design Dept" equals:[textField stringValue] message:@"Detail binding must update when content changes"];
+}
+
+- (void)testSelectedObjectsKVOTriggeredOnContentChange
+{
+    var controller = [self treeController];
+    [controller setSelectionIndexPath:[CPIndexPath indexPathWithIndex:0]];
+
+    [controller addObserver:self forKeyPath:@"selectedObjects" options:0 context:nil];
+
+    // Set new content
+    var newDept = [OrgNode nodeWithName:@"Operations"];
+    [controller setContent:[CPMutableArray arrayWithObject:newDept]];
+
+    [self assertTrue:[_observedKeyPaths containsObject:@"selectedObjects"] message:@"selectedObjects KVO notification must fire when content changes"];
+
+    [controller removeObserver:self forKeyPath:@"selectedObjects"];
+}
+
+- (void)testCanInsertDependsOnEditable
+{
+    var controller = [self treeController];
+
+    [controller addObserver:self forKeyPath:@"canInsert" options:0 context:nil];
+
+    [controller setEditable:YES];
+    [self assertTrue:[controller canInsert]];
+
+    [_observedKeyPaths removeAllObjects];
+
+    [controller setEditable:NO];
+    [self assertFalse:[controller canInsert] message:@"canInsert should be NO when editable is NO"];
+    [self assertTrue:[_observedKeyPaths containsObject:@"canInsert"] message:@"canInsert KVO must fire when editable changes"];
+
+    [controller removeObserver:self forKeyPath:@"canInsert"];
+}
+
+- (void)testCanAddChildAndCanInsertChildDependOnEditableAndSelection
+{
+    var controller = [self treeController];
+    [controller setEditable:YES];
+
+    [controller addObserver:self forKeyPath:@"canAddChild" options:0 context:nil];
+    [controller addObserver:self forKeyPath:@"canInsertChild" options:0 context:nil];
+
+    // Empty selection -> canAddChild/canInsertChild should be NO
+    [controller setSelectionIndexPaths:[CPArray array]];
+    [self assertFalse:[controller canAddChild]];
+    [self assertFalse:[controller canInsertChild]];
+
+    [_observedKeyPaths removeAllObjects];
+
+    // Select an item -> canAddChild/canInsertChild should become YES
+    [controller setSelectionIndexPath:[CPIndexPath indexPathWithIndex:0]];
+    [self assertTrue:[controller canAddChild]];
+    [self assertTrue:[controller canInsertChild]];
+    [self assertTrue:[_observedKeyPaths containsObject:@"canAddChild"] message:@"canAddChild KVO should fire on selection change"];
+    [self assertTrue:[_observedKeyPaths containsObject:@"canInsertChild"] message:@"canInsertChild KVO should fire on selection change"];
+
+    [_observedKeyPaths removeAllObjects];
+
+    // Set editable to NO -> canAddChild/canInsertChild should become NO
+    [controller setEditable:NO];
+    [self assertFalse:[controller canAddChild]];
+    [self assertFalse:[controller canInsertChild]];
+    [self assertTrue:[_observedKeyPaths containsObject:@"canAddChild"] message:@"canAddChild KVO should fire when editable changes"];
+    [self assertTrue:[_observedKeyPaths containsObject:@"canInsertChild"] message:@"canInsertChild KVO should fire when editable changes"];
+
+    [controller removeObserver:self forKeyPath:@"canAddChild"];
+    [controller removeObserver:self forKeyPath:@"canInsertChild"];
 }
 
 @end

@@ -82,18 +82,26 @@
 - (void)test_objectAtIndex_
 {
     var arrayClass = [[self class] arrayClass],
-        array = [arrayClass array];
+        array = [arrayClass array],
+        e;
 
-    [self assertThrows:function () { [array objectAtIndex:-1] }];
-    [self assertThrows:function () { [array objectAtIndex:0] }];
+    e = [self assertThrows:function () { [array objectAtIndex:-1] }];
+    [self assert:CPRangeException equals:[e name]];
+
+    e = [self assertThrows:function () { [array objectAtIndex:0] }];
+    [self assert:CPRangeException equals:[e name]];
 
     var array = [arrayClass arrayWithObjects:0, 1, 2];
 
-    [self assertThrows:function () { [array objectAtIndex:-1] }];
+    e = [self assertThrows:function () { [array objectAtIndex:-1] }];
+    [self assert:CPRangeException equals:[e name]];
+
     [self assert:[array objectAtIndex:0] same:0];
     [self assert:[array objectAtIndex:1] same:1];
     [self assert:[array objectAtIndex:2] same:2];
-    [self assertThrows:function () { [array objectAtIndex:3] }];
+
+    e = [self assertThrows:function () { [array objectAtIndex:3] }];
+    [self assert:CPRangeException equals:[e name]];
 }
 
 - (void)test_objectsAtIndexes_
@@ -104,20 +112,29 @@
     }
 
     var arrayClass = [[self class] arrayClass],
-        array = [arrayClass array];
+        array = [arrayClass array],
+        e;
 
-    [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(0, 1)] }];
+    e = [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(0, 1)] }];
+    [self assert:CPRangeException equals:[e name]];
 
     var array = [arrayClass arrayWithObjects:0, 1, 2];
 
     [self assert:[array objectsAtIndexes:rangeIndexes(0, 1)] equals:[0]];
     [self assert:[array objectsAtIndexes:rangeIndexes(0, 2)] equals:[0, 1]];
     [self assert:[array objectsAtIndexes:rangeIndexes(0, 3)] equals:[0, 1, 2]];
-    [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(0, 4)] }];
+
+    e = [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(0, 4)] }];
+    [self assert:CPRangeException equals:[e name]];
+
     [self assert:[array objectsAtIndexes:rangeIndexes(1, 1)] equals:[1]];
     [self assert:[array objectsAtIndexes:rangeIndexes(1, 2)] equals:[1, 2]];
-    [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(1, 3)] }];
-    [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(3, 1)] }];
+
+    e = [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(1, 3)] }];
+    [self assert:CPRangeException equals:[e name]];
+
+    e = [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(3, 1)] }];
+    [self assert:CPRangeException equals:[e name]];
 }
 
 - (void)test_indexOfObject_
@@ -829,7 +846,7 @@
 - (id)objectAtIndex:(CPUInteger)anIndex
 {
     if (anIndex < 0 || anIndex >= [self count])
-        throw "range error";
+        [CPException raise:CPRangeException reason:"index (" + anIndex + ") beyond bounds (" + [self count] + ")"];
 
     return array[anIndex];
 }

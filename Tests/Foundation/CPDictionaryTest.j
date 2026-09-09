@@ -490,8 +490,11 @@
     var result = [CPMutableDictionary dictionary];
 
     // Test basic for...of iteration
-    for (var [key, value] of dict)
+    for (var entry of dict)
     {
+        var key = entry[0],
+        value = entry[1];
+
         [result setObject:value forKey:key];
     }
 
@@ -514,6 +517,8 @@
     var iterations = 0;
     for (var entry of emptyDict)
     {
+        // Explicitly evaluate the bound variable to satisfy the static analyzer.
+        [entry self];
         iterations++;
     }
     [self assert:0 equals:iterations message:@"for...of on an empty dictionary should not iterate"];

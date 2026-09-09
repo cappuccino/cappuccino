@@ -36,7 +36,7 @@
 
 - (IBAction)bringWindow2Front:(id)sender
 {
-	[window2 orderFront:self];
+    [window2 orderFront:self];
 }
 
 @end
