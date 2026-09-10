@@ -109,28 +109,31 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
 }
 
 /*!
-    Returns a CPDate initialized with a date and time specified by the given
-    string in international date format YYYY-MM-DD HH:MM:SS ±HHMM (e.g.
-    2009-11-17 17:52:04 +0000).
+	 Returns a CPDate initialized with a date and time specified by the given
+	 string in international date format YYYY-MM-DD HH:MM:SS ±HHMM (e.g.
+	 2009-11-17 17:52:04 +0000).
+
+	 The offset is taken verbatim from the string; the result does not depend
+	 on the host's local time zone or any CPTimeZone data. Callers needing an
+	 offset derived from an actual IANA zone (e.g. accounting for DST) are
+	 responsible for resolving it themselves via the browser's Intl API before
+	 constructing the string.
 */
 - (id)initWithString:(CPString)description
 {
-    var format = new RegExp("(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) ([-+])(\\d{2})(\\d{2})"),
-        d = description.match(new RegExp(format));
+	var format = new RegExp("(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) ([-+])(\\d{2})(\\d{2})"),
+	d = description.match(format);
 
-    if (!d || d.length != 10)
-        [CPException raise:CPInvalidArgumentException
-                    reason:"initWithString: the string must be in YYYY-MM-DD HH:MM:SS ±HHMM format"];
+	if (!d || d.length != 10)
+		[CPException raise:CPInvalidArgumentException
+					reason:"initWithString: the string must be in YYYY-MM-DD HH:MM:SS ±HHMM format"];
 
-    var date = new Date(d[1], d[2] - 1, d[3]),
-        timeZoneOffset =  (Number(d[8]) * 60 + Number(d[9])) * (d[7] === '-' ? 1 : -1);
+	var timeZoneOffsetMinutes = (Number(d[8]) * 60 + Number(d[9])) * (d[7] === '-' ? 1 : -1),
+	utcMillis = Date.UTC(Number(d[1]), Number(d[2]) - 1, Number(d[3]),
+						 Number(d[4]), Number(d[5]), Number(d[6]));
 
-    date.setHours(d[4]);
-    date.setMinutes(d[5]);
-    date.setSeconds(d[6]);
-
-    self = new Date(date.getTime() + (timeZoneOffset - date.getTimezoneOffset()) * 60 * 1000);
-    return self;
+	self = new Date(utcMillis + timeZoneOffsetMinutes * 60 * 1000);
+	return self;
 }
 
 - (CPTimeInterval)timeIntervalSinceDate:(CPDate)anotherDate

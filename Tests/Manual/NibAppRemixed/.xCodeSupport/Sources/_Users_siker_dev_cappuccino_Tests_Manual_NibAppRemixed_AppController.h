@@ -1,7 +1,0 @@
-
-@interface AppController : NSObject
-{
-
-}
-
-@end

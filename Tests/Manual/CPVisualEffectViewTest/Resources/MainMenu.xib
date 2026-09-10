@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8173.3" systemVersion="15A244d" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1050" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8173.3"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -35,7 +36,7 @@
                 <outlet property="window" destination="371" id="7nV-eB-gc9"/>
             </connections>
         </customObject>
-        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" frameAutosaveName="" animationBehavior="default" id="Knp-iN-1Ch">
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="" animationBehavior="default" id="Knp-iN-1Ch">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="100" y="722" width="181" height="67"/>
@@ -47,7 +48,6 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="d7y-fN-bjP">
                         <rect key="frame" x="18" y="25" width="145" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <animations/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Click me to loose focus" id="eKf-xB-TJp">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -55,7 +55,6 @@
                         </textFieldCell>
                     </textField>
                 </subviews>
-                <animations/>
             </view>
             <point key="canvasLocation" x="146.5" y="111.5"/>
         </window>
@@ -70,17 +69,15 @@
                     <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" id="WJS-cx-TuA">
                         <rect key="frame" x="0.0" y="0.0" width="834" height="545"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <animations/>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="background" id="asL-vN-HqR"/>
                     </imageView>
-                    <visualEffectView appearanceType="vibrantLight" blendingMode="behindWindow" state="followsWindowActiveState" id="ESw-Mt-ZuS">
+                    <visualEffectView appearanceType="vibrantLight" blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" id="ESw-Mt-ZuS">
                         <rect key="frame" x="87" y="276" width="215" height="254"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="drG-ES-sje">
                                 <rect key="frame" x="18" y="110" width="179" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" id="f01-C4-Fhw">
                                     <font key="font" metaFont="systemBold"/>
                                     <string key="title">Vibrant Light
@@ -92,7 +89,6 @@ Follows Key Window</string>
                             <button verticalHuggingPriority="750" id="8UZ-6M-ugH">
                                 <rect key="frame" x="67" y="13" width="81" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <buttonCell key="cell" type="push" title="Switch" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="71z-vZ-VTZ">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -102,16 +98,14 @@ Follows Key Window</string>
                                 </connections>
                             </button>
                         </subviews>
-                        <animations/>
                     </visualEffectView>
-                    <visualEffectView appearanceType="vibrantLight" blendingMode="behindWindow" state="active" id="ofy-S7-rCf">
+                    <visualEffectView appearanceType="vibrantLight" blendingMode="behindWindow" material="appearanceBased" state="active" id="ofy-S7-rCf">
                         <rect key="frame" x="310" y="276" width="215" height="254"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="YjR-CK-WeJ">
                                 <rect key="frame" x="18" y="110" width="179" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" id="0ce-BE-k8L">
                                     <font key="font" metaFont="systemBold"/>
                                     <string key="title">Vibrant Light
@@ -123,7 +117,6 @@ Active</string>
                             <button verticalHuggingPriority="750" id="rsT-2n-bIX">
                                 <rect key="frame" x="67" y="13" width="81" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <buttonCell key="cell" type="push" title="Switch" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="W6T-T4-5FW">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -133,16 +126,14 @@ Active</string>
                                 </connections>
                             </button>
                         </subviews>
-                        <animations/>
                     </visualEffectView>
-                    <visualEffectView appearanceType="vibrantDark" blendingMode="behindWindow" state="active" id="X1I-rR-BOD">
+                    <visualEffectView appearanceType="vibrantDark" blendingMode="behindWindow" material="appearanceBased" state="active" id="X1I-rR-BOD">
                         <rect key="frame" x="310" y="14" width="215" height="254"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="eA4-la-pyn">
                                 <rect key="frame" x="18" y="110" width="179" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" id="16n-7u-pbb">
                                     <font key="font" metaFont="systemBold"/>
                                     <string key="title">Vibrant Dark
@@ -154,7 +145,6 @@ Active</string>
                             <button verticalHuggingPriority="750" id="PbX-4k-5V8">
                                 <rect key="frame" x="67" y="13" width="81" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <buttonCell key="cell" type="push" title="Switch" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="2is-6O-MxB">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -164,16 +154,14 @@ Active</string>
                                 </connections>
                             </button>
                         </subviews>
-                        <animations/>
                     </visualEffectView>
-                    <visualEffectView appearanceType="vibrantLight" blendingMode="behindWindow" state="inactive" id="GcT-Xr-eCB">
+                    <visualEffectView appearanceType="vibrantLight" blendingMode="behindWindow" material="appearanceBased" state="inactive" id="GcT-Xr-eCB">
                         <rect key="frame" x="533" y="276" width="215" height="254"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="V0w-c6-mp4">
                                 <rect key="frame" x="18" y="110" width="179" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" id="Apx-Ho-9sT">
                                     <font key="font" metaFont="systemBold"/>
                                     <string key="title">Vibrant Light
@@ -185,7 +173,6 @@ Inactive</string>
                             <button verticalHuggingPriority="750" id="22y-1h-QPQ">
                                 <rect key="frame" x="67" y="13" width="81" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <buttonCell key="cell" type="push" title="Switch" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="skm-xt-1Tf">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -195,16 +182,14 @@ Inactive</string>
                                 </connections>
                             </button>
                         </subviews>
-                        <animations/>
                     </visualEffectView>
-                    <visualEffectView appearanceType="vibrantDark" blendingMode="behindWindow" state="inactive" id="kpQ-qE-hkl">
+                    <visualEffectView appearanceType="vibrantDark" blendingMode="behindWindow" material="appearanceBased" state="inactive" id="kpQ-qE-hkl">
                         <rect key="frame" x="533" y="14" width="215" height="254"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="x9a-RT-bcS">
                                 <rect key="frame" x="18" y="110" width="179" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" id="b25-G9-HOg">
                                     <font key="font" metaFont="systemBold"/>
                                     <string key="title">Vibrant Dark
@@ -216,7 +201,6 @@ Inactive</string>
                             <button verticalHuggingPriority="750" id="xCh-Ei-U1y">
                                 <rect key="frame" x="67" y="13" width="81" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <buttonCell key="cell" type="push" title="Switch" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="GUB-yD-5Mr">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -226,16 +210,14 @@ Inactive</string>
                                 </connections>
                             </button>
                         </subviews>
-                        <animations/>
                     </visualEffectView>
-                    <visualEffectView appearanceType="vibrantDark" blendingMode="behindWindow" state="followsWindowActiveState" id="xEz-ym-SoC">
+                    <visualEffectView appearanceType="vibrantDark" blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" id="xEz-ym-SoC">
                         <rect key="frame" x="87" y="14" width="215" height="254"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="oRu-hV-Fpl">
                                 <rect key="frame" x="18" y="110" width="179" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" id="ff0-As-8T5">
                                     <font key="font" metaFont="systemBold"/>
                                     <string key="title">Vibrant Dark
@@ -247,7 +229,6 @@ Follows Key Window</string>
                             <button verticalHuggingPriority="750" id="lT3-jQ-tgV">
                                 <rect key="frame" x="67" y="13" width="81" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <animations/>
                                 <buttonCell key="cell" type="push" title="Switch" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="sNu-BP-dFg">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -257,10 +238,8 @@ Follows Key Window</string>
                                 </connections>
                             </button>
                         </subviews>
-                        <animations/>
                     </visualEffectView>
                 </subviews>
-                <animations/>
             </view>
             <point key="canvasLocation" x="713" y="374.5"/>
         </window>

@@ -1,0 +1,94 @@
+/*
+ * Jakefile
+ * ArrayControllerTest
+ *
+ * Created by Alexander Ljungberg on April 2, 2011.
+ * Copyright 2011, WireLoad All rights reserved.
+ */
+
+var ENV = process.env,
+    cp = require("child_process"),
+    fs = require("fs"),
+    path = require("path"),
+    task = JAKE.task,
+    FileList = JAKE.FileList,
+    app = CAPPUCCINO.Jake.applicationtask.app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
+
+app ("ArrayControllerTest", function(task)
+{
+    task.setBuildIntermediatesPath(path.join("Build", "ArrayControllerTest.build", configuration));
+    task.setBuildPath(path.join("Build", configuration));
+
+    task.setProductName("ArrayControllerTest");
+    task.setIdentifier("com.yourcompany.ArrayControllerTest");
+    task.setVersion("1.0");
+    task.setAuthor("WireLoad");
+    task.setEmail("feedback @nospam@ yourcompany.com");
+    task.setSummary("ArrayControllerTest");
+    task.setSources((new FileList("**/*.j")).exclude(path.join("Build", "**")));
+    task.setResources(new FileList("Resources/**"));
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
+    task.setNib2CibFlags("-R Resources/");
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g");
+    else
+        task.setCompilerFlags("-O");
+});
+
+task ("default", ["ArrayControllerTest"], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"]);
+
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("run", ["debug"], function()
+{
+    cp.execSync(["open", path.join("Build", "Debug", "ArrayControllerTest", "index.html")].join(" "), { stdio: "inherit" });
+});
+
+task ("run-release", ["release"], function()
+{
+    cp.execSync(["open", path.join("Build", "Release", "ArrayControllerTest", "index.html")].join(" "), { stdio: "inherit" });
+});
+
+task ("deploy", ["release"], function()
+{
+    fs.mkdirSync(path.join("Build", "Deployment", "ArrayControllerTest"), { recursive: true });
+    cp.execSync(["press", "-f", path.join("Build", "Release", "ArrayControllerTest"), path.join("Build", "Deployment", "ArrayControllerTest")].join(" "), { stdio: "inherit" });
+    printResults("Deployment")
+});
+
+task ("desktop", ["release"], function()
+{
+    fs.mkdirSync(path.join("Build", "Desktop", "ArrayControllerTest"), { recursive: true });
+    require("@objj/nativehost").buildNativeHost(path.join("Build", "Release", "ArrayControllerTest"), path.join("Build", "Desktop", "ArrayControllerTest", "ArrayControllerTest.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    cp.execSync([path.join("Build", "Desktop", "ArrayControllerTest", "ArrayControllerTest.app", "Contents", "MacOS", "NativeHost"), "-i"].join(" "), { stdio: "inherit" });
+});
+
+function printResults(configuration)
+{
+    console.log("----------------------------");
+    console.log(configuration+" app built at path: "+path.join("Build", configuration, "ArrayControllerTest"));
+    console.log("----------------------------");
+}

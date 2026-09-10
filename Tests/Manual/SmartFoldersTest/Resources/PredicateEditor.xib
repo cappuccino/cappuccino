@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="AppController">
+            <connections>
+                <outlet property="folderNameField" destination="24" id="70"/>
+                <outlet property="predicateEditor" destination="47" id="69"/>
+                <outlet property="predicateSheet" destination="1" id="43"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application">
+            <connections>
+                <outlet property="delegate" destination="-2" id="36"/>
+            </connections>
+        </customObject>
+        <window title="Predicate Editor" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="1" userLabel="Sheet">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" documentModal="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="571" y="431" width="553" height="292"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1028"/>
+            <value key="minSize" type="size" width="200" height="150"/>
+            <value key="maxSize" type="size" width="700" height="500"/>
+            <view key="contentView" id="2">
+                <rect key="frame" x="0.0" y="0.0" width="553" height="292"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <textField verticalHuggingPriority="750" id="24">
+                        <rect key="frame" x="67" y="255" width="466" height="22"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="25">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" id="26">
+                        <rect key="frame" x="17" y="257" width="45" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Name:" id="27">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="44">
+                        <rect key="frame" x="20" y="53" width="512" height="184"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <clipView key="contentView" id="uIJ-yq-wHM">
+                            <rect key="frame" x="1" y="1" width="510" height="182"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                            <subviews>
+                                <predicateEditor verticalHuggingPriority="750" nestingMode="simple" rowHeight="32" id="47">
+                                    <rect key="frame" x="0.0" y="0.0" width="510" height="182"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <rowTemplates>
+                                        <predicateEditorRowTemplate rowType="compound" id="48">
+                                            <popUpMenus>
+                                                <menu id="60">
+                                                    <items>
+                                                        <menuItem title="Any" state="on" id="63">
+                                                            <integer key="representedObject" value="2"/>
+                                                        </menuItem>
+                                                        <menuItem title="All" id="64">
+                                                            <integer key="representedObject" value="1"/>
+                                                        </menuItem>
+                                                    </items>
+                                                </menu>
+                                                <menu id="61">
+                                                    <items>
+                                                        <menuItem title="of the following are true" state="on" id="62"/>
+                                                    </items>
+                                                </menu>
+                                            </popUpMenus>
+                                        </predicateEditorRowTemplate>
+                                        <predicateEditorRowTemplate rowType="simple" id="49">
+                                            <array key="leftExpressionObject">
+                                                <expression type="keyPath">
+                                                    <string key="keyPath">firstName</string>
+                                                </expression>
+                                                <expression type="keyPath">
+                                                    <string key="keyPath">lastName</string>
+                                                </expression>
+                                            </array>
+                                            <integer key="rightExpressionObject" value="700"/>
+                                            <comparisonPredicateOptions key="options" caseInsensitive="YES" diacriticInsensitive="YES"/>
+                                            <popUpMenus>
+                                                <menu id="50">
+                                                    <items>
+                                                        <menuItem title="firstName" state="on" id="57">
+                                                            <expression key="representedObject" type="keyPath">
+                                                                <string key="keyPath">firstName</string>
+                                                            </expression>
+                                                        </menuItem>
+                                                        <menuItem title="lastName" id="58">
+                                                            <expression key="representedObject" type="keyPath">
+                                                                <string key="keyPath">lastName</string>
+                                                            </expression>
+                                                        </menuItem>
+                                                    </items>
+                                                </menu>
+                                                <menu id="51">
+                                                    <items>
+                                                        <menuItem title="begins with" state="on" id="78">
+                                                            <integer key="representedObject" value="8"/>
+                                                        </menuItem>
+                                                        <menuItem title="ends with" id="79">
+                                                            <integer key="representedObject" value="9"/>
+                                                        </menuItem>
+                                                        <menuItem title="contains" id="80">
+                                                            <integer key="representedObject" value="99"/>
+                                                        </menuItem>
+                                                    </items>
+                                                </menu>
+                                            </popUpMenus>
+                                        </predicateEditorRowTemplate>
+                                        <predicateEditorRowTemplate rowType="simple" id="85">
+                                            <array key="leftExpressionObject">
+                                                <expression type="keyPath">
+                                                    <string key="keyPath">age</string>
+                                                </expression>
+                                            </array>
+                                            <integer key="rightExpressionObject" value="300"/>
+                                            <popUpMenus>
+                                                <menu id="86">
+                                                    <items>
+                                                        <menuItem title="age" state="on" id="98">
+                                                            <expression key="representedObject" type="keyPath">
+                                                                <string key="keyPath">age</string>
+                                                            </expression>
+                                                        </menuItem>
+                                                    </items>
+                                                </menu>
+                                                <menu id="90">
+                                                    <items>
+                                                        <menuItem title="is" state="on" id="94">
+                                                            <integer key="representedObject" value="4"/>
+                                                        </menuItem>
+                                                        <menuItem title="is less than" id="99">
+                                                            <integer key="representedObject" value="0"/>
+                                                        </menuItem>
+                                                        <menuItem title="is greater than" id="100">
+                                                            <integer key="representedObject" value="2"/>
+                                                        </menuItem>
+                                                    </items>
+                                                </menu>
+                                            </popUpMenus>
+                                        </predicateEditorRowTemplate>
+                                    </rowTemplates>
+                                </predicateEditor>
+                            </subviews>
+                            <color key="backgroundColor" white="0.91000002619999998" alpha="1" colorSpace="calibratedWhite"/>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="46">
+                            <rect key="frame" x="-100" y="-100" width="360" height="15"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="45">
+                            <rect key="frame" x="491" y="1" width="15" height="73"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
+                    <button tag="1" imageHugsTitle="YES" id="65">
+                        <rect key="frame" x="481" y="20" width="51" height="25"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="square" title="OK" bezelStyle="shadowlessSquare" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="66">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeSheet:" target="-2" id="68"/>
+                        </connections>
+                    </button>
+                    <button imageHugsTitle="YES" id="81">
+                        <rect key="frame" x="395" y="20" width="76" height="25"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="square" title="Cancel" bezelStyle="shadowlessSquare" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="82">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeSheet:" target="-2" id="84"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+        </window>
+    </objects>
+</document>

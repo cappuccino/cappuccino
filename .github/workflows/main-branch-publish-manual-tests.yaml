@@ -26,6 +26,8 @@ jobs:
 
       - name: Use Node.js
         uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
 
       - run: echo "${PWD}/dist/cappuccino/bin" >> $GITHUB_PATH
       - run: echo "${PWD}/dist/objective-j/bin" >> $GITHUB_PATH

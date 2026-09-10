@@ -6,19 +6,19 @@
  * Copyright 2012, SlevenBits Ltd All rights reserved.
  */
 
-var ENV = require("system").env,
-    FILE = require("file"),
-    JAKE = require("jake"),
+var ENV = process.env,
+    cp = require("child_process"),
+    fs = require("fs"),
+    path = require("path"),
     task = JAKE.task,
     FileList = JAKE.FileList,
-    app = require("cappuccino/jake").app,
-    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
-    OS = require("os");
+    app = CAPPUCCINO.Jake.applicationtask.app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
 
 app ("CPImageViewTest", function(task)
 {
-    task.setBuildIntermediatesPath(FILE.join("Build", "CPImageViewTest.build", configuration));
-    task.setBuildPath(FILE.join("Build", configuration));
+    task.setBuildIntermediatesPath(path.join("Build", "CPImageViewTest.build", configuration));
+    task.setBuildPath(path.join("Build", configuration));
 
     task.setProductName("CPImageViewTest");
     task.setIdentifier("com.yourcompany.CPImageViewTest");
@@ -26,7 +26,7 @@ app ("CPImageViewTest", function(task)
     task.setAuthor("SlevenBits Ltd");
     task.setEmail("feedback @nospam@ yourcompany.com");
     task.setSummary("CPImageViewTest");
-    task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
+    task.setSources((new FileList("**/*.j")).exclude(path.join("Build", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
@@ -58,36 +58,36 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    OS.system(["open", FILE.join("Build", "Debug", "CPImageViewTest", "index.html")]);
+    cp.execSync(["open", path.join("Build", "Debug", "CPImageViewTest", "index.html")].join(" "), { stdio: "inherit" });
 });
 
 task ("run-release", ["release"], function()
 {
-    OS.system(["open", FILE.join("Build", "Release", "CPImageViewTest", "index.html")]);
+    cp.execSync(["open", path.join("Build", "Release", "CPImageViewTest", "index.html")].join(" "), { stdio: "inherit" });
 });
 
 task ("deploy", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Deployment", "CPImageViewTest"));
-    OS.system(["press", "-f", FILE.join("Build", "Release", "CPImageViewTest"), FILE.join("Build", "Deployment", "CPImageViewTest")]);
+    fs.mkdirSync(path.join("Build", "Deployment", "CPImageViewTest"), { recursive: true });
+    cp.execSync(["press", "-f", path.join("Build", "Release", "CPImageViewTest"), path.join("Build", "Deployment", "CPImageViewTest")].join(" "), { stdio: "inherit" });
     printResults("Deployment")
 });
 
 task ("desktop", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Desktop", "CPImageViewTest"));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "CPImageViewTest"), FILE.join("Build", "Desktop", "CPImageViewTest", "CPImageViewTest.app"));
+    fs.mkdirSync(path.join("Build", "Desktop", "CPImageViewTest"), { recursive: true });
+    require("@objj/nativehost").buildNativeHost(path.join("Build", "Release", "CPImageViewTest"), path.join("Build", "Desktop", "CPImageViewTest", "CPImageViewTest.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    OS.system([FILE.join("Build", "Desktop", "CPImageViewTest", "CPImageViewTest.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+    cp.execSync([path.join("Build", "Desktop", "CPImageViewTest", "CPImageViewTest.app", "Contents", "MacOS", "NativeHost"), "-i"].join(" "), { stdio: "inherit" });
 });
 
 function printResults(configuration)
 {
-    print("----------------------------");
-    print(configuration+" app built at path: "+FILE.join("Build", configuration, "CPImageViewTest"));
-    print("----------------------------");
+    console.log("----------------------------");
+    console.log(configuration+" app built at path: "+path.join("Build", configuration, "CPImageViewTest"));
+    console.log("----------------------------");
 }

@@ -1,0 +1,75 @@
+/*
+ * Jakefile
+ * Tests/Manual
+ *
+ * Created by David Richardson, September 8, 2026
+ * Copyright 2026, David Richardson. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+var ENV = process.env,
+	task = JAKE.task,
+	cp = require("child_process"),
+	path = require("path");
+
+// Neutered standard targets to protect CI from exhaustive traversals
+task ("default", function()
+{
+	console.log("Global traversal disabled to prevent CI timeouts.");
+	console.log("Use 'npx jake batch-compile' or 'npx jake batch-compile-all' to deliberately build the suite.");
+});
+task ("build", ["default"]);
+task ("build-all", ["default"]);
+task ("debug", ["default"]);
+task ("release", ["default"]);
+
+// Safe environment management tasks
+task ("configure", function()
+{
+	var targetPath = path.join(process.cwd(), ".Frameworks");
+	cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir sh -c 'echo \"Configuring $(basename \\\"$PWD\\\")\"; ln -sfn \"$1\" Frameworks' _ '" + targetPath + "' \\;", { stdio: "inherit" });
+});
+
+task ("clean", function()
+{
+	var targetDir = ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build";
+	cp.execSync("find . -name '" + targetDir + "' -type d -prune -exec rm -rf {} +", { stdio: "inherit" });
+});
+
+task ("clobber", ["clean"], function()
+{
+	cp.execSync("find . -mindepth 2 -type l -name 'Frameworks' -exec rm -f {} +", { stdio: "inherit" });
+});
+
+// Alien targets for manual, local execution
+task ("batch-compile", function()
+{
+	cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake build \\;", { stdio: "inherit", env: ENV });
+});
+
+task ("batch-compile-all", ["batch-compile-debug", "batch-compile-release"]);
+
+task ("batch-compile-debug", function()
+{
+	ENV["CONFIGURATION"] = "Debug";
+	cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake debug \\;", { stdio: "inherit", env: ENV });
+});
+
+task ("batch-compile-release", function()
+{
+	ENV["CONFIGURATION"] = "Release";
+	cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake release \\;", { stdio: "inherit", env: ENV });
+});
