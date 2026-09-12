@@ -175,12 +175,53 @@
     [super setFrame:frame];
 }
 
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    
+    // Force a layout update because the internal buttons (_buttonUp and _buttonDown)
+    // rely on layoutSubviews to receive the new theme attributes (like HUD colors).
+    [self setNeedsLayout];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    [self setNeedsLayout];
+}
+
 /*! @ignore */
 - (void)layoutSubviews
 {
     var controlSizeThemeState = [self _controlSizeThemeState],
         aFrame = [self frame],
-        upSize = [self valueForThemeAttribute:@"up-button-size" inState:controlSizeThemeState],
+        isHUD = [self hasThemeState:CPThemeStateHUD],
+
+        // 1. Prepare Lookup States (To fetch the correct image/color from the Stepper's theme)
+        normalLookupStates = [controlSizeThemeState, CPThemeStateBordered],
+        disabledLookupStates = [controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled],
+        highlightedLookupStates = [controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted],
+
+        // 2. Prepare Target States (To tell the child buttons when to use this image)
+        normalTargetStates = [CPThemeStateBordered, CPButtonStateBezelStyleRoundRect],
+        disabledTargetStates = [CPThemeStateBordered, CPThemeStateDisabled, CPButtonStateBezelStyleRoundRect],
+        highlightedTargetStates = [CPThemeStateBordered, CPThemeStateHighlighted, CPButtonStateBezelStyleRoundRect];
+
+    // If we are in HUD mode, add CPThemeStateHUD to both lookup and target arrays
+    if (isHUD)
+    {
+        // Lookup: Ask theme for "HUD" version of the stepper arrows
+        normalLookupStates.push(CPThemeStateHUD);
+        disabledLookupStates.push(CPThemeStateHUD);
+        highlightedLookupStates.push(CPThemeStateHUD);
+
+        // Target: Tell the child buttons "Use this when you are in HUD state"
+        normalTargetStates.push(CPThemeStateHUD);
+        disabledTargetStates.push(CPThemeStateHUD);
+        highlightedTargetStates.push(CPThemeStateHUD);
+    }
+
+    var upSize = [self valueForThemeAttribute:@"up-button-size" inState:controlSizeThemeState],
         downSize = [self valueForThemeAttribute:@"down-button-size" inState:controlSizeThemeState],
         upFrame = CGRectMake(0, 0, upSize.width, upSize.height),
         downFrame = CGRectMake(0, upSize.height, downSize.width, downSize.height);
@@ -188,12 +229,31 @@
     [_buttonUp setFrame:upFrame];
     [_buttonDown setFrame:downFrame];
 
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:[controlSizeThemeState, CPThemeStateBordered]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPButtonStateBezelStyleRoundRect]];
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateDisabled, CPButtonStateBezelStyleRoundRect]];
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateHighlighted, CPButtonStateBezelStyleRoundRect]];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:[controlSizeThemeState, CPThemeStateBordered]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPButtonStateBezelStyleRoundRect]];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateDisabled, CPButtonStateBezelStyleRoundRect]];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateHighlighted, CPButtonStateBezelStyleRoundRect]];
+    // Apply Up Button Attributes
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:normalLookupStates]
+        forThemeAttribute:@"bezel-color"
+        inStates:normalTargetStates];
+
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:disabledLookupStates]
+        forThemeAttribute:@"bezel-color"
+        inStates:disabledTargetStates];
+
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:highlightedLookupStates]
+        forThemeAttribute:@"bezel-color"
+        inStates:highlightedTargetStates];
+
+    // Apply Down Button Attributes
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:normalLookupStates]
+        forThemeAttribute:@"bezel-color"
+        inStates:normalTargetStates];
+
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:disabledLookupStates]
+        forThemeAttribute:@"bezel-color"
+        inStates:disabledTargetStates];
+
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:highlightedLookupStates]
+        forThemeAttribute:@"bezel-color"
+        inStates:highlightedTargetStates];
 }
 
 - (void)_sizeToFit

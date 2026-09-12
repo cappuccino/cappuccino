@@ -39,6 +39,22 @@
         };
 }
 
+- (id)initWithFrame:(CGRect)aFrame styleMask:(unsigned)aStyleMask
+{
+    self = [super initWithFrame:aFrame styleMask:aStyleMask];
+
+    if (self)
+    {
+        // Check if the mask contains the HUD flag
+        if (aStyleMask & CPHUDBackgroundWindowMask)
+        {
+            [self setBackgroundColor:[CPColor blackColor]];
+        }
+    }
+
+    return self;
+}
+
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
 {
     // We don't ever want to show the resize indicator.

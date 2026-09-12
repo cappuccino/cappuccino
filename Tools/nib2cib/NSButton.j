@@ -211,8 +211,8 @@ var NSButtonIsBorderedMask = 0x00800000,
         }
     }
 
-    _keyEquivalent = [cell keyEquivalent];
-    _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
+    [self setKeyEquivalent:[cell keyEquivalent]];
+    [self setKeyEquivalentModifierMask:[cell keyEquivalentModifierMask]];
     _imageDimsWhenDisabled = YES;
 
     _allowsMixedState = [cell allowsMixedState];
