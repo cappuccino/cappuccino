@@ -74282,7 +74282,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTextView.jt;236217;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPTextContainer.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;235999;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
+p;12;CPTextView.jt;236433;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPTextContainer.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;236215;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
 ;
 ;
 ;
@@ -77064,7 +77064,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("isDeadKey:"), function
         e.preventDefault();
         var nativeClipboard = (e.originalEvent || e).clipboardData;
         var currentFirstResponder = ((___r1 = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["keyWindow"] || _objj_forward)(CPApp, "keyWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["firstResponder"] || _objj_forward)(___r1, "firstResponder"));
-        if ((currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["isRichText"] || _objj_forward)(currentFirstResponder, "isRichText")))
+        if ((currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(currentFirstResponder, "respondsToSelector:", sel_getUid("isRichText"))) && (currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["isRichText"] || _objj_forward)(currentFirstResponder, "isRichText")))
         {
             var richtext = nativeClipboard.getData('text/rtf');
             if (richtext)
