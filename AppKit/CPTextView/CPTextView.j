@@ -3298,7 +3298,7 @@ var _CPCopyPlaceholder = '-';
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
         // Can we accept richtext? Then this is our preference (fixme: shift key to force plain text paste)
-        if ([currentFirstResponder isRichText])
+        if ([currentFirstResponder respondsToSelector:@selector(isRichText)] && [currentFirstResponder isRichText])
         {
             var richtext = nativeClipboard.getData('text/rtf');
 
