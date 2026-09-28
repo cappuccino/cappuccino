@@ -40072,7 +40072,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPCoder"])]);
 }
-p;13;CPTextField.jt;133090;@STATIC;1.0;i;11;CPControl.ji;17;CPStringDrawing.ji;17;CPCompatibility.ji;8;CPText.ji;20;CPWindow_Constants.ji;21;_CPImageAndTextView.jt;132946;objj_executeFile("CPControl.j", YES);objj_executeFile("CPStringDrawing.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPImageAndTextView.j", YES);{var the_protocol = objj_allocateProtocol("CPTextFieldDelegate");
+p;13;CPTextField.jt;134724;@STATIC;1.0;i;11;CPControl.ji;17;CPStringDrawing.ji;17;CPCompatibility.ji;8;CPText.ji;20;CPWindow_Constants.ji;21;_CPImageAndTextView.jt;134580;objj_executeFile("CPControl.j", YES);objj_executeFile("CPStringDrawing.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPImageAndTextView.j", YES);{var the_protocol = objj_allocateProtocol("CPTextFieldDelegate");
 var aProtocol = objj_getProtocol("CPControlTextEditingDelegate");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPTextFieldDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -40126,6 +40126,20 @@ CPTextFieldHandleBlur = function(anEvent, ownerRef)
     (ownerRef)(nil);
     ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
     var ___r1;
+}
+_CPTextFieldDetachInputElement = function(anElement)
+{
+    if (!anElement || !anElement.parentNode)
+        return;
+    var wasResigning = CPTextFieldInputResigning;
+    CPTextFieldInputResigning = YES;
+    try {
+        anElement.parentNode.removeChild(anElement);
+    }
+    catch(e) {
+    }
+    CPTextFieldInputResigning = wasResigning;
+    CPTextFieldInputDidBlur = NO;
 }
 {
 var the_class = objj_getClass("CPString")
@@ -40408,7 +40422,31 @@ class_addMethods(the_class, [new objj_method(sel_getUid("setControlSize:"), func
     (self.isa.method_msgSend["_setCSSStyleForInputElement"] || _objj_forward)(self, "_setCSSStyleForInputElement");
     var element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement");
     element.value = self._stringValue;
-    self._DOMElement.appendChild(element);
+    if (element.parentNode !== self._DOMElement)
+    {
+        var previousOwner = CPTextFieldInputOwner;
+        _CPTextFieldDetachInputElement(element);
+        try {
+            self._DOMElement.appendChild(element);
+        }
+        catch(e) {
+            _CPTextFieldDetachInputElement(element);
+            try {
+                self._DOMElement.appendChild(element);
+            }
+            catch(e2) {
+                (self.isa.method_msgSend["unsetThemeState:"] || _objj_forward)(self, "unsetThemeState:", CPThemeStateEditing);
+                (self.isa.method_msgSend["_updatePlaceholderState"] || _objj_forward)(self, "_updatePlaceholderState");
+                (self.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(self, "setNeedsLayout");
+                return NO;
+            }
+        }
+        if (previousOwner && previousOwner !== self)
+        {
+            (previousOwner == null ? previousOwner : (previousOwner.isa.method_msgSend["unsetThemeState:"] || _objj_forward)(previousOwner, "unsetThemeState:", CPThemeStateEditing));
+            (previousOwner == null ? previousOwner : (previousOwner.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(previousOwner, "setNeedsLayout"));
+        }
+    }
     CPTextFieldInputIsActive = YES;
     if (document.attachEvent)
     {
@@ -40577,7 +40615,13 @@ default:
     if (!CPTextFieldInputDidBlur)
         CPTextFieldBlurHandler();
     if (element.parentNode == self._DOMElement)
-        element.parentNode.removeChild(element);
+    {
+        try {
+            element.parentNode.removeChild(element);
+        }
+        catch(e) {
+        }
+    }
     CPTextFieldInputDidBlur = NO;
     CPTextFieldInputResigning = NO;
     CPTextFieldInputIsActive = NO;
