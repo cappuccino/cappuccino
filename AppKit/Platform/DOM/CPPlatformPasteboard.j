@@ -79,6 +79,8 @@ var hasEditableTarget = function(aDOMEvent)
 
     BOOL        _ignoreNativeCopyOrCutEvent;
     BOOL        _ignoreNativePastePreparation;
+
+    JSObject    _clipboardListeners;
 }
 
 - (id)init
@@ -134,37 +136,34 @@ var hasEditableTarget = function(aDOMEvent)
     {
         if (supportsNativeCopyAndPaste)
         {
-            _DOMWindow.addEventListener("beforecopy", nativeBeforeClipboardEventCallback, NO);
-            _DOMWindow.addEventListener("beforecut", nativeBeforeClipboardEventCallback, NO);
-            _DOMWindow.addEventListener("beforepaste", nativeBeforeClipboardEventCallback, NO);
-            _DOMWindow.addEventListener("copy", nativeCopyOrCutEventCallback, NO);
-            _DOMWindow.addEventListener("cut", nativeCopyOrCutEventCallback, NO);
-            _DOMWindow.addEventListener("paste", nativePasteEventCallback, NO);
+            _clipboardListeners = [
+                [_DOMWindow, "beforecopy",  nativeBeforeClipboardEventCallback],
+                [_DOMWindow, "beforecut",   nativeBeforeClipboardEventCallback],
+                [_DOMWindow, "beforepaste", nativeBeforeClipboardEventCallback],
+                [_DOMWindow, "copy",        nativeCopyOrCutEventCallback],
+                [_DOMWindow, "cut",         nativeCopyOrCutEventCallback],
+                [_DOMWindow, "paste",       nativePasteEventCallback]
+            ];
         }
         else
         {
-            theDocument.addEventListener("beforepaste", pasteEventCallback, NO);
-            theDocument.addEventListener("beforecopy", copyEventCallback, NO);
-            theDocument.addEventListener("beforecut", copyEventCallback, NO);
+            _clipboardListeners = [
+                [theDocument, "beforepaste", pasteEventCallback],
+                [theDocument, "beforecopy",  copyEventCallback],
+                [theDocument, "beforecut",   copyEventCallback]
+            ];
         }
 
-        _DOMWindow.addEventListener("unload", function()
+        for (var i = 0; i < _clipboardListeners.length; i++)
+            _clipboardListeners[i][0].addEventListener(_clipboardListeners[i][1], _clipboardListeners[i][2], NO);
+
+        // "unload" is blocked by the permissions policy in current Chrome and prevents the
+        // back/forward cache. "pagehide" fires reliably instead. If event.persisted is true the
+        // page goes into the bfcache and may be restored, so the listeners must stay.
+        _DOMWindow.addEventListener("pagehide", function(anEvent)
         {
-            if (supportsNativeCopyAndPaste)
-            {
-                _DOMWindow.removeEventListener("beforecopy", nativeBeforeClipboardEventCallback, NO);
-                _DOMWindow.removeEventListener("beforecut", nativeBeforeClipboardEventCallback, NO);
-                _DOMWindow.removeEventListener("beforepaste", nativeBeforeClipboardEventCallback, NO);
-                _DOMWindow.removeEventListener("copy", nativeCopyOrCutEventCallback, NO);
-                _DOMWindow.removeEventListener("cut", nativeCopyOrCutEventCallback, NO);
-                _DOMWindow.removeEventListener("paste", nativePasteEventCallback, NO);
-            }
-            else
-            {
-                theDocument.removeEventListener("beforepaste", pasteEventCallback, NO);
-                theDocument.removeEventListener("beforecopy", copyEventCallback, NO);
-                theDocument.removeEventListener("beforecut", copyEventCallback, NO);
-            }
+            if (!anEvent.persisted)
+                [self _removeClipboardListeners];
         }, NO);
     }
     else
@@ -175,11 +174,24 @@ var hasEditableTarget = function(aDOMEvent)
 
 - (void)destroyDOMElements
 {
+    [self _removeClipboardListeners];
+
     var theDocument = _DOMWindow.document,
         _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
 
     _DOMBodyElement.removeChild(_DOMPasteboardElement);
     _DOMPasteboardElement = nil;
+}
+
+- (void)_removeClipboardListeners
+{
+    if (!_clipboardListeners)
+        return;
+
+    for (var i = 0; i < _clipboardListeners.length; i++)
+        _clipboardListeners[i][0].removeEventListener(_clipboardListeners[i][1], _clipboardListeners[i][2], NO);
+
+    _clipboardListeners = nil;
 }
 
 - (void)windowMaySendKeyEvent:(CPEvent)anEvent
