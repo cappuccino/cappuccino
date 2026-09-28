@@ -108,6 +108,26 @@ function CPTextFieldHandleBlur(anEvent, ownerRef)
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
+function _CPTextFieldDetachInputElement(anElement)
+{
+    if (!anElement || !anElement.parentNode)
+        return;
+
+    var wasResigning = CPTextFieldInputResigning;
+    CPTextFieldInputResigning = YES;
+
+    try
+    {
+        anElement.parentNode.removeChild(anElement);
+    }
+    catch (e)
+    {
+        // Bereits durch einen Blur-Handler entfernt – nichts zu tun.
+    }
+
+    CPTextFieldInputResigning = wasResigning;
+    CPTextFieldInputDidBlur = NO;
+}
 
 @implementation CPString (CPTextFieldAdditions)
 
@@ -661,7 +681,42 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var element = [self _inputElement];
     element.value = _stringValue;
-    _DOMElement.appendChild(element);
+
+    if (element.parentNode !== _DOMElement)
+    {
+        var previousOwner = CPTextFieldInputOwner;
+
+        // Otherwise Chrome will fire the blur during appendChild (NotFoundError).
+        _CPTextFieldDetachInputElement(element);
+
+        try
+        {
+            _DOMElement.appendChild(element);
+        }
+        catch (e)
+        {
+            // Race with the Blur-Handler: retry once and yield silently.
+            _CPTextFieldDetachInputElement(element);
+
+            try
+            {
+                _DOMElement.appendChild(element);
+            }
+            catch (e2)
+            {
+                [self unsetThemeState:CPThemeStateEditing];
+                [self _updatePlaceholderState];
+                [self setNeedsLayout];
+                return NO;
+            }
+        }
+
+        if (previousOwner && previousOwner !== self)
+        {
+            [previousOwner unsetThemeState:CPThemeStateEditing];
+            [previousOwner setNeedsLayout];
+        }
+    }
 
     CPTextFieldInputIsActive = YES;
 
@@ -907,7 +962,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         CPTextFieldBlurHandler();
 
     if (element.parentNode == _DOMElement)
-        element.parentNode.removeChild(element);
+    {
+        try
+        {
+            element.parentNode.removeChild(element);
+        }
+        catch (e)
+        {
+            // Bereits durch den Blur-Handler entfernt.
+        }
+    }
 
     // Previosly, we unflagged CPTextFieldInputDidBlur and CPTextFieldInputResigning before
     // the call to removeChild. This resulted in DOM exceptions in Chrome under certain conditions.
