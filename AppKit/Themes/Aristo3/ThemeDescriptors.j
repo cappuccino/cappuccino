@@ -408,6 +408,24 @@ var themedButtonValues                      = nil,
                                                                     @"box-sizing": @"border-box"
                                                                     }],
 
+   rrDefaultButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                         @"background-color": A3ColorBorderBlue,
+                                                         @"border-color": A3ColorBorderBlue,
+                                                         @"border-style": @"solid",
+                                                         @"border-width": @"1px",
+                                                         @"border-radius": @"5px",
+                                                         @"box-sizing": @"border-box"
+                                                         }],
+
+    rrDefaultHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                         @"background-color": A3ColorBorderBlueHighlighted,
+                                                         @"border-color": A3ColorBorderBlueHighlighted,
+                                                         @"border-style": @"solid",
+                                                         @"border-width": @"1px",
+                                                         @"border-radius": @"5px",
+                                                         @"box-sizing": @"border-box"
+                                                         }],
+
     // IB Style : Recessed (CPButtonStateBezelStyleRecessed) - Bordered
     recessedButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                @"background-color": A3ColorTransparent,
@@ -911,15 +929,24 @@ var themedButtonValues                      = nil,
      [@"min-size",                      CGSizeMake(0.0, 18.0),                  [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered]],
      [@"max-size",                      CGSizeMake(-1.0, 18.0),                 [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered]],
 
-     [@"content-inset",                 CGInsetMake(1.0, 7.0, 1.0, 7.0),       [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
+     [@"content-inset",                 CGInsetMake(1.0, 7.0, 1.0, 7.0),        [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
      [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -2.0, 0.0, -1.0),       [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
      [@"min-size",                      CGSizeMake(0.0, 16.0),                  [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
      [@"max-size",                      CGSizeMake(-1.0, 16.0),                 [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
 
-     [@"content-inset",                 CGInsetMake(1.0, 7.0, 1.0, 7.0),       [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateControlSizeMini]],
+     [@"content-inset",                 CGInsetMake(1.0, 7.0, 1.0, 7.0),        [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateControlSizeMini]],
      [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -5.0, 0.0, -3.0),       [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateControlSizeMini]],
      [@"min-size",                      CGSizeMake(0.0, 14.0),                  [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateControlSizeMini]],
      [@"max-size",                      CGSizeMake(-1.0, 14.0),                 [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateControlSizeMini]],
+
+     [@"bezel-color", rrDefaultButtonCssColor,            [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateKeyWindow]],
+     [@"bezel-color", rrDefaultHighlightedButtonCssColor, [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateHighlighted]],
+     [@"bezel-color", rrDefaultHighlightedButtonCssColor, [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateKeyWindow, CPThemeStateHighlighted]],
+     [@"bezel-color", rrDisabledButtonCssColor,           [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateKeyWindow, CPThemeStateDisabled]],
+
+     [@"text-color",  A3CPColorDefaultText,               [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateKeyWindow]],
+     [@"text-color",  A3CPColorActiveText,                [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateDefault]],   // nicht-key: dunkler Text auf transparentem Grund
+     [@"text-color",  A3CPColorInactiveText,              [CPButtonStateBezelStyleRoundRect, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateKeyWindow, CPThemeStateDisabled]],
 
      // IB Style : Recessed (CPButtonStateBezelStyleRecessed) - Bordered
      [@"bezel-color",                   recessedButtonCssColor,                 [CPButtonStateBezelStyleRecessed, CPThemeStateBordered]],
@@ -1128,6 +1155,10 @@ var themedButtonValues                      = nil,
      [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDisabled]],
 
+     [@"bezel-color", hudButtonCssColor,            [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateKeyWindow]],
+     [@"bezel-color", hudHighlightedButtonCssColor, [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateKeyWindow, CPThemeStateHighlighted]],
+     [@"text-color",  [CPColor whiteColor],         [CPButtonStateBezelStyleRoundRect, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateKeyWindow]],
+    
      // 6. Textured Square (Standard "Textured" button in IB)
      [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleTextured, CPThemeStateHUD, CPThemeStateBordered]],
      [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleTextured, CPThemeStateHUD, CPThemeStateBordered, CPThemeStateHighlighted]],
