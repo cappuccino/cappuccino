@@ -82471,7 +82471,7 @@ CPMenuWindowShadowStyle = 1;
 CPPanelWindowShadowStyle = 2;
 CPCustomWindowShadowStyle = 3;
 CPWindowConstrainToScreen = YES;
-p;12;CPPlatform.jt;8633;@STATIC;1.0;I;21;Foundation/CPObject.jt;8588;objj_executeFile("Foundation/CPObject.j", NO);
+p;12;CPPlatform.jt;8959;@STATIC;1.0;I;21;Foundation/CPObject.jt;8914;objj_executeFile("Foundation/CPObject.j", NO);
 {var the_class = objj_allocateClassPair(CPObject, "CPBasePlatform"),
 meta_class = the_class.isa;objj_registerClassPair(the_class);
 class_addMethods(meta_class, [new objj_method(sel_getUid("bootstrap"), function $CPBasePlatform__bootstrap(self, _cmd)
@@ -82542,11 +82542,21 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
             if ((CPApp == null ? CPApp : (CPApp.isa.method_msgSend["_sendDelegateApplicationShouldTerminate"] || _objj_forward)(CPApp, "_sendDelegateApplicationShouldTerminate")) != CPTerminateNow)
                 return (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["_sendDelegateApplicationShouldTerminateMessage"] || _objj_forward)(CPApp, "_sendDelegateApplicationShouldTerminateMessage"));
         };
-        window.onunload =         function()
+        var terminateApplication =         function()
         {
             (self.isa.method_msgSend["closeAllPlatformWindows"] || _objj_forward)(self, "closeAllPlatformWindows");
             (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["terminate:"] || _objj_forward)(CPApp, "terminate:", nil));
         };
+        if ("onpagehide" in window)
+        {
+            window.addEventListener("pagehide",             function(anEvent)
+            {
+                if (!anEvent.persisted)
+                    terminateApplication();
+            }, NO);
+        }
+        else
+            window.onunload = terminateApplication;
     }
 }
 
