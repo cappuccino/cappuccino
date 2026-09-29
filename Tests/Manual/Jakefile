@@ -21,15 +21,15 @@
  */
 
 var ENV = process.env,
-	task = JAKE.task,
-	cp = require("child_process"),
-	path = require("path");
+    task = JAKE.task,
+    cp = require("child_process"),
+    path = require("path");
 
 // Neutered standard targets to protect CI from exhaustive traversals
 task ("default", function()
 {
-	console.log("Global traversal disabled to prevent CI timeouts.");
-	console.log("Use 'npx jake batch-compile' or 'npx jake batch-compile-all' to deliberately build the suite.");
+    console.log("Global traversal disabled to prevent CI timeouts.");
+    console.log("Use 'npx jake batch-compile' or 'npx jake batch-compile-all' to deliberately build the suite.");
 });
 task ("build", ["default"]);
 task ("build-all", ["default"]);
@@ -39,37 +39,38 @@ task ("release", ["default"]);
 // Safe environment management tasks
 task ("configure", function()
 {
-	var targetPath = path.join(process.cwd(), ".Frameworks");
-	cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir sh -c 'echo \"Configuring $(basename \\\"$PWD\\\")\"; ln -sfn \"$1\" Frameworks' _ '" + targetPath + "' \\;", { stdio: "inherit" });
+    var targetPath = path.join(process.cwd(), ".Frameworks");
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir sh -c 'echo \"Configuring $(basename \\\"$PWD\\\")\"; ln -sfn \"$1\" Frameworks' _ '" + targetPath + "' \\;", { stdio: "inherit" });
 });
 
 task ("clean", function()
 {
-	var targetDir = ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build";
-	cp.execSync("find . -name '" + targetDir + "' -type d -prune -exec rm -rf {} +", { stdio: "inherit" });
+    var targetDir = ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build";
+    cp.execSync("find . -name '" + targetDir + "' -type d -prune -exec rm -rf {} +", { stdio: "inherit" });
 });
 
 task ("clobber", ["clean"], function()
 {
-	cp.execSync("find . -mindepth 2 -type l -name 'Frameworks' -exec rm -f {} +", { stdio: "inherit" });
+    cp.execSync("find . -mindepth 2 -type l -name 'Frameworks' -exec rm -f {} +", { stdio: "inherit" });
+     cp.execSync("rm -rf .Frameworks", { stdio: "inherit" });   
 });
 
 // Alien targets for manual, local execution
 task ("batch-compile", function()
 {
-	cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake build \\;", { stdio: "inherit", env: ENV });
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake build \\;", { stdio: "inherit", env: ENV });
 });
 
 task ("batch-compile-all", ["batch-compile-debug", "batch-compile-release"]);
 
 task ("batch-compile-debug", function()
 {
-	ENV["CONFIGURATION"] = "Debug";
-	cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake debug \\;", { stdio: "inherit", env: ENV });
+    ENV["CONFIGURATION"] = "Debug";
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake debug \\;", { stdio: "inherit", env: ENV });
 });
 
 task ("batch-compile-release", function()
 {
-	ENV["CONFIGURATION"] = "Release";
-	cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake release \\;", { stdio: "inherit", env: ENV });
+    ENV["CONFIGURATION"] = "Release";
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake release \\;", { stdio: "inherit", env: ENV });
 });
