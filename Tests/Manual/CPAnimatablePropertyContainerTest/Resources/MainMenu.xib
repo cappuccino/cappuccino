@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24765" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1050" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24765"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -305,11 +305,11 @@
                         <rect key="frame" x="17" y="650" width="446" height="93"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="Y96-tu-Vvl">
-                            <rect key="frame" x="4" y="5" width="438" height="73"/>
+                            <rect key="frame" x="0.0" y="0.0" width="446" height="81"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <button tag="1000" id="700">
-                                    <rect key="frame" x="16" y="45" width="128" height="18"/>
+                                    <rect key="frame" x="16" y="53" width="128" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="Has Subviews" bezelStyle="regularSquare" imagePosition="left" inset="2" id="701">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -320,7 +320,7 @@
                                     </connections>
                                 </button>
                                 <button tag="1001" id="696">
-                                    <rect key="frame" x="156" y="45" width="128" height="18"/>
+                                    <rect key="frame" x="156" y="53" width="128" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="Custom Layout" bezelStyle="regularSquare" imagePosition="left" inset="2" id="697">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -331,7 +331,7 @@
                                     </connections>
                                 </button>
                                 <button tag="1002" id="698">
-                                    <rect key="frame" x="300" y="45" width="128" height="18"/>
+                                    <rect key="frame" x="300" y="53" width="128" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="Custom Drawing" bezelStyle="regularSquare" imagePosition="left" inset="2" id="699">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -342,7 +342,7 @@
                                     </connections>
                                 </button>
                                 <button tag="1003" id="821">
-                                    <rect key="frame" x="35" y="4" width="154" height="18"/>
+                                    <rect key="frame" x="35" y="12" width="154" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="With Custom Drawing" bezelStyle="regularSquare" imagePosition="left" inset="2" id="822">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -353,7 +353,7 @@
                                     </connections>
                                 </button>
                                 <button tag="1004" id="824">
-                                    <rect key="frame" x="35" y="25" width="128" height="18"/>
+                                    <rect key="frame" x="35" y="33" width="128" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="With Autosize" bezelStyle="regularSquare" imagePosition="left" inset="2" id="825">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -370,11 +370,11 @@
                         <rect key="frame" x="17" y="582" width="446" height="57"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="c75-do-92a">
-                            <rect key="frame" x="4" y="5" width="438" height="37"/>
+                            <rect key="frame" x="0.0" y="0.0" width="446" height="45"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <button tag="1002" id="704">
-                                    <rect key="frame" x="300" y="9" width="128" height="18"/>
+                                    <rect key="frame" x="300" y="17" width="128" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="Custom Drawing" bezelStyle="regularSquare" imagePosition="left" inset="2" id="707">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -385,7 +385,7 @@
                                     </connections>
                                 </button>
                                 <button tag="1001" id="703">
-                                    <rect key="frame" x="155" y="9" width="128" height="18"/>
+                                    <rect key="frame" x="155" y="17" width="128" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="Custom Layout" bezelStyle="regularSquare" imagePosition="left" inset="2" id="708">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -396,7 +396,7 @@
                                     </connections>
                                 </button>
                                 <button tag="1000" id="705">
-                                    <rect key="frame" x="16" y="9" width="128" height="18"/>
+                                    <rect key="frame" x="16" y="17" width="128" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="Has Subviews" bezelStyle="regularSquare" imagePosition="left" inset="2" id="706">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>

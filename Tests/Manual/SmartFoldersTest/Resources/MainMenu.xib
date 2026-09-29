@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24765" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24765"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application">
+        <customObject id="-3" userLabel="Application" customClass="NSObject">
             <connections>
                 <outlet property="delegate" destination="821" id="822"/>
             </connections>
@@ -28,7 +28,7 @@
                             <scrollView horizontalLineScroll="20" horizontalPageScroll="10" verticalLineScroll="20" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" id="836">
                                 <rect key="frame" x="0.0" y="0.0" width="180" height="684"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES" flexibleMaxY="YES"/>
-                                <clipView key="contentView" id="IEs-Kf-ACR">
+                                <clipView key="contentView" drawsBackground="NO" id="IEs-Kf-ACR">
                                     <rect key="frame" x="1" y="1" width="178" height="682"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
@@ -58,7 +58,7 @@
                                             </connections>
                                         </outlineView>
                                     </subviews>
-                                    <color key="backgroundColor" red="0.7549452686" green="0.83289561349999996" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                    <nil key="backgroundColor"/>
                                 </clipView>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="838">
                                     <rect key="frame" x="-100" y="-100" width="238" height="15"/>
@@ -95,18 +95,18 @@
                                         <rect key="frame" x="0.0" y="0.0" width="956" height="653"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <clipView key="contentView" id="5bk-CP-eYj">
-                                            <rect key="frame" x="1" y="29" width="954" height="623"/>
+                                            <rect key="frame" x="1" y="1" width="954" height="651"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" alternatingRowBackgroundColors="YES" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" headerView="895" id="894">
-                                                    <rect key="frame" x="0.0" y="0.0" width="983" height="623"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="954" height="623"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <tableViewGridLines key="gridStyleMask" vertical="YES"/>
                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
-                                                        <tableColumn identifier="firstName" width="335" minWidth="40" maxWidth="1000" id="896">
+                                                        <tableColumn identifier="firstName" width="306" minWidth="40" maxWidth="1000" id="896">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="FirstName">
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
@@ -167,7 +167,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="895">
-                                            <rect key="frame" x="0.0" y="0.0" width="983" height="28"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="954" height="28"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
@@ -199,8 +199,8 @@
                 <string>age</string>
             </declaredKeys>
             <connections>
-                <binding destination="821" name="contentArray" keyPath="tableArray" id="949"/>
                 <binding destination="821" name="filterPredicate" keyPath="filterPredicate" id="958"/>
+                <binding destination="821" name="contentArray" keyPath="tableArray" id="949"/>
             </connections>
         </arrayController>
     </objects>

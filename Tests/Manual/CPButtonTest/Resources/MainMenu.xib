@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24765" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24765"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -279,11 +279,11 @@
                         <rect key="frame" x="17" y="16" width="222" height="114"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="Lxr-8q-OWd">
-                            <rect key="frame" x="4" y="5" width="214" height="94"/>
+                            <rect key="frame" x="0.0" y="0.0" width="222" height="102"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <button tag="2" id="1230">
-                                    <rect key="frame" x="16" y="68" width="137" height="18"/>
+                                    <rect key="frame" x="16" y="76" width="137" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPPushInCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1231">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -294,7 +294,7 @@
                                     </connections>
                                 </button>
                                 <button tag="1" id="1232">
-                                    <rect key="frame" x="16" y="48" width="152" height="18"/>
+                                    <rect key="frame" x="16" y="56" width="152" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPContentsCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1233">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -305,7 +305,7 @@
                                     </connections>
                                 </button>
                                 <button tag="4" id="1234">
-                                    <rect key="frame" x="16" y="28" width="172" height="18"/>
+                                    <rect key="frame" x="16" y="36" width="172" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeGrayCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1235">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -316,7 +316,7 @@
                                     </connections>
                                 </button>
                                 <button tag="8" id="1236">
-                                    <rect key="frame" x="16" y="8" width="218" height="18"/>
+                                    <rect key="frame" x="16" y="16" width="218" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeBackgroundCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1237">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -333,11 +333,11 @@
                         <rect key="frame" x="241" y="16" width="222" height="114"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="rZ3-3d-f31">
-                            <rect key="frame" x="4" y="5" width="214" height="94"/>
+                            <rect key="frame" x="0.0" y="0.0" width="222" height="102"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <button tag="2" id="1242">
-                                    <rect key="frame" x="16" y="68" width="137" height="18"/>
+                                    <rect key="frame" x="16" y="76" width="137" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPPushInCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1243">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -348,7 +348,7 @@
                                     </connections>
                                 </button>
                                 <button tag="1" id="1241">
-                                    <rect key="frame" x="16" y="48" width="152" height="18"/>
+                                    <rect key="frame" x="16" y="56" width="152" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPContentsCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1244">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -359,7 +359,7 @@
                                     </connections>
                                 </button>
                                 <button tag="4" id="1240">
-                                    <rect key="frame" x="16" y="28" width="172" height="18"/>
+                                    <rect key="frame" x="16" y="36" width="172" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeGrayCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1245">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -370,7 +370,7 @@
                                     </connections>
                                 </button>
                                 <button tag="8" id="1239">
-                                    <rect key="frame" x="16" y="8" width="218" height="18"/>
+                                    <rect key="frame" x="16" y="16" width="218" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeBackgroundCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1246">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
