@@ -10,16 +10,39 @@ const utilsFile = ObjectiveJ.utils.file;
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
+// -----------------------------------------------------------------------------
+// Build Orchestration
+// -----------------------------------------------------------------------------
+
+var isMasterBuild = process.env.CAPP_INNER_BUILD !== "1";
+
 task ("build", function() {
     childProcess.execSync(["mkdir", "-p", $BUILD_DIR].map(utilsFile.enquote).join(" "), {stdio: 'inherit'});
     childProcess.execSync(['ln', '-sf', '"$PWD"/node_modules', utilsFile.enquote($BUILD_DIR)].join(" "), {stdio: 'inherit'});
 });
 
-["build", "clean", "clobber"].forEach(function(aTaskName)
+task ("build", function() {
+    if (isMasterBuild) {
+        // Intercept top-level 'jake build' execution.
+        // Spawn the complete pipeline to avoid circular dependency resolution 
+        // with common.jake's internal targets.
+        process.env.CAPP_INNER_BUILD = "1";
+        childProcess.execSync("jake CommonJS build-manual-tests-symlinks", {stdio: 'inherit'});
+    } else {
+        // Execute the baseline compilation step when invoked as a prerequisite
+        subjake(subprojects, "build");
+    }
+});
+
+["clean", "clobber"].forEach(function(aTaskName)
 {
     task (aTaskName, function()
     {
+        // Traverse standard framework/tool targets
         subjake(subprojects, aTaskName);
+        
+        // Explicitly target the manual tests for wipe operations
+        subjake(["Tests/Manual"], aTaskName);
     });
 });
 
@@ -43,10 +66,32 @@ filedir ($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, ["debug", "release"], function(
     utilsFile.cp_r(path.join($BUILD_DIR, "Debug", "BlendKit"), path.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "BlendKit"));
 });
 
-task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release"], function() {
+task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS,$BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release"], function() {
 });
 
-// Install everything in the dist directory
+task ("build-manual-tests-symlinks", function()
+{
+    var fwDir = path.join("Tests", "Manual", ".Frameworks");
+    fs.mkdirSync(fwDir, { recursive: true });
+
+    var frameworks = [
+        { src: path.join($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, "Objective-J"), name: "Objective-J" },
+        { src: path.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "Foundation"), name: "Foundation" },
+        { src: path.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "AppKit"), name: "AppKit" },
+        { src: path.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "BlendKit"), name: "BlendKit" }
+    ];
+
+    frameworks.forEach(function(fw) {
+        var dest = path.join(fwDir, fw.name);
+        utilsFile.rm_rf(dest);
+        fs.symlinkSync(path.resolve(fw.src), dest, 'dir');
+    });
+});
+
+// -----------------------------------------------------------------------------
+// NPM Distribution & Legacy Artifacts
+// -----------------------------------------------------------------------------
+
 task ("dist", ["CommonJS"], function()
 {
     installCopy($BUILD_CJS_OBJECTIVE_J, false);
@@ -59,8 +104,6 @@ task ("sudo-dist", ["CommonJS"], function()
     installCopy($BUILD_CJS_CAPPUCCINO, true);
 });
 
-// Install everything in the dist directory (task dist) and
-// create symlinks to the 'dist' binaries in the global 'npm prefix' path
 task ("install", ["dist"], function()
 {
     installGlobal($BUILD_CJS_OBJECTIVE_J, false);
@@ -133,7 +176,6 @@ task ("documentation-no-frame", function()
 
 task ("docset", function()
       {
-    // First, check if docsetutil is available. This is only required for this task.
     if (!executableExists("docsetutil")) {
         console.error("\nError: 'docsetutil' is not installed, but it's required to build the docset.".red);
         console.log("This tool is no longer bundled with Xcode, but can be installed with Homebrew:");
@@ -141,7 +183,6 @@ task ("docset", function()
         process.exit(1);
     }
 
-    // If the tool exists, proceed with the build.
     generateDocs(true, true);
 });
 
@@ -167,7 +208,6 @@ function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
         return;
     }
 
-    // --- Temporary Directory Setup ---
     const projectRoot = process.cwd();
     const tempDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'capp-docs-')));
     console.log(`Using temporary directory for build: ${tempDir}`);
@@ -175,7 +215,6 @@ function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
     try {
         var documentationDir = path.join(projectRoot, "Tools", "Documentation");
 
-        // --- Pre-processing ---
         console.log("Pre-processing source files...");
         const preProcessorsDir = path.join(documentationDir, "preprocess");
         var processors = fs.readdirSync(preProcessorsDir).sort();
@@ -185,7 +224,6 @@ function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
             childProcess.execSync(`"${processorPath}" "${projectRoot}"`, { stdio: 'inherit', cwd: tempDir });
         }
 
-        // --- Doxygen Execution ---
         const doxygenConfigFile = path.join(documentationDir, "Cappuccino.doxygen");
         const doxygenTempConfig = path.join(tempDir, "Cappuccino.doxygen");
         fs.copyFileSync(doxygenConfigFile, doxygenTempConfig);
@@ -202,8 +240,6 @@ function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
         const htmlOutputDir = path.join(generatedDocsRoot, "html");
         const makefilePath = path.join(htmlOutputDir, "Makefile");
 
-        // --- Makefile Execution (ONLY for docset) ---
-        // For a standard 'jake docs', we do NOT run make.
         if (buildDocset && fs.existsSync(makefilePath)) {
             console.log("Patching Makefile to use 'docsetutil' from PATH...");
             childProcess.execSync(`sed -i.bak 's|"\\$(XCODE_INSTALL_DIR)"/usr/bin/docsetutil|docsetutil|' "${makefilePath}"`);
@@ -212,7 +248,6 @@ function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
             childProcess.execSync('make', { stdio: 'inherit', cwd: htmlOutputDir });
         }
 
-        // --- Post-processing ---
         console.log("Post-processing generated documentation...");
         const postProcessorsDir = path.join(documentationDir, "postprocess");
         processors = fs.readdirSync(postProcessorsDir).sort();
@@ -222,14 +257,12 @@ function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
             childProcess.execSync(`"${processorPath}" "${projectRoot}" "${htmlOutputDir}"`, { stdio: 'inherit', cwd: tempDir });
         }
 
-        // --- Final Installation ---
         if (fs.existsSync(generatedDocsRoot)) {
             if (fs.existsSync($DOCUMENTATION_BUILD)) {
                 fs.rmSync($DOCUMENTATION_BUILD, { recursive: true, force: true });
             }
             fs.renameSync(generatedDocsRoot, $DOCUMENTATION_BUILD);
 
-            // Manually copy the custom CSS file
             const finalHtmlPath = path.join($DOCUMENTATION_BUILD, "html");
             const customCSS = path.join(documentationDir, "doxygen.css");
             if (fs.existsSync(customCSS)) {
@@ -245,7 +278,6 @@ function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
         console.error("An error occurred during documentation generation:", e.message);
         process.exit(1);
     } finally {
-        // --- Cleanup ---
         console.log(`Cleaning up temporary directory: ${tempDir}`);
         fs.rmSync(tempDir, { recursive: true, force: true });
     }
@@ -255,14 +287,13 @@ function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
 
 task ("downloads", ["starter_download"]);
 
-$STARTER_README                 = path.join('Tools', 'READMEs', 'STARTER-README');
-$STARTER_BOOTSTRAP              = 'bootstrap.sh';
+$STARTER_README                 = path.join('Tools', 'READMEs', 'STARTER-README');$STARTER_BOOTSTRAP              = 'bootstrap.sh';
 $STARTER_DOWNLOAD               = path.join($BUILD_DIR, 'Cappuccino', 'Starter');
 $STARTER_DOWNLOAD_APPLICATION   = path.join($STARTER_DOWNLOAD, 'NewApplication');
 $STARTER_DOWNLOAD_README        = path.join($STARTER_DOWNLOAD, 'README');
 $STARTER_DOWNLOAD_BOOTSTRAP     = path.join($STARTER_DOWNLOAD, 'bootstrap.sh');
 
-task ("starter_download", [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README, $STARTER_DOWNLOAD_BOOTSTRAP, "documentation"], function()
+task ("starter_download", [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README,$STARTER_DOWNLOAD_BOOTSTRAP, "documentation"], function()
 {
     if (FILE.exists($DOCUMENTATION_BUILD))
     {
@@ -277,16 +308,12 @@ filedir ($STARTER_DOWNLOAD_APPLICATION, ["CommonJS"], function()
     FILE.mkdirs($STARTER_DOWNLOAD);
 
     if (OS.system(["capp", "gen", $STARTER_DOWNLOAD_APPLICATION, "-t", "Application", "--noconfig"]))
-        // FIXME: uncomment this: we get conversion errors
-        OS.exit(1); // rake abort if ($? != 0)
-        //{}
-    // No tools means no objective-j gem
-    // FILE.rm(FILE.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
+        OS.exit(1); 
 });
 
 filedir ($STARTER_DOWNLOAD_README, [$STARTER_README], function()
 {
-    utilsFile.cp($STARTER_README, $STARTER_DOWNLOAD_README);
+    utilsFile.cp($STARTER_README,$STARTER_DOWNLOAD_README);
 });
 
 filedir ($STARTER_DOWNLOAD_BOOTSTRAP, [$STARTER_BOOTSTRAP], function()
@@ -302,7 +329,6 @@ task ("deploy", ["downloads", "demos"], function()
 {
     var cappuccino_output_path = path.join($BUILD_DIR, 'Cappuccino');
 
-    // zip the starter pack
     var starter_zip_output = path.join($BUILD_DIR, 'Cappuccino', 'Starter.zip');
     utilsFile.rm_rf(starter_zip_output);
 
@@ -363,14 +389,12 @@ task ("demos", function()
         return !demo.excluded();
     }).forEach(function(demo)
     {
-        // copy frameworks into the demos
         utilsFile.cp_r(path.join($STARTER_DOWNLOAD_APPLICATION, "Frameworks"), path.join(demo.path(), "Frameworks"));
         utilsFile.rm_rf(path.join(demo.path(), "Frameworks", "Debug"));
 
         var outputPath = demo.name().replace(/\s/g, "-") + ".zip";
         OS.system("cd " + OS.enquote(FILE.dirname(demo.path()))+" && zip -ry -8 " + OS.enquote(outputPath) + " " + OS.enquote(FILE.basename(demo.path())));
 
-        // remove the frameworks
         utilsFile.rm_rf(path.join(demo.path(), "Frameworks"));
     });
 });
