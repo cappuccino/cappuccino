@@ -3122,7 +3122,7 @@ _isNumberType = function(value)
     else
         return NO;
 }
-p;17;CPDateFormatter.jt;116482;@STATIC;1.0;i;9;CPArray.ji;8;CPDate.ji;10;CPString.ji;13;CPFormatter.ji;12;CPTimeZone.ji;10;CPLocale.jt;116371;objj_executeFile("CPArray.j", YES);objj_executeFile("CPDate.j", YES);objj_executeFile("CPString.j", YES);objj_executeFile("CPFormatter.j", YES);objj_executeFile("CPTimeZone.j", YES);objj_executeFile("CPLocale.j", YES);{var the_typedef = objj_allocateTypeDef("CPDateFormatterStyle");
+p;17;CPDateFormatter.jt;116162;@STATIC;1.0;i;9;CPArray.ji;8;CPDate.ji;10;CPString.ji;13;CPFormatter.ji;12;CPTimeZone.ji;10;CPLocale.jt;116051;objj_executeFile("CPArray.j", YES);objj_executeFile("CPDate.j", YES);objj_executeFile("CPString.j", YES);objj_executeFile("CPFormatter.j", YES);objj_executeFile("CPTimeZone.j", YES);objj_executeFile("CPLocale.j", YES);{var the_typedef = objj_allocateTypeDef("CPDateFormatterStyle");
 objj_registerTypeDef(the_typedef);
 }CPDateFormatterNoStyle = 0;
 CPDateFormatterShortStyle = 1;
@@ -3135,7 +3135,7 @@ objj_registerTypeDef(the_typedef);
 CPDateFormatterBehavior10_0 = 1000;
 CPDateFormatterBehavior10_4 = 1040;
 var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
-    relativeDateFormating,
+    relativeDateFormatting,
     patternStringTokens;
 var _separatorsCharacterSet = nil;
 
@@ -3562,7 +3562,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowNaturalLanguage"),
         relativeWord,
         result;
     if (!aDate)
-        return;
+        return nil;
     aDate = (aDate == null ? aDate : (aDate.isa.method_msgSend["copy"] || _objj_forward)(aDate, "copy"));
     (aDate == null ? aDate : (aDate.isa.method_msgSend["_dateWithTimeZone:"] || _objj_forward)(aDate, "_dateWithTimeZone:", self._timeZone));
     if (self._dateFormat)
@@ -3606,7 +3606,7 @@ default:
     if ((self.isa.method_msgSend["doesRelativeDateFormatting"] || _objj_forward)(self, "doesRelativeDateFormatting"))
     {
         var language = ((___r1 = self._locale), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectForKey:"] || _objj_forward)(___r1, "objectForKey:", CPLocaleLanguageCode)),
-            relativeWords = (relativeDateFormating == null ? relativeDateFormating : (relativeDateFormating.isa.method_msgSend["valueForKey:"] || _objj_forward)(relativeDateFormating, "valueForKey:", language));
+            relativeWords = (relativeDateFormatting == null ? relativeDateFormatting : (relativeDateFormatting.isa.method_msgSend["valueForKey:"] || _objj_forward)(relativeDateFormatting, "valueForKey:", language));
         for (var i = 1; i < (relativeWords == null ? relativeWords : (relativeWords.isa.method_msgSend["count"] || _objj_forward)(relativeWords, "count")); i = i + 2)
         {
             var date = (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date");
@@ -3931,7 +3931,7 @@ default:
                 result = ABS(parseInt(hours)) + result;
                 while ((result == null ? result : (result.isa.method_msgSend["length"] || _objj_forward)(result, "length")) < 4)
                     result = "0" + result;
-                if (seconds > 0)
+                if (seconds >= 0)
                     result = "+" + result;
                 else
                     result = "-" + result;
@@ -4187,7 +4187,7 @@ default:
 ,["CPDate","CPString","CPString"]), new objj_method(sel_getUid("_dateFromTokens:dateComponents:"), function $CPDateFormatter___dateFromTokens_dateComponents_(self, _cmd, tokens, dateComponents)
 {
     var timeZoneseconds = ((___r1 = self._timeZone), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["secondsFromGMT"] || _objj_forward)(___r1, "secondsFromGMT")),
-        dateArray = [2000, 01, 01, 00, 00, 00, "+0000"],
+        dateArray = [2000, 1, 1, 0, 0, 0],
         isPM = NO,
         dayOfYear,
         dayIndexInWeek,
@@ -4463,13 +4463,11 @@ default:
                     timeZoneseconds = (self.isa.method_msgSend["_secondsFromTimeZoneDefaultFormatString:"] || _objj_forward)(self, "_secondsFromTimeZoneDefaultFormatString:", dateComponent);
                 if (!timeZoneseconds)
                     return nil;
-                timeZoneseconds = timeZoneseconds + 60 * 60;
                 break;
             case "Z":
                 timeZoneseconds = (self.isa.method_msgSend["_secondsFromTimeZoneDefaultFormatString:"] || _objj_forward)(self, "_secondsFromTimeZoneDefaultFormatString:", dateComponent);
                 if (!timeZoneseconds)
                     return nil;
-                timeZoneseconds = timeZoneseconds + 60 * 60;
                 break;
             case "v":
                 if (length <= 3)
@@ -4480,7 +4478,6 @@ default:
                     timeZoneseconds = (self.isa.method_msgSend["_secondsFromTimeZoneDefaultFormatString:"] || _objj_forward)(self, "_secondsFromTimeZoneDefaultFormatString:", dateComponent);
                 if (!timeZoneseconds)
                     return nil;
-                timeZoneseconds = timeZoneseconds + 60 * 60;
                 break;
             case "V":
                 if (length <= 3)
@@ -4491,7 +4488,6 @@ default:
                     timeZoneseconds = (self.isa.method_msgSend["_secondsFromTimeZoneDefaultFormatString:"] || _objj_forward)(self, "_secondsFromTimeZoneDefaultFormatString:", dateComponent);
                 if (!timeZoneseconds)
                     return nil;
-                timeZoneseconds = timeZoneseconds + 60 * 60;
                 break;
 default:
                 CPLog.warn("No pattern found for " + token);
@@ -4528,10 +4524,13 @@ default:
         return nil;
     if (isPM)
         dateArray[3] += 12;
-    if (isNaN(parseInt(dateArray[0])) || isNaN(parseInt(dateArray[1])) || isNaN(parseInt(dateArray[2])) || isNaN(parseInt(dateArray[3])) || isNaN(parseInt(dateArray[4])) || isNaN(parseInt(dateArray[5])) || isNaN(parseInt(dateArray[6])))
+    if (isNaN(parseInt(dateArray[0])) || isNaN(parseInt(dateArray[1])) || isNaN(parseInt(dateArray[2])) || isNaN(parseInt(dateArray[3])) || isNaN(parseInt(dateArray[4])) || isNaN(parseInt(dateArray[5])))
         return nil;
-    var dateResult = ((___r1 = (CPDate.isa.method_msgSend["alloc"] || _objj_forward)(CPDate, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithString:"] || _objj_forward)(___r1, "initWithString:", (CPString.isa.method_msgSend["stringWithFormat:"] || _objj_forward)(CPString, "stringWithFormat:", "%04d-%02d-%02d %02d:%02d:%02d %s", dateArray[0], dateArray[1], dateArray[2], dateArray[3], dateArray[4], dateArray[5], dateArray[6])));
-    dateResult.setSeconds(dateResult.getSeconds() - timeZoneseconds + 60 * 60);
+    var utcTimestamp = Date.UTC(dateArray[0], dateArray[1] - 1, dateArray[2], dateArray[3], dateArray[4], dateArray[5]),
+        kCFAbsoluteTimeIntervalSince1970 = 978307200.0,
+        interval = utcTimestamp / 1000.0 - kCFAbsoluteTimeIntervalSince1970,
+        dateResult = (CPDate.isa.method_msgSend["dateWithTimeIntervalSinceReferenceDate:"] || _objj_forward)(CPDate, "dateWithTimeIntervalSinceReferenceDate:", interval);
+    dateResult.setSeconds(dateResult.getSeconds() - timeZoneseconds);
     return dateResult;
     var ___r1;
 }
@@ -4566,7 +4565,7 @@ default:
         result = aTimeZoneFormatString.match(new RegExp(format)),
         seconds = 0;
     if (!result)
-        return nil;
+        return 0;
     seconds = result[3] * 60 * 60 + result[5] * 60;
     if (((___r1 = result[2]), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isEqualToString:"] || _objj_forward)(___r1, "isEqualToString:", "-")))
         seconds = -seconds;
@@ -4578,7 +4577,7 @@ default:
 {
     var timeZone = (CPTimeZone.isa.method_msgSend["_timeZoneFromString:style:locale:"] || _objj_forward)(CPTimeZone, "_timeZoneFromString:style:locale:", aTimeZoneString, aStyle, self._locale);
     if (!timeZone)
-        return nil;
+        return 0;
     return (timeZone == null ? timeZone : (timeZone.isa.method_msgSend["secondsFromGMT"] || _objj_forward)(timeZone, "secondsFromGMT"));
 }
 
@@ -4693,7 +4692,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 {
     if (self !== (CPDateFormatter.isa.method_msgSend["class"] || _objj_forward)(CPDateFormatter, "class"))
         return;
-    relativeDateFormating = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", [["demain", 1, "apr" + String.fromCharCode(233) + "s-demain", 2, "apr" + String.fromCharCode(233) + "s-apr" + String.fromCharCode(233) + "s-demain", 3, "hier", -1, "avant-hier", -2, "avant-avant-hier", -3], ["tomorrow", 1, "yesterday", -1], ["morgen", 1, "gestern", -1, String.fromCharCode(129) + "bermorgen", 2, "vorgestern", -2], []], ["fr", "en", "de", "es"]));
+    relativeDateFormatting = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", [["demain", 1, "apr" + String.fromCharCode(233) + "s-demain", 2, "apr" + String.fromCharCode(233) + "s-apr" + String.fromCharCode(233) + "s-demain", 3, "hier", -1, "avant-hier", -2, "avant-avant-hier", -3], ["tomorrow", 1, "yesterday", -1], ["morgen", 1, "gestern", -1, String.fromCharCode(129) + "bermorgen", 2, "vorgestern", -2], []], ["fr", "en", "de", "es"]));
     patternStringTokens = ["QQQ", "qqq", "QQQQ", "qqqq", "MMM", "MMMM", "LLL", "LLLL", "E", "EE", "EEE", "eee", "eeee", "eeeee", "a", "z", "zz", "zzz", "zzzz", "Z", "ZZ", "ZZZ", "ZZZZ", "ZZZZZ", "v", "vv", "vvv", "vvvv", "V", "VV", "VVV", "VVVV"];
     var ___r1;
 }
@@ -4710,6 +4709,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["CPString","CPDate","CPDateFormatterStyle","CPDateFormatterStyle"]), new objj_method(sel_getUid("dateFormatFromTemplate:options:locale:"), function $CPDateFormatter__dateFormatFromTemplate_options_locale_(self, _cmd, template, opts, locale)
 {
+    return template;
 }
 
 ,["CPString","CPString","CPUInteger","CPLocale"]), new objj_method(sel_getUid("defaultFormatterBehavior"), function $CPDateFormatter__defaultFormatterBehavior(self, _cmd)
@@ -4779,8 +4779,10 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 {
     if (!aTimeZone)
         return;
-    self.setSeconds(self.getSeconds() - (aTimeZone == null ? aTimeZone : (aTimeZone.isa.method_msgSend["secondsFromGMTForDate:"] || _objj_forward)(aTimeZone, "secondsFromGMTForDate:", self)));
-    self.setSeconds(self.getSeconds() + (aTimeZone == null ? aTimeZone : (aTimeZone.isa.method_msgSend["secondsFromGMT"] || _objj_forward)(aTimeZone, "secondsFromGMT")));
+    var targetOffset = (aTimeZone == null ? aTimeZone : (aTimeZone.isa.method_msgSend["secondsFromGMTForDate:"] || _objj_forward)(aTimeZone, "secondsFromGMTForDate:", self)),
+        localOffset = -(self.getTimezoneOffset() * 60),
+        offsetDifference = targetOffset - localOffset;
+    self.setSeconds(self.getSeconds() + offsetDifference);
 }
 
 ,["void","CPTimeZone"])]);
@@ -15002,7 +15004,7 @@ if (typeof window !== 'undefined')
         window.clearTimeout(aTimeoutID);
     };
 }
-p;12;CPTimeZone.jt;29458;@STATIC;1.0;i;10;CPObject.ji;10;CPString.ji;8;CPDate.ji;10;CPLocale.jt;29381;objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);objj_executeFile("CPDate.j", YES);objj_executeFile("CPLocale.j", YES);CPTimeZoneNameStyleStandard = 0;
+p;12;CPTimeZone.jt;22831;@STATIC;1.0;i;10;CPObject.ji;10;CPString.ji;8;CPDate.ji;10;CPLocale.jt;22754;objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);objj_executeFile("CPDate.j", YES);objj_executeFile("CPLocale.j", YES);CPTimeZoneNameStyleStandard = 0;
 CPTimeZoneNameStyleShortStandard = 1;
 CPTimeZoneNameStyleDaylightSaving = 2;
 CPTimeZoneNameStyleShortDaylightSaving = 3;
@@ -15010,72 +15012,47 @@ CPTimeZoneNameStyleGeneric = 4;
 CPTimeZoneNameStyleShortGeneric = 5;
 CPSystemTimeZoneDidChangeNotification = "CPSystemTimeZoneDidChangeNotification";
 var abbreviationDictionary,
-    timeDifferenceFromUTC,
     knownTimeZoneNames,
     defaultTimeZone,
     localTimeZone,
     systemTimeZone,
-    timeZoneDataVersion,
-    localizedName;
-abbreviationForDate = function(date)
+    timeZoneDataVersion;
+var _stdDstOffsetCache = {};
+var _nameToZoneCache = {};
+_isValidTimeZoneName = function(tzName)
 {
     try {
-        var parts = new Intl.DateTimeFormat('en-US', {timeZoneName: 'short'}).formatToParts(date),
-            tzPart = parts.filter(        function(p)
-        {
-            return p.type === 'timeZoneName';
-        })[0];
-        if (tzPart && (abbreviationDictionary == null ? abbreviationDictionary : (abbreviationDictionary.isa.method_msgSend["objectForKey:"] || _objj_forward)(abbreviationDictionary, "objectForKey:", tzPart.value)))
-            return tzPart.value;
+        new Intl.DateTimeFormat('en-US', {timeZone: tzName});
+        return YES;
     }
     catch(e) {
+        return NO;
     }
+}
+_offsetMinutesForZone = function(tzName, date)
+{
+    if (tzName === "GMT" || tzName === "UTC")
+        return 0;
     try {
-        var ianaName = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-        var currentOffset = -date.getTimezoneOffset();
-        var keys = (abbreviationDictionary == null ? abbreviationDictionary : (abbreviationDictionary.isa.method_msgSend["keyEnumerator"] || _objj_forward)(abbreviationDictionary, "keyEnumerator")),
-            key;
-        var possibleAbbrs = [];
-        while (key = (keys == null ? keys : (keys.isa.method_msgSend["nextObject"] || _objj_forward)(keys, "nextObject")))
-        {
-            if ((abbreviationDictionary == null ? abbreviationDictionary : (abbreviationDictionary.isa.method_msgSend["valueForKey:"] || _objj_forward)(abbreviationDictionary, "valueForKey:", key)) === ianaName)
-            {
-                possibleAbbrs.push(key);
-            }
-        }
-        for (var i = 0; i < possibleAbbrs.length; i++)
-        {
-            var abbr = possibleAbbrs[i];
-            if ((timeDifferenceFromUTC == null ? timeDifferenceFromUTC : (timeDifferenceFromUTC.isa.method_msgSend["valueForKey:"] || _objj_forward)(timeDifferenceFromUTC, "valueForKey:", abbr)) === currentOffset)
-            {
-                return abbr;
-            }
-        }
-        if (possibleAbbrs.length > 0)
-        {
-            return possibleAbbrs[0];
-        }
-        var offsetKeys = (timeDifferenceFromUTC == null ? timeDifferenceFromUTC : (timeDifferenceFromUTC.isa.method_msgSend["keyEnumerator"] || _objj_forward)(timeDifferenceFromUTC, "keyEnumerator")),
-            offsetKey;
-        while (offsetKey = (offsetKeys == null ? offsetKeys : (offsetKeys.isa.method_msgSend["nextObject"] || _objj_forward)(offsetKeys, "nextObject")))
-        {
-            if ((timeDifferenceFromUTC == null ? timeDifferenceFromUTC : (timeDifferenceFromUTC.isa.method_msgSend["valueForKey:"] || _objj_forward)(timeDifferenceFromUTC, "valueForKey:", offsetKey)) === currentOffset)
-            {
-                return offsetKey;
-            }
-        }
+        var dtf = new Intl.DateTimeFormat("en-US", {timeZone: tzName, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit"}),
+            parts = dtf.formatToParts(date),
+            map = {};
+        for (var i = 0; i < parts.length; i++)
+            map[parts[i].type] = parts[i].value;
+        var asUTC = Date.UTC(map.year, map.month - 1, map.day, map.hour, map.minute, map.second);
+        return Math.round((asUTC - date.getTime()) / 60000);
     }
     catch(e) {
+        return nil;
     }
-    return nil;
 }
 _abbreviationForNameAndDate = function(tzName, date)
 {
     try {
-        var parts = new Intl.DateTimeFormat('en-US', {timeZone: tzName, timeZoneName: 'short'}).formatToParts(date),
+        var parts = new Intl.DateTimeFormat("en-US", {timeZone: tzName, timeZoneName: "short"}).formatToParts(date),
             tzPart = parts.filter(        function(p)
         {
-            return p.type === 'timeZoneName';
+            return p.type === "timeZoneName";
         })[0];
         return tzPart ? tzPart.value : nil;
     }
@@ -15083,9 +15060,108 @@ _abbreviationForNameAndDate = function(tzName, date)
         return nil;
     }
 }
+_fixedOffsetName = function(seconds)
+{
+    var sign = seconds < 0 ? "-" : "+",
+        absSeconds = Math.abs(seconds),
+        hours = Math.floor(absSeconds / 3600),
+        minutes = Math.floor(absSeconds % 3600 / 60);
+    return "GMT" + sign + (hours < 10 ? "0" : "") + hours + ":" + (minutes < 10 ? "0" : "") + minutes;
+}
+_standardAndDaylightOffsetsForZone = function(tzName)
+{
+    var cached = _stdDstOffsetCache[tzName];
+    if (cached)
+        return cached;
+    var year = new Date().getUTCFullYear(),
+        janDate = new Date(Date.UTC(year, 0, 15, 12)),
+        julDate = new Date(Date.UTC(year, 6, 15, 12)),
+        janOffset = _offsetMinutesForZone(tzName, janDate),
+        julOffset = _offsetMinutesForZone(tzName, julDate);
+    if (janOffset === nil || julOffset === nil)
+        return nil;
+    var result = janOffset <= julOffset ? {standard: janOffset, daylight: julOffset, standardSampleDate: janDate, daylightSampleDate: julDate, observesDST: janOffset !== julOffset} : {standard: julOffset, daylight: janOffset, standardSampleDate: julDate, daylightSampleDate: janDate, observesDST: janOffset !== julOffset};
+    _stdDstOffsetCache[tzName] = result;
+    return result;
+}
+_formatZoneName = function(tzName, localeCode, date, preferredOption, fallbackOption)
+{
+    var dtf;
+    try {
+        dtf = new Intl.DateTimeFormat(localeCode, {timeZone: tzName, timeZoneName: preferredOption});
+    }
+    catch(e) {
+        try {
+            dtf = new Intl.DateTimeFormat(localeCode, {timeZone: tzName, timeZoneName: fallbackOption});
+        }
+        catch(e2) {
+            dtf = new Intl.DateTimeFormat("en", {timeZone: tzName, timeZoneName: fallbackOption});
+        }
+    }
+    var parts = dtf.formatToParts(date),
+        tzPart = parts.filter(    function(p)
+    {
+        return p.type === "timeZoneName";
+    })[0];
+    return tzPart ? tzPart.value : nil;
+}
+_localizedNameForZone = function(tzName, style, locale, fixedOffsetSecondsOrNil)
+{
+    if (fixedOffsetSecondsOrNil !== nil && fixedOffsetSecondsOrNil !== undefined)
+        return _fixedOffsetName(fixedOffsetSecondsOrNil);
+    var localeCode = locale && (locale == null ? locale : (locale.isa.method_msgSend["objectForKey:"] || _objj_forward)(locale, "objectForKey:", CPLocaleLanguageCode)) || "en";
+    try {
+        switch(style) {
+            case CPTimeZoneNameStyleShortGeneric:
+                return _formatZoneName(tzName, localeCode, (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date"), "shortGeneric", "short");
+            case CPTimeZoneNameStyleGeneric:
+                return _formatZoneName(tzName, localeCode, (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date"), "longGeneric", "long");
+            case CPTimeZoneNameStyleShortStandard:
+            case CPTimeZoneNameStyleShortDaylightSaving:
+            {
+                var offsets = _standardAndDaylightOffsetsForZone(tzName);
+                if (!offsets)
+                    return nil;
+                var wantsDaylight = style === CPTimeZoneNameStyleShortDaylightSaving && offsets.observesDST,
+                    refDate = wantsDaylight ? offsets.daylightSampleDate : offsets.standardSampleDate;
+                return _formatZoneName(tzName, localeCode, refDate, "short", "short");
+            }
+            case CPTimeZoneNameStyleStandard:
+            case CPTimeZoneNameStyleDaylightSaving:
+            {
+                var offsets = _standardAndDaylightOffsetsForZone(tzName);
+                if (!offsets)
+                    return nil;
+                var wantsDaylight = style === CPTimeZoneNameStyleDaylightSaving && offsets.observesDST,
+                    refDate = wantsDaylight ? offsets.daylightSampleDate : offsets.standardSampleDate;
+                return _formatZoneName(tzName, localeCode, refDate, "long", "long");
+            }
+        }
+    }
+    catch(e) {
+        return nil;
+    }
+    return nil;
+}
+_systemTimeZoneFromRuntime = function()
+{
+    var date = new Date();
+    try {
+        var ianaName = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (ianaName && _isValidTimeZoneName(ianaName))
+        {
+            var zone = (CPTimeZone == null ? CPTimeZone : (CPTimeZone.isa.method_msgSend["timeZoneWithName:"] || _objj_forward)(CPTimeZone, "timeZoneWithName:", ianaName));
+            if (zone)
+                return zone;
+        }
+    }
+    catch(e) {
+    }
+    return (CPTimeZone == null ? CPTimeZone : (CPTimeZone.isa.method_msgSend["timeZoneForSecondsFromGMT:"] || _objj_forward)(CPTimeZone, "timeZoneForSecondsFromGMT:", -date.getTimezoneOffset() * 60));
+}
 
 {var the_class = objj_allocateClassPair(CPObject, "CPTimeZone"),
-meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_data", "CPData"), new objj_ivar("_secondsFromGMT", "CPInteger"), new objj_ivar("_abbreviation", "CPString"), new objj_ivar("_name", "CPString")]);objj_registerClassPair(the_class);
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_data", "CPData"), new objj_ivar("_secondsFromGMT", "CPInteger"), new objj_ivar("_abbreviation", "CPString"), new objj_ivar("_name", "CPString"), new objj_ivar("_hasFixedOffset", "BOOL"), new objj_ivar("_fixedOffsetSeconds", "CPInteger")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("data"), function $CPTimeZone__data(self, _cmd)
 {
     return self._data;
@@ -15110,7 +15186,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("data"), function $CPTim
 {
     if (!tzName)
         (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "Invalid value provided for tzName");
-    if (!(knownTimeZoneNames == null ? knownTimeZoneNames : (knownTimeZoneNames.isa.method_msgSend["containsObject:"] || _objj_forward)(knownTimeZoneNames, "containsObject:", tzName)) || !abbreviation)
+    if (!_isValidTimeZoneName(tzName) || !abbreviation)
         return nil;
     if (self = (objj_getClass("CPTimeZone").super_class.method_dtable["init"] || _objj_forward)(self, "init"))
     {
@@ -15120,36 +15196,40 @@ class_addMethods(the_class, [new objj_method(sel_getUid("data"), function $CPTim
     return self;
 }
 
-,["id","CPString","CPString"]), new objj_method(sel_getUid("initWithName:"), function $CPTimeZone__initWithName_(self, _cmd, tzName)
+,["id","CPString","CPString"]), new objj_method(sel_getUid("_initWithFixedOffsetSeconds:"), function $CPTimeZone___initWithFixedOffsetSeconds_(self, _cmd, seconds)
+{
+    if (self = (objj_getClass("CPTimeZone").super_class.method_dtable["init"] || _objj_forward)(self, "init"))
+    {
+        self._name = _fixedOffsetName(seconds);
+        self._abbreviation = self._name;
+        self._hasFixedOffset = YES;
+        self._fixedOffsetSeconds = seconds;
+    }
+    return self;
+}
+
+,["id","CPInteger"]), new objj_method(sel_getUid("initWithName:"), function $CPTimeZone__initWithName_(self, _cmd, tzName)
 {
     if (!tzName)
         (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "Invalid value provided for tzName");
-    if (!(knownTimeZoneNames == null ? knownTimeZoneNames : (knownTimeZoneNames.isa.method_msgSend["containsObject:"] || _objj_forward)(knownTimeZoneNames, "containsObject:", tzName)))
+    if (!_isValidTimeZoneName(tzName))
         return nil;
     if (self = (objj_getClass("CPTimeZone").super_class.method_dtable["init"] || _objj_forward)(self, "init"))
     {
         self._name = tzName;
-        var currentAbbreviation = _abbreviationForNameAndDate(tzName, (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date"));
-        if (currentAbbreviation && (abbreviationDictionary == null ? abbreviationDictionary : (abbreviationDictionary.isa.method_msgSend["containsKey:"] || _objj_forward)(abbreviationDictionary, "containsKey:", currentAbbreviation)))
+        var now = (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date"),
+            currentAbbreviation = _abbreviationForNameAndDate(tzName, now);
+        if (currentAbbreviation)
         {
             self._abbreviation = currentAbbreviation;
         }
         else
         {
-            var keys = (abbreviationDictionary == null ? abbreviationDictionary : (abbreviationDictionary.isa.method_msgSend["keyEnumerator"] || _objj_forward)(abbreviationDictionary, "keyEnumerator")),
-                key;
-            while (key = (keys == null ? keys : (keys.isa.method_msgSend["nextObject"] || _objj_forward)(keys, "nextObject")))
-            {
-                var value = (abbreviationDictionary == null ? abbreviationDictionary : (abbreviationDictionary.isa.method_msgSend["valueForKey:"] || _objj_forward)(abbreviationDictionary, "valueForKey:", key));
-                if ((value == null ? value : (value.isa.method_msgSend["isEqualToString:"] || _objj_forward)(value, "isEqualToString:", self._name)))
-                {
-                    self._abbreviation = key;
-                    break;
-                }
-            }
+            var offsetMinutes = _offsetMinutesForZone(tzName, now);
+            if (offsetMinutes === nil)
+                return nil;
+            self._abbreviation = _fixedOffsetName(offsetMinutes * 60);
         }
-        if (!self._abbreviation)
-            return nil;
     }
     return self;
 }
@@ -15167,23 +15247,56 @@ class_addMethods(the_class, [new objj_method(sel_getUid("data"), function $CPTim
 {
     if (!date)
         return nil;
-    return abbreviationForDate(date);
+    if (self._hasFixedOffset)
+        return self._abbreviation;
+    return _abbreviationForNameAndDate(self._name, date) || self._abbreviation;
 }
 
 ,["CPString","CPDate"]), new objj_method(sel_getUid("secondsFromGMTForDate:"), function $CPTimeZone__secondsFromGMTForDate_(self, _cmd, date)
 {
     if (!date)
         return nil;
-    var abbreviation = abbreviationForDate(date);
-    return (timeDifferenceFromUTC == null ? timeDifferenceFromUTC : (timeDifferenceFromUTC.isa.method_msgSend["valueForKey:"] || _objj_forward)(timeDifferenceFromUTC, "valueForKey:", abbreviation)) * 60;
+    if (self._hasFixedOffset)
+        return self._fixedOffsetSeconds;
+    var offsetMinutes = _offsetMinutesForZone(self._name, date);
+    return offsetMinutes === nil ? nil : offsetMinutes * 60;
 }
 
 ,["CPInteger","CPDate"]), new objj_method(sel_getUid("secondsFromGMT"), function $CPTimeZone__secondsFromGMT(self, _cmd)
 {
-    return (timeDifferenceFromUTC == null ? timeDifferenceFromUTC : (timeDifferenceFromUTC.isa.method_msgSend["valueForKey:"] || _objj_forward)(timeDifferenceFromUTC, "valueForKey:", self._abbreviation)) * 60;
+    return (self.isa.method_msgSend["secondsFromGMTForDate:"] || _objj_forward)(self, "secondsFromGMTForDate:", (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date"));
 }
 
-,["CPInteger"]), new objj_method(sel_getUid("isEqualToTimeZone:"), function $CPTimeZone__isEqualToTimeZone_(self, _cmd, aTimeZone)
+,["CPInteger"]), new objj_method(sel_getUid("isDaylightSavingTime"), function $CPTimeZone__isDaylightSavingTime(self, _cmd)
+{
+    return (self.isa.method_msgSend["isDaylightSavingTimeForDate:"] || _objj_forward)(self, "isDaylightSavingTimeForDate:", (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date"));
+}
+
+,["BOOL"]), new objj_method(sel_getUid("isDaylightSavingTimeForDate:"), function $CPTimeZone__isDaylightSavingTimeForDate_(self, _cmd, date)
+{
+    if (self._hasFixedOffset || !date)
+        return NO;
+    var offsets = _standardAndDaylightOffsetsForZone(self._name);
+    if (!offsets || !offsets.observesDST)
+        return NO;
+    var current = _offsetMinutesForZone(self._name, date);
+    return current !== nil && current > offsets.standard;
+}
+
+,["BOOL","CPDate"]), new objj_method(sel_getUid("daylightSavingTimeOffset"), function $CPTimeZone__daylightSavingTimeOffset(self, _cmd)
+{
+    return (self.isa.method_msgSend["daylightSavingTimeOffsetForDate:"] || _objj_forward)(self, "daylightSavingTimeOffsetForDate:", (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date"));
+}
+
+,["CPTimeInterval"]), new objj_method(sel_getUid("daylightSavingTimeOffsetForDate:"), function $CPTimeZone__daylightSavingTimeOffsetForDate_(self, _cmd, date)
+{
+    if (!(self.isa.method_msgSend["isDaylightSavingTimeForDate:"] || _objj_forward)(self, "isDaylightSavingTimeForDate:", date))
+        return 0;
+    var offsets = _standardAndDaylightOffsetsForZone(self._name);
+    return (offsets.daylight - offsets.standard) * 60;
+}
+
+,["CPTimeInterval","CPDate"]), new objj_method(sel_getUid("isEqualToTimeZone:"), function $CPTimeZone__isEqualToTimeZone_(self, _cmd, aTimeZone)
 {
     return ((___r1 = (aTimeZone == null ? aTimeZone : (aTimeZone.isa.method_msgSend["name"] || _objj_forward)(aTimeZone, "name"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isEqualToString:"] || _objj_forward)(___r1, "isEqualToString:", self._name)) && (aTimeZone == null ? aTimeZone : (aTimeZone.isa.method_msgSend["data"] || _objj_forward)(aTimeZone, "data")) == self._data;
     var ___r1;
@@ -15196,10 +15309,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("data"), function $CPTim
 
 ,["CPString"]), new objj_method(sel_getUid("localizedName:locale:"), function $CPTimeZone__localizedName_locale_(self, _cmd, style, locale)
 {
-    if (style > 5)
+    if (style < 0 || style > 5)
         return nil;
-    return ((___r1 = ((___r2 = (localizedName == null ? localizedName : (localizedName.isa.method_msgSend["valueForKey:"] || _objj_forward)(localizedName, "valueForKey:", (locale == null ? locale : (locale.isa.method_msgSend["objectForKey:"] || _objj_forward)(locale, "objectForKey:", CPLocaleLanguageCode))))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["valueForKey:"] || _objj_forward)(___r2, "valueForKey:", self._abbreviation))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", style));
-    var ___r1, ___r2;
+    return _localizedNameForZone(self._name, style, locale, self._hasFixedOffset ? self._fixedOffsetSeconds : nil);
 }
 
 ,["CPString","NSTimeZoneNameStyle","CPLocale"])]);
@@ -15207,47 +15319,42 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 {
     if (self !== (CPTimeZone.isa.method_msgSend["class"] || _objj_forward)(CPTimeZone, "class"))
         return;
-    knownTimeZoneNames = ["Africa/Addis_Ababa", "Africa/Harare", "Africa/Lagos", "America/Argentina/Buenos_Aires", "America/Bogota", "America/Chicago", "America/Denver", "America/Halifax", "America/Juneau", "America/Lima", "America/Los_Angeles", "America/New_York", "America/Santiago", "America/Sao_Paulo", "Asia/Bangkok", "Asia/Calcutta", "Asia/Dhaka", "Asia/Dubai", "Asia/Hong_Kong", "Asia/Jakarta", "Asia/Karachi", "Asia/Manila", "Asia/Seoul", "Asia/Singapore", "Asia/Tehran", "Asia/Tokyo", "Europe/Istanbul", "Europe/Lisbon", "Europe/London", "Europe/Moscow", "Europe/Paris", "GMT", "Pacific/Auckland", "Pacific/Honolulu", "UTC"];
+    knownTimeZoneNames = [];
     if (typeof Intl !== "undefined" && typeof Intl.supportedValuesOf === "function")
     {
         try {
             var supportedZones = Intl.supportedValuesOf("timeZone");
             if (supportedZones && supportedZones.length > 0)
             {
-                var zones = [];
-                var hasGMT = false;
-                var hasUTC = false;
                 var count = supportedZones.length;
                 for (var i = 0; i < count; i++)
                 {
-                    var zone = supportedZones[i];
-                    zones[i] = zone;
-                    if (zone === "GMT")
-                        hasGMT = true;
-                    else if (zone === "UTC")
-                        hasUTC = true;
+                    knownTimeZoneNames[i] = supportedZones[i];
                 }
-                if (!hasGMT)
-                    zones[zones.length] = "GMT";
-                if (!hasUTC)
-                    zones[zones.length] = "UTC";
-                knownTimeZoneNames = zones;
             }
         }
         catch(e) {
         }
     }
+    var hasGMT = false;
+    var hasUTC = false;
+    for (var i = 0, count = knownTimeZoneNames.length; i < count; i++)
+    {
+        if (knownTimeZoneNames[i] === "GMT")
+            hasGMT = true;
+        else if (knownTimeZoneNames[i] === "UTC")
+            hasUTC = true;
+    }
+    if (!hasGMT)
+        knownTimeZoneNames[knownTimeZoneNames.length] = "GMT";
+    if (!hasUTC)
+        knownTimeZoneNames[knownTimeZoneNames.length] = "UTC";
     abbreviationDictionary = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", ["America/Halifax", "America/Juneau", "America/Juneau", "America/Argentina/Buenos_Aires", "America/Halifax", "Asia/Dhaka", "America/Sao_Paulo", "America/Sao_Paulo", "Europe/London", "Africa/Harare", "America/Chicago", "Europe/Paris", "Europe/Paris", "America/Santiago", "America/Santiago", "America/Bogota", "UTC", "America/Chicago", "Africa/Addis_Ababa", "America/New_York", "Europe/Istanbul", "Europe/Istanbul", "America/New_York", "GMT", "Asia/Dubai", "Asia/Hong_Kong", "Pacific/Honolulu", "Asia/Bangkok", "Asia/Tehran", "Asia/Calcutta", "Asia/Tokyo", "Asia/Seoul", "America/Denver", "Europe/Moscow", "Europe/Moscow", "America/Denver", "Pacific/Auckland", "Pacific/Auckland", "America/Los_Angeles", "America/Lima", "Asia/Manila", "Asia/Karachi", "America/Los_Angeles", "Asia/Singapore", "UTC", "Africa/Lagos", "Europe/Lisbon", "Europe/Lisbon", "Asia/Jakarta"], ["ADT", "AKDT", "AKST", "ART", "AST", "BDT", "BRST", "BRT", "BST", "CAT", "CDT", "CEST", "CET", "CLST", "CLT", "COT", "CUT", "CST", "EAT", "EDT", "EEST", "EET", "EST", "GMT", "GST", "HKT", "HST", "ICT", "IRST", "IST", "JST", "KST", "MDT", "MSD", "MSK", "MST", "NZDT", "NZST", "PDT", "PET", "PHT", "PKT", "PST", "SGT", "UTC", "WAT", "WEST", "WET", "WIT"]));
-    timeDifferenceFromUTC = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", [-180, -480, -540, -180, -240, 360, -120, -180, 60, 120, -300, 120, 60, -180, -240, -300, -360, 180, -240, 180, 120, -300, 0, 240, 480, -600, 420, 210, 330, 540, 540, -360, 240, 180, -420, 780, 720, -420, -300, 480, 300, -480, 480, 0, 60, 60, 0, 420], ["ADT", "AKDT", "AKST", "ART", "AST", "BDT", "BRST", "BRT", "BST", "CAT", "CDT", "CEST", "CET", "CLST", "CLT", "COT", "CST", "EAT", "EDT", "EEST", "EET", "EST", "GMT", "GST", "HKT", "HST", "ICT", "IRST", "IST", "JST", "KST", "MDT", "MSD", "MSK", "MST", "NZDT", "NZST", "PDT", "PET", "PHT", "PKT", "PST", "SGT", "UTC", "WAT", "WEST", "WET", "WIT"]));
-    var englishLocalizedName = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", [["Eastern Standard Time", "EST", "Eastern Daylight Time", "EDT", "Eastern Time", "ET"], ["GMT", "GMT", "GMT", "GMT", "GMT", "GMT"], ["Atlantic Standard Time", "AST", "Atlantic Daylight Time", "ADT", "Atlantic Time", "AT"], ["Iran Standard Time", "GMT+03:30", "Iran Daylight Time", "GMT+03:30", "Iran Time", "Iran Time"], ["Indochina Time", "GMT+07:00", "GMT+07:00", "GMT+07:00", "Indochina Time", "Thailand Time"], ["Peru Standard Time", "GMT-05:00", "Peru Summer Time", "GMT-05:00", "Peru Standard Time", "Peru Time"], ["Korean Standard Time", "GMT+09:00", "Korean Daylight Time", "GMT+09:00", "Korean Standard Time", "South Korea Time"], ["Pacific Standard Time", "PST", "Pacific Daylight Time", "PDT", "Pacific Time", "PT"], ["Central Standard Time", "CST", "Central Daylight Time", "CDT", "Central Time", "CT"], ["Eastern European Standard Time", "GMT+02:00", "Eastern European Summer Time", "GMT+03:00", "Eastern European Time", "Turkey Time"], ["New Zealand Standard Time", "GMT+12:00", "New Zealand Daylight Time", "GMT+13:00", "New Zealand Time", "New Zealand Time (Auckland)"], ["Western European Standard Time", "GMT", "Western European Summer Time", "GMT+01:00", "Western European Time", "Portugal Time (Lisbon)"], ["East Africa Time", "GMT+03:00", "GMT+03:00", "GMT+03:00", "East Africa Time", "Ethiopia Time"], ["Hong Kong Standard Time", "GMT+08:00", "Hong Kong Summer Time", "GMT+08:00", "Hong Kong Standard Time", "Hong Kong SAR China Time"], ["India Standard Time", "GMT+05:30", "GMT+05:30", "GMT+05:30", "India Standard Time", "India Time"], ["Mountain Standard Time", "MST", "Mountain Daylight Time", "MDT", "Mountain Time", "MT"], ["New Zealand Standard Time", "GMT+12:00", "New Zealand Daylight Time", "GMT+13:00", "New Zealand Time", "New Zealand Time (Auckland)"], ["Western Indonesia Time", "GMT+07:00", "GMT+07:00", "GMT+07:00", "Western Indonesia Time", "Indonesia Time (Jakarta)"], ["Atlantic Standard Time", "AST", "Atlantic Daylight Time", "ADT", "Atlantic Time", "AT"], ["Greenwich Mean Time", "GMT", "British Summer Time", "GMT+01:00", "United Kingdom Time", "United Kingdom Time"], ["Argentina Standard Time", "GMT-03:00", "Argentina Summer Time", "GMT-03:00", "Argentina Standard Time", "Argentina Time (Buenos Aires)"], ["Central Africa Time", "GMT+02:00", "GMT+02:00", "GMT+02:00", "Central Africa Time", "Zimbabwe Time"], ["Gulf Standard Time", "GMT+04:00", "GMT+04:00", "GMT+04:00", "Gulf Standard Time", "United Arab Emirates Time"], ["Pacific Standard Time", "PST", "Pacific Daylight Time", "PDT", "Pacific Time", "PT"], ["Singapore Standard Time", "GMT+08:00", "GMT+08:00", "GMT+08:00", "Singapore Standard Time", "Singapore Time"], ["Colombia Standard Time", "GMT-05:00", "Colombia Summer Time", "GMT-05:00", "Colombia Standard Time", "Colombia Time"], ["Pakistan Standard Time", "GMT+05:00", "Pakistan Summer Time", "GMT+05:00", "Pakistan Standard Time", "Pakistan Time"], ["Eastern European Standard Time", "GMT+02:00", "Eastern European Summer Time", "GMT+03:00", "Eastern European Time", "Turkey Time"], ["GMT", "GMT", "GMT", "GMT", "GMT", "GMT"], ["West Africa Standard Time", "GMT+01:00", "West Africa Summer Time", "GMT+01:00", "West Africa Standard Time", "Nigeria Time"], ["Eastern Standard Time", "EST", "Eastern Daylight Time", "EDT", "Eastern Time", "ET"], ["Japan Standard Time", "GMT+09:00", "Japan Daylight Time", "GMT+09:00", "Japan Standard Time", "Japan Time"], ["Chile Standard Time", "GMT-04:00", "Chile Summer Time", "GMT-04:00", "Chile Time", "Chile Time (Santiago)"], ["Central European Standard Time", "GMT+01:00", "Central European Summer Time", "GMT+02:00", "Central European Time", "France Time"], ["Bangladesh Standard Time", "GMT+06:00", "Bangladesh Summer Time", "GMT+06:00", "Bangladesh Standard Time", "Bangladesh Time"], ["Moscow Standard Time", "GMT+04:00", "Moscow Summer Time", "GMT+04:00", "Moscow Standard Time", "Russia Time (Moscow)"], ["Alaska Standard Time", "AKST", "Alaska Daylight Time", "AKDT", "Alaska Time", "AKT"], ["Chile Standard Time", "GMT-04:00", "Chile Summer Time", "GMT-04:00", "Chile Time", "Chile Time (Santiago)"], ["Alaska Standard Time", "AKST", "Alaska Daylight Time", "AKDT", "Alaska Time", "AKT"], ["Brasilia Standard Time", "GMT-03:00", "Brasilia Summer Time", "GMT-03:00", "Brasilia Time", "Brazil Time (Sao Paulo)"], ["Brasilia Standard Time", "GMT-03:00", "Brasilia Summer Time", "GMT-03:00", "Brasilia Time", "Brazil Time (Sao Paulo)"], ["Central European Standard Time", "GMT+01:00", "Central European Summer Time", "GMT+02:00", "Central European Time", "France Time"], ["Central Standard Time", "CST", "Central Daylight Time", "CDT", "Central Time", "CT"], ["Hawaii-Aleutian Standard Time", "HST", "Hawaii-Aleutian Daylight Time", "HDT", "Hawaii-Aleutian Standard Time", "HST"], ["Moscow Standard Time", "GMT+04:00", "Moscow Summer Time", "GMT+04:00", "Moscow Standard Time", "Russia Time (Moscow)"], ["Mountain Standard Time", "MST", "Mountain Daylight Time", "MDT", "Mountain Time", "MT"], ["Philippine Standard Time", "GMT+08:00", "Philippine Summer Time", "GMT+08:00", "Philippine Standard Time", "Philippines Time"], ["Western European Standard Time", "GMT", "Western European Summer Time", "GMT+01:00", "Western European Time", "Portugal Time (Lisbon)"]], ["EDT", "GMT", "AST", "IRST", "ICT", "PET", "KST", "PST", "CDT", "EEST", "NZDT", "WEST", "EAT", "HKT", "IST", "MDT", "NZST", "WIT", "ADT", "BST", "ART", "CAT", "GST", "PDT", "SGT", "COT", "PKT", "EET", "UTC", "WAT", "EST", "JST", "CLST", "CET", "BDT", "MSK", "AKDT", "CLT", "AKST", "BRST", "BRT", "CEST", "CST", "HST", "MSD", "MST", "PHT", "WET"]));
-    var date = (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date"),
-        abbreviation = abbreviationForDate(date);
-    localTimeZone = (self.isa.method_msgSend["timeZoneWithAbbreviation:"] || _objj_forward)(self, "timeZoneWithAbbreviation:", abbreviation);
+    timeZoneDataVersion = nil;
+    localTimeZone = _systemTimeZoneFromRuntime();
     systemTimeZone = localTimeZone;
     defaultTimeZone = localTimeZone;
-    localizedName = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", [englishLocalizedName, (___r2 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["init"] || _objj_forward)(___r2, "init")), (___r2 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["init"] || _objj_forward)(___r2, "init")), (___r2 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["init"] || _objj_forward)(___r2, "init"))], ["en", "fr", "de", "es"]));
-    timeZoneDataVersion = nil;
-    var ___r1, ___r2;
+    var ___r1;
 }
 
 ,["void"]), new objj_method(sel_getUid("timeZoneWithAbbreviation:"), function $CPTimeZone__timeZoneWithAbbreviation_(self, _cmd, abbreviation)
@@ -15272,51 +15379,46 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["id","CPString","CPData"]), new objj_method(sel_getUid("timeZoneForSecondsFromGMT:"), function $CPTimeZone__timeZoneForSecondsFromGMT_(self, _cmd, seconds)
 {
-    var minutes = seconds / 60,
-        keys = (timeDifferenceFromUTC == null ? timeDifferenceFromUTC : (timeDifferenceFromUTC.isa.method_msgSend["keyEnumerator"] || _objj_forward)(timeDifferenceFromUTC, "keyEnumerator")),
-        key,
-        abbreviation = nil;
-    while (key = (keys == null ? keys : (keys.isa.method_msgSend["nextObject"] || _objj_forward)(keys, "nextObject")))
-    {
-        var value = (timeDifferenceFromUTC == null ? timeDifferenceFromUTC : (timeDifferenceFromUTC.isa.method_msgSend["valueForKey:"] || _objj_forward)(timeDifferenceFromUTC, "valueForKey:", key));
-        if (value == minutes)
-        {
-            abbreviation = key;
-            break;
-        }
-    }
-    if (!abbreviation)
+    if (Math.abs(seconds) > 18 * 3600)
         return nil;
-    return (self.isa.method_msgSend["timeZoneWithAbbreviation:"] || _objj_forward)(self, "timeZoneWithAbbreviation:", abbreviation);
+    var roundedSeconds = Math.round(seconds / 60) * 60;
+    return ((___r1 = (CPTimeZone.isa.method_msgSend["alloc"] || _objj_forward)(CPTimeZone, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithFixedOffsetSeconds:"] || _objj_forward)(___r1, "_initWithFixedOffsetSeconds:", roundedSeconds));
+    var ___r1;
 }
 
 ,["id","CPInteger"]), new objj_method(sel_getUid("_timeZoneFromString:style:locale:"), function $CPTimeZone___timeZoneFromString_style_locale_(self, _cmd, aTimeZoneString, style, _locale)
 {
     if ((abbreviationDictionary == null ? abbreviationDictionary : (abbreviationDictionary.isa.method_msgSend["containsKey:"] || _objj_forward)(abbreviationDictionary, "containsKey:", aTimeZoneString)))
         return (self.isa.method_msgSend["timeZoneWithAbbreviation:"] || _objj_forward)(self, "timeZoneWithAbbreviation:", aTimeZoneString);
-    var dict = (localizedName == null ? localizedName : (localizedName.isa.method_msgSend["valueForKey:"] || _objj_forward)(localizedName, "valueForKey:", (_locale == null ? _locale : (_locale.isa.method_msgSend["objectForKey:"] || _objj_forward)(_locale, "objectForKey:", CPLocaleLanguageCode)))),
-        keys = (dict == null ? dict : (dict.isa.method_msgSend["keyEnumerator"] || _objj_forward)(dict, "keyEnumerator")),
-        key;
-    while (key = (keys == null ? keys : (keys.isa.method_msgSend["nextObject"] || _objj_forward)(keys, "nextObject")))
+    var localeCode = _locale && (_locale == null ? _locale : (_locale.isa.method_msgSend["objectForKey:"] || _objj_forward)(_locale, "objectForKey:", CPLocaleLanguageCode)) || "en",
+        cacheKey = localeCode + "|" + style,
+        map = _nameToZoneCache[cacheKey];
+    if (!map)
     {
-        var value = ((___r1 = (dict == null ? dict : (dict.isa.method_msgSend["valueForKey:"] || _objj_forward)(dict, "valueForKey:", key))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", style));
-        if ((value == null ? value : (value.isa.method_msgSend["isEqualToString:"] || _objj_forward)(value, "isEqualToString:", aTimeZoneString)))
-            return (self.isa.method_msgSend["timeZoneWithAbbreviation:"] || _objj_forward)(self, "timeZoneWithAbbreviation:", key);
+        map = {};
+        for (var i = 0, count = knownTimeZoneNames.length; i < count; i++)
+        {
+            var tzName = knownTimeZoneNames[i],
+                displayName = _localizedNameForZone(tzName, style, _locale, nil);
+            if (displayName && !(displayName in map))
+                map[displayName] = tzName;
+        }
+        _nameToZoneCache[cacheKey] = map;
     }
-    return nil;
-    var ___r1;
+    var matchedName = map[aTimeZoneString];
+    return matchedName ? (self.isa.method_msgSend["timeZoneWithName:"] || _objj_forward)(self, "timeZoneWithName:", matchedName) : nil;
 }
 
 ,["id","CPString","NSTimeZoneNameStyle","CPLocale"]), new objj_method(sel_getUid("_namesForStyle:locale:"), function $CPTimeZone___namesForStyle_locale_(self, _cmd, style, aLocale)
 {
-    var array = (CPArray.isa.method_msgSend["array"] || _objj_forward)(CPArray, "array"),
-        dict = (localizedName == null ? localizedName : (localizedName.isa.method_msgSend["valueForKey:"] || _objj_forward)(localizedName, "valueForKey:", (aLocale == null ? aLocale : (aLocale.isa.method_msgSend["objectForKey:"] || _objj_forward)(aLocale, "objectForKey:", CPLocaleLanguageCode)))),
-        keys = (dict == null ? dict : (dict.isa.method_msgSend["keyEnumerator"] || _objj_forward)(dict, "keyEnumerator")),
-        key;
-    while (key = (keys == null ? keys : (keys.isa.method_msgSend["nextObject"] || _objj_forward)(keys, "nextObject")))
-        (array == null ? array : (array.isa.method_msgSend["addObject:"] || _objj_forward)(array, "addObject:", ((___r1 = (dict == null ? dict : (dict.isa.method_msgSend["valueForKey:"] || _objj_forward)(dict, "valueForKey:", key))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", style))));
+    var array = (CPArray.isa.method_msgSend["array"] || _objj_forward)(CPArray, "array");
+    for (var i = 0, count = knownTimeZoneNames.length; i < count; i++)
+    {
+        var displayName = _localizedNameForZone(knownTimeZoneNames[i], style, aLocale, nil);
+        if (displayName)
+            (array == null ? array : (array.isa.method_msgSend["addObject:"] || _objj_forward)(array, "addObject:", displayName));
+    }
     return array;
-    var ___r1;
 }
 
 ,["CPArray","NSTimeZoneNameStyle","CPLocale"]), new objj_method(sel_getUid("timeZoneDataVersion"), function $CPTimeZone__timeZoneDataVersion(self, _cmd)
@@ -15341,9 +15443,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["void","CPTimeZone"]), new objj_method(sel_getUid("resetSystemTimeZone"), function $CPTimeZone__resetSystemTimeZone(self, _cmd)
 {
-    var date = (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date"),
-        abbreviation = abbreviationForDate(date);
-    systemTimeZone = (self.isa.method_msgSend["timeZoneWithAbbreviation:"] || _objj_forward)(self, "timeZoneWithAbbreviation:", abbreviation);
+    systemTimeZone = _systemTimeZoneFromRuntime();
     ((___r1 = (CPNotificationCenter == null ? CPNotificationCenter : (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["postNotificationName:object:"] || _objj_forward)(___r1, "postNotificationName:object:", CPSystemTimeZoneDidChangeNotification, systemTimeZone));
     var ___r1;
 }
