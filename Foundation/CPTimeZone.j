@@ -1,23 +1,23 @@
 /* CPTimeZone.j
-* Foundation
-*
-* Created by Alexandre Wilhelm
-* Copyright 2012 <alexandre.wilhelmfr@gmail.com>
-*
-* This library is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Lesser General Public
-* License as published by the Free Software Foundation; either
-* version 2.1 of the License, or (at your option) any later version.
-*
-* This library is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this library; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-*/
+ * Foundation
+ *
+ * Created by Alexandre Wilhelm
+ * Copyright 2012 <alexandre.wilhelmfr@gmail.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 @import "CPObject.j"
 @import "CPString.j"
@@ -36,164 +36,309 @@ CPTimeZoneNameStyleShortGeneric = 5;
 
 CPSystemTimeZoneDidChangeNotification = @"CPSystemTimeZoneDidChangeNotification";
 
+/*
+ * Time zone identity is defined by its IANA name.
+ * Offsets, abbreviations, and localized names are resolved dynamically
+ * using the runtime's Intl API rather than static tables.
+ *
+ * Dynamic resolution prevents the silent data drift of hardcoded tables
+ * caused by DST rule changes and newly added zones. It also avoids the
+ * inherent ambiguity of abbreviations (e.g., CST, IST), which are not
+ * globally unique and cannot serve as primary keys.
+ */
 var abbreviationDictionary,
-    timeDifferenceFromUTC,
-    knownTimeZoneNames,
-    defaultTimeZone,
-    localTimeZone,
-    systemTimeZone,
-    timeZoneDataVersion,
-    localizedName;
+knownTimeZoneNames,
+defaultTimeZone,
+localTimeZone,
+systemTimeZone,
+timeZoneDataVersion;
 
-function abbreviationForDate(date)
+// Per-zone cache of the sampled standard/daylight offsets (see
+// _standardAndDaylightOffsetsForZone). A zone's DST rule doesn't change
+// within a process lifetime, so this is safe to keep for the session.
+var _stdDstOffsetCache = {};
+
+// Per (locale, style) cache of display-name -> zone name, used by
+// +_timeZoneFromString:style:locale: and built lazily on first lookup.
+var _nameToZoneCache = {};
+
+/*!
+ Validates a given time zone name by attempting to construct a lightweight
+ Intl.DateTimeFormat object. The engine throws a RangeError if the timeZone
+ is not recognized.
+ */
+function _isValidTimeZoneName(tzName)
 {
-    // First, ask Intl directly for the short time zone name (e.g. "PDT") of
-    // the runtime's local zone, which correctly reflects DST for this date.
-    // Replaces the previous date.toString() parenthesis-scraping and
-    // long-name-to-acronym regex guessing, which broke for locales and
-    // engines that don't format Date#toString the way that logic assumed.
-    try {
-        var parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(date),
-            tzPart = parts.filter(function (p) { return p.type === 'timeZoneName'; })[0];
-
-        if (tzPart && [abbreviationDictionary objectForKey:tzPart.value])
-            return tzPart.value;
-    } catch (e) {
-        // Intl API not supported, or it failed. Fall through to the next attempt.
+    try
+    {
+        new Intl.DateTimeFormat('en-US', { timeZone: tzName });
+        return YES;
     }
-
-    // If that short name isn't one of our known abbreviations (e.g. it
-    // returned "GMT-04:00" for a zone with no common three/four-letter
-    // abbreviation), resolve the runtime's IANA zone and pick whichever
-    // known abbreviation for that zone matches the date's current UTC offset.
-    try {
-        var ianaName = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-        var currentOffset = -date.getTimezoneOffset(); // in minutes
-
-        var keys = [abbreviationDictionary keyEnumerator],
-            key;
-
-        // Find all abbreviations for the current IANA time zone.
-        var possibleAbbrs = [];
-        while (key = [keys nextObject]) {
-            if ([abbreviationDictionary valueForKey:key] === ianaName) {
-                possibleAbbrs.push(key);
-            }
-        }
-
-        // If more than one (e.g., standard and daylight), use the current offset to find the right one.
-        for (var i = 0; i < possibleAbbrs.length; i++) {
-            var abbr = possibleAbbrs[i];
-            if ([timeDifferenceFromUTC valueForKey:abbr] === currentOffset) {
-                return abbr;
-            }
-        }
-
-        // If offset matching fails but we have a unique IANA match, use it as a best guess.
-        if (possibleAbbrs.length > 0) {
-            return possibleAbbrs[0];
-        }
-
-        // Neither attempt above found a match by name. Fall back to any
-        // known abbreviation whose stored offset matches the system's
-        // current UTC offset. Several abbreviations legitimately share an
-        // offset (GMT, UTC, and WET all correctly resolve to 0, for example),
-        // so this returns one of them rather than none.
-        var offsetKeys = [timeDifferenceFromUTC keyEnumerator],
-            offsetKey;
-
-        while (offsetKey = [offsetKeys nextObject]) {
-            if ([timeDifferenceFromUTC valueForKey:offsetKey] === currentOffset) {
-                return offsetKey;
-            }
-        }
-    } catch (e) {
-        // Intl API not supported, or it failed.
+    catch (e)
+    {
+        return NO;
     }
-
-    // Return nil if no valid abbreviation could be determined.
-    return nil;
 }
 
-function _abbreviationForNameAndDate(tzName, date)
+/*!
+ Live UTC offset, in minutes, for an IANA zone name at a given date.
+ DST-aware by construction, since it asks Intl to render the actual wall
+ clock time in that zone at that instant, rather than reading a static
+ per-abbreviation number. Returns nil if tzName isn't a zone Intl accepts.
+ */
+function _offsetMinutesForZone(tzName, date)
 {
-    // Determines the abbreviation for a given IANA name based on the provided
-    // date, which allows it to respect daylight saving time. Reads the short
-    // time zone name directly from Intl.formatToParts, rather than parsing
-    // a long name out of toLocaleString's locale-formatted output.
-    try {
-        var parts = new Intl.DateTimeFormat('en-US', { timeZone: tzName, timeZoneName: 'short' }).formatToParts(date),
-            tzPart = parts.filter(function (p) { return p.type === 'timeZoneName'; })[0];
+    if (tzName === @"GMT" || tzName === @"UTC")
+        return 0;
 
-        return tzPart ? tzPart.value : nil;
-    } catch (e) {
-        // The tzName might be invalid for Intl.DateTimeFormat, which throws a
-        // RangeError. In this case, we can't determine the abbreviation.
+    try
+    {
+        var dtf = new Intl.DateTimeFormat("en-US", {
+            timeZone: tzName,
+            hourCycle: "h23",
+            year: "numeric", month: "2-digit", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", second: "2-digit"
+        }),
+        parts = dtf.formatToParts(date),
+        map = {};
+
+        for (var i = 0; i < parts.length; i++)
+            map[parts[i].type] = parts[i].value;
+
+        // Date.UTC normalizes out-of-range fields (e.g. an hour of "24"),
+        // so no special-casing is needed for that formatting quirk.
+        var asUTC = Date.UTC(map.year, map.month - 1, map.day, map.hour, map.minute, map.second);
+
+        return Math.round((asUTC - date.getTime()) / 60000);
+    }
+    catch (e)
+    {
+        // tzName isn't a zone this engine's Intl implementation accepts.
         return nil;
     }
 }
 
 /*!
-    @class CPTimeZone
-    @ingroup foundation
-    @brief CPTimeZone is a class to define the behvior of time zone object (like CPDatePicker)
-*/
+ Short abbreviation (e.g. "PDT") for an IANA zone name at a given date,
+ read directly from Intl.formatToParts so it reflects DST for that date.
+ */
+function _abbreviationForNameAndDate(tzName, date)
+{
+    try
+    {
+        var parts = new Intl.DateTimeFormat("en-US", { timeZone: tzName, timeZoneName: "short" }).formatToParts(date),
+        tzPart = parts.filter(function (p) { return p.type === "timeZoneName"; })[0];
+
+        return tzPart ? tzPart.value : nil;
+    }
+    catch (e)
+    {
+        // The tzName might be invalid for Intl.DateTimeFormat, which throws a RangeError.
+        return nil;
+    }
+}
+
+/*!
+ Renders a "GMT+HH:MM" style label for a fixed offset. Used both for
+ zones created with +timeZoneForSecondsFromGMT: and as a last-resort
+ abbreviation when Intl can't produce a short name for a real zone.
+ */
+function _fixedOffsetName(seconds)
+{
+    var sign = (seconds < 0) ? "-" : "+",
+    absSeconds = Math.abs(seconds),
+    hours = Math.floor(absSeconds / 3600),
+    minutes = Math.floor((absSeconds % 3600) / 60);
+
+    return @"GMT" + sign + (hours < 10 ? "0" : "") + hours + ":" + (minutes < 10 ? "0" : "") + minutes;
+}
+
+/*!
+ Determines, for a real IANA zone, which of its two yearly offsets is the
+ standard (non-DST) one and which is the daylight one, by sampling a
+ January and a July instant and comparing: DST is always the more-advanced
+ of the two, regardless of hemisphere. Also hands back a UTC instant that
+ falls in each so callers can ask Intl for the name at that instant. Does
+ not model historical rule changes mid-year; this is a current-rules
+ snapshot, same boundary the underlying Intl/tzdata itself has.
+ */
+function _standardAndDaylightOffsetsForZone(tzName)
+{
+    var cached = _stdDstOffsetCache[tzName];
+
+    if (cached)
+        return cached;
+
+    var year       =  new Date().getUTCFullYear(),
+    janDate    =  new Date(Date.UTC(year, 0, 15, 12)),
+    julDate    =  new Date(Date.UTC(year, 6, 15, 12)),
+    janOffset  =  _offsetMinutesForZone(tzName, janDate),
+    julOffset  =  _offsetMinutesForZone(tzName, julDate);
+
+    if (janOffset === nil || julOffset === nil)
+        return nil;
+
+    var result = (janOffset <= julOffset)
+    ? { standard: janOffset, daylight: julOffset, standardSampleDate: janDate, daylightSampleDate: julDate, observesDST: janOffset !== julOffset }
+    : { standard: julOffset, daylight: janOffset, standardSampleDate: julDate, daylightSampleDate: janDate, observesDST: janOffset !== julOffset };
+
+    _stdDstOffsetCache[tzName] = result;
+
+    return result;
+}
+
+/*!
+ Asks Intl for a zone's display name at a given instant, with a fallback
+ chain for engines that don't support the requested timeZoneName option
+ (e.g. the newer "shortGeneric"/"longGeneric" values) or the given locale
+ tag, so a display name is still produced rather than nothing.
+ */
+function _formatZoneName(tzName, localeCode, date, preferredOption, fallbackOption)
+{
+    var dtf;
+
+    try
+    {
+        dtf = new Intl.DateTimeFormat(localeCode, { timeZone: tzName, timeZoneName: preferredOption });
+    }
+    catch (e)
+    {
+        try
+        {
+            dtf = new Intl.DateTimeFormat(localeCode, { timeZone: tzName, timeZoneName: fallbackOption });
+        }
+        catch (e2)
+        {
+            dtf = new Intl.DateTimeFormat("en", { timeZone: tzName, timeZoneName: fallbackOption });
+        }
+    }
+
+    var parts = dtf.formatToParts(date),
+    tzPart = parts.filter(function (p) { return p.type === "timeZoneName"; })[0];
+
+    return tzPart ? tzPart.value : nil;
+}
+
+/*!
+ Resolves the localized name for a zone at a given style. Standard and
+ DaylightSaving styles must name that specific offset regardless of what
+ date is currently in effect, so they're rendered at a sampled instant
+ known to fall in that offset rather than "now". A fixed-offset zone (see
+ +timeZoneForSecondsFromGMT:) has no separate long/generic name in any
+ style; its GMT-offset label is returned for all six.
+ */
+function _localizedNameForZone(tzName, style, locale, fixedOffsetSecondsOrNil)
+{
+    if (fixedOffsetSecondsOrNil !== nil && fixedOffsetSecondsOrNil !== undefined)
+        return _fixedOffsetName(fixedOffsetSecondsOrNil);
+
+    var localeCode = (locale && [locale objectForKey:CPLocaleLanguageCode]) || "en";
+
+    try
+    {
+        switch (style)
+        {
+            case CPTimeZoneNameStyleShortGeneric:
+                return _formatZoneName(tzName, localeCode, [CPDate date], "shortGeneric", "short");
+
+            case CPTimeZoneNameStyleGeneric:
+                return _formatZoneName(tzName, localeCode, [CPDate date], "longGeneric", "long");
+
+            case CPTimeZoneNameStyleShortStandard:
+            case CPTimeZoneNameStyleShortDaylightSaving:
+            {
+                var offsets = _standardAndDaylightOffsetsForZone(tzName);
+
+                if (!offsets)
+                    return nil;
+
+                var wantsDaylight = (style === CPTimeZoneNameStyleShortDaylightSaving) && offsets.observesDST,
+                refDate = wantsDaylight ? offsets.daylightSampleDate : offsets.standardSampleDate;
+
+                return _formatZoneName(tzName, localeCode, refDate, "short", "short");
+            }
+
+            case CPTimeZoneNameStyleStandard:
+            case CPTimeZoneNameStyleDaylightSaving:
+            {
+                var offsets = _standardAndDaylightOffsetsForZone(tzName);
+
+                if (!offsets)
+                    return nil;
+
+                var wantsDaylight = (style === CPTimeZoneNameStyleDaylightSaving) && offsets.observesDST,
+                refDate = wantsDaylight ? offsets.daylightSampleDate : offsets.standardSampleDate;
+
+                return _formatZoneName(tzName, localeCode, refDate, "long", "long");
+            }
+        }
+    }
+    catch (e)
+    {
+        return nil;
+    }
+
+    return nil;
+}
+
+/*!
+ Resolves the runtime's own current zone as a CPTimeZone: prefer the
+ IANA name Intl resolves to (DST-correct), and fall back to a fixed-offset zone
+ built from the JS Date offset if Intl isn't available at all. Always
+ succeeds.
+ */
+function _systemTimeZoneFromRuntime()
+{
+    var date = new Date();
+
+    try
+    {
+        var ianaName = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        if (ianaName && _isValidTimeZoneName(ianaName))
+        {
+            var zone = [CPTimeZone timeZoneWithName:ianaName];
+
+            if (zone)
+                return zone;
+        }
+    }
+    catch (e)
+    {
+        // Intl unsupported, or resolvedOptions().timeZone unavailable.
+    }
+
+    return [CPTimeZone timeZoneForSecondsFromGMT:-date.getTimezoneOffset() * 60];
+}
+
+/*!
+ @class CPTimeZone
+ @ingroup foundation
+ @brief CPTimeZone is a class to define the behavior of time zone object (like CPDatePicker)
+ */
 @implementation CPTimeZone : CPObject
 {
-    CPData      _data           @accessors(property=data, readonly);
-    CPInteger   _secondsFromGMT @accessors(property=secondFromGMT, readonly);
-    CPString    _abbreviation   @accessors(property=abbreviation, readonly);
-    CPString    _name           @accessors(property=name, readonly);
+    CPData      _data                @accessors(property=data, readonly);
+    CPInteger   _secondsFromGMT      @accessors(property=secondFromGMT, readonly);
+    CPString    _abbreviation        @accessors(property=abbreviation, readonly);
+    CPString    _name                @accessors(property=name, readonly);
+
+    // Set only for zones created with +timeZoneForSecondsFromGMT:, which per
+    // Apple's contract never observe daylight saving time.
+    BOOL        _hasFixedOffset;
+    CPInteger   _fixedOffsetSeconds;
 }
 
 /*! Initialize the default value of the class
-*/
+ */
 + (void)initialize
 {
     if (self !== [CPTimeZone class])
         return;
 
-    knownTimeZoneNames = [
-        @"Africa/Addis_Ababa",
-        @"Africa/Harare",
-        @"Africa/Lagos",
-        @"America/Argentina/Buenos_Aires",
-        @"America/Bogota",
-        @"America/Chicago",
-        @"America/Denver",
-        @"America/Halifax",
-        @"America/Juneau",
-        @"America/Lima",
-        @"America/Los_Angeles",
-        @"America/New_York",
-        @"America/Santiago",
-        @"America/Sao_Paulo",
-        @"Asia/Bangkok",
-        @"Asia/Calcutta",
-        @"Asia/Dhaka",
-        @"Asia/Dubai",
-        @"Asia/Hong_Kong",
-        @"Asia/Jakarta",
-        @"Asia/Karachi",
-        @"Asia/Manila",
-        @"Asia/Seoul",
-        @"Asia/Singapore",
-        @"Asia/Tehran",
-        @"Asia/Tokyo",
-        @"Europe/Istanbul",
-        @"Europe/Lisbon",
-        @"Europe/London",
-        @"Europe/Moscow",
-        @"Europe/Paris",
-        @"GMT",
-        @"Pacific/Auckland",
-        @"Pacific/Honolulu",
-        @"UTC",
-     ];
+    knownTimeZoneNames = [];
 
-    // Prefer the runtime's own IANA database, when it exposes one, over the
-    // hardcoded 48-city list above: it's the full current set, not a snapshot
-    // that will silently drift the way the hand-maintained tables above have.
+    // Prefer the runtime's own IANA database when it exposes one.
     if (typeof Intl !== "undefined" && typeof Intl.supportedValuesOf === "function")
     {
         try
@@ -202,46 +347,42 @@ function _abbreviationForNameAndDate(tzName, date)
 
             if (supportedZones && supportedZones.length > 0)
             {
-                var zones = [];
-                var hasGMT = false;
-                var hasUTC = false;
                 var count = supportedZones.length;
 
-                // Iterate using primitive property access.
-                // The array returned by Intl across the runtime bridge may lack
-                // standard Array prototypes (e.g., slice, indexOf). A standard loop
-                // ensures safe data extraction into a local array without triggering
-                // prototype resolution exceptions or relying on CPArray.
                 for (var i = 0; i < count; i++)
                 {
-                    var zone = supportedZones[i];
-                    zones[i] = zone;
-
-                    if (zone === @"GMT")
-                        hasGMT = true;
-                    else if (zone === @"UTC")
-                        hasUTC = true;
+                    knownTimeZoneNames[i] = supportedZones[i];
                 }
-
-                // Explicitly restore legacy aliases if the host engine omits them.
-                // Engines adhering strictly to canonical IANA identifiers omit "GMT"
-                // and "UTC". CPTimeZone's static dictionaries map these directly,
-                // requiring their presence to initialize localTimeZone in UTC environments.
-                if (!hasGMT)
-                    zones[zones.length] = @"GMT";
-
-                if (!hasUTC)
-                    zones[zones.length] = @"UTC";
-
-                knownTimeZoneNames = zones;
             }
         }
         catch (e)
         {
-            // Fall through, keep the hardcoded list above.
+            // Fall through.
         }
     }
 
+    var hasGMT = false;
+    var hasUTC = false;
+
+    for (var i = 0, count = knownTimeZoneNames.length; i < count; i++)
+    {
+        if (knownTimeZoneNames[i] === @"GMT")
+            hasGMT = true;
+        else if (knownTimeZoneNames[i] === @"UTC")
+            hasUTC = true;
+    }
+
+    if (!hasGMT)
+        knownTimeZoneNames[knownTimeZoneNames.length] = @"GMT";
+
+    if (!hasUTC)
+        knownTimeZoneNames[knownTimeZoneNames.length] = @"UTC";
+
+    // A curated abbreviation -> canonical name lookup for +timeZoneWithAbbreviation:.
+    // This stays a fixed, hand-maintained set deliberately: abbreviations are
+    // not unique across regions (CST, IST, EST each name more than one real
+    // zone), so this table is a documented best-effort convenience, not a
+    // source of truth for offsets or names the way it was before.
     abbreviationDictionary = @{
         @"ADT" :   @"America/Halifax",
         @"AKDT" :  @"America/Juneau",
@@ -294,125 +435,11 @@ function _abbreviationForNameAndDate(tzName, date)
         @"WIT" :   @"Asia/Jakarta"
     };
 
-    timeDifferenceFromUTC = @{
-        @"ADT" :    -180,
-        @"AKDT" :   -480,
-        @"AKST" :   -540,
-        @"ART" :    -180,
-        @"AST" :    -240,
-        @"BDT" :    360,
-        @"BRST" :   -120,
-        @"BRT" :    -180,
-        @"BST" :    60,
-        @"CAT" :    120,
-        @"CDT" :    -300,
-        @"CEST" :   120,
-        @"CET" :    60,
-        @"CLST" :   -180,
-        @"CLT" :    -240,
-        @"COT" :    -300,
-        @"CST" :    -360,
-        @"EAT" :    180,
-        @"EDT" :    -240,
-        @"EEST" :   180,
-        @"EET" :    120,
-        @"EST" :    -300,
-        @"GMT" :    0,
-        @"GST" :    240,
-        @"HKT" :    480,
-        @"HST" :    -600,
-        @"ICT" :    420,
-        @"IRST" :   210,
-        @"IST" :    330,
-        @"JST" :    540,
-        @"KST" :    540,
-        @"MDT" :    -360,
-        @"MSD" :    240,   // Stale: Russia abolished DST in 2014. No current offset
-                            // is correct for a distinct "Moscow Summer Time"; left
-                            // unfixed rather than fabricated. See CPTimeZone redesign.
-        @"MSK" :    180,
-        @"MST" :    -420,
-        @"NZDT" :   780,
-        @"NZST" :   720,
-        @"PDT" :    -420,
-        @"PET" :    -300,
-        @"PHT" :    480,
-        @"PKT" :    300,
-        @"PST" :    -480,
-        @"SGT" :    480,
-        @"UTC" :    0,
-        @"WAT" :    60,
-        @"WEST" :   60,
-        @"WET" :    0,
-        @"WIT" :    420
-    };
+    timeZoneDataVersion = nil;
 
-    var englishLocalizedName = @{
-        @"EDT" :    [@"Eastern Standard Time", @"EST", @"Eastern Daylight Time", @"EDT", @"Eastern Time", @"ET"],
-        @"GMT" :    [@"GMT", @"GMT", @"GMT", @"GMT", @"GMT", @"GMT"],
-        @"AST" :    [@"Atlantic Standard Time", @"AST", @"Atlantic Daylight Time", @"ADT", @"Atlantic Time", @"AT"],
-        @"IRST" :   [@"Iran Standard Time", @"GMT+03:30", @"Iran Daylight Time", @"GMT+03:30", @"Iran Time", @"Iran Time"],
-        @"ICT" :    [@"Indochina Time", @"GMT+07:00", @"GMT+07:00", @"GMT+07:00", @"Indochina Time", @"Thailand Time"],
-        @"PET" :    [@"Peru Standard Time", @"GMT-05:00", @"Peru Summer Time", @"GMT-05:00", @"Peru Standard Time", @"Peru Time"],
-        @"KST" :    [@"Korean Standard Time", @"GMT+09:00", @"Korean Daylight Time", @"GMT+09:00", @"Korean Standard Time", @"South Korea Time"],
-        @"PST" :    [@"Pacific Standard Time", @"PST", @"Pacific Daylight Time", @"PDT", @"Pacific Time", @"PT"],
-        @"CDT" :    [@"Central Standard Time", @"CST", @"Central Daylight Time", @"CDT", @"Central Time", @"CT"],
-        @"EEST" :   [@"Eastern European Standard Time", @"GMT+02:00", @"Eastern European Summer Time", @"GMT+03:00", @"Eastern European Time", @"Turkey Time"],
-        @"NZDT" :   [@"New Zealand Standard Time", @"GMT+12:00", @"New Zealand Daylight Time", @"GMT+13:00", @"New Zealand Time", @"New Zealand Time (Auckland)"],
-        @"WEST" :   [@"Western European Standard Time", @"GMT", @"Western European Summer Time", @"GMT+01:00", @"Western European Time", @"Portugal Time (Lisbon)"],
-        @"EAT" :    [@"East Africa Time", @"GMT+03:00", @"GMT+03:00", @"GMT+03:00", @"East Africa Time", @"Ethiopia Time"],
-        @"HKT" :    [@"Hong Kong Standard Time", @"GMT+08:00", @"Hong Kong Summer Time", @"GMT+08:00", @"Hong Kong Standard Time", @"Hong Kong SAR China Time"],
-        @"IST" :    [@"India Standard Time", @"GMT+05:30", @"GMT+05:30", @"GMT+05:30", @"India Standard Time", @"India Time"],
-        @"MDT" :    [@"Mountain Standard Time", @"MST", @"Mountain Daylight Time", @"MDT", @"Mountain Time", @"MT"],
-        @"NZST" :   [@"New Zealand Standard Time", @"GMT+12:00", @"New Zealand Daylight Time", @"GMT+13:00", @"New Zealand Time", @"New Zealand Time (Auckland)"],
-        @"WIT" :    [@"Western Indonesia Time", @"GMT+07:00", @"GMT+07:00", @"GMT+07:00", @"Western Indonesia Time", @"Indonesia Time (Jakarta)"],
-        @"ADT" :    [@"Atlantic Standard Time", @"AST", @"Atlantic Daylight Time", @"ADT", @"Atlantic Time", @"AT"],
-        @"BST" :    [@"Greenwich Mean Time", @"GMT", @"British Summer Time", @"GMT+01:00", @"United Kingdom Time", @"United Kingdom Time"],
-        @"ART" :    [@"Argentina Standard Time", @"GMT-03:00", @"Argentina Summer Time", @"GMT-03:00", @"Argentina Standard Time", @"Argentina Time (Buenos Aires)"],
-        @"CAT" :    [@"Central Africa Time", @"GMT+02:00", @"GMT+02:00", @"GMT+02:00", @"Central Africa Time", @"Zimbabwe Time"],
-        @"GST" :    [@"Gulf Standard Time", @"GMT+04:00", @"GMT+04:00", @"GMT+04:00", @"Gulf Standard Time", @"United Arab Emirates Time"],
-        @"PDT" :    [@"Pacific Standard Time", @"PST", @"Pacific Daylight Time", @"PDT", @"Pacific Time", @"PT"],
-        @"SGT" :    [@"Singapore Standard Time", @"GMT+08:00", @"GMT+08:00", @"GMT+08:00", @"Singapore Standard Time", @"Singapore Time"],
-        @"COT" :    [@"Colombia Standard Time", @"GMT-05:00", @"Colombia Summer Time", @"GMT-05:00", @"Colombia Standard Time", @"Colombia Time"],
-        @"PKT" :    [@"Pakistan Standard Time", @"GMT+05:00", @"Pakistan Summer Time", @"GMT+05:00", @"Pakistan Standard Time", @"Pakistan Time"],
-        @"EET" :    [@"Eastern European Standard Time", @"GMT+02:00", @"Eastern European Summer Time", @"GMT+03:00", @"Eastern European Time", @"Turkey Time"],
-        @"UTC" :    [@"GMT", @"GMT", @"GMT", @"GMT", @"GMT", @"GMT"],
-        @"WAT" :    [@"West Africa Standard Time", @"GMT+01:00", @"West Africa Summer Time", @"GMT+01:00", @"West Africa Standard Time", @"Nigeria Time"],
-        @"EST" :    [@"Eastern Standard Time", @"EST", @"Eastern Daylight Time", @"EDT", @"Eastern Time", @"ET"],
-        @"JST" :    [@"Japan Standard Time", @"GMT+09:00", @"Japan Daylight Time", @"GMT+09:00", @"Japan Standard Time", @"Japan Time"],
-        @"CLST" :   [@"Chile Standard Time", @"GMT-04:00", @"Chile Summer Time", @"GMT-04:00", @"Chile Time", @"Chile Time (Santiago)"],
-        @"CET" :    [@"Central European Standard Time", @"GMT+01:00", @"Central European Summer Time", @"GMT+02:00", @"Central European Time", @"France Time"],
-        @"BDT" :    [@"Bangladesh Standard Time", @"GMT+06:00", @"Bangladesh Summer Time", @"GMT+06:00", @"Bangladesh Standard Time", @"Bangladesh Time"],
-        @"MSK" :    [@"Moscow Standard Time", @"GMT+04:00", @"Moscow Summer Time", @"GMT+04:00", @"Moscow Standard Time", @"Russia Time (Moscow)"],
-        @"AKDT" :   [@"Alaska Standard Time", @"AKST", @"Alaska Daylight Time", @"AKDT", @"Alaska Time", @"AKT"],
-        @"CLT" :    [@"Chile Standard Time", @"GMT-04:00", @"Chile Summer Time", @"GMT-04:00", @"Chile Time", @"Chile Time (Santiago)"],
-        @"AKST" :   [@"Alaska Standard Time", @"AKST", @"Alaska Daylight Time", @"AKDT", @"Alaska Time", @"AKT"],
-        @"BRST" :   [@"Brasilia Standard Time", @"GMT-03:00", @"Brasilia Summer Time", @"GMT-03:00", @"Brasilia Time", @"Brazil Time (Sao Paulo)"],
-        @"BRT" :    [@"Brasilia Standard Time", @"GMT-03:00", @"Brasilia Summer Time", @"GMT-03:00", @"Brasilia Time", @"Brazil Time (Sao Paulo)"],
-        @"CEST" :   [@"Central European Standard Time", @"GMT+01:00", @"Central European Summer Time", @"GMT+02:00", @"Central European Time", @"France Time"],
-        @"CST" :    [@"Central Standard Time", @"CST", @"Central Daylight Time", @"CDT", @"Central Time", @"CT"],
-        @"HST" :    [@"Hawaii-Aleutian Standard Time", @"HST", @"Hawaii-Aleutian Daylight Time", @"HDT", @"Hawaii-Aleutian Standard Time", @"HST"],
-        @"MSD" :    [@"Moscow Standard Time", @"GMT+04:00", @"Moscow Summer Time", @"GMT+04:00", @"Moscow Standard Time", @"Russia Time (Moscow)"],
-        @"MST" :    [@"Mountain Standard Time", @"MST", @"Mountain Daylight Time", @"MDT", @"Mountain Time", @"MT"],
-        @"PHT" :    [@"Philippine Standard Time", @"GMT+08:00", @"Philippine Summer Time", @"GMT+08:00", @"Philippine Standard Time", @"Philippines Time"],
-        @"WET" :    [@"Western European Standard Time", @"GMT", @"Western European Summer Time", @"GMT+01:00", @"Western European Time", @"Portugal Time (Lisbon)"]
-        };
-
-    var date = [CPDate date],
-        abbreviation = abbreviationForDate(date);
-
-    localTimeZone = [self timeZoneWithAbbreviation:abbreviation];
+    localTimeZone = _systemTimeZoneFromRuntime();
     systemTimeZone = localTimeZone;
     defaultTimeZone = localTimeZone;
-
-    localizedName = @{
-        @"en" : englishLocalizedName,
-        @"fr" : @{},
-        @"de" : @{},
-        @"es" : @{}
-    };
-
-    timeZoneDataVersion = nil;
 }
 
 
@@ -420,10 +447,10 @@ function _abbreviationForNameAndDate(tzName, date)
 // MARK: Class constructor
 
 /*! Returns a time zone from the given abbreviation.
-    Returns nil if the given abbreviation doesn't match with any abbreviations
-    @param abbreviation the given abreviation
-    @return a new instance of CPTimeZone
-*/
+ Returns nil if the given abbreviation doesn't match with any abbreviations
+ @param abbreviation the given abreviation
+ @return a new instance of CPTimeZone
+ */
 + (id)timeZoneWithAbbreviation:(CPString)abbreviation
 {
     if (![abbreviationDictionary containsKey:abbreviation])
@@ -433,90 +460,94 @@ function _abbreviationForNameAndDate(tzName, date)
 }
 
 /*! Return a time zone from the given timeZone name
-    Returns nil if the given timeZone name doesn't match with any abbreviations
-    Raises an exception if tzName is nil
-    @param tzName the timeZone name
-    @return a new instance of CPTimeZone
-*/
+ Returns nil if the given timeZone name doesn't match with any abbreviations
+ Raises an exception if tzName is nil
+ @param tzName the timeZone name
+ @return a new instance of CPTimeZone
+ */
 + (id)timeZoneWithName:(CPString)tzName
 {
     return [[CPTimeZone alloc] initWithName:tzName];
 }
 
 /*! Return a time zone from the given timeZone name and data
-    Returns nil if the given timeZone name doesn't match with any abbreviations
-    Raises an exception if tzName is nil
-    @param tzName the timeZone name
-    @param data the data
-    @return a new instance of CPTimeZone
-*/
+ Returns nil if the given timeZone name doesn't match with any abbreviations
+ Raises an exception if tzName is nil
+ @param tzName the timeZone name
+ @param data the data
+ @return a new instance of CPTimeZone
+ */
 + (id)timeZoneWithName:(CPString)tzName data:(CPData)data
 {
     return [[CPTimeZone alloc] initWithName:tzName data:data];
 }
 
-/*! Return a time zone from the given seconds
-    Returns nil if the number of seconds doesn't match with any offset
-    @param seconds the number of seconds
-    @return a new instance of CPTimeZone
-*/
+/*! Return a fixed-offset time zone for the given number of seconds from GMT.
+ Per Apple's documented contract for this constructor, the returned zone
+ never observes daylight saving time. Offsets are rounded to the nearest
+ minute; offsets more than +/- 18 hours are disallowed and return nil.
+ @param seconds the number of seconds
+ @return a new instance of CPTimeZone
+ */
 + (id)timeZoneForSecondsFromGMT:(CPInteger)seconds
 {
-    var minutes = seconds / 60,
-        keys = [timeDifferenceFromUTC keyEnumerator],
-        key,
-        abbreviation = nil;
-
-    while (key = [keys nextObject])
-    {
-        var value = [timeDifferenceFromUTC valueForKey:key];
-
-        if (value == minutes)
-        {
-            abbreviation = key;
-            break;
-        }
-    }
-
-    if (!abbreviation)
+    if (Math.abs(seconds) > 18 * 3600)
         return nil;
 
-    return [self timeZoneWithAbbreviation:abbreviation];
+    var roundedSeconds = Math.round(seconds / 60) * 60;
+
+    return [[CPTimeZone alloc] _initWithFixedOffsetSeconds:roundedSeconds];
 }
 
 /*! @ignore
-*/
+ */
 + (id)_timeZoneFromString:(CPString)aTimeZoneString style:(NSTimeZoneNameStyle)style locale:(CPLocale)_locale
 {
     if ([abbreviationDictionary containsKey:aTimeZoneString])
         return [self timeZoneWithAbbreviation:aTimeZoneString];
 
-    var dict = [localizedName valueForKey:[_locale objectForKey:CPLocaleLanguageCode]],
-        keys = [dict keyEnumerator],
-        key;
+    var localeCode = (_locale && [_locale objectForKey:CPLocaleLanguageCode]) || "en",
+    cacheKey = localeCode + "|" + style,
+    map = _nameToZoneCache[cacheKey];
 
-    while (key = [keys nextObject])
+    if (!map)
     {
-        var value = [[dict valueForKey:key] objectAtIndex:style];
+        map = {};
 
-        if ([value isEqualToString:aTimeZoneString])
-            return [self timeZoneWithAbbreviation:key];
+        for (var i = 0, count = knownTimeZoneNames.length; i < count; i++)
+        {
+            var tzName = knownTimeZoneNames[i],
+            displayName = _localizedNameForZone(tzName, style, _locale, nil);
+
+            // First zone found for a given display name wins; a handful of
+            // zones legitimately share a display name (e.g. generic-style
+            // "GMT+02:00" style fallbacks), and any one of them is as valid
+            // a match as another for parsing purposes.
+            if (displayName && !(displayName in map))
+                map[displayName] = tzName;
+        }
+
+        _nameToZoneCache[cacheKey] = map;
     }
 
-    return nil;
+    var matchedName = map[aTimeZoneString];
+
+    return matchedName ? [self timeZoneWithName:matchedName] : nil;
 }
 
 /*! @ignore
-*/
+ */
 + (CPArray)_namesForStyle:(NSTimeZoneNameStyle)style locale:(CPLocale)aLocale
 {
-    var array = [CPArray array],
-        dict = [localizedName valueForKey:[aLocale objectForKey:CPLocaleLanguageCode]],
-        keys = [dict keyEnumerator],
-        key;
+    var array = [CPArray array];
 
-    while (key = [keys nextObject])
-        [array addObject:[[dict valueForKey:key] objectAtIndex:style]];
+    for (var i = 0, count = knownTimeZoneNames.length; i < count; i++)
+    {
+        var displayName = _localizedNameForZone(knownTimeZoneNames[i], style, aLocale, nil);
+
+        if (displayName)
+            [array addObject:displayName];
+    }
 
     return array;
 }
@@ -525,72 +556,68 @@ function _abbreviationForNameAndDate(tzName, date)
 // MARK: Class accessors
 
 /*! Return the timeZoneDataVersion (not yet implemented)
-*/
+ */
 + (CPString)timeZoneDataVersion
 {
-    // TODO : don't know what to do ^^
     return timeZoneDataVersion;
 }
 
 /*! Return the localTimeZone
-*/
+ */
 + (CPTimeZone)localTimeZone
 {
     return localTimeZone;
 }
 
 /*! Return the defaultTimeZone
-*/
+ */
 + (CPTimeZone)defaultTimeZone
 {
     return defaultTimeZone;
 }
 
 /*! Set the defaultTimeZone
-    @param aTimeZone the defaultTimeZone
-*/
+ @param aTimeZone the defaultTimeZone
+ */
 + (void)setDefaultTimeZone:(CPTimeZone)aTimeZone
 {
     defaultTimeZone = aTimeZone;
 }
 
 /*! Reset the systemTimeZone
-    This will send the notification CPSystemTimeZoneDidChangeNotification
-*/
+ This will send the notification CPSystemTimeZoneDidChangeNotification
+ */
 + (void)resetSystemTimeZone
 {
-    var date = [CPDate date],
-        abbreviation = abbreviationForDate(date);
-
-    systemTimeZone = [self timeZoneWithAbbreviation:abbreviation];
+    systemTimeZone = _systemTimeZoneFromRuntime();
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPSystemTimeZoneDidChangeNotification object:systemTimeZone];
 }
 
 /*! Return the systemTimeZone
-*/
+ */
 + (CPTimeZone)systemTimeZone
 {
     return systemTimeZone;
 }
 
 /*! Return the abbreviationDictionary
-*/
+ */
 + (CPDictionary)abbreviationDictionary
 {
     return abbreviationDictionary;
 }
 
 /*! Set the abbreviationDictionary
-    @param dict
-*/
+ @param dict
+ */
 + (void)setAbbreviationDictionary:(CPDictionary)dict
 {
     abbreviationDictionary = dict;
 }
 
 /*! Return the knownTimeZoneNames
-*/
+ */
 + (CPArray)knownTimeZoneNames
 {
     return knownTimeZoneNames;
@@ -598,21 +625,21 @@ function _abbreviationForNameAndDate(tzName, date)
 
 
 // MARK: -
-// MARK: Consructors
+// MARK: Constructors
 
 /*! Init a new time zone with the given time zone name and abbreviation
-    Returns nil if tzName doesn't match with any timeZoneNames or if abbreviation is nil
-    Raises an exception if tzName is nil
-    @param tzName the timeZone name
-    @param abbreviation the abbreviation
-    @return a new timeZone
-*/
+ Returns nil if tzName doesn't match with any timeZoneNames or if abbreviation is nil
+ Raises an exception if tzName is nil
+ @param tzName the timeZone name
+ @param abbreviation the abbreviation
+ @return a new timeZone
+ */
 - (id)_initWithName:(CPString)tzName abbreviation:(CPString)abbreviation
 {
     if (!tzName)
         [CPException raise:CPInvalidArgumentException reason:"Invalid value provided for tzName"];
 
-    if (![knownTimeZoneNames containsObject:tzName] || !abbreviation)
+    if (!_isValidTimeZoneName(tzName) || !abbreviation)
         return nil;
 
     if (self = [super init])
@@ -624,68 +651,74 @@ function _abbreviationForNameAndDate(tzName, date)
     return self;
 }
 
+/*! Init a fixed-offset time zone (see +timeZoneForSecondsFromGMT:).
+ @param seconds the fixed offset, already rounded to the nearest minute
+ */
+- (id)_initWithFixedOffsetSeconds:(CPInteger)seconds
+{
+    if (self = [super init])
+    {
+        _name = _fixedOffsetName(seconds);
+        _abbreviation = _name;
+        _hasFixedOffset = YES;
+        _fixedOffsetSeconds = seconds;
+    }
+
+    return self;
+}
+
 /*! Init a new time zone from the given timeZone name
-    Returns nil if the given timeZone name doesn't match with any abbreviations
-    Raises an exception if tzName is nil
-    @param tzName the timeZone name
-    @return a new instance of CPTimeZone
-*/
+ Returns nil if the given timeZone name isn't a known IANA zone name
+ Raises an exception if tzName is nil
+ @param tzName the timeZone name
+ @return a new instance of CPTimeZone
+ */
 - (id)initWithName:(CPString)tzName
 {
     if (!tzName)
         [CPException raise:CPInvalidArgumentException reason:"Invalid value provided for tzName"];
 
-    if (![knownTimeZoneNames containsObject:tzName])
+    if (!_isValidTimeZoneName(tzName))
         return nil;
 
     if (self = [super init])
     {
         _name = tzName;
 
-        // Determine the abbreviation based on the current date to handle DST.
-        var currentAbbreviation = _abbreviationForNameAndDate(tzName, [CPDate date]);
+        // Determine the abbreviation based on the current date, so it
+        // reflects DST if this zone is presently observing it.
+        var now = [CPDate date],
+        currentAbbreviation = _abbreviationForNameAndDate(tzName, now);
 
-        // If we got a valid abbreviation from the date, and it's one we know about, use it.
-        // Otherwise, fall back to the old logic.
-        if (currentAbbreviation && [abbreviationDictionary containsKey:currentAbbreviation])
+        if (currentAbbreviation)
         {
             _abbreviation = currentAbbreviation;
         }
         else
         {
-            // FALLBACK: Find the first matching abbreviation in the dictionary.
-            // Note: This is not DST-aware and may not be correct, but it preserves
-            // the original behavior for cases where the dynamic lookup fails.
-            var keys = [abbreviationDictionary keyEnumerator],
-                key;
+            // Intl couldn't produce a short name for this zone on this
+            // engine (rare). Synthesize a GMT-offset label from the live
+            // offset instead of failing construction for an otherwise
+            // valid, known zone name.
+            var offsetMinutes = _offsetMinutesForZone(tzName, now);
 
-            while (key = [keys nextObject])
-            {
-                var value = [abbreviationDictionary valueForKey:key];
+            if (offsetMinutes === nil)
+                return nil;
 
-                if ([value isEqualToString:_name])
-                {
-                    _abbreviation = key;
-                    break;
-                }
-            }
+            _abbreviation = _fixedOffsetName(offsetMinutes * 60);
         }
-
-        // If no abbreviation could be found by any means, initialization fails.
-        if (!_abbreviation)
-            return nil;
     }
 
     return self;
 }
 
 /*! Return a time zone from the given timeZone name and data
-    Returns nil if the given timeZone name doesn't match with any abbreviations
-    Raises an exception if tzName is nil
-    @param tzName the timeZone name
-    @param data the data
-    @return a new instance of CPTimeZone
-*/
+ Returns nil if the given timeZone name doesn't match with any abbreviations
+ Raises an exception if tzName is nil
+ @param tzName the timeZone name
+ @param data the data
+ @return a new instance of CPTimeZone
+ */
 - (id)initWithName:(CPString)tzName data:(CPData)data
 {
     if (self = [self initWithName:tzName])
@@ -700,52 +733,117 @@ function _abbreviationForNameAndDate(tzName, date)
 // MARK: -
 // MARK: Methods for CPDate
 
-/*! Returns the abbreviation from a date
-    Returns nil if the date is nil
-    @return the abbreviation
-*/
+/*! Returns this time zone's abbreviation at the given date, reflecting DST
+ if this zone observes it and the date falls in it.
+ Returns nil if the date is nil
+ @return the abbreviation
+ */
 - (CPString)abbreviationForDate:(CPDate)date
 {
     if (!date)
         return nil;
 
-    return abbreviationForDate(date);
+    if (_hasFixedOffset)
+        return _abbreviation;
+
+    return _abbreviationForNameAndDate(_name, date) || _abbreviation;
 }
 
-/*! Returns the number of seconds from GMT for the given date
-    Returns nil if the date is nil
-    @param date
-    @return the number of seconds
-*/
+/*! Returns the number of seconds this time zone differs from GMT at the
+ given date. DST-aware: the value varies across the year for zones that
+ observe it. A fixed-offset zone (see +timeZoneForSecondsFromGMT:) always
+ returns the same value regardless of date.
+ Returns nil if the date is nil
+ @param date
+ @return the number of seconds
+ */
 - (CPInteger)secondsFromGMTForDate:(CPDate)date
 {
     if (!date)
         return nil;
 
-    var abbreviation = abbreviationForDate(date);
+    if (_hasFixedOffset)
+        return _fixedOffsetSeconds;
 
-    return [timeDifferenceFromUTC valueForKey:abbreviation] * 60;
+    var offsetMinutes = _offsetMinutesForZone(_name, date);
+
+    return (offsetMinutes === nil) ? nil : offsetMinutes * 60;
 }
 
-/*! Returns the number of seconds from GMT
-    @return the number of seconds
-*/
+/*! Returns the number of seconds this time zone differs from GMT right now.
+ @return the number of seconds
+ */
 - (CPInteger)secondsFromGMT
 {
-    return [timeDifferenceFromUTC valueForKey:_abbreviation] * 60;
+    return [self secondsFromGMTForDate:[CPDate date]];
+}
+
+/*! Returns whether this time zone is currently observing daylight saving time.
+ Always NO for a fixed-offset zone (see +timeZoneForSecondsFromGMT:).
+ @return a bool
+ */
+- (BOOL)isDaylightSavingTime
+{
+    return [self isDaylightSavingTimeForDate:[CPDate date]];
+}
+
+/*! Returns whether this time zone is observing daylight saving time at the given date.
+ Always NO for a fixed-offset zone (see +timeZoneForSecondsFromGMT:).
+ @param date
+ @return a bool
+ */
+- (BOOL)isDaylightSavingTimeForDate:(CPDate)date
+{
+    if (_hasFixedOffset || !date)
+        return NO;
+
+    var offsets = _standardAndDaylightOffsetsForZone(_name);
+
+    if (!offsets || !offsets.observesDST)
+        return NO;
+
+    var current = _offsetMinutesForZone(_name, date);
+
+    return current !== nil && current > offsets.standard;
+}
+
+/*! Returns the daylight saving time offset, in seconds, this time zone is
+ currently applying on top of its standard offset. 0 if not presently
+ observing daylight saving time.
+ @return the number of seconds
+ */
+- (CPTimeInterval)daylightSavingTimeOffset
+{
+    return [self daylightSavingTimeOffsetForDate:[CPDate date]];
+}
+
+/*! Returns the daylight saving time offset, in seconds, this time zone
+ applies on top of its standard offset at the given date. 0 if the date
+ doesn't fall within daylight saving time for this zone.
+ @param date
+ @return the number of seconds
+ */
+- (CPTimeInterval)daylightSavingTimeOffsetForDate:(CPDate)date
+{
+    if (![self isDaylightSavingTimeForDate:date])
+        return 0;
+
+    var offsets = _standardAndDaylightOffsetsForZone(_name);
+
+    return (offsets.daylight - offsets.standard) * 60;
 }
 
 
 // MARK: -
-// MARK: Compars methods
+// MARK: Compare methods
 
-/*! Returns a bool to compare tow timeZones.
-    This is made by the compare of the name and the data of the timeZones
-    @return a bool
-*/
+/*! Returns a bool to compare two timeZones.
+ This is made by comparing the name and the data of the timeZones
+ @return a bool
+ */
 - (BOOL)isEqualToTimeZone:(CPTimeZone)aTimeZone
 {
-    return [[aTimeZone name] isEqualToString:_name] && [aTimeZone data] == _data
+    return [[aTimeZone name] isEqualToString:_name] && [aTimeZone data] == _data;
 }
 
 
@@ -753,9 +851,9 @@ function _abbreviationForNameAndDate(tzName, date)
 // MARK: Description
 
 /*! Returns the description of the timeZone
-    The pattern of the description is : 'name of the timeZone' ('abbreviation of the timeZone') offset 'the timeDifferenceFromGMT'
-    @return the description
-*/
+ The pattern of the description is : 'name of the timeZone' ('abbreviation of the timeZone') offset 'the timeDifferenceFromGMT'
+ @return the description
+ */
 - (CPString)description
 {
     return [CPString stringWithFormat:@"%s (%s) offset %i", _name, _abbreviation, [self secondsFromGMT]];
@@ -766,16 +864,16 @@ function _abbreviationForNameAndDate(tzName, date)
 // MARK: Localized methods
 
 /*! Return a localized string from the given style and locale
-    @param style the style
-    @param locale the locale
-    @return a string
-*/
+ @param style the style
+ @param locale the locale
+ @return a string
+ */
 - (CPString)localizedName:(NSTimeZoneNameStyle)style locale:(CPLocale)locale
 {
-    if (style > 5)
+    if (style < 0 || style > 5)
         return nil;
 
-    return [[[localizedName valueForKey:[locale objectForKey:CPLocaleLanguageCode]] valueForKey:_abbreviation] objectAtIndex:style];
+    return _localizedNameForZone(_name, style, locale, _hasFixedOffset ? _fixedOffsetSeconds : nil);
 }
 
 @end
