@@ -57,11 +57,25 @@ var screenNeedsInitialization   = NO,
                 return [CPApp _sendDelegateApplicationShouldTerminateMessage];
         };
 
-        window.onunload = function()
+        var terminateApplication = function()
         {
             [self closeAllPlatformWindows];
             [CPApp terminate:nil];
         };
+
+        // "unload" is blocked by the permissions policy in current Chrome and prevents the
+        // back/forward cache. "pagehide" fires reliably instead. If event.persisted is true the
+        // page goes into the bfcache and may be restored, so the application must not terminate.
+        if ("onpagehide" in window)
+        {
+            window.addEventListener("pagehide", function(anEvent)
+            {
+                if (!anEvent.persisted)
+                    terminateApplication();
+            }, NO);
+        }
+        else
+            window.onunload = terminateApplication;
     }
 }
 
