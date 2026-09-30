@@ -283,14 +283,10 @@
 
 // 16. KVO: same-parent move reports a paired removal and insertion on childNodes
 //
-// Disabled: structurally impossible with the current accessor-call approach.
-// _CPKVOProxy coalesces nested willChange/didChange calls for the same key
-// on the same object (see _sendNotificationsForKey:changeOptions:isBefore:
-// in CPKeyValueObserving.j); the inner Removal bracket opened by
-// removeObjectFromChildNodesAtIndex: is silently discarded inside the outer
-// Insertion bracket already open on root. Fixing this requires firing a
-// single CPKeyValueChangeReplacement instead of two nested accessor calls.
-- (void)disabled_testKVONotificationsDuringSameParentMove
+// Automatic KVO is off for childNodes. insertObject:inChildNodesAtIndex:
+// sends two separate, unnested brackets, so _CPKVOProxy does not coalesce
+// the removal into the insertion.
+- (void)testKVONotificationsDuringSameParentMove
 {
     var c3 = [CPTreeNode treeNodeWithRepresentedObject:@"child3"];
 
@@ -361,10 +357,9 @@
 
 // 18. KVO: reparenting notifies observers of parentNode
 //
-// Disabled: parentNode has no setParentNode:, so there is no selector for
-// the KVO swizzler to instrument. Not a bug to fix incrementally; requires
-// deciding whether parentNode becomes a real settable property.
-- (void)disabled_testParentNodeNotifiesOnMove
+// parentNode is readonly, so CPTreeNode sends the notification manually.
+// One bracket encloses detach and attach: one notification per move.
+- (void)testParentNodeNotifiesOnMove
 {
     [root insertObject:child1 inChildNodesAtIndex:0];
 
@@ -468,6 +463,68 @@
 
     [self assert:root equals:[root descendantNodeAtIndexPath:nil]];
     [self assert:root equals:[root descendantNodeAtIndexPath:[CPIndexPath indexPathWithIndexes:[]]]];
+}
+
+// 24. KVO: removal notifies childNodes of the parent and parentNode of the child
+- (void)testKVONotificationsDuringRemoval
+{
+    [root insertObject:child1 inChildNodesAtIndex:0];
+
+    [root addObserver:self forKeyPath:@"childNodes" options:0 context:nil];
+    [child1 addObserver:self forKeyPath:@"parentNode" options:0 context:nil];
+
+    [root removeObjectFromChildNodesAtIndex:0];
+
+    [root removeObserver:self forKeyPath:@"childNodes"];
+    [child1 removeObserver:self forKeyPath:@"parentNode"];
+
+    [self assert:2 equals:[_kvoRecordedChanges count]];
+    [self assert:CPKeyValueChangeRemoval equals:[[_kvoRecordedChanges objectAtIndex:0] objectForKey:CPKeyValueChangeKindKey]];
+    [self assert:CPKeyValueChangeSetting equals:[[_kvoRecordedChanges objectAtIndex:1] objectForKey:CPKeyValueChangeKindKey]];
+}
+
+// 25. KVO: same-parent replace reports a removal, then a replacement, on childNodes
+- (void)testKVONotificationsDuringSameParentReplace
+{
+    var c3 = [CPTreeNode treeNodeWithRepresentedObject:@"child3"];
+
+    [root insertObject:child1 inChildNodesAtIndex:0];
+    [root insertObject:child2 inChildNodesAtIndex:1];
+    [root insertObject:c3 inChildNodesAtIndex:2];
+
+    [root addObserver:self forKeyPath:@"childNodes" options:0 context:nil];
+
+    // Array is [child1, child2, c3]. Replace c3 with child1.
+    [root replaceObjectInChildNodesAtIndex:2 withObject:child1];
+
+    [root removeObserver:self forKeyPath:@"childNodes"];
+
+    [self assert:2 equals:[_kvoRecordedChanges count]];
+
+    var removal = [_kvoRecordedChanges objectAtIndex:0],
+        replacement = [_kvoRecordedChanges objectAtIndex:1];
+
+    [self assert:CPKeyValueChangeRemoval equals:[removal objectForKey:CPKeyValueChangeKindKey]];
+    [self assert:0 equals:[[removal objectForKey:CPKeyValueChangeIndexesKey] firstIndex]];
+    [self assert:CPKeyValueChangeReplacement equals:[replacement objectForKey:CPKeyValueChangeKindKey]];
+    [self assert:1 equals:[[replacement objectForKey:CPKeyValueChangeIndexesKey] firstIndex]];
+}
+
+// 26. a same-parent move to position count is out of range and changes nothing
+- (void)testSameParentMovePastEndRaisesWithoutMutation
+{
+    [root insertObject:child1 inChildNodesAtIndex:0];
+    [root insertObject:child2 inChildNodesAtIndex:1];
+
+    var e = [self assertThrows:function()
+    {
+        [root insertObject:child1 inChildNodesAtIndex:2];
+    }];
+
+    [self assert:CPRangeException equals:[e name]];
+    [self assert:2 equals:[root countOfChildNodes]];
+    [self assert:child1 equals:[root objectInChildNodesAtIndex:0]];
+    [self assert:root equals:[child1 parentNode]];
 }
 @end
 
