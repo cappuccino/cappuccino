@@ -31,6 +31,10 @@
 
 @global document
 
+/*!
+    @global
+    Font trait mask constants used to specify font characteristics.
+*/
 CPItalicFontMask                    = 1 << 0;
 CPBoldFontMask                      = 1 << 1;
 CPUnboldFontMask                    = 1 << 2;
@@ -44,13 +48,14 @@ CPCompressedFontMask                = 1 << 9;
 CPFixedPitchFontMask                = 1 << 10;
 CPUnitalicFontMask                  = 1 << 24;
 
-
+/* @ignore */
 var CPSharedFontManager     = nil,
     CPFontManagerFactory    = nil,
     CPFontPanelFactory      = nil;
 
-/*
-    modifyFont: sender's tag
+/*!
+    @global
+    Font modification action tags for \c modifyFont:.
 */
 CPNoFontChangeAction    = 0;
 CPViaPanelFontAction    = 1;
@@ -63,6 +68,9 @@ CPRemoveTraitFontAction = 7;
 
 /*!
     @ingroup appkit
+    @class CPFontManager
+    The CPFontManager class manages font conversion, font selection, available fonts detection,
+    and interaction with the shared \c CPFontPanel.
 */
 @implementation CPFontManager : CPObject
 {
@@ -82,9 +90,10 @@ CPRemoveTraitFontAction = 7;
 }
 
 // Getting the Shared Font Manager
+
 /*!
-    Returns the application's font manager. If the font
-    manager does not exist yet, it will be created.
+    Returns the shared font manager for the application, creating it if it does not yet exist.
+    @return the shared \c CPFontManager instance
 */
 + (CPFontManager)sharedFontManager
 {
@@ -95,24 +104,29 @@ CPRemoveTraitFontAction = 7;
 }
 
 // Changing the Default Font Conversion Classes
+
 /*!
-    Sets the class that will be used to create the application's
-    font manager.
+    Sets the class used to instantiate the application's shared font manager.
+    @param aClass the font manager subclass
 */
 + (void)setFontManagerFactory:(Class)aClass
 {
     CPFontManagerFactory = aClass;
 }
+
 /*!
-    Sets the class that will be used to create the application's
-    Font panel.
+    Sets the class used to instantiate the application's font panel.
+    @param aClass the font panel subclass
 */
 + (void)setFontPanelFactory:(Class)aClass
 {
     CPFontPanelFactory = aClass;
 }
 
-
+/*!
+    Initializes a newly allocated font manager instance.
+    @return the initialized font manager
+*/
 - (id)init
 {
     if (self = [super init])
@@ -124,7 +138,8 @@ CPRemoveTraitFontAction = 7;
 }
 
 /*!
-    Returns an array of the available fonts
+    Returns an array of names of all fonts available in the current environment.
+    @return an array of available font family name strings
 */
 - (CPArray)availableFonts
 {
@@ -159,14 +174,20 @@ CPRemoveTraitFontAction = 7;
 }
 
 /*!
-    Returns the available fonts matching the provided name.
+    Returns whether the font matching the provided name is available.
     @param aFontName the name of the font
+    @return \c YES if available, otherwise \c NO
 */
 - (CPArray)fontWithNameIsAvailable:(CPString)aFontName
 {
     return _CPFontDetectFontAvailable(aFontName);
 }
 
+/*!
+    Sets the currently selected font and indicates whether multiple fonts are selected.
+    @param aFont the selected font
+    @param aFlag \c YES if multiple fonts are in the current selection
+*/
 - (void)setSelectedFont:(CPFont)aFont isMultiple:(BOOL)aFlag
 {
     _selectedFont = aFont;
@@ -175,23 +196,41 @@ CPRemoveTraitFontAction = 7;
     // TODO Notify CPFontPanel when it exists.
 }
 
+/*!
+    Returns the currently selected font.
+    @return the selected \c CPFont
+*/
 - (CPFont)selectedFont
 {
     return _selectedFont;
 }
 
+/*!
+    Returns the approximate weight of the given font.
+    @param aFont the font to evaluate
+    @return the font weight (e.g. 5 for normal, 9 for bold)
+*/
 - (int)weightOfFont:(CPFont)aFont
 {
-    // TODO Weight 5 is a normal of book weight and 9 and above is bold, but it would be nice to be more
-    // precise than that.
     return [aFont isBold] ? 9 : 5;
 }
 
+/*!
+    Returns the trait mask for the specified font.
+    @param aFont the font to inspect
+    @return the bitmask of font traits
+*/
 - (CPFontTraitMask)traitsOfFont:(CPFont)aFont
 {
     return ([aFont isBold] ? CPBoldFontMask : 0) | ([aFont isItalic] ? CPItalicFontMask : 0);
 }
 
+/*!
+    Converts a font to use the specified typeface while preserving size and styling traits.
+    @param aFont the original font
+    @param aTypeface the new typeface name
+    @return the converted \c CPFont
+*/
 - (CPFont)convertFont:(CPFont)aFont toFace:(CPString)aTypeface
 {
     if (!aFont)
@@ -206,6 +245,10 @@ CPRemoveTraitFontAction = 7;
     return aFont;
 }
 
+/*!
+    Action method that adds traits to the current font selection.
+    @param sender the object triggering the action
+*/
 - (@action)addFontTrait:(id)sender
 {
     var tag = sender;
@@ -219,15 +262,19 @@ CPRemoveTraitFontAction = 7;
     [self sendAction];
 }
 
+/*!
+    Sends the font change action message to the target object.
+    @return \c YES if the action was sent successfully
+*/
 - (BOOL)sendAction
 {
     return [CPApp sendAction:_action to:_target from:self];
 }
 
-
 /*!
-    This method open the font panel, create it if necessary.
-    @param sender The object that sent the message.
+    Returns the shared font panel, optionally creating it if it does not yet exist.
+    @param createIt \c YES to create the panel if it does not exist
+    @return the \c CPFontPanel instance, or \c nil
 */
 - (CPFontPanel)fontPanel:(BOOL)createIt
 {
@@ -258,7 +305,7 @@ CPRemoveTraitFontAction = 7;
     if (fontTrait & CPItalicFontMask)
         symbolicTrait |= CPFontItalicTrait;
 
-    if (fontTrait & CPUnboldFontMask) /* FIXME: this only change CPFontSymbolicTrait what about CPFontWeightTrait */
+    if (fontTrait & CPUnboldFontMask)
         symbolicTrait &= ~CPFontBoldTrait;
 
     if (fontTrait & CPUnitalicFontMask)
@@ -282,17 +329,17 @@ CPRemoveTraitFontAction = 7;
 }
 
 /*!
-    Convert a font to not have the specified Font traits. The font is unchanged expect for the specified Font traits.
-    @param aFont The font to convert.
-    @param fontTrait The font traits mask to remove.
-    @result The converted font or \c aFont if the conversion failed.
+    Converts a font to remove the specified traits while preserving other attributes.
+    @param aFont the font to convert
+    @param fontTrait the font traits mask to remove
+    @return the converted font, or \c aFont if conversion failed
 */
 - (CPFont)convertFont:(CPFont)aFont toNotHaveTrait:(CPFontTraitMask)fontTrait
 {
     var attributes = [[[aFont fontDescriptor] fontAttributes] copy],
         symbolicTrait = [[aFont fontDescriptor] symbolicTraits];
 
-    if ((fontTrait & CPBoldFontMask) || (fontTrait & CPUnboldFontMask)) /* FIXME: see convertFont:toHaveTrait: about CPFontWeightTrait */
+    if ((fontTrait & CPBoldFontMask) || (fontTrait & CPUnboldFontMask))
         symbolicTrait &= ~CPFontBoldTrait;
 
     if ((fontTrait & CPItalicFontMask) || (fontTrait & CPUnitalicFontMask))
@@ -316,23 +363,31 @@ CPRemoveTraitFontAction = 7;
 }
 
 /*!
-    Convert a font to have specified size. The font is unchanged expect for the specified size.
-    @param aFont The font to convert.
-    @param aSize The new font size.
-    @result The converted font or \c aFont if the conversion failed.
+    Converts a font to have the specified size in points.
+    @param aFont the font to convert
+    @param aSize the new font size
+    @return the converted \c CPFont
 */
 - (CPFont)convertFont:(CPFont)aFont toSize:(float)aSize
 {
     var descriptor = [aFont fontDescriptor];
 
-    return [[aFont class] fontWithDescriptor: descriptor size:aSize]
+    return [[aFont class] fontWithDescriptor:descriptor size:aSize];
 }
 
+/*!
+    Orders the shared font panel to the front.
+    @param sender the object requesting the action
+*/
 - (void)orderFrontFontPanel:(id)sender
 {
     [[self fontPanel:YES] orderFront:sender];
 }
 
+/*!
+    Modifies the current font according to the sender's tag action.
+    @param sender the UI element triggering the modification
+*/
 - (void)modifyFont:(id)sender
 {
     _fontAction = [sender tag];
@@ -343,8 +398,8 @@ CPRemoveTraitFontAction = 7;
 }
 
 /*!
-    This method causes the receiver to send its action message.
-    @param sender The object that sent the message. (a Font panel)
+    Notifies the receiver that a font modification was made via the font panel and sends the action.
+    @param sender the font panel initiating the modification
 */
 - (void)modifyFontViaPanel:(id)sender
 {
@@ -356,9 +411,9 @@ CPRemoveTraitFontAction = 7;
 }
 
 /*!
-    Convert a font according to current font changes, provided by the object that initiated the font change.
-    @param aFont The font to convert.
-    @result The converted font or \c aFont if the conversion failed.
+    Converts the provided font according to the current active font action.
+    @param aFont the font to convert
+    @return the converted \c CPFont
 */
 - (CPFont)convertFont:(CPFont)aFont
 {
@@ -387,13 +442,12 @@ CPRemoveTraitFontAction = 7;
             break;
 
         case CPSizeUpFontAction:
-            newFont = [self convertFont:aFont toSize:[aFont size] + 1.0]; /* any limit ? */
+            newFont = [self convertFont:aFont toSize:[aFont size] + 1.0];
             break;
 
         case CPSizeDownFontAction:
             if ([aFont size] > 1)
                 newFont = [self convertFont:aFont toSize:[aFont size] - 1.0];
-            /* else CPBeep() :-p */
             break;
 
         default:
@@ -407,44 +461,29 @@ CPRemoveTraitFontAction = 7;
 
 @end
 
+/* @ignore */
 var _CPFontDetectSpan,
     _CPFontDetectReferenceFonts,
     _CPFontDetectAllFonts = [
-        /* "04b_21", "A Charming Font", "Abadi MT Condensed", "Abadi MT Condensed Extra Bold", "Abadi MT Condensed Light", "Academy Engraved LET", "Agency FB", "Alba", "Alba Matter", "Alba Super", "Algerian",*/
         "American Typewriter",
-        /* "Andale Mono", "Andale Mono IPA", "Andy", */
         "Apple Chancery", "Arial", "Arial Black", "Arial Narrow", "Arial Rounded MT Bold", "Arial Unicode MS",
-        /* "Avant Garde", "Avantgarde", "Baby Kruffy", "Base 02", "Baskerville", "Baskerville Old Face", "Bauhaus 93", "Beesknees ITC", "Bell MT", "Berlin Sans FB", "Berlin Sans FB Demi", "Bernard MT Condensed", "Bickley Script",*/
         "Big Caslon", "Bitstream Vera Sans", "Bitstream Vera Sans Mono", "Bitstream Vera Serif",
-        /* "Blackadder ITC", "Blackletter686 BT", "Bodoni MT", "Bodoni MT Black", "Bodoni MT Condensed", "Bodoni MT Poster Compressed", "Book Antiqua", "Bookman", "Bookman Old Style", "Bradley Hand ITC", "Braggadocio", "Britannic Bold", "Broadway", "Broadway BT",*/
         "Brush Script MT",
-        /* "BudHand", "CAMPBELL", "Calibri", "Californian FB", "Calisto MT", "Calligraph421 BT",*/
         "Cambria",
-        /* "Candara", "Capitals",*/
         "Caslon", "Castellar", "Cataneo BT", "Centaur", "Century Gothic", "Century Schoolbook", "Century Schoolbook L",
-        /* "Champignon", "Charcoal", "Charter", "Charter BT", "Chicago", "Chick", "Chiller", "ClearlyU", "Colonna MT",*/
         "Comic Sans", "Comic Sans MS", "Consolas", "Constantia", "Cooper Black", "Copperplate", "Copperplate Gothic Bold", "Copperplate Gothic Light", "Corbel", "Courier", "Courier New",
-        /* "Croobie", "Curlz MT", "Desdemona", "Didot", "DomBold BT", "Edwardian Script ITC", "Engravers MT", "Eras Bold ITC", "Eras Demi ITC", "Eras Light ITC", "Eras Medium ITC", "Eurostile", "FIRSTHOME", "Fat", "Felix Titling", "Fine Hand", "Fixed", "Footlight MT Light", "Forte", "Franklin Gothic Book", "Franklin Gothic Demi", "Franklin Gothic Demi Cond", "Franklin Gothic Heavy", "Franklin Gothic Medium", "Franklin Gothic Medium Cond", "Freestyle Script", "French Script MT", "Freshbot", "Frosty",*/
         "Futura",
-        /* "GENUINE", "Gadget", "Garamond",*/
         "Geneva", "Georgia", "Georgia Ref", "Geeza Pro", "Gigi", "Gill Sans", "Gill Sans MT", "Gill Sans MT Condensed", "Gill Sans MT Ext Condensed Bold", "Gill Sans Ultra Bold", "Gill Sans Ultra Bold Condensed",
-        /* "GlooGun", "Gloucester MT Extra Condensed", "Goudy Old Style", "Goudy Stout", "Haettenschweiler", "Harlow Solid Italic", "Harrington",*/
         "Helvetica", "Helvetica Narrow", "Helvetica Neue", "Herculanum", "High Tower Text", "Highlight LET", "Hoefler Text", "Impact", "Imprint MT Shadow",
-        /* "Informal Roman", "Jenkins v2.0", "John Handy LET", "Jokerman", "Jokerman LET", "Jokewood", "Juice ITC", "Kabel Ult BT", "Kartika", "Kino MT", "Kristen ITC", "Kunstler Script", "La Bamba LET", */
         "Lucida", "Lucida Bright", "Lucida Calligraphy", "Lucida Console", "Lucida Fax", "Lucida Grande", "Lucida Handwriting", "Lucida Sans", "Lucida Sans Typewriter", "Lucida Sans Unicode",
-        /* "Luxi Mono", "Luxi Sans", "Luxi Serif", "MARKETPRO", "MS Reference Sans Serif", "MS Reference Serif", "Magneto", "Maiandra GD", */
         "Marker Felt",
-        /* "Matisse ITC", "Matura MT Script Capitals", "Mead Bold", "Mekanik LET", "Mercurius Script MT Bold", */
         "Microsoft Sans Serif", "Milano LET", "Minion Web", "MisterEarl BT", "Mistral", "Monaco", "Monotype Corsiva", "Monotype.com", "New Century Schoolbook", "New York", "News Gothic MT",
-        /* "Niagara Engraved", "Niagara Solid", "Nimbus Mono L", "Nimbus Roman No9 L", "OCR A Extended", "OCRB", "Odessa LET", "Old English Text MT", "OldDreadfulNo7 BT", "One Stroke Script LET", "Onyx", "Optima", "Orange LET", "Palace Script MT", "Palatino", "Palatino Linotype", */
         "Papyrus",
-        /* "ParkAvenue BT", "Pepita MT", "Perpetua", "Perpetua Titling MT", "Placard Condensed", "Playbill", "Poornut", "Pristina", "Pump Demi Bold LET", "Pussycat", "Quixley LET", "Rage Italic", "Rage Italic LET", "Ravie", "Rockwell", "Rockwell Condensed", "Rockwell Extra Bold", "Ruach LET", "Runic MT Condensed", "Sand", "Script MT Bold", "Scruff LET", "Segoe UI", "Showcard Gothic", "Skia", "Smudger LET", "Snap ITC", "Square721 BT", "Staccato222 BT", "Stencil", "Sylfaen", */
         "Tahoma", "Techno", "Tempus Sans ITC", "Terminal", "Textile", "Times", "Times New Roman", "Tiranti Solid LET", "Trebuchet MS",
-        /* "Tw Cen MT", "Tw Cen MT Condensed", "Tw Cen MT Condensed Extra Bold", "URW Antiqua T", "URW Bookman L", "URW Chancery L", "URW Gothic L", "URW Palladio L", "Univers", "University Roman LET", "Utopia", */
-        "Verdana", "Verdana Ref", /* "Victorian LET", "Viner Hand ITC", "Vivaldi", "Vladimir Script", "Vrinda", "Weltron Urban", "Westwood LET", "Wide Latin", "Zapf Chancery", */
+        "Verdana", "Verdana Ref",
         "Zapfino"];
 
-// Compare against the reference fonts. Return true if it produces a different size than at least one of them.
+/* @ignore */
 var _CPFontDetectFontAvailable = function(font)
 {
     for (var i = 0; i < _CPFontDetectReferenceFonts.length; i++)
@@ -453,15 +492,15 @@ var _CPFontDetectFontAvailable = function(font)
     return false;
 };
 
+/* @ignore */
 var _CPFontDetectCache = {};
 
-// Compares two given fonts. Returns true if they produce different sizes (i.e. fontA didn't fallback to fontB)
+/* @ignore */
 var _CPFontDetectCompareFonts = function(fontA, fontB)
 {
     var a;
     if (_CPFontDetectCache[fontA])
         a = _CPFontDetectCache[fontA];
-
     else
     {
         _CPFontDetectSpan.style.fontFamily = '"' + fontA + '"';
@@ -475,7 +514,7 @@ var _CPFontDetectCompareFonts = function(fontA, fontB)
     return (a.w != bWidth || a.h != bHeight);
 };
 
-// Test the candidate fonts pairwise until we find two that are different. Otherwise return the first.
+/* @ignore */
 var _CPFontDetectPickTwoDifferentFonts = function(candidates)
 {
     for (var i = 0; i < candidates.length; i++)

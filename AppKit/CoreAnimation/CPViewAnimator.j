@@ -1,16 +1,47 @@
+/*
+ * CPViewAnimator.j
+ * AppKit
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 @import "_CPObjectAnimator.j"
 @import "CPView.j"
 @import "CPCompatibility.j"
 @import "CSSAnimation.j"
 
+/* @ignore */
 var DEFAULT_CSS_PROPERTIES = nil,
     FRAME_UPDATERS = {};
 
+/*!
+    @ingroup appkit
+    @class CPViewAnimator
+    CPViewAnimator handles animated property changes for \c CPView instances (such as frame,
+    alpha, and background color), translating them into CSS animations or frame update timers.
+*/
 @implementation CPViewAnimator : _CPObjectAnimator
 {
     BOOL    _wantsPeriodicFrameUpdates  @accessors(property=wantsPeriodicFrameUpdates);
 }
 
+/*!
+    Initializes a view animator with the specified target view.
+    @param aTarget the view to be animated
+    @return the initialized animator instance
+*/
 - (id)initWithTarget:(id)aTarget
 {
     self = [super initWithTarget:aTarget];
@@ -20,11 +51,18 @@ var DEFAULT_CSS_PROPERTIES = nil,
     return self;
 }
 
+/*!
+    Animates the target view removal from its superview using an order-out animation.
+*/
 - (void)removeFromSuperview
 {
     [self _setTargetValue:nil withKeyPath:@"CPAnimationTriggerOrderOut" setter:_cmd];
 }
 
+/*!
+    Animates the target view's hidden state.
+    @param shouldHide \c YES to animate out and hide the view, \c NO to show immediately
+*/
 - (void)setHidden:(BOOL)shouldHide
 {
     if ([_target isHidden] == shouldHide)
@@ -36,32 +74,52 @@ var DEFAULT_CSS_PROPERTIES = nil,
     [self _setTargetValue:YES withKeyPath:@"CPAnimationTriggerOrderOut" setter:_cmd];
 }
 
+/*!
+    Animates the view's opacity/alpha value.
+    @param alphaValue the target opacity (0.0 to 1.0)
+*/
 - (void)setAlphaValue:(float)alphaValue
 {
     [self _setTargetValue:alphaValue withKeyPath:@"alphaValue" setter:_cmd];
 }
 
+/*!
+    Animates the view's background color.
+    @param aColor the target background color
+*/
 - (void)setBackgroundColor:(CPColor)aColor
 {
     [self _setTargetValue:aColor withKeyPath:@"backgroundColor" setter:_cmd];
 }
 
+/*!
+    Animates the origin point of the view's frame rectangle.
+    @param aFrameOrigin the target origin point
+*/
 - (void)setFrameOrigin:(CGPoint)aFrameOrigin
 {
     [self _setTargetValue:aFrameOrigin withKeyPath:@"frameOrigin" setter:_cmd];
 }
 
+/*!
+    Animates the frame rectangle of the view.
+    @param aFrame the target frame rectangle
+*/
 - (void)setFrame:(CGRect)aFrame
 {
     [self _setTargetValue:aFrame withKeyPath:@"frame" setter:_cmd];
 }
 
+/*!
+    Animates the size dimensions of the view's frame rectangle.
+    @param aFrameSize the target size
+*/
 - (void)setFrameSize:(CGSize)aFrameSize
 {
     [self _setTargetValue:aFrameSize withKeyPath:@"frameSize" setter:_cmd];
 }
 
-// Convenience method for the common case where the setter has zero or one argument
+/* @ignore */
 - (void)_setTargetValue:(id)aTargetValue withKeyPath:(CPString)aKeyPath setter:(SEL)aSelector
 {
     var handler = function()
@@ -74,6 +132,7 @@ var DEFAULT_CSS_PROPERTIES = nil,
     [self _setTargetValue:aTargetValue withKeyPath:aKeyPath fallback:handler completion:handler];
 }
 
+/* @ignore */
 - (void)_setTargetValue:(id)aTargetValue withKeyPath:(CPString)aKeyPath fallback:(Function)fallback completion:(Function)completion
 {
     var animation = [_target animationForKey:aKeyPath],
@@ -90,6 +149,7 @@ var DEFAULT_CSS_PROPERTIES = nil,
     }
 }
 
+/* @ignore */
 + (CPDictionary)_defaultCSSProperties
 {
     if (DEFAULT_CSS_PROPERTIES == nil)
@@ -111,6 +171,11 @@ var DEFAULT_CSS_PROPERTIES = nil,
     return DEFAULT_CSS_PROPERTIES;
 }
 
+/*!
+    Builds and appends CSS animation descriptors corresponding to an animation action.
+    @param animations the array collecting CSS animations
+    @param anAction the animation action descriptor
+*/
 + (void)addAnimations:(CPArray)animations forAction:(id)anAction
 {
     var target = anAction.object;
@@ -125,6 +190,7 @@ var DEFAULT_CSS_PROPERTIES = nil,
     return [self _addAnimations:animations forAction:anAction domElement:[target _DOMElement] identifier:[target UID]];
 }
 
+/* @ignore */
 + (void)_addAnimations:(CPArray)animations forAction:(id)anAction domElement:(Object)aDomElement identifier:(CPString)anIdentifier
 {
     var animation = [animations objectPassingTest:function(anim, idx, stop)
@@ -147,10 +213,6 @@ var DEFAULT_CSS_PROPERTIES = nil,
         // This makes the property jump between values.
         timingFunctions = "steps(1, end)";
     }
-    // For other calculation modes like 'paced' or 'cubic', more complex logic would be needed here.
-    // 'paced' would require pre-calculating keyTimes based on distance.
-    // 'cubic' would require generating many keyframes to simulate a spline.
-    // For now, we let them fall through to the default behavior.
 
     var css_mapping = [self _cssPropertiesForKeyPath:anAction.keypath];
 
@@ -164,10 +226,11 @@ var DEFAULT_CSS_PROPERTIES = nil,
     }];
 }
 
+/* @ignore */
 + (void)_addPathAnimation:(CPArray)animations forAction:(id)anAction domElement:(Object)aDomElement identifier:(CPString)anIdentifier
 {
     var animation = [animations objectPassingTest:function(anim, idx, stop)
-                     {
+    {
         return anim.identifier == anIdentifier;
     }];
 
@@ -214,14 +277,11 @@ var DEFAULT_CSS_PROPERTIES = nil,
     var originalCompletion = anAction.completion;
     var cleanupCompletion = function()
     {
-        // STEP 1: Run the original completion handler first. This is critical.
-        // It sets the final frameOrigin, which updates the static 'left' and 'top'
-        // styles to their final values, locking the view in the correct place.
+        // STEP 1: Run the original completion handler first.
         if (originalCompletion)
             originalCompletion();
 
-        // STEP 2: Now that the view's static position is correct, we can safely
-        // remove the animation-specific properties. This prevents state leakage.
+        // STEP 2: Remove animation-specific styles to avoid leaks.
         aDomElement.style.offsetPath = null;
         aDomElement.style.offsetAnchor = null;
         aDomElement.style.offsetRotate = null;
@@ -241,24 +301,27 @@ var DEFAULT_CSS_PROPERTIES = nil,
 
     animation.addPropertyAnimation("offset-distance", getter, anAction.duration, keytimes, values, timingfunctions, cleanupCompletion);
 
-    // 6. Keep fill-mode as 'forwards'. This is essential to prevent the view
-    // from jumping to (0,0) in the tiny gap between the animation ending
-    // and our completion handler running.
+    // 6. Keep fill-mode as 'forwards'.
     animation.setFillMode("forwards");
 }
 
+/* @ignore */
 + (CPArray)_cssPropertiesForKeyPath:(CPString)aKeyPath
 {
     return [[self _defaultCSSProperties] objectForKey:aKeyPath];
 }
 
+/*!
+    Adds periodic frame updater timers for an animation action on a view hierarchy.
+    @param frameUpdaters the array of active frame updaters
+    @param anAction the action to update
+*/
 + (void)addFrameUpdaters:(CPArray)frameUpdaters forAction:(id)anAction
 {
     var rootIdentifier = [anAction.root UID];
 
     var frameUpdater = [frameUpdaters objectPassingTest:function(updater, idx, stop)
     {
-        // There is one timer, linked to the top view, that updates the whole hierarchy.
         return updater.identifier() == rootIdentifier;
     }];
 
@@ -272,6 +335,10 @@ var DEFAULT_CSS_PROPERTIES = nil,
     frameUpdater.addTarget(anAction.object, anAction.keypath, anAction.duration);
 }
 
+/*!
+    Stops and removes the frame updater with the given identifier.
+    @param anIdentifier the unique identifier of the root view
+*/
 + (void)stopUpdaterWithIdentifier:(CPString)anIdentifier
 {
     var frameUpdater = FRAME_UPDATERS[anIdentifier];
@@ -282,9 +349,16 @@ var DEFAULT_CSS_PROPERTIES = nil,
         delete FRAME_UPDATERS[anIdentifier];
     }
     else
+    {
         CPLog.warn("Could not find FrameUpdater with identifier " + anIdentifier);
+    }
 }
 
+/*!
+    Returns whether the animated property requires periodic JavaScript frame updates during animation.
+    @param aKeyPath the property key path
+    @return \c YES if periodic updates are required, otherwise \c NO
+*/
 - (BOOL)needsPeriodicFrameUpdatesForKeyPath:(CPString)aKeyPath
 {
     return ((aKeyPath == @"frame" || aKeyPath == @"frameSize") &&
@@ -295,31 +369,37 @@ var DEFAULT_CSS_PROPERTIES = nil,
 
 @end
 
+/* @ignore */
 var transformFrameToWidth = function(start, current)
 {
     return current.size.width + "px";
 };
 
+/* @ignore */
 var transformFrameToHeight = function(start, current)
 {
     return current.size.height + "px";
 };
 
+/* @ignore */
 var transformSizeToWidth = function(start, current)
 {
     return current.width + "px";
 };
 
+/* @ignore */
 var transformSizeToHeight = function(start, current)
 {
     return current.height + "px";
 };
 
+/* @ignore */
 var CSSStringFromCGAffineTransform = function(anAffineTransform)
 {
     return [CPString stringWithFormat:@"matrix(%d,%d,%d,%d,%d,%d)", anAffineTransform.a, anAffineTransform.b, anAffineTransform.c, anAffineTransform.d, anAffineTransform.tx, anAffineTransform.ty];
 };
 
+/* @ignore */
 var frameOriginToCSSTransformMatrix = function(start, current)
 {
     var affine = CGAffineTransformMakeTranslation(current.x - start.x, current.y - start.y);
@@ -327,6 +407,7 @@ var frameOriginToCSSTransformMatrix = function(start, current)
     return CSSStringFromCGAffineTransform(affine);
 };
 
+/* @ignore */
 var frameToCSSTranslationTransformMatrix = function(start, current)
 {
     var affine = CGAffineTransformMakeTranslation(current.origin.x - start.origin.x, current.origin.y - start.origin.y);
@@ -334,8 +415,16 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
     return CSSStringFromCGAffineTransform(affine);
 };
 
+/*!
+    @category CPView (CPAnimatablePropertyContainer)
+    Adds animatable property support and animator proxy access to \c CPView.
+*/
 @implementation CPView (CPAnimatablePropertyContainer)
 
+/*!
+    Returns the animator class associated with this view class.
+    @return the animator \c Class
+*/
 + (Class)animatorClass
 {
     var anim_class = CPClassFromString(CPStringFromClass(self) + "Animator");
@@ -346,6 +435,10 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
     return [[self superclass] animatorClass];
 }
 
+/*!
+    Returns the animator proxy object for the view.
+    @return the animator proxy instance
+*/
 - (id)animator
 {
     if (!_animator)
@@ -354,6 +447,11 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
     return _animator;
 }
 
+/*!
+    Returns the default animation associated with a specified key.
+    @param aKey the identifier or property key path
+    @return the default \c CAAnimation, or \c nil
+*/
 + (CAAnimation)defaultAnimationForKey:(CPString)aKey
 {
     // TODO: remove when supported.
@@ -369,6 +467,11 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
     return nil;
 }
 
+/*!
+    Returns the animation assigned to a key path, or the default animation if none was explicitly set.
+    @param aKey the identifier or property key path
+    @return the matching \c CAAnimation, or \c nil
+*/
 - (CAAnimation)animationForKey:(CPString)aKey
 {
     var animations = [self animations],
@@ -382,16 +485,25 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
     return animation;
 }
 
+/*!
+    Returns the dictionary of animations explicitly set on the view.
+    @return the dictionary of animations
+*/
 - (CPDictionary)animations
 {
     return _animationsDictionary;
 }
 
+/*!
+    Sets the dictionary of animations for the view.
+    @param animationsDict a dictionary mapping property key paths to \c CAAnimation objects
+*/
 - (void)setAnimations:(CPDictionary)animationsDict
 {
     _animationsDictionary = [animationsDict copy];
 }
 
+/* @ignore */
 - (Object)_DOMElement
 {
 #if PLATFORM(DOM)
@@ -401,6 +513,7 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
 #endif
 }
 
+/* @ignore */
 - (CPString)debug_description
 {
     return [self identifier] || [self className];
@@ -408,8 +521,16 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
 
 @end
 
+/*!
+    @category CPArray (Additions)
+*/
 @implementation CPArray (Additions)
 
+/*!
+    Returns the first object in the array passing a predicate test function.
+    @param aFunction the predicate function
+    @return the matching object, or \c nil
+*/
 - (CPArray)objectPassingTest:(Function)aFunction
 {
     var idx = [self indexOfObjectPassingTest:aFunction];
@@ -419,8 +540,10 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
 
     return nil;
 }
+
 @end
 
+/* @ignore */
 var FrameUpdater = function(anIdentifier)
 {
     this._identifier = anIdentifier;
@@ -448,11 +571,13 @@ var FrameUpdater = function(anIdentifier)
     };
 };
 
+/* @ignore */
 FrameUpdater.prototype.start = function()
 {
     this._requestId = window.requestAnimationFrame(this._updateFunction);
 };
 
+/* @ignore */
 FrameUpdater.prototype.stop = function()
 {
     CPLog.warn("STOP FrameUpdater" + this._identifier);
@@ -464,21 +589,25 @@ FrameUpdater.prototype.stop = function()
     this._stop = true;
 };
 
+/* @ignore */
 FrameUpdater.prototype.updateFunction = function()
 {
     return this._updateFunction;
 };
 
+/* @ignore */
 FrameUpdater.prototype.identifier = function()
 {
     return this._identifier;
 };
 
+/* @ignore */
 FrameUpdater.prototype.description = function()
 {
     return "<timer " + this._identifier + " " + this._targets.map(function(t){return [t debug_description];}) + ">";
 };
 
+/* @ignore */
 FrameUpdater.prototype.addTarget = function(target, keyPath, duration)
 {
     var callback = createUpdateFrame(target, keyPath);
@@ -491,6 +620,7 @@ FrameUpdater.prototype.addTarget = function(target, keyPath, duration)
     }
 };
 
+/* @ignore */
 var createUpdateFrame = function(aView, aKeyPath)
 {
     if (aKeyPath !== "frame" && aKeyPath !== "frameSize" && aKeyPath !== "frameOrigin")
@@ -540,7 +670,6 @@ var createUpdateFrame = function(aView, aKeyPath)
                 }
 
             [[CPRunLoop currentRunLoop] performSelectors];
-    //        CPLog.debug("update " + [aView debug_description]);
         };
 
     return updateFrame;
