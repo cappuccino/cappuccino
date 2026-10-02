@@ -220,7 +220,7 @@ following:
     if (systemFontStyle)
     {
         // Yes, so install it in the DOM Style element
-        document.getElementsByTagName("STYLE")[0].innerHTML += "\n" + [aTheme setCSSResourcesPathInString:systemFontStyle];
+        document.getElementsByTagName("STYLE")[0].innerHTML += "\n" + [aTheme setCSSResourcesPath:systemFontStyle];
     }
 }
 

@@ -248,6 +248,10 @@ var ListColumnIdentifier = @"1";
         [[_panel contentView] addSubview:_scrollView];
         [_panel setInitialFirstResponder:_tableView];
 
+        // Ensure table is transparent in HUD mode so Panel background shows through
+        if ([_dataSource respondsToSelector:@selector(hasThemeState:)] && [_dataSource hasThemeState:CPThemeStateHUD])
+            [_tableView setBackgroundColor:[CPColor clearColor]];
+
         if ([_dataSource numberOfItemsInList:self] > 0)
             [_tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
         else
@@ -264,12 +268,36 @@ var ListColumnIdentifier = @"1";
 {
     var panel = [[_CPPopUpPanel alloc] initWithContentRect:aFrame styleMask:CPBorderlessWindowMask];
 
+    // HUD Theme Styling
+    if ([_dataSource respondsToSelector:@selector(hasThemeState:)] && [_dataSource hasThemeState:CPThemeStateHUD])
+    {
+        // hack to set the HUD background mask to the panel but using the standard WindowView class (not the HUD one).
+        panel._styleMask |= CPHUDBackgroundWindowMask;
+
+        // Create the custom HUD background with dark fill, light border, and shadow
+        var hudBackgroundColor = [CPColor colorWithCSSDictionary:@{
+            @"background-color": @"rgba(30, 30, 30, 0.95)",
+            @"border-color": @"rgba(255, 255, 255, 0.3)",
+            @"border-style": @"solid",
+            @"border-width": @"1px",
+            @"border-radius": @"6px",
+            @"box-shadow": @"0 5px 15px rgba(0,0,0,0.6)",
+            @"box-sizing": @"border-box"
+        }];
+
+        [panel setBackgroundColor:hudBackgroundColor];
+    }
+    else
+    {
+        // Standard Styling
+        [panel setHasShadow:YES];
+        [panel setShadowStyle:CPMenuWindowShadowStyle];
+    }
+
     [panel setTitle:@""];
     [panel setFloatingPanel:YES];
     [panel setBecomesKeyOnlyIfNeeded:YES];
     [panel setLevel:CPPopUpMenuWindowLevel];
-    [panel setHasShadow:YES];
-    [panel setShadowStyle:CPMenuWindowShadowStyle];
     [panel setDelegate:self];
 
     return panel;
@@ -313,7 +341,12 @@ var ListColumnIdentifier = @"1";
 {
     var scroll = [[CPScrollView alloc] initWithFrame:aFrame];
 
-    [scroll setBorderType:CPLineBorder];
+    // Remove border for HUD to avoid double borders (Window Border + ScrollView Border)
+    if ([_dataSource respondsToSelector:@selector(hasThemeState:)] && [_dataSource hasThemeState:CPThemeStateHUD])
+        [scroll setBorderType:CPNoBorder];
+    else
+        [scroll setBorderType:CPLineBorder];
+
     [scroll setAutohidesScrollers:NO];
     [scroll setHasVerticalScroller:YES];
     [scroll setHasHorizontalScroller:NO];

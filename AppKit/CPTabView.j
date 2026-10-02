@@ -117,7 +117,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     var height = [_tabs valueForThemeAttribute:@"min-size"].height;
     [_tabs setFrameSize:CGSizeMake(0, height)];
 
-    _box = [[_CPTabViewBox alloc] initWithFrame:[self  bounds]];
+    _box = [[_CPTabViewBox alloc] initWithFrame:[self bounds]];
     [_box setTabView:self];
     [_box setContentInset:[self currentValueForThemeAttribute:@"box-content-inset"]];
     [_box setContentViewMargins:CGSizeMakeZero()];

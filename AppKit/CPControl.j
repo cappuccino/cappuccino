@@ -48,9 +48,10 @@
 CPRegularControlSize = 0;
 CPSmallControlSize   = 1;
 CPMiniControlSize    = 2;
+CPLargeControlSize   = 3; // Since MacOS 11, there's a new control size "Large"
 
 // To get the theme state corresponding to a control size, use CPControlSizeThemeStates[controlSize]
-CPControlSizeThemeStates = @[CPThemeStateControlSizeRegular, CPThemeStateControlSizeSmall, CPThemeStateControlSizeMini];
+CPControlSizeThemeStates = @[CPThemeStateControlSizeRegular, CPThemeStateControlSizeSmall, CPThemeStateControlSizeMini, CPThemeStateControlSizeLarge];
 
 @typedef CPLineBreakMode
 CPLineBreakByWordWrapping     = 0;
@@ -248,6 +249,9 @@ var CPControlBlackColor = [CPColor blackColor];
 
         case CPMiniControlSize:
             return CPThemeStateControlSizeMini;
+            
+        case CPLargeControlSize:
+            return CPThemeStateControlSizeLarge;
 
         case CPRegularControlSize:
         default:
