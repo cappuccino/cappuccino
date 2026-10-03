@@ -59,27 +59,22 @@ task ("configure", function()
 });
 
 /*
- * Cleans the Tests/Manual root output directory while explicitly preserving
- * the Build directories inside subsidiary applications (-maxdepth 1).
+ * Cleans the subsidiary applications' Build directories exclusively (-mindepth 2 -maxdepth 2).
  */
 task ("clean", function()
 {
     var manualDir = __dirname;
     var targetName = path.basename(ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build");
-    cp.execSync("find . -maxdepth 1 -mindepth 1 -type d -name '" + targetName + "' -exec rm -rf {} +", { stdio: "inherit", cwd: manualDir });
+    cp.execSync("find . -mindepth 2 -maxdepth 2 -type d -name '" + targetName + "' -exec rm -rf {} +", { stdio: "inherit", cwd: manualDir });
 });
 
 /*
- * Sweeps Frameworks symlinks across subsidiary test applications without purging
- * their local Build directories.
+ * Sweeps Frameworks symlinks across subsidiary test applications after delegating Build directory removal to clean.
  */
 task ("clobber", ["clean"], function()
 {
     var manualDir = __dirname;
-    var targetName = path.basename(ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build");
-    
-    cp.execSync("find . -mindepth 2 -type l -name 'Frameworks' -exec rm -f {} +", { stdio: "inherit", cwd: manualDir });
-    cp.execSync("find . -mindepth 2 -type d -name '" + targetName + "' -exec rm -rf {} +", { stdio: "inherit", cwd: manualDir });
+    cp.execSync("find . -mindepth 2 -maxdepth 2 -type l -name 'Frameworks' -exec rm -f {} +", { stdio: "inherit", cwd: manualDir });
 });
 
 /*
