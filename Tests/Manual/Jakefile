@@ -53,25 +53,33 @@ task ("release", ["default"]);
  */
 task ("configure", function()
 {
-    var targetPath = path.resolve(process.cwd(), "../../Build/Frameworks");
-    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir sh -c 'echo \"Configuring $(basename \\\"$PWD\\\")\"; ln -sfn \"$1\" Frameworks' _ '" + targetPath + "' \\;", { stdio: "inherit" });
+    var manualDir = __dirname;
+    var targetPath = path.resolve(manualDir, "../../Build/Frameworks");
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir sh -c 'echo \"Configuring $(basename \\\"$PWD\\\")\"; ln -sfn \"$1\" Frameworks' _ '" + targetPath + "' \\;", { stdio: "inherit", cwd: manualDir });
 });
 
 /*
- * Removes localized build output directories produced by individual manual test runs.
+ * Cleans the Tests/Manual root output directory while explicitly preserving
+ * the Build directories inside subsidiary applications (-maxdepth 1).
  */
 task ("clean", function()
 {
-    var targetDir = ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build";
-    cp.execSync("find . -name '" + targetDir + "' -type d -prune -exec rm -rf {} +", { stdio: "inherit" });
+    var manualDir = __dirname;
+    var targetName = path.basename(ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build");
+    cp.execSync("find . -maxdepth 1 -mindepth 1 -type d -name '" + targetName + "' -exec rm -rf {} +", { stdio: "inherit", cwd: manualDir });
 });
 
 /*
- * Extends clean by removing all Frameworks symlinks across manual test subdirectories.
+ * Sweeps Frameworks symlinks across subsidiary test applications without purging
+ * their local Build directories.
  */
 task ("clobber", ["clean"], function()
 {
-    cp.execSync("find . -mindepth 2 -type l -name 'Frameworks' -exec rm -f {} +", { stdio: "inherit" });
+    var manualDir = __dirname;
+    var targetName = path.basename(ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build");
+    
+    cp.execSync("find . -mindepth 2 -type l -name 'Frameworks' -exec rm -f {} +", { stdio: "inherit", cwd: manualDir });
+    cp.execSync("find . -mindepth 2 -type d -name '" + targetName + "' -exec rm -rf {} +", { stdio: "inherit", cwd: manualDir });
 });
 
 /*
@@ -85,19 +93,22 @@ task ("clobber", ["clean"], function()
  */
 task ("batch-compile", function()
 {
-    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake build \\;", { stdio: "inherit", env: ENV });
+    var manualDir = __dirname;
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake build \\;", { stdio: "inherit", env: ENV, cwd: manualDir });
 });
 
 task ("batch-compile-all", ["batch-compile-debug", "batch-compile-release"]);
 
 task ("batch-compile-debug", function()
 {
+    var manualDir = __dirname;
     ENV["CONFIGURATION"] = "Debug";
-    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake debug \\;", { stdio: "inherit", env: ENV });
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake debug \\;", { stdio: "inherit", env: ENV, cwd: manualDir });
 });
 
 task ("batch-compile-release", function()
 {
+    var manualDir = __dirname;
     ENV["CONFIGURATION"] = "Release";
-    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake release \\;", { stdio: "inherit", env: ENV });
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake release \\;", { stdio: "inherit", env: ENV, cwd: manualDir });
 });
