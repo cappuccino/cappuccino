@@ -10,24 +10,29 @@ const utilsFile = ObjectiveJ.utils.file;
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
-// -----------------------------------------------------------------------------
-// Build Orchestration
-// -----------------------------------------------------------------------------
+/*
+ * -----------------------------------------------------------------------------
+ * Build Orchestration
+ * -----------------------------------------------------------------------------
+ */
 
 var isMasterBuild = process.env.CAPP_INNER_BUILD !== "1";
 
-task ("build", function() {
-    childProcess.execSync(["mkdir", "-p", $BUILD_DIR].map(utilsFile.enquote).join(" "), {stdio: 'inherit'});
-    childProcess.execSync(['ln', '-sf', '"$PWD"/node_modules', utilsFile.enquote($BUILD_DIR)].join(" "), {stdio: 'inherit'});
-});
-
+/*
+ * The consolidated build task initializes the environment and routes execution.
+ * It prevents circular dependency resolution with common.jake's internal targets
+ * by spawning a separate pipeline for the master orchestration process, while
+ * executing standard prerequisite compilation for inner subprojects.
+ */
 task ("build", function() {
     if (isMasterBuild) {
-        // Intercept top-level 'jake build' execution.
-        // Spawn the complete pipeline to avoid circular dependency resolution 
-        // with common.jake's internal targets.
+        // 1. Initialize environment
+        childProcess.execSync(["mkdir", "-p", $BUILD_DIR].map(utilsFile.enquote).join(" "), {stdio: 'inherit'});
+        childProcess.execSync(['ln', '-sf', '"$PWD"/node_modules', utilsFile.enquote($BUILD_DIR)].join(" "), {stdio: 'inherit'});
+        
+        // 2. Spawn complete pipeline to execute outer assembly
         process.env.CAPP_INNER_BUILD = "1";
-        childProcess.execSync("jake CommonJS build-manual-tests-symlinks", {stdio: 'inherit'});
+        childProcess.execSync("jake CommonJS assemble-frameworks", {stdio: 'inherit'});
     } else {
         // Execute the baseline compilation step when invoked as a prerequisite
         subjake(subprojects, "build");
@@ -69,9 +74,14 @@ filedir ($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, ["debug", "release"], function(
 task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS,$BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release"], function() {
 });
 
-task ("build-manual-tests-symlinks", function()
+/*
+ * Assembles a concrete, centralized Build/Frameworks directory containing all required
+ * framework artifacts. This structure is portable and serves as the unified symlink 
+ * target for Tests/Manual applications via their configure target.
+ */
+task ("assemble-frameworks", function()
 {
-    var fwDir = path.join("Tests", "Manual", ".Frameworks");
+    var fwDir = path.join($BUILD_DIR, "Frameworks");
     fs.mkdirSync(fwDir, { recursive: true });
 
     var frameworks = [
@@ -84,13 +94,15 @@ task ("build-manual-tests-symlinks", function()
     frameworks.forEach(function(fw) {
         var dest = path.join(fwDir, fw.name);
         utilsFile.rm_rf(dest);
-        fs.symlinkSync(path.resolve(fw.src), dest, 'dir');
+        utilsFile.cp_r(fw.src, dest);
     });
 });
 
-// -----------------------------------------------------------------------------
-// NPM Distribution & Legacy Artifacts
-// -----------------------------------------------------------------------------
+/*
+ * -----------------------------------------------------------------------------
+ * NPM Distribution & Legacy Artifacts
+ * -----------------------------------------------------------------------------
+ */
 
 task ("dist", ["CommonJS"], function()
 {
@@ -156,7 +168,11 @@ task ("clobber-theme", function()
     });
 });
 
-// Documentation
+/*
+ * -----------------------------------------------------------------------------
+ * Documentation Generation
+ * -----------------------------------------------------------------------------
+ */
 
 $DOCUMENTATION_BUILD = path.join($BUILD_DIR, "Documentation");
 
@@ -174,8 +190,12 @@ task ("documentation-no-frame", function()
     generateDocs(true);
 });
 
+/*
+ * Generates an Apple Docset format of the Cappuccino documentation.
+ * Requires 'docsetutil' to process the resulting Makefile.
+ */
 task ("docset", function()
-      {
+{
     if (!executableExists("docsetutil")) {
         console.error("\nError: 'docsetutil' is not installed, but it's required to build the docset.".red);
         console.log("This tool is no longer bundled with Xcode, but can be installed with Homebrew:");
@@ -196,6 +216,11 @@ function executableExists(command) {
     }
 }
 
+/*
+ * Orchestrates the full Doxygen processing pipeline including pre-processing 
+ * Objective-J files, executing Doxygen in a temporary directory, optionally
+ * compiling a docset, and running post-processing text replacement scripts.
+ */
 function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
 {
     var doxygen = null;
@@ -283,7 +308,11 @@ function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
     }
 }
 
-// Downloads
+/*
+ * -----------------------------------------------------------------------------
+ * Starter Downloads & Deployment
+ * -----------------------------------------------------------------------------
+ */
 
 task ("downloads", ["starter_download"]);
 
@@ -323,8 +352,6 @@ filedir ($STARTER_DOWNLOAD_BOOTSTRAP, [$STARTER_BOOTSTRAP], function()
     OS.system(["chmod", "+x", $STARTER_DOWNLOAD_BOOTSTRAP]);
 });
 
-// Deployment
-
 task ("deploy", ["downloads", "demos"], function()
 {
     var cappuccino_output_path = path.join($BUILD_DIR, 'Cappuccino');
@@ -335,6 +362,11 @@ task ("deploy", ["downloads", "demos"], function()
     OS.system("cd " + OS.enquote(cappuccino_output_path) + " && zip -ry -8 Starter.zip Starter");
 });
 
+/*
+ * Clones the official remote cappuccino-demos repository, dynamically compiles them
+ * against the newly built local frameworks, and packages them into individual 
+ * ZIP archives for deployment.
+ */
 task ("demos", function()
 {
     var demosDir = path.join($BUILD_DIR, "CappuccinoDemos"),
@@ -399,7 +431,11 @@ task ("demos", function()
     });
 });
 
-// Testing
+/*
+ * -----------------------------------------------------------------------------
+ * Testing and Package Publishing
+ * -----------------------------------------------------------------------------
+ */
 
 task("test", ["CommonJS", "test-only"]);
 
@@ -445,6 +481,11 @@ task("push-objective-j", function() {
     );
 });
 
+/*
+ * Synchronizes the compiled framework packages with the designated remote
+ * distribution repositories. Updates the package version references, creates 
+ * a revision tag, and pushes the changes securely.
+ */
 function pushPackage(path, remote, branch)
 {
     branch = branch || "master";
