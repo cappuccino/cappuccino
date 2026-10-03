@@ -10,39 +10,43 @@ const utilsFile = ObjectiveJ.utils.file;
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
-// -----------------------------------------------------------------------------
-// Build Orchestration
-// -----------------------------------------------------------------------------
+/*
+ * -----------------------------------------------------------------------------
+ * Build Orchestration
+ * -----------------------------------------------------------------------------
+ */
 
 var isMasterBuild = process.env.CAPP_INNER_BUILD !== "1";
 
-task ("build", function() {
-    childProcess.execSync(["mkdir", "-p", $BUILD_DIR].map(utilsFile.enquote).join(" "), {stdio: 'inherit'});
-    childProcess.execSync(['ln', '-sf', '"$PWD"/node_modules', utilsFile.enquote($BUILD_DIR)].join(" "), {stdio: 'inherit'});
-});
-
+/*
+ * Initialises the build environment and routes execution. Spawns the complete
+ * pipeline on master invocations to avoid circular dependency resolution, while
+ * delegating to subjake during internal subproject compilation.
+ */
 task ("build", function() {
     if (isMasterBuild) {
-        // Intercept top-level 'jake build' execution.
-        // Spawn the complete pipeline to avoid circular dependency resolution 
-        // with common.jake's internal targets.
+        childProcess.execSync(["mkdir", "-p", $BUILD_DIR].map(utilsFile.enquote).join(" "), {stdio: 'inherit'});
+        childProcess.execSync(['ln', '-sf', '"$PWD"/node_modules', utilsFile.enquote($BUILD_DIR)].join(" "), {stdio: 'inherit'});
+        
         process.env.CAPP_INNER_BUILD = "1";
-        childProcess.execSync("jake CommonJS build-manual-tests-symlinks", {stdio: 'inherit'});
+        childProcess.execSync("jake CommonJS assemble-frameworks", {stdio: 'inherit'});
     } else {
-        // Execute the baseline compilation step when invoked as a prerequisite
         subjake(subprojects, "build");
     }
 });
 
+/*
+ * Traverses subprojects and manual tests for clean/clobber operations,
+ * then explicitly removes the top-level build artifact directory.
+ */
 ["clean", "clobber"].forEach(function(aTaskName)
 {
     task (aTaskName, function()
     {
-        // Traverse standard framework/tool targets
         subjake(subprojects, aTaskName);
-        
-        // Explicitly target the manual tests for wipe operations
         subjake(["Tests/Manual"], aTaskName);
+
+        utilsFile.rm_rf($BUILD_DIR);
     });
 });
 
@@ -69,9 +73,13 @@ filedir ($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, ["debug", "release"], function(
 task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS,$BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release"], function() {
 });
 
-task ("build-manual-tests-symlinks", function()
+/*
+ * Assembles a concrete Build/Frameworks directory containing all built frameworks,
+ * serving as the central target for manual test symlinks.
+ */
+task ("assemble-frameworks", function()
 {
-    var fwDir = path.join("Tests", "Manual", ".Frameworks");
+    var fwDir = path.join($BUILD_DIR, "Frameworks");
     fs.mkdirSync(fwDir, { recursive: true });
 
     var frameworks = [
@@ -84,13 +92,15 @@ task ("build-manual-tests-symlinks", function()
     frameworks.forEach(function(fw) {
         var dest = path.join(fwDir, fw.name);
         utilsFile.rm_rf(dest);
-        fs.symlinkSync(path.resolve(fw.src), dest, 'dir');
+        utilsFile.cp_r(fw.src, dest);
     });
 });
 
-// -----------------------------------------------------------------------------
-// NPM Distribution & Legacy Artifacts
-// -----------------------------------------------------------------------------
+/*
+ * -----------------------------------------------------------------------------
+ * NPM Distribution & Legacy Artifacts
+ * -----------------------------------------------------------------------------
+ */
 
 task ("dist", ["CommonJS"], function()
 {
@@ -156,7 +166,11 @@ task ("clobber-theme", function()
     });
 });
 
-// Documentation
+/*
+ * -----------------------------------------------------------------------------
+ * Documentation Generation
+ * -----------------------------------------------------------------------------
+ */
 
 $DOCUMENTATION_BUILD = path.join($BUILD_DIR, "Documentation");
 
@@ -175,7 +189,7 @@ task ("documentation-no-frame", function()
 });
 
 task ("docset", function()
-      {
+{
     if (!executableExists("docsetutil")) {
         console.error("\nError: 'docsetutil' is not installed, but it's required to build the docset.".red);
         console.log("This tool is no longer bundled with Xcode, but can be installed with Homebrew:");
@@ -283,7 +297,11 @@ function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
     }
 }
 
-// Downloads
+/*
+ * -----------------------------------------------------------------------------
+ * Starter Downloads & Deployment
+ * -----------------------------------------------------------------------------
+ */
 
 task ("downloads", ["starter_download"]);
 
@@ -322,8 +340,6 @@ filedir ($STARTER_DOWNLOAD_BOOTSTRAP, [$STARTER_BOOTSTRAP], function()
     FILE.write($STARTER_DOWNLOAD_BOOTSTRAP, bootstrap, { charset : "UTF-8" });
     OS.system(["chmod", "+x", $STARTER_DOWNLOAD_BOOTSTRAP]);
 });
-
-// Deployment
 
 task ("deploy", ["downloads", "demos"], function()
 {
@@ -399,7 +415,11 @@ task ("demos", function()
     });
 });
 
-// Testing
+/*
+ * -----------------------------------------------------------------------------
+ * Testing and Package Publishing
+ * -----------------------------------------------------------------------------
+ */
 
 task("test", ["CommonJS", "test-only"]);
 

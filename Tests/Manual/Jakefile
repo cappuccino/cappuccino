@@ -25,52 +25,85 @@ var ENV = process.env,
     cp = require("child_process"),
     path = require("path");
 
-// Neutered standard targets to protect CI from exhaustive traversals
+/*
+ * Standard build targets are neutered at this directory level to prevent automated
+ * CI runners from triggering exhaustive, recursive compilations across all manual test suites.
+ */
 task ("default", function()
 {
     console.log("Global traversal disabled to prevent CI timeouts.");
     console.log("Use 'npx jake batch-compile' or 'npx jake batch-compile-all' to deliberately build the suite.");
 });
+
 task ("build", ["default"]);
 task ("build-all", ["default"]);
 task ("debug", ["default"]);
 task ("release", ["default"]);
 
-// Safe environment management tasks
+/*
+ * -----------------------------------------------------------------------------
+ * Environment Management
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * Traverses every manual test subdirectory containing a Jakefile and symlinks its
+ * internal 'Frameworks' directory directly to the concrete Build/Frameworks 
+ * directory generated at the project root.
+ */
 task ("configure", function()
 {
-    var targetPath = path.join(process.cwd(), ".Frameworks");
-    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir sh -c 'echo \"Configuring $(basename \\\"$PWD\\\")\"; ln -sfn \"$1\" Frameworks' _ '" + targetPath + "' \\;", { stdio: "inherit" });
+    var manualDir = __dirname;
+    var targetPath = path.resolve(manualDir, "../../Build/Frameworks");
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir sh -c 'echo \"Configuring $(basename \\\"$PWD\\\")\"; ln -sfn \"$1\" Frameworks' _ '" + targetPath + "' \\;", { stdio: "inherit", cwd: manualDir });
 });
 
+/*
+ * Cleans the subsidiary applications' Build directories exclusively (-mindepth 2 -maxdepth 2).
+ */
 task ("clean", function()
 {
-    var targetDir = ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build";
-    cp.execSync("find . -name '" + targetDir + "' -type d -prune -exec rm -rf {} +", { stdio: "inherit" });
+    var manualDir = __dirname;
+    var targetName = path.basename(ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build");
+    cp.execSync("find . -mindepth 2 -maxdepth 2 -type d -name '" + targetName + "' -exec rm -rf {} +", { stdio: "inherit", cwd: manualDir });
 });
 
+/*
+ * Sweeps Frameworks symlinks across subsidiary test applications after delegating Build directory removal to clean.
+ */
 task ("clobber", ["clean"], function()
 {
-    cp.execSync("find . -mindepth 2 -type l -name 'Frameworks' -exec rm -f {} +", { stdio: "inherit" });
-     cp.execSync("rm -rf .Frameworks", { stdio: "inherit" });   
+    var manualDir = __dirname;
+    cp.execSync("find . -mindepth 2 -maxdepth 2 -type l -name 'Frameworks' -exec rm -f {} +", { stdio: "inherit", cwd: manualDir });
 });
 
-// Alien targets for manual, local execution
+/*
+ * -----------------------------------------------------------------------------
+ * Manual Execution Targets
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * Triggers baseline compilation across all subproject manual tests for local testing.
+ */
 task ("batch-compile", function()
 {
-    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake build \\;", { stdio: "inherit", env: ENV });
+    var manualDir = __dirname;
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake build \\;", { stdio: "inherit", env: ENV, cwd: manualDir });
 });
 
 task ("batch-compile-all", ["batch-compile-debug", "batch-compile-release"]);
 
 task ("batch-compile-debug", function()
 {
+    var manualDir = __dirname;
     ENV["CONFIGURATION"] = "Debug";
-    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake debug \\;", { stdio: "inherit", env: ENV });
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake debug \\;", { stdio: "inherit", env: ENV, cwd: manualDir });
 });
 
 task ("batch-compile-release", function()
 {
+    var manualDir = __dirname;
     ENV["CONFIGURATION"] = "Release";
-    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake release \\;", { stdio: "inherit", env: ENV });
+    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir npx jake release \\;", { stdio: "inherit", env: ENV, cwd: manualDir });
 });
