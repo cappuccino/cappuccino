@@ -25,7 +25,6 @@
  */
 
 @import "CPText.j"
-@import "CPTextContainer.j"
 @import "CGContext.j"
 @import "CPTypesetter.j"
 @import "CPFont.j"
