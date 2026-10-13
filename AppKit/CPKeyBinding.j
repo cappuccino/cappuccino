@@ -26,6 +26,12 @@
 @import "CPEvent_Constants.j"
 @import "CPText.j"
 
+// TODO: These are the macOS standard key bindings and are applied on every
+// platform. "@" is always Command, and the Emacs-style Control bindings
+// (^a, ^e, ^k, ^v, ^y, ...) and arrow/Home/End behaviour conflict with
+// Windows and Linux conventions. Provide per-platform tables keyed off
+// CPBrowserIsOperatingSystem, mapping the primary modifier through
+// CPPlatformActionKeyMask.
 CPStandardKeyBindings = {
     @"@.": @"cancelOperation:",
 
