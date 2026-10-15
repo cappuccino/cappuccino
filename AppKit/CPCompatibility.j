@@ -24,6 +24,29 @@
 @import "CPPlatform.j"
 
 
+/*
+    CPDOMAvailable is the authoritative runtime predicate for DOM capability.
+
+    It replaces the former `#if PLATFORM(DOM)` preprocessor conditional, which
+    selected code at build time between the browser (DOM) and CommonJS (Node)
+    targets. It is a CAPABILITY test: YES only when a
+    functioning document object with createElement exists.
+
+    The predicate subsumes all direct local probing for the presence of a DOM.
+
+        YES  - browsers (the only deployment target)
+        YES  - any environment providing a working DOM (e.g. jsdom), where DOM
+               operations genuinely function
+        NO   - CommonJS/Node without a DOM (legacy tooling: theme blending, nib2cib)
+
+    Rules for consumers:
+        - Platform-conditional code MUST test CPDOMAvailable.
+        - Do NOT reference `document` (or test for it) anywhere else in AppKit;
+          this declaration is the single environment peek.
+        - The preprocessor form must not return: there is no preprocessor.
+*/
+CPDOMAvailable = (typeof document !== "undefined") && document && (typeof document.createElement === "function");
+
 // Browser Engines
 CPUnknownBrowserEngine                  = 0;
 CPGeckoBrowserEngine                    = 1 << 0;
@@ -261,29 +284,6 @@ else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
         PLATFORM_BUGS |= CPJavaScriptPasteRequiresEditableTarget;
     }*/
 }
-
-/*
-    CPDOMAvailable is the authoritative runtime predicate for DOM capability.
-
-    It replaces the former `#if PLATFORM(DOM)` preprocessor conditional, which
-    selected code at build time between the browser (DOM) and CommonJS (Node)
-    targets. It is a CAPABILITY test: YES only when a
-    functioning document object with createElement exists.
-
-    The predicate subsumes all direct local probing for the presence of a DOM.
-
-        YES  - browsers (the only deployment target)
-        YES  - any environment providing a working DOM (e.g. jsdom), where DOM
-               operations genuinely function
-        NO   - CommonJS/Node without a DOM (legacy tooling: theme blending, nib2cib)
-
-    Rules for consumers:
-        - Platform-conditional code MUST test CPDOMAvailable.
-        - Do NOT reference `document` (or test for it) anywhere else in AppKit;
-          this declaration is the single environment peek.
-        - The preprocessor form must not return: there is no preprocessor.
-*/
-CPDOMAvailable = (typeof document !== "undefined") && document && (typeof document.createElement === "function");
 
 // Feature-specific checks
 if (typeof document != "undefined")
