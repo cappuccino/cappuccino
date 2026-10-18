@@ -79,3 +79,13 @@ task ("deploy", ["release"], function()
     cp.execSync(["press", "-f", path.join("Build", "Release", "CPBrowserTest"), path.join("Build", "Deployment", "CPBrowserTest")].join(" "), { stdio: "inherit" });
     printResults("Deployment")
 });
+
+task ("clean", function()
+{
+    cp.execSync("rm -rf Build", { stdio: "inherit" });
+});
+
+task ("clobber", ["clean"], function()
+{
+    cp.execSync("rm -rf Frameworks", { stdio: "inherit" });
+});

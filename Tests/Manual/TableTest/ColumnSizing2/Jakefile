@@ -91,3 +91,13 @@ function printResults(configuration)
     print(configuration+" app built at path: "+FILE.join("Build", configuration, "ColumnSizing2"));
     print("----------------------------");
 }
+
+task ("clean", function()
+{
+    cp.execSync("rm -rf Build", { stdio: "inherit" });
+});
+
+task ("clobber", ["clean"], function()
+{
+    cp.execSync("rm -rf Frameworks", { stdio: "inherit" });
+});

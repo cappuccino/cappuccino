@@ -92,3 +92,13 @@ function printResults(configuration)
     print(configuration+" app built at path: "+FILE.join("Build", configuration, "DataView"));
     print("----------------------------");
 }
+
+task ("clean", function()
+{
+    cp.execSync("rm -rf Build", { stdio: "inherit" });
+});
+
+task ("clobber", ["clean"], function()
+{
+    cp.execSync("rm -rf Frameworks", { stdio: "inherit" });
+});

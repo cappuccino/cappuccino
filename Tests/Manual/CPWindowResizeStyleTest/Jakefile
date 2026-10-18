@@ -92,3 +92,13 @@ function printResults(configuration)
     console.log(configuration+" app built at path: "+path.join("Build", configuration, "CPWindowResizeStyleTest"));
     console.log("----------------------------");
 }
+
+task ("clean", function()
+{
+    cp.execSync("rm -rf Build", { stdio: "inherit" });
+});
+
+task ("clobber", ["clean"], function()
+{
+    cp.execSync("rm -rf Frameworks", { stdio: "inherit" });
+});
