@@ -327,15 +327,20 @@ var BadgeFont       = nil,
 
 - (void)_updateSelectionAppearance
 {
-    var selected = [self hasThemeState:CPThemeStateSelectedDataView];
+    // CPTableView marks data views of selected rows with CPThemeStateSelectedDataView
+    // and, only while the table is focused (first responder in the key window),
+    // additionally with CPThemeStateFirstResponder. The unfocused selection colour
+    // is a light gray, so white text is only legible in the focused case.
+    var selected = [self hasThemeState:CPThemeStateSelectedDataView],
+        emphasized = selected && [self hasThemeState:CPThemeStateFirstResponder];
 
-    [_iconView setSelected:selected];
-    [_badgeView setSelected:selected];
+    [_iconView setSelected:emphasized];
+    [_badgeView setSelected:emphasized];
 
     if (_isHeader)
         [_titleField setTextColor:[CPColor colorWithWhite:0.45 alpha:1.0]];
     else
-        [_titleField setTextColor:selected ? [CPColor whiteColor] : [CPColor colorWithWhite:0.15 alpha:1.0]];
+        [_titleField setTextColor:emphasized ? [CPColor whiteColor] : [CPColor colorWithWhite:0.15 alpha:1.0]];
 }
 
 @end
