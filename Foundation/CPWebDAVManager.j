@@ -179,16 +179,6 @@ WebDAVPropertiesForURLKeys[CPURLIsDirectoryKey]     = @"resourcetype";
 
 var XMLDocumentFromString = function(anXMLString)
 {
-    if (typeof window["ActiveXObject"] !== "undefined")
-    {
-        var XMLDocument = new ActiveXObject("Microsoft.XMLDOM");
-
-        XMLDocument.async = false;
-        XMLDocument.loadXML(anXMLString);
-
-        return XMLDocument;
-    }
-
     return new DOMParser().parseFromString(anXMLString,"text/xml");
 };
 

@@ -177,7 +177,8 @@ var _CPRunLoopPerformPool           = [],
 
 @end
 
-var CPRunLoopLastNativeRunLoop = 0;
+var CPRunLoopLastNativeRunLoop = 0,
+    CPMainRunLoop = nil;
 
 /*!
     @class CPRunLoop

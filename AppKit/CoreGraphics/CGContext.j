@@ -1191,7 +1191,9 @@ var scale_rotate = function(a, b, c, d)
     var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0,
         a2 = (ATAN2(b, d) + ATAN2(-sign * c, sign * a)) / 2.0,
         cos = COS(a2),
-        sin = SIN(a2);
+        sin = SIN(a2),
+        abs_cos,
+        abs_sin;
 
     if (cos === 0)
     {
@@ -1218,7 +1220,9 @@ var rotate_scale = function(a, b, c, d)
     var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0,
         a1 = (ATAN2(sign * b, sign * a) + ATAN2(-c, d)) / 2.0,
         cos = COS(a1),
-        sin = SIN(a1);
+        sin = SIN(a1),
+        abs_cos,
+        abs_sin;
 
     if (cos === 0)
     {

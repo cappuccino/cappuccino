@@ -52,7 +52,8 @@ CPMenuDidEndTrackingNotification    = @"CPMenuDidEndTrackingNotification";
 var _CPMenuBarVisible               = NO,
     _CPMenuBarTitle                 = @"",
     _CPMenuBarAttributes            = nil,
-    _CPMenuBarSharedWindow          = nil;
+    _CPMenuBarSharedWindow          = nil,
+    _CPMenuBarImage                 = nil;
 
 /*!
     @ingroup appkit
