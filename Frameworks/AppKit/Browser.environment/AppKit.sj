@@ -30945,7 +30945,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","BOOL"])]);
 }
-p;13;CPSplitView.jt;96518;@STATIC;1.0;i;13;CPButtonBar.ji;10;CPCursor.ji;9;CPImage.ji;16;CPTrackingArea.ji;8;CPView.jt;96419;objj_executeFile("CPButtonBar.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);{var the_protocol = objj_allocateProtocol("CPSplitViewDelegate");
+p;13;CPSplitView.jt;96732;@STATIC;1.0;i;13;CPButtonBar.ji;10;CPCursor.ji;9;CPImage.ji;16;CPTrackingArea.ji;8;CPView.jt;96633;objj_executeFile("CPButtonBar.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);{var the_protocol = objj_allocateProtocol("CPSplitViewDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPSplitViewDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -31761,8 +31761,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 
 ,["void","float","int"]), new objj_method(sel_getUid("setButtonBar:forDividerAtIndex:"), function $CPSplitView__setButtonBar_forDividerAtIndex_(self, _cmd, aButtonBar, dividerIndex)
 {
-    (aButtonBar == null ? aButtonBar : (aButtonBar.isa.method_msgSend["setAutomaticResizeControl:"] || _objj_forward)(aButtonBar, "setAutomaticResizeControl:", YES));
-    (self.isa.method_msgSend["attachButtonBar:"] || _objj_forward)(self, "attachButtonBar:", aButtonBar);
+    if ((aButtonBar == null ? aButtonBar : (aButtonBar.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(aButtonBar, "respondsToSelector:", sel_getUid("setAutomaticResizeControl:"))))
+    {
+        (aButtonBar == null ? aButtonBar : (aButtonBar.isa.method_msgSend["setAutomaticResizeControl:"] || _objj_forward)(aButtonBar, "setAutomaticResizeControl:", YES));
+        (self.isa.method_msgSend["attachButtonBar:"] || _objj_forward)(self, "attachButtonBar:", aButtonBar);
+    }
 }
 
 ,["void","CPButtonBar","CPUInteger"]), new objj_method(sel_getUid("attachButtonBar:"), function $CPSplitView__attachButtonBar_(self, _cmd, aButtonBar)
