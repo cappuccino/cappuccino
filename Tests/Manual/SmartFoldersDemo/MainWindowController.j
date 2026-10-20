@@ -30,7 +30,9 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     ToolbarSearchIdentifier     = @"SearchItem",
     SidebarDefaultWidth         = 230.0,
     SidebarMinWidth             = 160.0,
-    SidebarMaxWidth             = 420.0;
+    SidebarMaxWidth             = 420.0,
+    ResetAlertResetTag          = 1001,
+    ResetAlertCancelTag         = 1002;
 
 @implementation MainWindowController : CPWindowController
 {
@@ -122,8 +124,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [toolbar setDelegate:self];
 
     // Buttons carry their own titles, so labels below them would be redundant.
-    if (typeof CPToolbarDisplayModeIconOnly !== "undefined")
-        [toolbar setDisplayMode:CPToolbarDisplayModeIconOnly];
+    [toolbar setDisplayMode:CPToolbarDisplayModeIconOnly];
 
     [toolbar setVisible:YES];
     [[self window] setToolbar:toolbar];
@@ -512,6 +513,12 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [alert addButtonWithTitle:@"Reset"];
     [alert addButtonWithTitle:@"Cancel"];
 
+    // CPAlert reports the clicked button's tag as the return code. Assign our own
+    // tags rather than relying on a framework-specific numbering scheme.
+    var buttons = [alert buttons];
+    [buttons[0] setTag:ResetAlertResetTag];
+    [buttons[1] setTag:ResetAlertCancelTag];
+
     [alert beginSheetModalForWindow:[self window]
                       modalDelegate:self
                      didEndSelector:@selector(resetAlertDidEnd:returnCode:contextInfo:)
@@ -520,10 +527,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
 - (void)resetAlertDidEnd:(CPAlert)anAlert returnCode:(int)aReturnCode contextInfo:(id)aContext
 {
-    // First button: 0 in classic Cappuccino, CPAlertFirstButtonReturn where defined.
-    var firstButton = (typeof CPAlertFirstButtonReturn !== "undefined") ? CPAlertFirstButtonReturn : 0;
-
-    if (aReturnCode !== firstButton && aReturnCode !== 0)
+    if (aReturnCode !== ResetAlertResetTag)
         return;
 
     [_searchField setStringValue:@""];
