@@ -212,7 +212,7 @@ function CGColorEqualToColor(lhs, rhs)
     if (lhs.pattern != rhs.pattern)
         return false;
 
-    if (CGColorSpaceEqualToColorSpace(lhs.colorspace, rhs.colorspace))
+    if (lhs.colorspace !== rhs.colorspace)
         return false;
 
     return true;

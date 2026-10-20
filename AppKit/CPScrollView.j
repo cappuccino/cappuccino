@@ -236,10 +236,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         heightInset = contentSize.height - bounds.size.height,
         frameSize = CGSizeMake(contentSize.width + widthInset, contentSize.height + heightInset);
 
-    if (hFlag)
+    if (horizontalScrollerClass)
         frameSize.height += [horizontalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
-    if (vFlag)
+    if (verticalScrollerClass)
         frameSize.width += [verticalScrollerClass scrollerWidthForControlSize:scrollerStyle];
 
     return frameSize;
