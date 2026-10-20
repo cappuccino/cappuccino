@@ -23,7 +23,12 @@
 var ENV = process.env,
     task = JAKE.task,
     cp = require("child_process"),
+    fs = require("fs"),
     path = require("path");
+
+// The frameworks an application's Frameworks directory links to, in the layout
+// capp gen creates: release builds directly inside, debug builds in Debug/.
+var ConfiguredFrameworks = ["Objective-J", "Foundation", "AppKit", "BlendKit"];
 
 /*
  * Standard build targets are neutered at this directory level to prevent automated
@@ -47,15 +52,49 @@ task ("release", ["default"]);
  */
 
 /*
- * Traverses every manual test subdirectory containing a Jakefile and symlinks its
- * internal 'Frameworks' directory directly to the concrete Build/Frameworks 
- * directory generated at the project root.
+ * Gives every manual test application the Frameworks layout capp gen creates:
+ * Frameworks/<Name> links to the release build in Build/Release, and
+ * Frameworks/Debug links to the debug build in Build/Debug, so index.html loads
+ * release frameworks and index-debug.html loads debug frameworks.  An existing
+ * Frameworks link, or a Frameworks directory holding only links, is replaced;
+ * a Frameworks directory holding real files is left untouched.
  */
 task ("configure", function()
 {
-    var manualDir = __dirname;
-    var targetPath = path.resolve(manualDir, "../../Build/Frameworks");
-    cp.execSync("find . -mindepth 2 -iname 'jakefile' -execdir sh -c 'echo \"Configuring $(basename \\\"$PWD\\\")\"; ln -sfn \"$1\" Frameworks' _ '" + targetPath + "' \\;", { stdio: "inherit", cwd: manualDir });
+    var manualDir = __dirname,
+        releasePath = path.resolve(manualDir, "../../Build/Release"),
+        debugPath = path.resolve(manualDir, "../../Build/Debug");
+
+    [releasePath, debugPath].forEach(function(buildPath)
+    {
+        ConfiguredFrameworks.forEach(function(framework)
+        {
+            if (!fs.existsSync(path.join(buildPath, framework)))
+                throw new Error(path.join(buildPath, framework) + " not found; build the frameworks in both configurations first");
+        });
+    });
+
+    manualApplicationDirectories(manualDir).forEach(function(appDir)
+    {
+        var name = path.basename(appDir),
+            frameworksPath = path.join(appDir, "Frameworks");
+
+        if (!removeConfiguredFrameworks(appDir))
+        {
+            console.log("Skipping " + name + ": Frameworks contains files that are not links");
+            return;
+        }
+
+        console.log("Configuring " + name);
+        fs.mkdirSync(frameworksPath);
+
+        ConfiguredFrameworks.forEach(function(framework)
+        {
+            fs.symlinkSync(path.join(releasePath, framework), path.join(frameworksPath, framework));
+        });
+
+        fs.symlinkSync(debugPath, path.join(frameworksPath, "Debug"));
+    });
 });
 
 /*
@@ -69,13 +108,90 @@ task ("clean", function()
 });
 
 /*
- * Sweeps Frameworks symlinks across subsidiary test applications after delegating Build directory removal to clean.
+ * Removes the Frameworks layout configure created from every manual test
+ * application, after delegating Build directory removal to clean.  A Frameworks
+ * directory holding real files is left untouched.
  */
 task ("clobber", ["clean"], function()
 {
     var manualDir = __dirname;
-    cp.execSync("find . -mindepth 2 -maxdepth 2 -type l -name 'Frameworks' -exec rm -f {} +", { stdio: "inherit", cwd: manualDir });
+
+    manualApplicationDirectories(manualDir).forEach(function(appDir)
+    {
+        if (!removeConfiguredFrameworks(appDir))
+            console.log("Skipping " + path.basename(appDir) + ": Frameworks contains files that are not links");
+    });
 });
+
+/*
+ * Returns the absolute paths of the manual test applications: every directory
+ * below this one that contains a Jakefile.
+ */
+function manualApplicationDirectories(manualDir)
+{
+    var jakefiles = cp.execSync("find . -mindepth 2 -iname 'jakefile'", { cwd: manualDir, encoding: "utf8" });
+
+    return jakefiles.split("\n").filter(Boolean).map(function(jakefile)
+    {
+        return path.resolve(manualDir, path.dirname(jakefile));
+    });
+}
+
+/*
+ * Removes an application's Frameworks link, or its Frameworks directory when
+ * that holds only links and directories, and returns true; returns false and
+ * leaves it in place when it holds any real file.  Links are removed, never
+ * followed.
+ */
+function removeConfiguredFrameworks(appDir)
+{
+    var frameworksPath = path.join(appDir, "Frameworks"),
+        stat;
+
+    try
+    {
+        stat = fs.lstatSync(frameworksPath);
+    }
+    catch (anError)
+    {
+        return true;
+    }
+
+    if (stat.isSymbolicLink())
+    {
+        fs.unlinkSync(frameworksPath);
+        return true;
+    }
+
+    if (stat.isDirectory() && containsOnlyLinks(frameworksPath))
+    {
+        fs.rmSync(frameworksPath, { recursive: true });
+        return true;
+    }
+
+    return false;
+}
+
+/*
+ * Returns true when aPath is a directory tree holding only symbolic links and
+ * directories.
+ */
+function containsOnlyLinks(aPath)
+{
+    return fs.readdirSync(aPath).every(function(name)
+    {
+        var entry = path.join(aPath, name),
+            stat = fs.lstatSync(entry);
+
+        if (stat.isSymbolicLink())
+            return true;
+
+        if (stat.isDirectory())
+            return containsOnlyLinks(entry);
+
+        return false;
+    });
+}
 
 /*
  * -----------------------------------------------------------------------------
