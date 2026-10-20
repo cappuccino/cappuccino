@@ -1285,8 +1285,11 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 - (void)setButtonBar:(CPButtonBar)aButtonBar forDividerAtIndex:(CPUInteger)dividerIndex
 {
     // For compatibility with previous behavior
-    [aButtonBar setAutomaticResizeControl:YES];
-    [self attachButtonBar:aButtonBar];
+    if ([aButtonBar respondsToSelector:@selector(setAutomaticResizeControl:)])
+    {
+        [aButtonBar setAutomaticResizeControl:YES];
+        [self attachButtonBar:aButtonBar];
+    }
 }
 
 - (void)attachButtonBar:(CPButtonBar)aButtonBar
@@ -1897,4 +1900,3 @@ var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
 }
 
 @end
-
