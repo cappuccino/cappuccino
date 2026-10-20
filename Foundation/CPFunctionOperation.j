@@ -79,7 +79,7 @@
 */
 + (id)functionOperationWithFunction:(JSObject)jsFunction
 {
-    functionOp = [[CPFunctionOperation alloc] init];
+    var functionOp = [[CPFunctionOperation alloc] init];
     [functionOp addExecutionFunction:jsFunction];
 
     return functionOp;

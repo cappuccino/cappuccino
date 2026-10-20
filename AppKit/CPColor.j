@@ -1494,7 +1494,7 @@ var patternColorsFromPattern = function(pattern, attributes, imageFactory)
         else
         {
             numParts = 3;
-            isVertical = orientation === PatternIsVertical;
+            isVertical = orientation === CPColorPatternIsVertical;
 
             if (isVertical)
             {
