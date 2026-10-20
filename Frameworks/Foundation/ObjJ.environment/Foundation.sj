@@ -4787,7 +4787,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPTimeZone"])]);
 }
-p;11;CPDecimal.jt;28763;@STATIC;1.0;i;9;CPArray.ji;10;CPNumber.jt;28715;objj_executeFile("CPArray.j", YES);objj_executeFile("CPNumber.j", YES);{var the_typedef = objj_allocateTypeDef("CPDecimal");
+p;11;CPDecimal.jt;28813;@STATIC;1.0;i;9;CPArray.ji;10;CPNumber.jt;28765;objj_executeFile("CPArray.j", YES);objj_executeFile("CPNumber.j", YES);{var the_typedef = objj_allocateTypeDef("CPDecimal");
 objj_registerTypeDef(the_typedef);
 }CPDecimalMaxDigits = 38;
 CPDecimalMaxExponent = 127;
@@ -5119,7 +5119,8 @@ CPDecimalAdd = function(result, leftOperand, rightOperand, roundingMode, longMod
     var normerror = CPDecimalNormalize(n1, n2, roundingMode, longMode);
     var comp = 0,
         ll = n1._mantissa.length,
-        lr = n2._mantissa.length;
+        lr = n2._mantissa.length,
+        adderror;
     if (ll == lr)
         comp = CPOrderedSame;
     else if (ll > lr)
@@ -5285,6 +5286,7 @@ _SimpleDivide = function(result, leftOperand, rightOperand, roundingMode)
         k = 0,
         firsttime = YES,
         stopk = CPDecimalMaxDigits + 1,
+        error1,
         used = 0;
     _CPDecimalSetZero(result);
     n1._mantissa = [];
@@ -5400,7 +5402,8 @@ _SimpleMultiply = function(result, leftOperand, rightOperand, roundingMode, powe
     var error = CPCalculationNoError,
         carry = 0,
         exp = 0,
-        n = CPDecimalMakeZero();
+        n = CPDecimalMakeZero(),
+        error1;
     _CPDecimalSetZero(result);
     for (var i = 0; i < rightOperand._mantissa.length; i++)
     {
@@ -7333,7 +7336,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("stringForObjectValue:")
 
 ,["void","CPCoder"])]);
 }
-p;21;CPFunctionOperation.jt;2495;@STATIC;1.0;i;9;CPArray.ji;10;CPObject.ji;13;CPOperation.jt;2430;objj_executeFile("CPArray.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPOperation.j", YES);
+p;21;CPFunctionOperation.jt;2499;@STATIC;1.0;i;9;CPArray.ji;10;CPObject.ji;13;CPOperation.jt;2434;objj_executeFile("CPArray.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPOperation.j", YES);
 {var the_class = objj_allocateClassPair(CPOperation, "CPFunctionOperation"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_functions", "CPArray")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("main"), function $CPFunctionOperation__main(self, _cmd)
@@ -7375,7 +7378,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("main"), function $CPFun
 ,["CPArray"])]);
 class_addMethods(meta_class, [new objj_method(sel_getUid("functionOperationWithFunction:"), function $CPFunctionOperation__functionOperationWithFunction_(self, _cmd, jsFunction)
 {
-    functionOp = ((___r1 = (CPFunctionOperation.isa.method_msgSend["alloc"] || _objj_forward)(CPFunctionOperation, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
+    var functionOp = ((___r1 = (CPFunctionOperation.isa.method_msgSend["alloc"] || _objj_forward)(CPFunctionOperation, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
     (functionOp == null ? functionOp : (functionOp.isa.method_msgSend["addExecutionFunction:"] || _objj_forward)(functionOp, "addExecutionFunction:", jsFunction));
     return functionOp;
     var ___r1;
@@ -13544,7 +13547,7 @@ CPRangeFromString = function(aString)
     var comma = aString.indexOf(',');
     return {location: parseInt(aString.substr(1, comma - 1)), length: parseInt(aString.substring(comma + 1, aString.length))};
 }
-p;11;CPRunLoop.jt;17420;@STATIC;1.0;i;9;CPArray.ji;8;CPDate.ji;10;CPObject.ji;10;CPString.jt;17345;objj_executeFile("CPArray.j", YES);objj_executeFile("CPDate.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);CPDefaultRunLoopMode = "CPDefaultRunLoopMode";
+p;11;CPRunLoop.jt;17445;@STATIC;1.0;i;9;CPArray.ji;8;CPDate.ji;10;CPObject.ji;10;CPString.jt;17370;objj_executeFile("CPArray.j", YES);objj_executeFile("CPDate.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);CPDefaultRunLoopMode = "CPDefaultRunLoopMode";
 _CPRunLoopPerformCompare = function(lhs, rhs)
 {
     return (rhs == null ? rhs : (rhs.isa.method_msgSend["order"] || _objj_forward)(rhs, "order")) - (lhs == null ? lhs : (lhs.isa.method_msgSend["order"] || _objj_forward)(lhs, "order"));
@@ -13670,7 +13673,8 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("_poolPerform:"), funct
 
 ,["_CPRunLoopPerform","Function","id","unsigned","CPArray"])]);
 }
-var CPRunLoopLastNativeRunLoop = 0;
+var CPRunLoopLastNativeRunLoop = 0,
+    CPMainRunLoop = nil;
 
 {var the_class = objj_allocateClassPair(CPObject, "CPRunLoop"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_runLoopLock", "BOOL"), new objj_ivar("_timersForModes", "Object"), new objj_ivar("_nativeTimersForModes", "Object"), new objj_ivar("_nextTimerFireDatesForModes", "CPDate"), new objj_ivar("_didAddTimer", "BOOL"), new objj_ivar("_effectiveDate", "CPDate"), new objj_ivar("_orderedPerforms", "CPArray"), new objj_ivar("_runLoopInsuranceTimer", "int"), new objj_ivar("_observers", "CPArray")]);objj_registerClassPair(the_class);
@@ -17874,7 +17878,7 @@ CPKeyedUnarchiveFromDataTransformerName = "CPKeyedUnarchiveFromData";
 (CPValueTransformer.isa.method_msgSend["setValueTransformer:forName:"] || _objj_forward)(CPValueTransformer, "setValueTransformer:forName:", ((___r1 = (CPIsNilTransformer.isa.method_msgSend["alloc"] || _objj_forward)(CPIsNilTransformer, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init")), CPIsNilTransformerName);
 (CPValueTransformer.isa.method_msgSend["setValueTransformer:forName:"] || _objj_forward)(CPValueTransformer, "setValueTransformer:forName:", ((___r1 = (CPIsNotNilTransformer.isa.method_msgSend["alloc"] || _objj_forward)(CPIsNotNilTransformer, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init")), CPIsNotNilTransformerName);
 (CPValueTransformer.isa.method_msgSend["setValueTransformer:forName:"] || _objj_forward)(CPValueTransformer, "setValueTransformer:forName:", ((___r1 = (CPUnarchiveFromDataTransformer.isa.method_msgSend["alloc"] || _objj_forward)(CPUnarchiveFromDataTransformer, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init")), CPUnarchiveFromDataTransformerName);
-p;17;CPWebDAVManager.jt;10613;@STATIC;1.0;i;9;CPArray.ji;14;CPDictionary.ji;10;CPObject.ji;10;CPString.ji;7;CPURL.ji;17;CPURLConnection.ji;14;CPURLRequest.jt;10479;objj_executeFile("CPArray.j", YES);objj_executeFile("CPDictionary.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);objj_executeFile("CPURL.j", YES);objj_executeFile("CPURLConnection.j", YES);objj_executeFile("CPURLRequest.j", YES);var setURLResourceValuesForKeysFromProperties = function(aURL, keys, properties)
+p;17;CPWebDAVManager.jt;10375;@STATIC;1.0;i;9;CPArray.ji;14;CPDictionary.ji;10;CPObject.ji;10;CPString.ji;7;CPURL.ji;17;CPURLConnection.ji;14;CPURLRequest.jt;10241;objj_executeFile("CPArray.j", YES);objj_executeFile("CPDictionary.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);objj_executeFile("CPURL.j", YES);objj_executeFile("CPURLConnection.j", YES);objj_executeFile("CPURLRequest.j", YES);var setURLResourceValuesForKeysFromProperties = function(aURL, keys, properties)
 {
     var resourceType = (properties == null ? properties : (properties.isa.method_msgSend["objectForKey:"] || _objj_forward)(properties, "objectForKey:", "resourcetype"));
     if (resourceType === CPWebDAVManagerCollectionResourceType)
@@ -17978,13 +17982,6 @@ WebDAVPropertiesForURLKeys[CPURLIsRegularFileKey] = "resourcetype";
 WebDAVPropertiesForURLKeys[CPURLIsDirectoryKey] = "resourcetype";
 var XMLDocumentFromString = function(anXMLString)
 {
-    if (typeof window["ActiveXObject"] !== "undefined")
-    {
-        var XMLDocument = new ActiveXObject("Microsoft.XMLDOM");
-        XMLDocument.async = false;
-        XMLDocument.loadXML(anXMLString);
-        return XMLDocument;
-    }
     return new DOMParser().parseFromString(anXMLString, "text/xml");
 };
 var parsePROPFINDResponse = function(anXMLString)

@@ -10322,7 +10322,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("copy"), function $CPCol
 
 ,["CPCollectionView"])]);
 }
-p;9;CPColor.jt;51664;@STATIC;1.0;I;21;Foundation/CPObject.ji;19;CPGraphicsContext.ji;9;CGColor.ji;17;_CPObject+Theme.ji;17;CPCompatibility.ji;9;CPImage.jt;51524;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPGraphicsContext.j", YES);objj_executeFile("CGColor.j", YES);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPImage.j", YES);CPColorPatternIsVertical = YES;
+p;9;CPColor.jt;51671;@STATIC;1.0;I;21;Foundation/CPObject.ji;19;CPGraphicsContext.ji;9;CGColor.ji;17;_CPObject+Theme.ji;17;CPCompatibility.ji;9;CPImage.jt;51531;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPGraphicsContext.j", YES);objj_executeFile("CGColor.j", YES);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPImage.j", YES);CPColorPatternIsVertical = YES;
 CPColorPatternIsHorizontal = NO;
 var _redComponent = 0,
     _greenComponent = 1,
@@ -11068,7 +11068,7 @@ var patternColorsFromPattern = function(pattern, attributes, imageFactory)
         else
         {
             numParts = 3;
-            isVertical = orientation === PatternIsVertical;
+            isVertical = orientation === CPColorPatternIsVertical;
             if (isVertical)
             {
                 if (attributes["centerHeight"])
@@ -25556,7 +25556,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","float","float"])]);
 }
-p;14;CPScrollView.jt;97537;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.ji;7;CPBox.ji;12;CPClipView.ji;12;CPScroller.ji;8;CPView.ji;13;CPRulerView.jt;97404;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPBox.j", YES);objj_executeFile("CPClipView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPRulerView.j", YES);{var the_protocol = objj_allocateProtocol("CPScrollViewDelegate");
+p;14;CPScrollView.jt;97571;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.ji;7;CPBox.ji;12;CPClipView.ji;12;CPScroller.ji;8;CPView.ji;13;CPRulerView.jt;97438;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPBox.j", YES);objj_executeFile("CPClipView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPRulerView.j", YES);{var the_protocol = objj_allocateProtocol("CPScrollViewDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPScrollViewDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -26648,9 +26648,9 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
         widthInset = contentSize.width - bounds.size.width,
         heightInset = contentSize.height - bounds.size.height,
         frameSize = CGSizeMake(contentSize.width + widthInset, contentSize.height + heightInset);
-    if (hFlag)
+    if (horizontalScrollerClass)
         frameSize.height += (horizontalScrollerClass == null ? horizontalScrollerClass : (horizontalScrollerClass.isa.method_msgSend["scrollerWidthInStyle:"] || _objj_forward)(horizontalScrollerClass, "scrollerWidthInStyle:", scrollerStyle));
-    if (vFlag)
+    if (verticalScrollerClass)
         frameSize.width += (verticalScrollerClass == null ? verticalScrollerClass : (verticalScrollerClass.isa.method_msgSend["scrollerWidthForControlSize:"] || _objj_forward)(verticalScrollerClass, "scrollerWidthForControlSize:", scrollerStyle));
     return frameSize;
 }
@@ -52797,7 +52797,7 @@ CPStringFromCGAffineTransform = function(anAffineTransform)
 {
     return '{' + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + ", " + anAffineTransform.ty + '}';
 }
-p;9;CGColor.jt;3229;@STATIC;1.0;i;14;CGColorSpace.jt;3191;objj_executeFile("CGColorSpace.j", YES);var CFTypeGlobalCount = 0;
+p;9;CGColor.jt;3201;@STATIC;1.0;i;14;CGColorSpace.jt;3163;objj_executeFile("CGColorSpace.j", YES);var CFTypeGlobalCount = 0;
 CFHashCode = function(aCFObject)
 {
     if (!aCFObject.hash)
@@ -52881,7 +52881,7 @@ CGColorEqualToColor = function(lhs, rhs)
             return false;
     if (lhs.pattern != rhs.pattern)
         return false;
-    if (CGColorSpaceEqualToColorSpace(lhs.colorspace, rhs.colorspace))
+    if (lhs.colorspace !== rhs.colorspace)
         return false;
     return true;
 }
@@ -53068,7 +53068,7 @@ CGColorSpaceStandardizeComponents = function(aColorSpace, components)
             break;
     }
 }
-p;11;CGContext.jt;40163;@STATIC;1.0;i;19;CGAffineTransform.ji;17;CPCompatibility.ji;12;CGGeometry.ji;8;CGPath.ji;15;CGContextText.jt;40048;objj_executeFile("CGAffineTransform.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CGPath.j", YES);objj_executeFile("CGContextText.j", YES);{var the_typedef = objj_allocateTypeDef("CGContext");
+p;11;CGContext.jt;40247;@STATIC;1.0;i;19;CGAffineTransform.ji;17;CPCompatibility.ji;12;CGGeometry.ji;8;CGPath.ji;15;CGContextText.jt;40132;objj_executeFile("CGAffineTransform.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CGPath.j", YES);objj_executeFile("CGContextText.j", YES);{var the_typedef = objj_allocateTypeDef("CGContext");
 objj_registerTypeDef(the_typedef);
 }kCGLineCapButt = 0;
 kCGLineCapRound = 1;
@@ -53680,7 +53680,9 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
         var sign = a * d < 0.0 || b * c > 0.0 ? -1.0 : 1.0,
             a2 = (ATAN2(b, d) + ATAN2(-sign * c, sign * a)) / 2.0,
             cos = COS(a2),
-            sin = SIN(a2);
+            sin = SIN(a2),
+            abs_cos,
+            abs_sin;
         if (cos === 0)
         {
             sx = -c / sin;
@@ -53704,7 +53706,9 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
         var sign = a * d < 0.0 || b * c > 0.0 ? -1.0 : 1.0,
             a1 = (ATAN2(sign * b, sign * a) + ATAN2(-c, d)) / 2.0,
             cos = COS(a1),
-            sin = SIN(a1);
+            sin = SIN(a1),
+            abs_cos,
+            abs_sin;
         if (cos === 0)
         {
             sx = b / sin;
@@ -54029,7 +54033,7 @@ else
         throw new Error("function is not declared in this environment");
     };
 }
-p;15;CGContextText.jt;1572;@STATIC;1.0;t;1553;kCGTextFill = 0;
+p;15;CGContextText.jt;1571;@STATIC;1.0;t;1552;kCGTextFill = 0;
 kCGTextStroke = 1;
 kCGTextFillStroke = 2;
 kCGTextInvisible = 3;
@@ -54043,7 +54047,7 @@ CGContextSetTextMatrix = function(aContext, aTransform)
 }
 CGContextGetTextPosition = function(aContext)
 {
-    return aContext._textPosition || _CGPointMakeZero();
+    return aContext._textPosition || CGPointMakeZero();
 }
 CGContextSetTextPosition = function(aContext, x, y)
 {
@@ -59864,7 +59868,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPTheme"])]);
 }
-p;8;CPMenu.jt;76099;@STATIC;1.0;I;20;Foundation/CPArray.jI;25;Foundation/CPDictionary.jI;33;Foundation/CPNotificationCenter.jI;21;Foundation/CPString.ji;19;CPKeyValueBinding.ji;12;CPMenuItem.ji;9;CALayer.ji;18;_CPMenuBarWindow.ji;15;_CPMenuWindow.jt;75863;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPDictionary.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPKeyValueBinding.j", YES);objj_executeFile("CPMenuItem.j", YES);objj_executeFile("CALayer.j", YES);{var the_protocol = objj_allocateProtocol("CPMenuDelegate");
+p;8;CPMenu.jt;76126;@STATIC;1.0;I;20;Foundation/CPArray.jI;25;Foundation/CPDictionary.jI;33;Foundation/CPNotificationCenter.jI;21;Foundation/CPString.ji;19;CPKeyValueBinding.ji;12;CPMenuItem.ji;9;CALayer.ji;18;_CPMenuBarWindow.ji;15;_CPMenuWindow.jt;75890;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPDictionary.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPKeyValueBinding.j", YES);objj_executeFile("CPMenuItem.j", YES);objj_executeFile("CALayer.j", YES);{var the_protocol = objj_allocateProtocol("CPMenuDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPMenuDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -59878,7 +59882,8 @@ CPMenuDidEndTrackingNotification = "CPMenuDidEndTrackingNotification";
 var _CPMenuBarVisible = NO,
     _CPMenuBarTitle = "",
     _CPMenuBarAttributes = nil,
-    _CPMenuBarSharedWindow = nil;
+    _CPMenuBarSharedWindow = nil,
+    _CPMenuBarImage = nil;
 
 {var the_class = objj_allocateClassPair(CPObject, "CPMenu"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_supermenu", "CPMenu"), new objj_ivar("_title", "CPString"), new objj_ivar("_name", "CPString"), new objj_ivar("_font", "CPFont"), new objj_ivar("_minimumWidth", "float"), new objj_ivar("_items", "CPMutableArray"), new objj_ivar("_autoenablesItems", "BOOL"), new objj_ivar("_showsStateColumn", "BOOL"), new objj_ivar("_delegate", "id"), new objj_ivar("_implementedDelegateMethods", "unsigned"), new objj_ivar("_highlightedIndex", "int"), new objj_ivar("_menuWindow", "_CPMenuWindow"), new objj_ivar("_lastCloseEvent", "CPEvent")]);objj_registerClassPair(the_class);
