@@ -27,6 +27,9 @@
 @implementation _CPTitleableWindowView : _CPWindowView
 {
     CPTextField _titleField;
+    int         _minimumTitleFieldSize;
+    int         _titleBarHeight;
+    int         _titleMargin;
 }
 
 + (int)titleBarHeight
@@ -47,7 +50,7 @@
 
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    var frameRect = CGRectMakeCopy(aContentRect),
+    var frameRect = [super frameRectForContentRect:aContentRect],
         titleBarHeight = [self titleBarHeight];
 
     frameRect.origin.y -= titleBarHeight;
@@ -62,15 +65,19 @@
 
     if (self)
     {
+        // We cache some values for optimization
+        _titleBarHeight = [[self class] titleBarHeight];
+        _titleMargin    = [self currentValueForThemeAttribute:@"title-margin"];
+
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
         [_titleField setHitTests:NO];
         [_titleField setStringValue:@"Untitled"];
         [_titleField sizeToFit];
         [_titleField setAutoresizingMask:CPViewWidthSizable];
-        [_titleField setStringValue:@""];
+        [self setTitle:@""];
 
-        [_titleField setFrame:CGRectMake(20.0, 3.0, CGRectGetWidth([self bounds]) - 40.0, CGRectGetHeight([_titleField frame]))];
+        [_titleField setFrame:CGRectMake(_titleMargin, 3.0, CGRectGetWidth([self bounds]) - 2 * _titleMargin, CGRectGetHeight([_titleField frame]))];
 
         [self addSubview:_titleField];
 
@@ -83,6 +90,8 @@
 - (void)setTitle:(CPString)aTitle
 {
     [_titleField setStringValue:aTitle];
+
+    _minimumTitleFieldSize = [_titleField _minimumFrameSize].width;
 }
 
 - (void)tile
@@ -95,7 +104,7 @@
 
     // The vertical alignment of the title is set by the theme, so just give it all available space. By default
     // the title will vertically centre within.
-    [_titleField setFrame:CGRectMake(20.0, 0, width - 40.0, [[self class] titleBarHeight])];
+    [_titleField setFrame:CGRectMake(_titleMargin, 0, width - 2 * _titleMargin, _titleBarHeight)];
 }
 
 - (void)layoutSubviews
