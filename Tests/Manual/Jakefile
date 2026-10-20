@@ -61,16 +61,49 @@ task ("release", ["default"]);
  */
 task ("configure", function()
 {
-    var manualDir = __dirname,
-        releasePath = path.resolve(manualDir, "../../Build/Release"),
-        debugPath = path.resolve(manualDir, "../../Build/Debug");
+    var manualDir = __dirname;
 
+    provisionFrameworks(
+        manualDir,
+        path.resolve(manualDir, "../../Build/Release"),
+        path.resolve(manualDir, "../../Build/Debug"),
+        "build the frameworks in both configurations first"
+    );
+});
+
+/*
+ * Gives every manual test application the same Frameworks layout as configure,
+ * linked to the capp-build package in Build/modern/Frameworks instead of the
+ * legacy builds.  capp-build produces a single build, so Frameworks/Debug links
+ * to the same package.
+ */
+task ("configure-modern", function()
+{
+    var manualDir = __dirname,
+        modernPath = path.resolve(manualDir, "../../Build/modern/Frameworks");
+
+    provisionFrameworks(
+        manualDir,
+        modernPath,
+        modernPath,
+        "build the package with capp-build first (capp-build build . at the repository root)"
+    );
+});
+
+/*
+ * Links Frameworks/<Name> to releasePath/<Name> and Frameworks/Debug to
+ * debugPath in every manual test application, after checking that both hold
+ * every framework.  An existing Frameworks link, or a Frameworks directory
+ * holding only links, is replaced; one holding real files is left untouched.
+ */
+function provisionFrameworks(manualDir, releasePath, debugPath, missingHint)
+{
     [releasePath, debugPath].forEach(function(buildPath)
     {
         ConfiguredFrameworks.forEach(function(framework)
         {
             if (!fs.existsSync(path.join(buildPath, framework)))
-                throw new Error(path.join(buildPath, framework) + " not found; build the frameworks in both configurations first");
+                throw new Error(path.join(buildPath, framework) + " not found; " + missingHint);
         });
     });
 
@@ -95,7 +128,7 @@ task ("configure", function()
 
         fs.symlinkSync(debugPath, path.join(frameworksPath, "Debug"));
     });
-});
+}
 
 /*
  * Cleans the subsidiary applications' Build directories exclusively (-mindepth 2 -maxdepth 2).
