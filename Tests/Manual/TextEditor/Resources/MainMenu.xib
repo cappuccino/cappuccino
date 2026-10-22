@@ -124,7 +124,8 @@
                                     <action selector="selectAll:" target="-1" id="232"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Insert Lorem Ipsum" keyEquivalent="n" id="FbT-zG-li9">
+                            <menuItem title="Insert Lorem Ipsum" id="FbT-zG-li9">
+                                <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="insertLoremIpsum:" target="-1" id="KPb-XT-4QY"/>
                                 </connections>

@@ -54,6 +54,22 @@
     [super windowDidLoad];
 
     [[self window] setDelegate:self];
+
+    /*
+        Show a horizontal ruler above the text.
+
+        A ruler is not a separate control. It belongs to the scroll view that
+        encloses the text view, and the text view keeps its markers in step
+        with the tab stops and indents of the paragraph at the selection.
+
+        In Interface Builder the text view's "Uses Ruler" setting turns this
+        on, but nib2cib does not yet carry the ruler settings into the cib,
+        so the ruler is set up here in code.
+    */
+    var scrollView = [textView enclosingScrollView];
+
+    [scrollView setHasHorizontalRuler:YES];
+    [scrollView setRulersVisible:YES];
 }
 
 /*!
