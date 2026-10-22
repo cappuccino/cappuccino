@@ -296,7 +296,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), f
 
 ,["CPDictionary"])]);
 }
-p;18;_CPDisplayServer.jt;2830;@STATIC;1.0;I;22;Foundation/CPRunLoop.jt;2784;objj_executeFile("Foundation/CPRunLoop.j", NO);;
+p;18;_CPDisplayServer.jt;2927;@STATIC;1.0;I;22;Foundation/CPRunLoop.ji;20;CPDOMDisplayServer.jt;2856;objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("CPDOMDisplayServer.j", YES);PREPARE_DOM_OPTIMIZATION();
 var displayObjects = [],
     displayObjectsByUID = {},
     layoutObjects = [],
@@ -359,7 +359,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("run"), function $_CPDi
 ,["void"])]);
 }
 (_CPDisplayServer.isa.method_msgSend["run"] || _objj_forward)(_CPDisplayServer, "run");
-p;21;_CPImageAndTextView.jt;37479;@STATIC;1.0;I;21;Foundation/CPString.ji;9;CPColor.ji;8;CPFont.ji;9;CPImage.ji;8;CPView.ji;11;CPControl.ji;12;CPPlatform.jt;37350;objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPColor.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPControl.j", YES);objj_executeFile("CPPlatform.j", YES);var _CPimageAndTextViewFrameSizeChangedFlag = 1 << 0,
+p;21;_CPImageAndTextView.jt;39008;@STATIC;1.0;I;21;Foundation/CPString.ji;9;CPColor.ji;8;CPFont.ji;9;CPImage.ji;8;CPView.ji;11;CPControl.ji;12;CPPlatform.ji;17;CPCompatibility.jt;38857;objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPColor.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPControl.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPCompatibility.j", YES);var _CPimageAndTextViewFrameSizeChangedFlag = 1 << 0,
     _CPImageAndTextViewImageChangedFlag = 1 << 1,
     _CPImageAndTextViewTextChangedFlag = 1 << 2,
     _CPImageAndTextViewAlignmentChangedFlag = 1 << 3,
@@ -428,6 +428,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_usesSingleLineMode"), 
     if (self._alignment === anAlignment)
         return;
     self._alignment = anAlignment;
+    if (!CPDOMAvailable)
+        return;
     switch(self._alignment) {
         case CPLeftTextAlignment:
             self._DOMElement.style.textAlign = "left";
@@ -525,7 +527,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_usesSingleLineMode"), 
     if (self._textColor === aTextColor)
         return;
     self._textColor = aTextColor;
-    self._DOMElement.style.color = ((___r1 = self._textColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString"));
+    if (CPDOMAvailable)
+    {
+        self._DOMElement.style.color = ((___r1 = self._textColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString"));
+    }
     var ___r1;
 }
 
@@ -595,7 +600,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_usesSingleLineMode"), 
 {
     (self.isa.method_msgSend["layoutIfNeeded"] || _objj_forward)(self, "layoutIfNeeded");
     var textFrame = CGRectMakeZero();
-    if (self._DOMTextElement)
+    if (CPDOMAvailable && self._DOMTextElement)
     {
         var textStyle = self._DOMTextElement.style;
         textFrame.origin.y = parseInt(textStyle.top.substr(0, textStyle.top.length - 2), 10);
@@ -676,325 +681,328 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_usesSingleLineMode"), 
 
 ,["CPString"]), new objj_method(sel_getUid("layoutSubviews"), function $_CPImageAndTextView__layoutSubviews(self, _cmd)
 {
-    var needsDOMTextElement = self._imagePosition !== CPImageOnly && ((___r1 = self._text), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["length"] || _objj_forward)(___r1, "length")) > 0,
-        hasDOMTextElement = !!self._DOMTextElement;
-    if (needsDOMTextElement !== hasDOMTextElement)
+    if (CPDOMAvailable)
     {
-        if (hasDOMTextElement)
+        var needsDOMTextElement = self._imagePosition !== CPImageOnly && ((___r1 = self._text), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["length"] || _objj_forward)(___r1, "length")) > 0,
+            hasDOMTextElement = !!self._DOMTextElement;
+        if (needsDOMTextElement !== hasDOMTextElement)
         {
-            self._DOMElement.removeChild(self._DOMTextElement);
-            self._DOMTextElement = nil;
-            hasDOMTextElement = NO;
-        }
-        else
-        {
-            self._DOMTextElement = document.createElement("div");
-            var textStyle = self._DOMTextElement.style;
-            textStyle.position = "absolute";
-            textStyle.whiteSpace = "pre";
-            textStyle.zIndex = 200;
-            textStyle.overflow = "hidden";
-            self._DOMElement.appendChild(self._DOMTextElement);
-            hasDOMTextElement = YES;
-            self._flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag | _CPImageAndTextViewTextUnderlineChangedFlag;
-        }
-    }
-    var textStyle = hasDOMTextElement ? self._DOMTextElement.style : nil;
-    if (hasDOMTextElement && ((___r1 = (self.isa.method_msgSend["actualTheme"] || _objj_forward)(self, "actualTheme")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isCSSBased"] || _objj_forward)(___r1, "isCSSBased")) && ((___r1 = self._textShadowColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssDictionary"] || _objj_forward)(___r1, "cssDictionary")))
-    {
-        ((___r1 = ((___r2 = self._textShadowColor), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["cssDictionary"] || _objj_forward)(___r2, "cssDictionary"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["enumerateKeysAndObjectsUsingBlock:"] || _objj_forward)(___r1, "enumerateKeysAndObjectsUsingBlock:",         function(aKey, anObject, stop)
-        {
-            self._DOMTextElement.style[aKey] = anObject;
-        }));
-    }
-    else
-    {
-        var needsDOMTextShadowElement = hasDOMTextElement && ((___r1 = self._textShadowColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["alphaComponent"] || _objj_forward)(___r1, "alphaComponent")) > 0.0,
-            hasDOMTextShadowElement = !!self._DOMTextShadowElement;
-        if (needsDOMTextShadowElement !== hasDOMTextShadowElement)
-        {
-            if (hasDOMTextShadowElement)
+            if (hasDOMTextElement)
             {
-                self._DOMElement.removeChild(self._DOMTextShadowElement);
-                self._DOMTextShadowElement = nil;
-                hasDOMTextShadowElement = NO;
+                self._DOMElement.removeChild(self._DOMTextElement);
+                self._DOMTextElement = nil;
+                hasDOMTextElement = NO;
             }
             else
             {
-                self._DOMTextShadowElement = document.createElement("div");
-                var shadowStyle = self._DOMTextShadowElement.style,
-                    font = self._font || (CPFont.isa.method_msgSend["systemFontOfSize:"] || _objj_forward)(CPFont, "systemFontOfSize:", CPFontCurrentSystemSize);
-                shadowStyle.font = (font == null ? font : (font.isa.method_msgSend["cssString"] || _objj_forward)(font, "cssString"));
-                shadowStyle.position = "absolute";
-                shadowStyle.whiteSpace = textStyle.whiteSpace;
-                shadowStyle.wordWrap = textStyle.wordWrap;
-                shadowStyle.color = ((___r1 = self._textShadowColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString"));
-                shadowStyle.lineHeight = (font == null ? font : (font.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(font, "defaultLineHeightForFont")) + "px";
-                shadowStyle.zIndex = 150;
-                shadowStyle.textOverflow = textStyle.textOverflow;
-                if (document.attachEvent)
-                {
-                    shadowStyle.overflow = textStyle.overflow;
-                }
-                else
-                {
-                    shadowStyle.overflowX = textStyle.overflowX;
-                    shadowStyle.overflowY = textStyle.overflowY;
-                }
-                self._DOMElement.appendChild(self._DOMTextShadowElement);
-                hasDOMTextShadowElement = YES;
-                self._flags |= _CPImageAndTextViewTextChangedFlag;
+                self._DOMTextElement = document.createElement("div");
+                var textStyle = self._DOMTextElement.style;
+                textStyle.position = "absolute";
+                textStyle.whiteSpace = "pre";
+                textStyle.zIndex = 200;
+                textStyle.overflow = "hidden";
+                self._DOMElement.appendChild(self._DOMTextElement);
+                hasDOMTextElement = YES;
+                self._flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag | _CPImageAndTextViewTextUnderlineChangedFlag;
             }
         }
-    }
-    var shadowStyle = hasDOMTextShadowElement ? self._DOMTextShadowElement.style : nil;
-    if (hasDOMTextElement)
-    {
-        if (self._flags & _CPImageAndTextViewTextChangedFlag)
-            if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
+        var textStyle = hasDOMTextElement ? self._DOMTextElement.style : nil;
+        if (hasDOMTextElement && ((___r1 = (self.isa.method_msgSend["actualTheme"] || _objj_forward)(self, "actualTheme")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isCSSBased"] || _objj_forward)(___r1, "isCSSBased")) && ((___r1 = self._textShadowColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssDictionary"] || _objj_forward)(___r1, "cssDictionary")))
+        {
+            ((___r1 = ((___r2 = self._textShadowColor), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["cssDictionary"] || _objj_forward)(___r2, "cssDictionary"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["enumerateKeysAndObjectsUsingBlock:"] || _objj_forward)(___r1, "enumerateKeysAndObjectsUsingBlock:",             function(aKey, anObject, stop)
             {
-                self._DOMTextElement.innerText = self._text;
-                if (self._DOMTextShadowElement)
-                    self._DOMTextShadowElement.innerText = self._text;
-            }
-            else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
-            {
-                self._DOMTextElement.textContent = self._text;
-                if (self._DOMTextShadowElement)
-                    self._DOMTextShadowElement.textContent = self._text;
-            }
-        if (self._flags & _CPImageAndTextViewFontChangedFlag)
-        {
-            var font = self._font || (CPFont.isa.method_msgSend["systemFontOfSize:"] || _objj_forward)(CPFont, "systemFontOfSize:", CPFontCurrentSystemSize),
-                fontStyle = (font == null ? font : (font.isa.method_msgSend["cssString"] || _objj_forward)(font, "cssString"));
-            textStyle.font = fontStyle;
-            textStyle.lineHeight = (font == null ? font : (font.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(font, "defaultLineHeightForFont")) + "px";
-            if (shadowStyle)
-            {
-                shadowStyle.font = fontStyle;
-                shadowStyle.lineHeight = (font == null ? font : (font.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(font, "defaultLineHeightForFont")) + "px";
-            }
-        }
-        if (self._flags & _CPImageAndTextViewTextUnderlineChangedFlag)
-        {
-            textStyle.textDecoration = self._textUnderline ? "underline" : "";
-        }
-        if (self._flags & _CPImageAndTextViewLineBreakModeChangedFlag)
-        {
-            switch(self._lineBreakMode) {
-                case CPLineBreakByClipping:
-                    textStyle.overflow = "hidden";
-                    textStyle.textOverflow = "clip";
-                    textStyle.whiteSpace = "pre";
-                    textStyle.wordWrap = "normal";
-                    break;
-                case CPLineBreakByTruncatingHead:
-                case CPLineBreakByTruncatingMiddle:
-                case CPLineBreakByTruncatingTail:
-                    textStyle.textOverflow = "ellipsis";
-                    textStyle.whiteSpace = "pre";
-                    textStyle.overflow = "hidden";
-                    textStyle.wordWrap = "normal";
-                    break;
-                case CPLineBreakByCharWrapping:
-                case CPLineBreakByWordWrapping:
-                    textStyle.wordWrap = "break-word";
-                    try {
-                        textStyle.whiteSpace = "pre";
-                        textStyle.whiteSpace = "-o-pre-wrap";
-                        textStyle.whiteSpace = "-pre-wrap";
-                        textStyle.whiteSpace = "-moz-pre-wrap";
-                        textStyle.whiteSpace = "pre-wrap";
-                    }
-                    catch(e) {
-                        textStyle.whiteSpace = "pre";
-                    }
-                    textStyle.overflow = "hidden";
-                    textStyle.textOverflow = "clip";
-                    break;
-            }
-            if (shadowStyle)
-            {
-                if (document.attachEvent)
-                {
-                    shadowStyle.overflow = textStyle.overflow;
-                }
-                else
-                {
-                    shadowStyle.overflowX = textStyle.overflowX;
-                    shadowStyle.overflowY = textStyle.overflowY;
-                }
-                shadowStyle.wordWrap = textStyle.wordWrap;
-                shadowStyle.whiteSpace = textStyle.whiteSpace;
-                shadowStyle.textOverflow = textStyle.textOverflow;
-            }
-        }
-    }
-    var needsDOMImageElement = self._image != nil && self._imagePosition !== CPNoImage,
-        hasDOMImageElement = !!self._DOMImageElement,
-        isCSSBasedImage = ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isCSSBased"] || _objj_forward)(___r1, "isCSSBased")),
-        isIMGImageElement = hasDOMImageElement && self._DOMImageElement.nodeName == "IMG";
-    if (hasDOMImageElement)
-    {
-        if (!needsDOMImageElement || isIMGImageElement && isCSSBasedImage || !isIMGImageElement && !isCSSBasedImage)
-        {
-            self._DOMElement.removeChild(self._DOMImageElement);
-            self._DOMImageElement = nil;
-            hasDOMImageElement = NO;
-            self._cssStylePreviousState = (___r1 = (CPArray.isa.method_msgSend["alloc"] || _objj_forward)(CPArray, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
-            self._cssStyleNode = nil;
-        }
-    }
-    if (needsDOMImageElement && !hasDOMImageElement)
-    {
-        self._DOMImageElement = document.createElement(isCSSBasedImage ? "div" : "img");
-        if ((CPPlatform.isa.method_msgSend["supportsDragAndDrop"] || _objj_forward)(CPPlatform, "supportsDragAndDrop"))
-        {
-            self._DOMImageElement.setAttribute("draggable", "true");
-            self._DOMImageElement.style["-khtml-user-drag"] = "element";
-        }
-        var imageStyle = self._DOMImageElement.style;
-        imageStyle.top = "0px";
-        imageStyle.left = "0px";
-        imageStyle.position = "absolute";
-        imageStyle.zIndex = 100;
-        self._DOMElement.appendChild(self._DOMImageElement);
-        hasDOMImageElement = YES;
-    }
-    var size = (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds").size,
-        textRect = CGRectMake(0.0, 0.0, size.width, size.height);
-    if (hasDOMImageElement)
-    {
-        if (!imageStyle)
-            var imageStyle = self._DOMImageElement.style;
-        var centerX = size.width / 2.0,
-            centerY = size.height / 2.0,
-            imageSize = ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["size"] || _objj_forward)(___r1, "size")),
-            imageWidth = imageSize.width,
-            imageHeight = imageSize.height;
-        if (self._imageScaling === CPImageScaleAxesIndependently)
-        {
-            imageWidth = size.width;
-            imageHeight = size.height;
-        }
-        else if (self._imageScaling === CPImageScaleProportionallyDown)
-        {
-            var scale = MIN(MIN(size.width, imageWidth) / imageWidth, MIN(size.height, imageHeight) / imageHeight);
-            imageWidth *= scale;
-            imageHeight *= scale;
-        }
-        else if (self._imageScaling === CPImageScaleProportionallyUpOrDown)
-        {
-            var scale = MIN(size.width / imageWidth, size.height / imageHeight);
-            imageWidth *= scale;
-            imageHeight *= scale;
-        }
-        if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
-            imageStyle.filter = "alpha(opacity=" + self._shouldDimImage ? 50 : 100 + ")";
-        else
-            imageStyle.opacity = self._shouldDimImage ? 0.5 : 1.0;
-        self._DOMImageElement.width = imageWidth;
-        self._DOMImageElement.height = imageHeight;
-        imageStyle.width = MAX(imageWidth, 0) + "px";
-        imageStyle.height = MAX(imageHeight, 0) + "px";
-        if (self._imagePosition === CPImageBelow)
-        {
-            imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
-            imageStyle.top = FLOOR(size.height - imageHeight) + "px";
-            textRect.size.height = size.height - imageHeight - self._imageOffset;
-        }
-        else if (self._imagePosition === CPImageAbove)
-        {
-            imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
-            imageStyle.top = 0 + "px";
-            textRect.origin.y += imageHeight + self._imageOffset;
-            textRect.size.height = size.height - imageHeight - self._imageOffset;
-        }
-        else if (self._imagePosition === CPImageLeft)
-        {
-            imageStyle.top = self._imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
-            imageStyle.left = "0px";
-            textRect.origin.x = imageWidth + self._imageOffset;
-            textRect.size.width -= imageWidth + self._imageOffset;
-        }
-        else if (self._imagePosition === CPImageRight)
-        {
-            imageStyle.top = self._imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
-            imageStyle.left = FLOOR(size.width - imageWidth) + "px";
-            textRect.size.width -= imageWidth + self._imageOffset;
-        }
-        else if (self._imagePosition === CPImageOnly || self._imagePosition == CPImageOverlaps)
-        {
-            imageStyle.top = self._imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
-            imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
-        }
-        if (self._flags & _CPImageAndTextViewImageChangedFlag)
-        {
-            if (isCSSBasedImage)
-            {
-                if (((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_shouldBeResized"] || _objj_forward)(___r1, "_shouldBeResized")))
-                    ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setDisplaySize:"] || _objj_forward)(___r1, "_setDisplaySize:", CGSizeMake(imageWidth, imageHeight)));
-                self._cssStyleNode = ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["applyCSSImageForView:onDOMElement:styleNode:previousState:"] || _objj_forward)(___r1, "applyCSSImageForView:onDOMElement:styleNode:previousState:", self, self._DOMImageElement, self._cssStyleNode, function(__input) { if (arguments.length) return self._cssStylePreviousState = __input; return self._cssStylePreviousState; }));
-            }
-            else
-                self._DOMImageElement.src = ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["filename"] || _objj_forward)(___r1, "filename"));
-        }
-    }
-    if (hasDOMTextElement)
-    {
-        var textRectX = CGRectGetMinX(textRect),
-            textRectY = CGRectGetMinY(textRect),
-            textRectWidth = CGRectGetWidth(textRect),
-            textRectHeight = CGRectGetHeight(textRect);
-        if (textRectWidth <= 0 || textRectHeight <= 0)
-        {
-            textRectWidth = 0;
-            textRectHeight = 0;
+                self._DOMTextElement.style[aKey] = anObject;
+            }));
         }
         else
         {
-            if (self._verticalAlignment !== CPTopVerticalTextAlignment)
+            var needsDOMTextShadowElement = hasDOMTextElement && ((___r1 = self._textShadowColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["alphaComponent"] || _objj_forward)(___r1, "alphaComponent")) > 0.0,
+                hasDOMTextShadowElement = !!self._DOMTextShadowElement;
+            if (needsDOMTextShadowElement !== hasDOMTextShadowElement)
             {
-                if (!self._textSize)
+                if (hasDOMTextShadowElement)
                 {
-                    if (self._lineBreakMode === CPLineBreakByCharWrapping || self._lineBreakMode === CPLineBreakByWordWrapping)
+                    self._DOMElement.removeChild(self._DOMTextShadowElement);
+                    self._DOMTextShadowElement = nil;
+                    hasDOMTextShadowElement = NO;
+                }
+                else
+                {
+                    self._DOMTextShadowElement = document.createElement("div");
+                    var shadowStyle = self._DOMTextShadowElement.style,
+                        font = self._font || (CPFont.isa.method_msgSend["systemFontOfSize:"] || _objj_forward)(CPFont, "systemFontOfSize:", CPFontCurrentSystemSize);
+                    shadowStyle.font = (font == null ? font : (font.isa.method_msgSend["cssString"] || _objj_forward)(font, "cssString"));
+                    shadowStyle.position = "absolute";
+                    shadowStyle.whiteSpace = textStyle.whiteSpace;
+                    shadowStyle.wordWrap = textStyle.wordWrap;
+                    shadowStyle.color = ((___r1 = self._textShadowColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString"));
+                    shadowStyle.lineHeight = (font == null ? font : (font.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(font, "defaultLineHeightForFont")) + "px";
+                    shadowStyle.zIndex = 150;
+                    shadowStyle.textOverflow = textStyle.textOverflow;
+                    if (document.attachEvent)
                     {
-                        self._textSize = ((___r1 = self._text), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["sizeWithFont:inWidth:"] || _objj_forward)(___r1, "sizeWithFont:inWidth:", self._font, textRectWidth));
-                        if (self._usesSingleLineMode)
-                            self._textSize.height = ((___r1 = self._font), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(___r1, "defaultLineHeightForFont"));
+                        shadowStyle.overflow = textStyle.overflow;
                     }
                     else
                     {
-                        self._textSize = ((___r1 = self._text), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["sizeWithFont:"] || _objj_forward)(___r1, "sizeWithFont:", self._font));
-                        self._textSize.width += 1;
+                        shadowStyle.overflowX = textStyle.overflowX;
+                        shadowStyle.overflowY = textStyle.overflowY;
                     }
-                    self._textSize.height += 1;
-                }
-                if (self._verticalAlignment === CPCenterVerticalTextAlignment)
-                {
-                    textRectY = textRectY + (textRectHeight - self._textSize.height + 1.0) / 2.0;
-                    textRectHeight = self._textSize.height;
-                }
-                else
-                {
-                    textRectY = textRectY + textRectHeight - self._textSize.height;
-                    textRectHeight = self._textSize.height;
+                    self._DOMElement.appendChild(self._DOMTextShadowElement);
+                    hasDOMTextShadowElement = YES;
+                    self._flags |= _CPImageAndTextViewTextChangedFlag;
                 }
             }
         }
-        textStyle.top = ROUND(textRectY) + "px";
-        textStyle.left = ROUND(textRectX) + "px";
-        textStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
-        textStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
-        textStyle.verticalAlign = "top";
-        if (shadowStyle)
+        var shadowStyle = hasDOMTextShadowElement ? self._DOMTextShadowElement.style : nil;
+        if (hasDOMTextElement)
         {
-            if (self._flags & _CPImageAndTextViewTextShadowColorChangedFlag)
-                shadowStyle.color = ((___r1 = self._textShadowColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString"));
-            shadowStyle.top = ROUND(textRectY + self._textShadowOffset.height) + "px";
-            shadowStyle.left = ROUND(textRectX + self._textShadowOffset.width) + "px";
-            shadowStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
-            shadowStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
+            if (self._flags & _CPImageAndTextViewTextChangedFlag)
+                if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
+                {
+                    self._DOMTextElement.innerText = self._text;
+                    if (self._DOMTextShadowElement)
+                        self._DOMTextShadowElement.innerText = self._text;
+                }
+                else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
+                {
+                    self._DOMTextElement.textContent = self._text;
+                    if (self._DOMTextShadowElement)
+                        self._DOMTextShadowElement.textContent = self._text;
+                }
+            if (self._flags & _CPImageAndTextViewFontChangedFlag)
+            {
+                var font = self._font || (CPFont.isa.method_msgSend["systemFontOfSize:"] || _objj_forward)(CPFont, "systemFontOfSize:", CPFontCurrentSystemSize),
+                    fontStyle = (font == null ? font : (font.isa.method_msgSend["cssString"] || _objj_forward)(font, "cssString"));
+                textStyle.font = fontStyle;
+                textStyle.lineHeight = (font == null ? font : (font.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(font, "defaultLineHeightForFont")) + "px";
+                if (shadowStyle)
+                {
+                    shadowStyle.font = fontStyle;
+                    shadowStyle.lineHeight = (font == null ? font : (font.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(font, "defaultLineHeightForFont")) + "px";
+                }
+            }
+            if (self._flags & _CPImageAndTextViewTextUnderlineChangedFlag)
+            {
+                textStyle.textDecoration = self._textUnderline ? "underline" : "";
+            }
+            if (self._flags & _CPImageAndTextViewLineBreakModeChangedFlag)
+            {
+                switch(self._lineBreakMode) {
+                    case CPLineBreakByClipping:
+                        textStyle.overflow = "hidden";
+                        textStyle.textOverflow = "clip";
+                        textStyle.whiteSpace = "pre";
+                        textStyle.wordWrap = "normal";
+                        break;
+                    case CPLineBreakByTruncatingHead:
+                    case CPLineBreakByTruncatingMiddle:
+                    case CPLineBreakByTruncatingTail:
+                        textStyle.textOverflow = "ellipsis";
+                        textStyle.whiteSpace = "pre";
+                        textStyle.overflow = "hidden";
+                        textStyle.wordWrap = "normal";
+                        break;
+                    case CPLineBreakByCharWrapping:
+                    case CPLineBreakByWordWrapping:
+                        textStyle.wordWrap = "break-word";
+                        try {
+                            textStyle.whiteSpace = "pre";
+                            textStyle.whiteSpace = "-o-pre-wrap";
+                            textStyle.whiteSpace = "-pre-wrap";
+                            textStyle.whiteSpace = "-moz-pre-wrap";
+                            textStyle.whiteSpace = "pre-wrap";
+                        }
+                        catch(e) {
+                            textStyle.whiteSpace = "pre";
+                        }
+                        textStyle.overflow = "hidden";
+                        textStyle.textOverflow = "clip";
+                        break;
+                }
+                if (shadowStyle)
+                {
+                    if (document.attachEvent)
+                    {
+                        shadowStyle.overflow = textStyle.overflow;
+                    }
+                    else
+                    {
+                        shadowStyle.overflowX = textStyle.overflowX;
+                        shadowStyle.overflowY = textStyle.overflowY;
+                    }
+                    shadowStyle.wordWrap = textStyle.wordWrap;
+                    shadowStyle.whiteSpace = textStyle.whiteSpace;
+                    shadowStyle.textOverflow = textStyle.textOverflow;
+                }
+            }
+        }
+        var needsDOMImageElement = self._image != nil && self._imagePosition !== CPNoImage,
+            hasDOMImageElement = !!self._DOMImageElement,
+            isCSSBasedImage = ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isCSSBased"] || _objj_forward)(___r1, "isCSSBased")),
+            isIMGImageElement = hasDOMImageElement && self._DOMImageElement.nodeName == "IMG";
+        if (hasDOMImageElement)
+        {
+            if (!needsDOMImageElement || isIMGImageElement && isCSSBasedImage || !isIMGImageElement && !isCSSBasedImage)
+            {
+                self._DOMElement.removeChild(self._DOMImageElement);
+                self._DOMImageElement = nil;
+                hasDOMImageElement = NO;
+                self._cssStylePreviousState = (___r1 = (CPArray.isa.method_msgSend["alloc"] || _objj_forward)(CPArray, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
+                self._cssStyleNode = nil;
+            }
+        }
+        if (needsDOMImageElement && !hasDOMImageElement)
+        {
+            self._DOMImageElement = document.createElement(isCSSBasedImage ? "div" : "img");
+            if ((CPPlatform.isa.method_msgSend["supportsDragAndDrop"] || _objj_forward)(CPPlatform, "supportsDragAndDrop"))
+            {
+                self._DOMImageElement.setAttribute("draggable", "true");
+                self._DOMImageElement.style["-khtml-user-drag"] = "element";
+            }
+            var imageStyle = self._DOMImageElement.style;
+            imageStyle.top = "0px";
+            imageStyle.left = "0px";
+            imageStyle.position = "absolute";
+            imageStyle.zIndex = 100;
+            self._DOMElement.appendChild(self._DOMImageElement);
+            hasDOMImageElement = YES;
+        }
+        var size = (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds").size,
+            textRect = CGRectMake(0.0, 0.0, size.width, size.height);
+        if (hasDOMImageElement)
+        {
+            if (!imageStyle)
+                var imageStyle = self._DOMImageElement.style;
+            var centerX = size.width / 2.0,
+                centerY = size.height / 2.0,
+                imageSize = ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["size"] || _objj_forward)(___r1, "size")),
+                imageWidth = imageSize.width,
+                imageHeight = imageSize.height;
+            if (self._imageScaling === CPImageScaleAxesIndependently)
+            {
+                imageWidth = size.width;
+                imageHeight = size.height;
+            }
+            else if (self._imageScaling === CPImageScaleProportionallyDown)
+            {
+                var scale = MIN(MIN(size.width, imageWidth) / imageWidth, MIN(size.height, imageHeight) / imageHeight);
+                imageWidth *= scale;
+                imageHeight *= scale;
+            }
+            else if (self._imageScaling === CPImageScaleProportionallyUpOrDown)
+            {
+                var scale = MIN(size.width / imageWidth, size.height / imageHeight);
+                imageWidth *= scale;
+                imageHeight *= scale;
+            }
+            if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
+                imageStyle.filter = "alpha(opacity=" + self._shouldDimImage ? 50 : 100 + ")";
+            else
+                imageStyle.opacity = self._shouldDimImage ? 0.5 : 1.0;
+            self._DOMImageElement.width = imageWidth;
+            self._DOMImageElement.height = imageHeight;
+            imageStyle.width = MAX(imageWidth, 0) + "px";
+            imageStyle.height = MAX(imageHeight, 0) + "px";
+            if (self._imagePosition === CPImageBelow)
+            {
+                imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
+                imageStyle.top = FLOOR(size.height - imageHeight) + "px";
+                textRect.size.height = size.height - imageHeight - self._imageOffset;
+            }
+            else if (self._imagePosition === CPImageAbove)
+            {
+                imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
+                imageStyle.top = 0 + "px";
+                textRect.origin.y += imageHeight + self._imageOffset;
+                textRect.size.height = size.height - imageHeight - self._imageOffset;
+            }
+            else if (self._imagePosition === CPImageLeft)
+            {
+                imageStyle.top = self._imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
+                imageStyle.left = "0px";
+                textRect.origin.x = imageWidth + self._imageOffset;
+                textRect.size.width -= imageWidth + self._imageOffset;
+            }
+            else if (self._imagePosition === CPImageRight)
+            {
+                imageStyle.top = self._imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
+                imageStyle.left = FLOOR(size.width - imageWidth) + "px";
+                textRect.size.width -= imageWidth + self._imageOffset;
+            }
+            else if (self._imagePosition === CPImageOnly || self._imagePosition == CPImageOverlaps)
+            {
+                imageStyle.top = self._imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
+                imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
+            }
+            if (self._flags & _CPImageAndTextViewImageChangedFlag)
+            {
+                if (isCSSBasedImage)
+                {
+                    if (((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_shouldBeResized"] || _objj_forward)(___r1, "_shouldBeResized")))
+                        ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setDisplaySize:"] || _objj_forward)(___r1, "_setDisplaySize:", CGSizeMake(imageWidth, imageHeight)));
+                    self._cssStyleNode = ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["applyCSSImageForView:onDOMElement:styleNode:previousState:"] || _objj_forward)(___r1, "applyCSSImageForView:onDOMElement:styleNode:previousState:", self, self._DOMImageElement, self._cssStyleNode, function(__input) { if (arguments.length) return self._cssStylePreviousState = __input; return self._cssStylePreviousState; }));
+                }
+                else
+                    self._DOMImageElement.src = ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["filename"] || _objj_forward)(___r1, "filename"));
+            }
+        }
+        if (hasDOMTextElement)
+        {
+            var textRectX = CGRectGetMinX(textRect),
+                textRectY = CGRectGetMinY(textRect),
+                textRectWidth = CGRectGetWidth(textRect),
+                textRectHeight = CGRectGetHeight(textRect);
+            if (textRectWidth <= 0 || textRectHeight <= 0)
+            {
+                textRectWidth = 0;
+                textRectHeight = 0;
+            }
+            else
+            {
+                if (self._verticalAlignment !== CPTopVerticalTextAlignment)
+                {
+                    if (!self._textSize)
+                    {
+                        if (self._lineBreakMode === CPLineBreakByCharWrapping || self._lineBreakMode === CPLineBreakByWordWrapping)
+                        {
+                            self._textSize = ((___r1 = self._text), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["sizeWithFont:inWidth:"] || _objj_forward)(___r1, "sizeWithFont:inWidth:", self._font, textRectWidth));
+                            if (self._usesSingleLineMode)
+                                self._textSize.height = ((___r1 = self._font), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(___r1, "defaultLineHeightForFont"));
+                        }
+                        else
+                        {
+                            self._textSize = ((___r1 = self._text), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["sizeWithFont:"] || _objj_forward)(___r1, "sizeWithFont:", self._font));
+                            self._textSize.width += 1;
+                        }
+                        self._textSize.height += 1;
+                    }
+                    if (self._verticalAlignment === CPCenterVerticalTextAlignment)
+                    {
+                        textRectY = textRectY + (textRectHeight - self._textSize.height + 1.0) / 2.0;
+                        textRectHeight = self._textSize.height;
+                    }
+                    else
+                    {
+                        textRectY = textRectY + textRectHeight - self._textSize.height;
+                        textRectHeight = self._textSize.height;
+                    }
+                }
+            }
+            textStyle.top = ROUND(textRectY) + "px";
+            textStyle.left = ROUND(textRectX) + "px";
+            textStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
+            textStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
+            textStyle.verticalAlign = "top";
+            if (shadowStyle)
+            {
+                if (self._flags & _CPImageAndTextViewTextShadowColorChangedFlag)
+                    shadowStyle.color = ((___r1 = self._textShadowColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString"));
+                shadowStyle.top = ROUND(textRectY + self._textShadowOffset.height) + "px";
+                shadowStyle.left = ROUND(textRectX + self._textShadowOffset.width) + "px";
+                shadowStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
+                shadowStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
+            }
         }
     }
     self._flags = 0;
@@ -1047,6 +1055,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_usesSingleLineMode"), 
 
 ,["void","CGSize"]), new objj_method(sel_getUid("setSelectedRange:"), function $_CPImageAndTextView__setSelectedRange_(self, _cmd, aRange)
 {
+    if (!CPDOMAvailable)
+        return;
     if (self._DOMTextElement)
         ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setSelectedRange:inElement:"] || _objj_forward)(___r1, "setSelectedRange:inElement:", aRange, self._DOMTextElement));
     var ___r1, ___r2;
@@ -1054,7 +1064,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_usesSingleLineMode"), 
 
 ,["void","CPRange"])]);
 }
-p;17;_CPObject+Theme.jt;23958;@STATIC;1.0;I;23;Foundation/Foundation.ji;13;CPResponder.ji;9;CPTheme.jt;23879;objj_executeFile("Foundation/Foundation.j", NO);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPTheme.j", YES);var CPViewThemeClassKey = "CPViewThemeClassKey",
+p;17;_CPObject+Theme.jt;25834;@STATIC;1.0;I;23;Foundation/Foundation.ji;13;CPResponder.ji;9;CPTheme.jt;25755;objj_executeFile("Foundation/Foundation.j", NO);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPTheme.j", YES);var CPViewThemeClassKey = "CPViewThemeClassKey",
     CPViewThemeStateKey = "CPViewThemeStateKey";
 {var the_protocol = objj_allocateProtocol("CPTheme");
 objj_registerProtocol(the_protocol);
@@ -1090,6 +1100,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeState"), function 
 
 ,["unsigned"]), new objj_method(sel_getUid("hasThemeState:"), function $CPObject__hasThemeState_(self, _cmd, aState)
 {
+    if (aState && aState.isa && (aState == null ? aState : (aState.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(aState, "isKindOfClass:", CPArray)))
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "aState can't be an array. Please use 'hasThemeStates: instead: " + aState);
     return self._themeState.hasThemeState(aState);
 }
 
@@ -1104,6 +1116,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeState"), function 
 
 ,["BOOL","CPArray"]), new objj_method(sel_getUid("setThemeState:"), function $CPObject__setThemeState_(self, _cmd, aState)
 {
+    if (aState && aState.isa && (aState == null ? aState : (aState.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(aState, "isKindOfClass:", CPArray)))
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "aState can't be an array. Please use 'setThemeStates: instead: " + aState);
     if (self._themeState.hasThemeState(aState))
         return NO;
     self._themeState = self._themeState.and(aState);
@@ -1112,6 +1126,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeState"), function 
 
 ,["BOOL","ThemeState"]), new objj_method(sel_getUid("unsetThemeState:"), function $CPObject__unsetThemeState_(self, _cmd, aState)
 {
+    if (aState && aState.isa && (aState == null ? aState : (aState.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(aState, "isKindOfClass:", CPArray)))
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "aState can't be an array. Please use 'unsetThemeStates: instead: " + aState);
     var oldThemeState = self._themeState;
     self._themeState = self._themeState.without(aState);
     if (oldThemeState === self._themeState)
@@ -1224,6 +1240,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeState"), function 
 
 ,["void","CPDictionary"]), new objj_method(sel_getUid("setValue:forThemeAttribute:inState:"), function $CPObject__setValue_forThemeAttribute_inState_(self, _cmd, aValue, aName, aState)
 {
+    if (aState.isa && (aState == null ? aState : (aState.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(aState, "isKindOfClass:", CPArray)))
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, self + ": aState can't be an array. Please use 'setValue:forThemeAttribute:inStates:' instead: " + aState);
     var themeAttr = self._themeAttributes && self._themeAttributes[aName];
     if (!themeAttr)
         (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, (self.isa.method_msgSend["className"] || _objj_forward)(self, "className") + " does not contain theme attribute '" + aName + "'");
@@ -1252,6 +1270,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeState"), function 
 
 ,["void","id","CPString"]), new objj_method(sel_getUid("valueForThemeAttribute:inState:"), function $CPObject__valueForThemeAttribute_inState_(self, _cmd, aName, aState)
 {
+    if (aState.isa && (aState == null ? aState : (aState.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(aState, "isKindOfClass:", CPArray)))
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "aState can't be an array. Please use 'valueForThemeAttribute:inStates:' instead: " + aState);
     var themeAttr = self._themeAttributes && self._themeAttributes[aName];
     if (!themeAttr)
         (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, (self.isa.method_msgSend["className"] || _objj_forward)(self, "className") + " does not contain theme attribute '" + aName + "'");
@@ -1413,7 +1433,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), f
 
 ,["CPArray","CPTheme","CPString"])]);
 }
-p;18;_CPPopoverWindow.jt;34632;@STATIC;1.0;I;21;Foundation/CPObject.ji;10;CPButton.ji;8;CPMenu.ji;9;CPPanel.ji;20;CPAnimationContext.jt;34521;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPButton.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPPanel.j", YES);objj_executeFile("CPAnimationContext.j", YES);CPClosableOnBlurWindowMask = 1 << 4;
+p;18;_CPPopoverWindow.jt;35410;@STATIC;1.0;I;21;Foundation/CPObject.ji;10;CPButton.ji;8;CPMenu.ji;9;CPPanel.ji;20;CPAnimationContext.ji;17;CPCompatibility.jt;35277;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPButton.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPPanel.j", YES);objj_executeFile("CPAnimationContext.j", YES);objj_executeFile("CPCompatibility.j", YES);CPClosableOnBlurWindowMask = 1 << 4;
 CPPopoverAppearanceMinimal = 0;
 CPPopoverAppearanceHUD = 1;
 var _CPPopoverWindow_shouldClose_ = 1 << 4,
@@ -1695,6 +1715,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("animates"), function $_
 
 ,["void","CGRect","CPView","int"]), new objj_method(sel_getUid("setCSS3Property:value:"), function $_CPPopoverWindow__setCSS3Property_value_(self, _cmd, aProperty, value)
 {
+    if (!CPDOMAvailable)
+        return;
     var browserProperty = CPBrowserStyleProperty(aProperty);
     if (browserProperty)
         self._DOMElement.style[browserProperty] = value;
@@ -1775,40 +1797,58 @@ class_addMethods(the_class, [new objj_method(sel_getUid("animates"), function $_
             (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transition", "opacity 0 linear");
             window.setTimeout(            function()
             {
-                (self.isa.method_msgSend["_currentTransformMatrix"] || _objj_forward)(self, "_currentTransformMatrix");
-                self._DOMElement.style.opacity = 1;
-                self._DOMElement.style.height = frame.size.height + "px";
-                self._DOMElement.style.width = frame.size.width + "px";
+                if (CPDOMAvailable)
+                {
+                    (self.isa.method_msgSend["_currentTransformMatrix"] || _objj_forward)(self, "_currentTransformMatrix");
+                    self._DOMElement.style.opacity = 1;
+                    self._DOMElement.style.height = frame.size.height + "px";
+                    self._DOMElement.style.width = frame.size.width + "px";
+                }
                 (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transform", "scale(1.1)");
                 (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transition", CPBrowserCSSProperty('transform') + " 200ms ease-in");
                 self._orderFrontTransitionFunction =                 function()
                 {
-                    self._DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), self._orderFrontTransitionFunction, YES);
+                    if (CPDOMAvailable)
+                    {
+                        self._DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), self._orderFrontTransitionFunction, YES);
+                    }
                     window.setTimeout(                    function()
                     {
                         (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transform", "scale(1)");
                         (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transition", CPBrowserCSSProperty('transform') + " 50ms linear");
                         self._transitionCompleteFunction =                         function()
                         {
-                            self._DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), self._transitionCompleteFunction, YES);
-                            (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transform", nil);
-                            (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "TransformOrigin", nil);
-                            (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transition", nil);
+                            if (CPDOMAvailable)
+                            {
+                                self._DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), self._transitionCompleteFunction, YES);
+                                (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transform", nil);
+                                (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "TransformOrigin", nil);
+                                (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transition", nil);
+                            }
                             self._isOpening = NO;
                             ((___r1 = self._delegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_popoverWindowDidShow"] || _objj_forward)(___r1, "_popoverWindowDidShow"));
                             var ___r1;
                         };
-                        self._DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), self._transitionCompleteFunction, YES);
+                        if (CPDOMAvailable)
+                        {
+                            self._DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), self._transitionCompleteFunction, YES);
+                        }
                     }, 0);
                 };
-                self._DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), self._orderFrontTransitionFunction, YES);
+                if (CPDOMAvailable)
+                {
+                    self._DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), self._orderFrontTransitionFunction, YES);
+                }
             }, 10);
         }
         else
         {
             self._isOpening = NO;
             (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transition", "");
-            self._DOMElement.style.opacity = 1;
+            if (CPDOMAvailable)
+            {
+                self._DOMElement.style.opacity = 1;
+            }
         }
     }
     self._shouldPerformAnimation = NO;
@@ -1836,7 +1876,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("animates"), function $_
     self._isClosing = YES;
     if (self._animates && self._browserAnimates)
     {
-        if (self._isOpening)
+        if (CPDOMAvailable && self._isOpening)
         {
             self._DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), self._orderFrontTransitionFunction, YES);
             self._DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), self._transitionCompleteFunction, YES);
@@ -1845,8 +1885,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("animates"), function $_
             (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transform", "scale(" + currentScale + ")");
         }
         (self.isa.method_msgSend["setCSS3Property:value:"] || _objj_forward)(self, "setCSS3Property:value:", "Transition", "opacity 250ms linear");
-        self._DOMElement.style.opacity = 0;
-        self._DOMElement.addEventListener(CPBrowserStyleProperty("transitionend"), self._orderOutTransitionFunction, YES);
+        if (CPDOMAvailable)
+        {
+            self._DOMElement.style.opacity = 0;
+            self._DOMElement.addEventListener(CPBrowserStyleProperty("transitionend"), self._orderOutTransitionFunction, YES);
+        }
     }
     else
     {
@@ -1856,8 +1899,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("animates"), function $_
 
 ,["void","id"]), new objj_method(sel_getUid("_orderOutRecursively:"), function $_CPPopoverWindow___orderOutRecursively_(self, _cmd, recursive)
 {
-    if (self._animates && self._browserAnimates)
+    if (CPDOMAvailable && self._animates && self._browserAnimates)
+    {
         self._DOMElement.removeEventListener(CPBrowserStyleProperty("transitionend"), self._orderOutTransitionFunction, YES);
+    }
     (self.isa.method_msgSend["_removeFrameObserver"] || _objj_forward)(self, "_removeFrameObserver");
     ((___r1 = self._parentWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeChildWindow:"] || _objj_forward)(___r1, "removeChildWindow:", self));
     (objj_getClass("_CPPopoverWindow").super_class.method_dtable["_orderOutRecursively:"] || _objj_forward)(self, "_orderOutRecursively:", recursive);
@@ -1877,7 +1922,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("animates"), function $_
 
 ,["void","CPNotification"]), new objj_method(sel_getUid("_currentTransformMatrix"), function $_CPPopoverWindow___currentTransformMatrix(self, _cmd)
 {
-    return window.getComputedStyle(self._DOMElement, null)[CPBrowserStyleProperty("transform")];
+    if (CPDOMAvailable)
+        return window.getComputedStyle(self._DOMElement, null)[CPBrowserStyleProperty("transform")];
 }
 
 ,["CPString"]), new objj_method(sel_getUid("_hasOnlyTransientChild:"), function $_CPPopoverWindow___hasOnlyTransientChild_(self, _cmd, aWindow)
@@ -4592,7 +4638,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("currentAppearance"), f
 
 ,["CPAppearance","CPString"])]);
 }
-p;15;CPApplication.jt;71140;@STATIC;1.0;I;21;Foundation/CPBundle.ji;25;CPApplication_Constants.ji;17;CPCompatibility.ji;14;CPColorPanel.ji;10;CPCursor.ji;22;CPDocumentController.ji;9;CPEvent.ji;8;CPMenu.ji;13;CPResponder.ji;14;CPThemeBlend.ji;14;CPCibLoading.ji;9;CPPanel.ji;12;CPPlatform.ji;20;CPWindowController.ji;18;_CPPopoverWindow.jt;70822;objj_executeFile("Foundation/CPBundle.j", NO);objj_executeFile("CPApplication_Constants.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDocumentController.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPThemeBlend.j", YES);objj_executeFile("CPCibLoading.j", YES);objj_executeFile("CPPanel.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPWindowController.j", YES);objj_executeFile("_CPPopoverWindow.j", YES);{var the_typedef = objj_allocateTypeDef("CPModalSession");
+p;15;CPApplication.jt;71335;@STATIC;1.0;I;21;Foundation/CPBundle.ji;25;CPApplication_Constants.ji;17;CPCompatibility.ji;14;CPColorPanel.ji;10;CPCursor.ji;22;CPDocumentController.ji;9;CPEvent.ji;8;CPMenu.ji;13;CPResponder.ji;14;CPThemeBlend.ji;14;CPCibLoading.ji;9;CPPanel.ji;12;CPPlatform.ji;20;CPWindowController.ji;18;_CPPopoverWindow.jt;71017;objj_executeFile("Foundation/CPBundle.j", NO);objj_executeFile("CPApplication_Constants.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDocumentController.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPThemeBlend.j", YES);objj_executeFile("CPCibLoading.j", YES);objj_executeFile("CPPanel.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPWindowController.j", YES);objj_executeFile("_CPPopoverWindow.j", YES);{var the_typedef = objj_allocateTypeDef("CPModalSession");
 objj_registerTypeDef(the_typedef);
 }var CPMainCibFile = "CPMainCibFile",
     CPMainCibFileHumanFriendly = "Main cib file base name",
@@ -4672,7 +4718,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeBlend"), function 
 
 ,["id"]), new objj_method(sel_getUid("finishLaunching"), function $CPApplication__finishLaunching(self, _cmd)
 {
-    window.status = " ";
+    if (CPDOMAvailable)
+    {
+        window.status = " ";
+    }
     ((___r1 = (CPCursor.isa.method_msgSend["arrowCursor"] || _objj_forward)(CPCursor, "arrowCursor")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["set"] || _objj_forward)(___r1, "set"));
     var bundle = (CPBundle.isa.method_msgSend["mainBundle"] || _objj_forward)(CPBundle, "mainBundle"),
         delegateClassName = (bundle == null ? bundle : (bundle.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(bundle, "objectForInfoDictionaryKey:", "CPApplicationDelegateClass"));
@@ -4689,7 +4738,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeBlend"), function 
         self._documentController = (CPDocumentController.isa.method_msgSend["sharedDocumentController"] || _objj_forward)(CPDocumentController, "sharedDocumentController");
     var needsUntitled = !!self._documentController,
         URLStrings = nil;
-    URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings();
+    if (CPDOMAvailable)
+    {
+        URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings();
+    }
     var index = 0,
         count = (URLStrings == null ? URLStrings : (URLStrings.isa.method_msgSend["count"] || _objj_forward)(URLStrings, "count"));
     for (; index < count; ++index)
@@ -4978,7 +5030,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeBlend"), function 
 
 ,["CPArray"]), new objj_method(sel_getUid("orderedWindows"), function $CPApplication__orderedWindows(self, _cmd)
 {
-    return CPWindowObjectList();
+    if (CPDOMAvailable)
+        return CPWindowObjectList();
+    return [];
 }
 
 ,["CPArray"]), new objj_method(sel_getUid("hide:"), function $CPApplication__hide_(self, _cmd, aSender)
@@ -5311,13 +5365,16 @@ _CPRunModalLoop = function(anEvent)
 };
 CPApplicationMain = function(args, namedArgs)
 {
-    if (window.parent !== window && typeof window.parent._childAppIsStarting === "function")
+    if (CPDOMAvailable)
     {
-        try {
-            window.parent._childAppIsStarting(window);
-        }
-        catch(err) {
-            CPLog.warn("Failed to call parent frame's _childAppIsStarting().");
+        if (window.parent !== window && typeof window.parent._childAppIsStarting === "function")
+        {
+            try {
+                window.parent._childAppIsStarting(window);
+            }
+            catch(err) {
+                CPLog.warn("Failed to call parent frame's _childAppIsStarting().");
+            }
         }
     }
     var mainBundle = (CPBundle.isa.method_msgSend["mainBundle"] || _objj_forward)(CPBundle, "mainBundle"),
@@ -10711,7 +10768,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("copy"), function $CPCol
 
 ,["CPCollectionView"])]);
 }
-p;9;CPColor.jt;55292;@STATIC;1.0;I;21;Foundation/CPObject.ji;19;CPGraphicsContext.ji;9;CGColor.ji;17;_CPObject+Theme.ji;17;CPCompatibility.ji;9;CPImage.jt;55152;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPGraphicsContext.j", YES);objj_executeFile("CGColor.j", YES);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPImage.j", YES);CPColorPatternIsVertical = YES;
+p;9;CPColor.jt;55332;@STATIC;1.0;I;21;Foundation/CPObject.ji;19;CPGraphicsContext.ji;9;CGColor.ji;17;_CPObject+Theme.ji;17;CPCompatibility.ji;9;CPImage.jt;55192;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPGraphicsContext.j", YES);objj_executeFile("CGColor.j", YES);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPImage.j", YES);CPColorPatternIsVertical = YES;
 CPColorPatternIsHorizontal = NO;
 var _redComponent = 0,
     _greenComponent = 1,
@@ -10775,7 +10832,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_initWithCSSString:"), 
 ,["id","CPArray"]), new objj_method(sel_getUid("_initCSSStringFromComponents"), function $CPColor___initCSSStringFromComponents(self, _cmd)
 {
     var hasAlpha = YES;
-    hasAlpha = CPFeatureIsCompatible(CPCSSRGBAFeature) && self._components[3] != 1.0;
+    if (CPDOMAvailable)
+    {
+        hasAlpha = CPFeatureIsCompatible(CPCSSRGBAFeature) && self._components[3] != 1.0;
+    }
     self._cssString = (hasAlpha ? "rgba(" : "rgb(") + parseInt(self._components[0] * 255.0) + ", " + parseInt(self._components[1] * 255.0) + ", " + parseInt(self._components[2] * 255.0) + (hasAlpha ? ", " + self._components[3] : "") + ")";
 }
 
@@ -12187,7 +12247,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 }
 objj_executeFile("CPColorPicker.j", YES);objj_executeFile("CPSliderColorPicker.j", YES);(CPColorPanel.isa.method_msgSend["provideColorPickerClass:"] || _objj_forward)(CPColorPanel, "provideColorPickerClass:", CPColorWheelColorPicker);
 (CPColorPanel.isa.method_msgSend["provideColorPickerClass:"] || _objj_forward)(CPColorPanel, "provideColorPickerClass:", CPSliderColorPicker);
-p;15;CPColorPicker.jt;20608;@STATIC;1.0;I;21;Foundation/CPObject.ji;8;CPView.jt;20550;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPView.j", YES);
+p;15;CPColorPicker.jt;20894;@STATIC;1.0;I;21;Foundation/CPObject.ji;8;CPView.ji;17;CPCompatibility.jt;20814;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPCompatibility.j", YES);
 {var the_class = objj_allocateClassPair(CPObject, "CPColorPicker"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_panel", "CPColorPanel"), new objj_ivar("_mask", "int")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("initWithPickerMask:colorPanel:"), function $CPColorPicker__initWithPickerMask_colorPanel_(self, _cmd, aMask, aPanel)
@@ -12325,18 +12385,21 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 {
     if (self = (objj_getClass("__CPColorWheel").super_class.method_dtable["initWithFrame:"] || _objj_forward)(self, "initWithFrame:", aFrame))
     {
-        var path = ((___r1 = (CPBundle.isa.method_msgSend["bundleForClass:"] || _objj_forward)(CPBundle, "bundleForClass:", CPColorPicker)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["pathForResource:"] || _objj_forward)(___r1, "pathForResource:", "wheel.png"));
-        self._wheelImage = new Image();
-        self._wheelImage.src = path;
-        self._wheelImage.style.position = "absolute";
-        path = ((___r1 = (CPBundle.isa.method_msgSend["bundleForClass:"] || _objj_forward)(CPBundle, "bundleForClass:", CPColorPicker)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["pathForResource:"] || _objj_forward)(___r1, "pathForResource:", "wheel_black.png"));
-        self._blackWheelImage = new Image();
-        self._blackWheelImage.src = path;
-        self._blackWheelImage.style.opacity = "0";
-        self._blackWheelImage.style.filter = "alpha(opacity=0)";
-        self._blackWheelImage.style.position = "absolute";
-        self._DOMElement.appendChild(self._wheelImage);
-        self._DOMElement.appendChild(self._blackWheelImage);
+        if (CPDOMAvailable)
+        {
+            var path = ((___r1 = (CPBundle.isa.method_msgSend["bundleForClass:"] || _objj_forward)(CPBundle, "bundleForClass:", CPColorPicker)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["pathForResource:"] || _objj_forward)(___r1, "pathForResource:", "wheel.png"));
+            self._wheelImage = new Image();
+            self._wheelImage.src = path;
+            self._wheelImage.style.position = "absolute";
+            path = ((___r1 = (CPBundle.isa.method_msgSend["bundleForClass:"] || _objj_forward)(CPBundle, "bundleForClass:", CPColorPicker)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["pathForResource:"] || _objj_forward)(___r1, "pathForResource:", "wheel_black.png"));
+            self._blackWheelImage = new Image();
+            self._blackWheelImage.src = path;
+            self._blackWheelImage.style.opacity = "0";
+            self._blackWheelImage.style.filter = "alpha(opacity=0)";
+            self._blackWheelImage.style.position = "absolute";
+            self._DOMElement.appendChild(self._wheelImage);
+            self._DOMElement.appendChild(self._blackWheelImage);
+        }
         (self == null ? self : (self.isa.method_msgSend["setWheelSize:"] || _objj_forward)(self, "setWheelSize:", aFrame.size));
         self._crosshair = ((___r1 = (CPView.isa.method_msgSend["alloc"] || _objj_forward)(CPView, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFrame:"] || _objj_forward)(___r1, "initWithFrame:", CGRectMake(self._radius - 2, self._radius - 2, 4, 4)));
         ((___r1 = self._crosshair), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setBackgroundColor:"] || _objj_forward)(___r1, "setBackgroundColor:", (CPColor.isa.method_msgSend["blackColor"] || _objj_forward)(CPColor, "blackColor")));
@@ -12351,6 +12414,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 
 ,["id","CGRect"]), new objj_method(sel_getUid("setWheelBrightness:"), function $__CPColorWheel__setWheelBrightness_(self, _cmd, brightness)
 {
+    if (!CPDOMAvailable)
+        return;
     self._blackWheelImage.style.opacity = 1.0 - brightness;
     self._blackWheelImage.style.filter = "alpha(opacity=" + (1.0 - brightness) * 100 + ")";
 }
@@ -12364,18 +12429,21 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 ,["void","CGSize"]), new objj_method(sel_getUid("setWheelSize:"), function $__CPColorWheel__setWheelSize_(self, _cmd, aSize)
 {
     var min = MIN(aSize.width, aSize.height);
-    self._blackWheelImage.style.width = min;
-    self._blackWheelImage.style.height = min;
-    self._blackWheelImage.width = min;
-    self._blackWheelImage.height = min;
-    self._blackWheelImage.style.top = (aSize.height - min) / 2.0 + "px";
-    self._blackWheelImage.style.left = (aSize.width - min) / 2.0 + "px";
-    self._wheelImage.style.width = min;
-    self._wheelImage.style.height = min;
-    self._wheelImage.width = min;
-    self._wheelImage.height = min;
-    self._wheelImage.style.top = (aSize.height - min) / 2.0 + "px";
-    self._wheelImage.style.left = (aSize.width - min) / 2.0 + "px";
+    if (CPDOMAvailable)
+    {
+        self._blackWheelImage.style.width = min;
+        self._blackWheelImage.style.height = min;
+        self._blackWheelImage.width = min;
+        self._blackWheelImage.height = min;
+        self._blackWheelImage.style.top = (aSize.height - min) / 2.0 + "px";
+        self._blackWheelImage.style.left = (aSize.width - min) / 2.0 + "px";
+        self._wheelImage.style.width = min;
+        self._wheelImage.style.height = min;
+        self._wheelImage.width = min;
+        self._wheelImage.height = min;
+        self._wheelImage.style.top = (aSize.height - min) / 2.0 + "px";
+        self._wheelImage.style.left = (aSize.width - min) / 2.0 + "px";
+    }
     self._radius = min / 2.0;
     (self.isa.method_msgSend["setAngle:distance:"] || _objj_forward)(self, "setAngle:distance:", (self.isa.method_msgSend["degreesToRadians:"] || _objj_forward)(self, "degreesToRadians:", self._angle), self._distance / 100.0 * self._radius);
 }
@@ -13789,7 +13857,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:comboBox:
 
 ,["BOOL"])]);
 }
-p;17;CPCompatibility.jt;12576;@STATIC;1.0;i;19;CPEvent_Constants.ji;12;CPPlatform.jt;12515;objj_executeFile("CPEvent_Constants.j", YES);objj_executeFile("CPPlatform.j", YES);CPUnknownBrowserEngine = 0;
+p;17;CPCompatibility.jt;12624;@STATIC;1.0;i;19;CPEvent_Constants.ji;12;CPPlatform.jt;12563;objj_executeFile("CPEvent_Constants.j", YES);objj_executeFile("CPPlatform.j", YES);CPDOMAvailable = typeof document !== "undefined" && document && typeof document.createElement === "function";
+CPUnknownBrowserEngine = 0;
 CPGeckoBrowserEngine = 1 << 0;
 CPInternetExplorerBrowserEngine = 1 << 1;
 CPKHTMLBrowserEngine = 1 << 2;
@@ -13810,7 +13879,6 @@ CPJavaScriptClipboardEventsFeature = 11;
 CPJavaScriptClipboardAccessFeature = 12;
 CPJavaScriptCanvasDrawFeature = 13;
 CPJavaScriptCanvasTransformFeature = 14;
-CPVMLFeature = 15;
 CPJavaScriptRemedialKeySupport = 16;
 CPJavaScriptShadowFeature = 20;
 CPJavaScriptNegativeMouseWheelValues = 22;
@@ -13848,7 +13916,6 @@ if (typeof window !== "undefined" && window.opera)
 else if (typeof window !== "undefined" && (window.attachEvent || !window.ActiveXObject && "ActiveXObject" in window))
 {
     PLATFORM_ENGINE |= CPInternetExplorerBrowserEngine;
-    PLATFORM_FEATURES[CPVMLFeature] = YES;
     PLATFORM_FEATURES[CPJavaScriptRemedialKeySupport] = YES;
     PLATFORM_FEATURES[CPJavaScriptShadowFeature] = YES;
     PLATFORM_FEATURES[CPOpacityRequiresFilterFeature] = YES;
@@ -14071,7 +14138,7 @@ CPBrowserBackingStorePixelRatio = function(context)
 {
     return context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio || context.msBackingStorePixelRatio || context.oBackingStorePixelRatio || context.backingStorePixelRatio || 1;
 }
-p;11;CPControl.jt;50943;@STATIC;1.0;I;24;Foundation/CPFormatter.jI;20;Foundation/CPTimer.ji;10;CPShadow.ji;8;CPText.ji;19;CPKeyValueBinding.ji;16;CPTrackingArea.jt;50797;objj_executeFile("Foundation/CPFormatter.j", NO);objj_executeFile("Foundation/CPTimer.j", NO);objj_executeFile("CPShadow.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPKeyValueBinding.j", YES);objj_executeFile("CPTrackingArea.j", YES);{var the_protocol = objj_allocateProtocol("CPControlTextEditingDelegate");
+p;11;CPControl.jt;51035;@STATIC;1.0;I;24;Foundation/CPFormatter.jI;20;Foundation/CPTimer.ji;10;CPShadow.ji;8;CPText.ji;19;CPKeyValueBinding.ji;16;CPTrackingArea.jt;50889;objj_executeFile("Foundation/CPFormatter.j", NO);objj_executeFile("Foundation/CPTimer.j", NO);objj_executeFile("CPShadow.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPKeyValueBinding.j", YES);objj_executeFile("CPTrackingArea.j", YES);{var the_protocol = objj_allocateProtocol("CPControlTextEditingDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPControlTextEditingDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -14723,21 +14790,24 @@ default:
     (self.isa.method_msgSend["willChangeValueForKey:"] || _objj_forward)(self, "willChangeValueForKey:", "baseWritingDirection");
     self._baseWritingDirection = writingDirection;
     (self.isa.method_msgSend["didChangeValueForKey:"] || _objj_forward)(self, "didChangeValueForKey:", "baseWritingDirection");
-    var style;
-    switch(self._baseWritingDirection) {
-        case CPWritingDirectionNatural:
-            style = "initial";
-            break;
-        case CPWritingDirectionLeftToRight:
-            style = "ltr";
-            break;
-        case CPWritingDirectionRightToLeft:
-            style = "rtl";
-            break;
+    if (CPDOMAvailable)
+    {
+        var style;
+        switch(self._baseWritingDirection) {
+            case CPWritingDirectionNatural:
+                style = "initial";
+                break;
+            case CPWritingDirectionLeftToRight:
+                style = "ltr";
+                break;
+            case CPWritingDirectionRightToLeft:
+                style = "rtl";
+                break;
 default:
-            style = "initial";
+                style = "initial";
+        }
+        self._DOMElement.style.direction = style;
     }
-    self._DOMElement.style.direction = style;
 }
 
 ,["void","CPWritingDirection"])]);
@@ -14956,7 +15026,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPCon
 
 ,["void","id"])]);
 }
-p;10;CPCookie.jt;2182;@STATIC;1.0;I;21;Foundation/CPObject.jI;21;Foundation/CPString.jt;2111;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPString.j", NO);
+p;10;CPCookie.jt;2452;@STATIC;1.0;I;21;Foundation/CPObject.jI;21;Foundation/CPString.ji;17;CPCompatibility.jt;2359;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPCompatibility.j", YES);
 {var the_class = objj_allocateClassPair(CPObject, "CPCookie"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_cookieName", "CPString"), new objj_ivar("_cookieValue", "CPString"), new objj_ivar("_expires", "CPString")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("initWithName:"), function $CPCookie__initWithName_(self, _cmd, aName)
@@ -14992,20 +15062,31 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithName:"), functi
         domain = "; domain=" + domain;
     else
         domain = "";
-    document.cookie = self._cookieName + "=" + value + expires + "; path=/" + domain;
+    if (CPDOMAvailable)
+    {
+        document.cookie = self._cookieName + "=" + value + expires + "; path=/" + domain;
+    }
+    else
+    {
+        self._cookieValue = value;
+        self._expires = expires;
+    }
 }
 
 ,["void","CPString","CPDate","CPString"]), new objj_method(sel_getUid("_readCookieValue"), function $CPCookie___readCookieValue(self, _cmd)
 {
-    var nameEQ = self._cookieName + "=",
-        ca = document.cookie.split(';');
-    for (var i = 0; i < ca.length; i++)
+    if (CPDOMAvailable)
     {
-        var c = ca[i];
-        while (c.charAt(0) == ' ')
-            c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) == 0)
-            return c.substring(nameEQ.length, c.length);
+        var nameEQ = self._cookieName + "=",
+            ca = document.cookie.split(';');
+        for (var i = 0; i < ca.length; i++)
+        {
+            var c = ca[i];
+            while (c.charAt(0) == ' ')
+                c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0)
+                return c.substring(nameEQ.length, c.length);
+        }
     }
     return "";
 }
@@ -16409,7 +16490,11 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","id"])]);
 }
-p;14;CPDragServer.jt;37642;@STATIC;1.0;i;24;CPDragServer_Constants.ji;9;CPEvent.ji;13;CPImageView.ji;14;CPPasteboard.ji;8;CPView.ji;20;CPWindow_Constants.ji;17;CPViewAnimation.jt;37484;objj_executeFile("CPDragServer_Constants.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPImageView.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("CPViewAnimation.j", YES);var CPDragServerPreviousEvent = nil,
+p;14;CPDragServer.jt;36128;@STATIC;1.0;i;24;CPDragServer_Constants.ji;9;CPEvent.ji;13;CPImageView.ji;14;CPPasteboard.ji;8;CPView.ji;20;CPWindow_Constants.ji;17;CPViewAnimation.jt;35970;objj_executeFile("CPDragServer_Constants.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPImageView.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("CPViewAnimation.j", YES);DRAGGING_WINDOW = function(anObject)
+{
+    return (anObject == null ? anObject : (anObject.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(anObject, "isKindOfClass:", (CPWindow == null ? CPWindow : (CPWindow.isa.method_msgSend["class"] || _objj_forward)(CPWindow, "class")))) ? anObject : (anObject == null ? anObject : (anObject.isa.method_msgSend["window"] || _objj_forward)(anObject, "window"));
+}
+var CPDragServerPreviousEvent = nil,
     CPDragServerPeriodicUpdateInterval = 0.05;
 var CPSharedDragServer = nil;
 var CPDragServerSource = nil,
@@ -16439,8 +16524,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("draggingPasteboard"), f
 
 ,["CGPoint"]), new objj_method(sel_getUid("draggingDestinationWindow"), function $CPDraggingInfo__draggingDestinationWindow(self, _cmd)
 {
-    return ((___r1 = ((___r2 = (CPDragServer == null ? CPDragServer : (CPDragServer.isa.method_msgSend["sharedDragServer"] || _objj_forward)(CPDragServer, "sharedDragServer"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["draggingDestination"] || _objj_forward)(___r2, "draggingDestination"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(___r1, "isKindOfClass:", (CPWindow == null ? CPWindow : (CPWindow.isa.method_msgSend["class"] || _objj_forward)(CPWindow, "class")))) ? ((___r1 = (CPDragServer == null ? CPDragServer : (CPDragServer.isa.method_msgSend["sharedDragServer"] || _objj_forward)(CPDragServer, "sharedDragServer"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["draggingDestination"] || _objj_forward)(___r1, "draggingDestination")) : ((___r1 = ((___r2 = (CPDragServer == null ? CPDragServer : (CPDragServer.isa.method_msgSend["sharedDragServer"] || _objj_forward)(CPDragServer, "sharedDragServer"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["draggingDestination"] || _objj_forward)(___r2, "draggingDestination"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["window"] || _objj_forward)(___r1, "window"));
-    var ___r1, ___r2;
+    return DRAGGING_WINDOW(((___r1 = (CPDragServer == null ? CPDragServer : (CPDragServer.isa.method_msgSend["sharedDragServer"] || _objj_forward)(CPDragServer, "sharedDragServer"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["draggingDestination"] || _objj_forward)(___r1, "draggingDestination")));
+    var ___r1;
 }
 
 ,["CPWindow"]), new objj_method(sel_getUid("draggedImage"), function $CPDraggingInfo__draggedImage(self, _cmd)
@@ -16463,7 +16548,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("draggingPasteboard"), f
 ,["CPView"]), new objj_method(sel_getUid("draggedViewLocation"), function $CPDraggingInfo__draggedViewLocation(self, _cmd)
 {
     var dragServer = (CPDragServer == null ? CPDragServer : (CPDragServer.isa.method_msgSend["sharedDragServer"] || _objj_forward)(CPDragServer, "sharedDragServer"));
-    return ((___r1 = ((___r2 = (dragServer == null ? dragServer : (dragServer.isa.method_msgSend["draggingDestination"] || _objj_forward)(dragServer, "draggingDestination"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(___r2, "isKindOfClass:", (CPWindow == null ? CPWindow : (CPWindow.isa.method_msgSend["class"] || _objj_forward)(CPWindow, "class")))) ? (dragServer == null ? dragServer : (dragServer.isa.method_msgSend["draggingDestination"] || _objj_forward)(dragServer, "draggingDestination")) : ((___r2 = (dragServer == null ? dragServer : (dragServer.isa.method_msgSend["draggingDestination"] || _objj_forward)(dragServer, "draggingDestination"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["window"] || _objj_forward)(___r2, "window"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["convertPlatformWindowToBase:"] || _objj_forward)(___r1, "convertPlatformWindowToBase:", ((___r2 = (dragServer == null ? dragServer : (dragServer.isa.method_msgSend["draggedView"] || _objj_forward)(dragServer, "draggedView"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["frame"] || _objj_forward)(___r2, "frame")).origin));
+    return ((___r1 = DRAGGING_WINDOW((dragServer == null ? dragServer : (dragServer.isa.method_msgSend["draggingDestination"] || _objj_forward)(dragServer, "draggingDestination")))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["convertPlatformWindowToBase:"] || _objj_forward)(___r1, "convertPlatformWindowToBase:", ((___r2 = (dragServer == null ? dragServer : (dragServer.isa.method_msgSend["draggedView"] || _objj_forward)(dragServer, "draggedView"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["frame"] || _objj_forward)(___r2, "frame")).origin));
     var ___r1, ___r2;
 }
 
@@ -16568,7 +16653,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("isDragging"), function 
     var dragOperation = CPDragOperationCopy,
         draggingDestination = (aPlatformWindow == null ? aPlatformWindow : (aPlatformWindow.isa.method_msgSend["_dragHitTest:pasteboard:"] || _objj_forward)(aPlatformWindow, "_dragHitTest:pasteboard:", aLocation, (CPDragServerDraggingInfo == null ? CPDragServerDraggingInfo : (CPDragServerDraggingInfo.isa.method_msgSend["draggingPasteboard"] || _objj_forward)(CPDragServerDraggingInfo, "draggingPasteboard"))));
     if (draggingDestination)
-        self._draggingLocation = ((___r1 = (draggingDestination == null ? draggingDestination : (draggingDestination.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(draggingDestination, "isKindOfClass:", (CPWindow == null ? CPWindow : (CPWindow.isa.method_msgSend["class"] || _objj_forward)(CPWindow, "class")))) ? draggingDestination : (draggingDestination == null ? draggingDestination : (draggingDestination.isa.method_msgSend["window"] || _objj_forward)(draggingDestination, "window"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["convertPlatformWindowToBase:"] || _objj_forward)(___r1, "convertPlatformWindowToBase:", aLocation));
+        self._draggingLocation = ((___r1 = DRAGGING_WINDOW(draggingDestination)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["convertPlatformWindowToBase:"] || _objj_forward)(___r1, "convertPlatformWindowToBase:", aLocation));
     if (draggingDestination !== self._draggingDestination)
     {
         if (((___r1 = self._draggingDestination), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(___r1, "respondsToSelector:", sel_getUid("draggingExited:"))))
@@ -17347,7 +17432,7 @@ CPDOMEventTouchStart = "touchstart";
 CPDOMEventTouchMove = "touchmove";
 CPDOMEventTouchEnd = "touchend";
 CPDOMEventTouchCancel = "touchcancel";
-p;8;CPFont.jt;28677;@STATIC;1.0;I;21;Foundation/CPObject.jI;21;Foundation/CPBundle.ji;8;CPView.ji;18;CPFontDescriptor.ji;17;_CPObject+Theme.ji;11;CPControl.jt;28532;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPBundle.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPFontDescriptor.j", YES);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CPControl.j", YES);CPFontDefaultSystemFontFace = "Arial, sans-serif";
+p;8;CPFont.jt;25906;@STATIC;1.0;I;21;Foundation/CPObject.jI;21;Foundation/CPBundle.ji;8;CPView.ji;18;CPFontDescriptor.ji;17;_CPObject+Theme.ji;11;CPControl.jt;25761;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPBundle.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPFontDescriptor.j", YES);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CPControl.j", YES);CPFontDefaultSystemFontFace = "Arial, sans-serif";
 CPFontDefaultSystemFontSize = 12;
 CPFontCurrentSystemSize = -1;
 _CPFontSystemFacePlaceholder = "_CPFontSystemFacePlaceholder";
@@ -17360,6 +17445,36 @@ var _CPFontCache = {},
     _CPFontFallbackFaces = CPFontDefaultSystemFontFace.split(", "),
     _CPFontStripRegExp = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g"),
     _CPFontSystemFontFaceSpecified = NO;
+_CPRealFontSize = function(aSize)
+{
+    return aSize <= 0 ? _CPFontSystemFontSize : aSize;
+}
+_CPFontNormalizedNames = function(aName)
+{
+    return _CPFontNormalizedNameArray(aName).join(", ");
+}
+_CPCachedFont = function(aName, aSize, isBold, isItalic)
+{
+    return _CPFontCache[_CPFontCreateCSSString(_CPFontNormalizedNames(aName), aSize, isBold, isItalic)];
+}
+_CPUserFont = function(aName, aSize, isBold, isItalic)
+{
+    return _CPCachedFont(aName, aSize, isBold, isItalic) || ((___r1 = (CPFont == null ? CPFont : (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", aName, aSize, isBold, isItalic, NO));
+    var ___r1;
+}
+_CPSystemFontCacheKey = function(aSize, isBold)
+{
+    return String(aSize) + (isBold ? "b" : "");
+}
+_CPCachedSystemFont = function(aSize, isBold)
+{
+    return _CPSystemFontCache[_CPSystemFontCacheKey(aSize, isBold)];
+}
+_CPSystemFont = function(aSize, isBold)
+{
+    return _CPCachedSystemFont(aSize, isBold) || ((___r1 = (CPFont == null ? CPFont : (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", _CPFontSystemFacePlaceholder, aSize, isBold, NO, YES));
+    var ___r1;
+}
 
 {var the_class = objj_allocateClassPair(CPObject, "CPFont"),
 meta_class = the_class.isa;
@@ -17400,11 +17515,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("isBold"), function $CPF
         {
             self._name = aName;
             self._cssString = _CPFontCreateCSSString(_CPFontSystemFontFace, self._size, self._isBold, self._isItalic);
-            _CPSystemFontCache[String(self._size) + (self._isBold ? "b" : "")] = self;
+            _CPSystemFontCache[_CPSystemFontCacheKey(self._size, self._isBold)] = self;
         }
         else
         {
-            self._name = _CPFontNormalizedNameArray(aName).join(", ");
+            self._name = _CPFontNormalizedNames(aName);
             self._cssString = _CPFontCreateCSSString(self._name, self._size, self._isBold, self._isItalic);
             _CPFontCache[self._cssString] = self;
         }
@@ -17414,34 +17529,31 @@ class_addMethods(the_class, [new objj_method(sel_getUid("isBold"), function $CPF
 
 ,["id","CPString","float","BOOL","BOOL","BOOL"]), new objj_method(sel_getUid("ascender"), function $CPFont__ascender(self, _cmd)
 {
-    var font = self._isSystem ? _CPSystemFontCache[String(self._size) + (self._isBold ? "b" : "")] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", _CPFontSystemFacePlaceholder, self._size, self._isBold, NO, YES)) : self;
+    var font = self._isSystem ? _CPSystemFont(self._size, self._isBold) : self;
     if (!font._ascender)
         (font == null ? font : (font.isa.method_msgSend["_getMetrics"] || _objj_forward)(font, "_getMetrics"));
     return font._ascender;
-    var ___r1;
 }
 
 ,["float"]), new objj_method(sel_getUid("descender"), function $CPFont__descender(self, _cmd)
 {
-    var font = self._isSystem ? _CPSystemFontCache[String(self._size) + (self._isBold ? "b" : "")] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", _CPFontSystemFacePlaceholder, self._size, self._isBold, NO, YES)) : self;
+    var font = self._isSystem ? _CPSystemFont(self._size, self._isBold) : self;
     if (!font._descender)
         (font == null ? font : (font.isa.method_msgSend["_getMetrics"] || _objj_forward)(font, "_getMetrics"));
     return font._descender;
-    var ___r1;
 }
 
 ,["float"]), new objj_method(sel_getUid("defaultLineHeightForFont"), function $CPFont__defaultLineHeightForFont(self, _cmd)
 {
-    var font = self._isSystem ? _CPSystemFontCache[String(self._size) + (self._isBold ? "b" : "")] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", _CPFontSystemFacePlaceholder, self._size, self._isBold, NO, YES)) : self;
+    var font = self._isSystem ? _CPSystemFont(self._size, self._isBold) : self;
     if (!font._lineHeight)
         (font == null ? font : (font.isa.method_msgSend["_getMetrics"] || _objj_forward)(font, "_getMetrics"));
     return font._lineHeight;
-    var ___r1;
 }
 
 ,["float"]), new objj_method(sel_getUid("size"), function $CPFont__size(self, _cmd)
 {
-    return self._size <= 0 ? _CPFontSystemFontSize : self._size;
+    return _CPRealFontSize(self._size);
 }
 
 ,["float"]), new objj_method(sel_getUid("pointSize"), function $CPFont__pointSize(self, _cmd)
@@ -17456,9 +17568,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("isBold"), function $CPF
 
 ,["CPString"]), new objj_method(sel_getUid("cssString"), function $CPFont__cssString(self, _cmd)
 {
-    var font = self._isSystem ? _CPSystemFontCache[String(self._size) + (self._isBold ? "b" : "")] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", _CPFontSystemFacePlaceholder, self._size, self._isBold, NO, YES)) : self;
+    var font = self._isSystem ? _CPSystemFont(self._size, self._isBold) : self;
     return font._cssString;
-    var ___r1;
 }
 
 ,["CPString"]), new objj_method(sel_getUid("familyName"), function $CPFont__familyName(self, _cmd)
@@ -17530,7 +17641,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), f
         systemFontFace = ((___r1 = (CPBundle.isa.method_msgSend["bundleForClass:"] || _objj_forward)(CPBundle, "bundleForClass:", (CPView.isa.method_msgSend["class"] || _objj_forward)(CPView, "class"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(___r1, "objectForInfoDictionaryKey:", "CPSystemFontFace"));
     if (systemFontFace)
     {
-        _CPFontSystemFontFace = _CPFontNormalizedNameArray(systemFontFace).join(", ");
+        _CPFontSystemFontFace = _CPFontNormalizedNames(systemFontFace);
         _CPFontSystemFontFaceSpecified = YES;
     }
     var systemFontSize = ((___r1 = (CPBundle.isa.method_msgSend["mainBundle"] || _objj_forward)(CPBundle, "mainBundle")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(___r1, "objectForInfoDictionaryKey:", "CPSystemFontSize"));
@@ -17553,7 +17664,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), f
     if (systemFontFace)
     {
         (self.isa.method_msgSend["_invalidateSystemFontCache"] || _objj_forward)(self, "_invalidateSystemFontCache");
-        _CPFontSystemFontFace = _CPFontNormalizedNameArray(systemFontFace).join(", ");
+        _CPFontSystemFontFace = _CPFontNormalizedNames(systemFontFace);
     }
     var systemFontSize = (aTheme == null ? aTheme : (aTheme.isa.method_msgSend["valueForAttributeWithName:forClass:"] || _objj_forward)(aTheme, "valueForAttributeWithName:forClass:", "system-font-size-regular", (CPFont.isa.method_msgSend["class"] || _objj_forward)(CPFont, "class")));
     if (systemFontSize)
@@ -17587,7 +17698,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), f
 
 ,["CPString"]), new objj_method(sel_getUid("setSystemFontFace:"), function $CPFont__setSystemFontFace_(self, _cmd, aFace)
 {
-    var normalizedFaces = _CPFontNormalizedNameArray(aFace).join(", ");
+    var normalizedFaces = _CPFontNormalizedNames(aFace);
     if (normalizedFaces === _CPFontSystemFontFace)
         return;
     (self.isa.method_msgSend["_invalidateSystemFontCache"] || _objj_forward)(self, "_invalidateSystemFontCache");
@@ -17636,44 +17747,37 @@ default:
 
 ,["void"]), new objj_method(sel_getUid("fontWithName:size:"), function $CPFont__fontWithName_size_(self, _cmd, aName, aSize)
 {
-    return _CPFontCache[_CPFontCreateCSSString(_CPFontNormalizedNameArray(aName).join(", "), aSize <= 0 ? _CPFontSystemFontSize : aSize, NO, NO)] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, NO, NO, NO));
-    var ___r1;
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, NO, NO);
 }
 
 ,["CPFont","CPString","float"]), new objj_method(sel_getUid("fontWithName:size:italic:"), function $CPFont__fontWithName_size_italic_(self, _cmd, aName, aSize, italic)
 {
-    return _CPFontCache[_CPFontCreateCSSString(_CPFontNormalizedNameArray(aName).join(", "), aSize <= 0 ? _CPFontSystemFontSize : aSize, NO, italic)] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, NO, italic, NO));
-    var ___r1;
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, NO, italic);
 }
 
 ,["CPFont","CPString","float","BOOL"]), new objj_method(sel_getUid("boldFontWithName:size:"), function $CPFont__boldFontWithName_size_(self, _cmd, aName, aSize)
 {
-    return _CPFontCache[_CPFontCreateCSSString(_CPFontNormalizedNameArray(aName).join(", "), aSize <= 0 ? _CPFontSystemFontSize : aSize, YES, NO)] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, YES, NO, NO));
-    var ___r1;
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, YES, NO);
 }
 
 ,["CPFont","CPString","float"]), new objj_method(sel_getUid("boldFontWithName:size:italic:"), function $CPFont__boldFontWithName_size_italic_(self, _cmd, aName, aSize, italic)
 {
-    return _CPFontCache[_CPFontCreateCSSString(_CPFontNormalizedNameArray(aName).join(", "), aSize <= 0 ? _CPFontSystemFontSize : aSize, YES, italic)] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, YES, italic, NO));
-    var ___r1;
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, YES, italic);
 }
 
 ,["CPFont","CPString","float","BOOL"]), new objj_method(sel_getUid("_fontWithName:size:bold:italic:"), function $CPFont___fontWithName_size_bold_italic_(self, _cmd, aName, aSize, bold, italic)
 {
-    return _CPFontCache[_CPFontCreateCSSString(_CPFontNormalizedNameArray(aName).join(", "), aSize <= 0 ? _CPFontSystemFontSize : aSize, bold, italic)] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, bold, italic, NO));
-    var ___r1;
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, bold, italic);
 }
 
 ,["CPFont","CPString","float","BOOL","BOOL"]), new objj_method(sel_getUid("systemFontOfSize:"), function $CPFont__systemFontOfSize_(self, _cmd, aSize)
 {
-    return _CPSystemFontCache[String(aSize === 0 ? _CPFontSystemFontSize : aSize) + (NO ? "b" : "")] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", _CPFontSystemFacePlaceholder, aSize === 0 ? _CPFontSystemFontSize : aSize, NO, NO, YES));
-    var ___r1;
+    return _CPSystemFont(aSize === 0 ? _CPFontSystemFontSize : aSize, NO);
 }
 
 ,["CPFont","CGSize"]), new objj_method(sel_getUid("boldSystemFontOfSize:"), function $CPFont__boldSystemFontOfSize_(self, _cmd, aSize)
 {
-    return _CPSystemFontCache[String(aSize === 0 ? _CPFontSystemFontSize : aSize) + (YES ? "b" : "")] || ((___r1 = (CPFont.isa.method_msgSend["alloc"] || _objj_forward)(CPFont, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_initWithName:size:bold:italic:system:"] || _objj_forward)(___r1, "_initWithName:size:bold:italic:system:", _CPFontSystemFacePlaceholder, aSize === 0 ? _CPFontSystemFontSize : aSize, YES, NO, YES));
-    var ___r1;
+    return _CPSystemFont(aSize === 0 ? _CPFontSystemFontSize : aSize, YES);
 }
 
 ,["CPFont","CGSize"])]);
@@ -17746,7 +17850,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 }
 var _CPFontCreateCSSString = function(aName, aSize, isBold, isItalic)
 {
-    var properties = (isItalic ? "italic " : "") + (isBold ? "bold " : "") + (aSize <= 0 ? _CPFontSystemFontSize : aSize) + "px ";
+    var properties = (isItalic ? "italic " : "") + (isBold ? "bold " : "") + _CPRealFontSize(aSize) + "px ";
     return properties + _CPFontConcatNameWithFallback(aName);
 };
 var _CPFontConcatNameWithFallback = function(aName)
@@ -17775,7 +17879,7 @@ var _CPFontNormalizedNameArray = function(aName)
         names[i] = names[i].replace(_CPFontStripRegExp, "");
     return names;
 };
-p;15;CPFontManager.jt;21140;@STATIC;1.0;I;21;Foundation/CPObject.ji;11;CPControl.ji;8;CPFont.ji;18;CPFontDescriptor.jt;21043;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPControl.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPFontDescriptor.j", YES);CPItalicFontMask = 1 << 0;
+p;15;CPFontManager.jt;21404;@STATIC;1.0;I;21;Foundation/CPObject.ji;11;CPControl.ji;8;CPFont.ji;18;CPFontDescriptor.ji;17;CPCompatibility.jt;21285;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPControl.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPFontDescriptor.j", YES);objj_executeFile("CPCompatibility.j", YES);CPItalicFontMask = 1 << 0;
 CPBoldFontMask = 1 << 1;
 CPUnboldFontMask = 1 << 2;
 CPNonStandardCharacterSetFontMask = 1 << 3;
@@ -17855,20 +17959,27 @@ class_addMethods(the_class, [new objj_method(sel_getUid("target"), function $CPF
     if (!self._availableFonts)
     {
         self._availableFonts = [];
-        _CPFontDetectSpan = document.createElement("span");
-        _CPFontDetectSpan.fontSize = "24px";
-        _CPFontDetectSpan.appendChild(document.createTextNode("mmmmmmmmmml"));
-        var div = document.createElement("div");
-        div.style.position = "absolute";
-        div.style.top = "-1000px";
-        div.appendChild(_CPFontDetectSpan);
-        document.getElementsByTagName("body")[0].appendChild(div);
-        _CPFontDetectReferenceFonts = _CPFontDetectPickTwoDifferentFonts(["monospace", "serif", "sans-serif", "cursive"]);
-        for (var i = 0; i < _CPFontDetectAllFonts.length; i++)
+        if (CPDOMAvailable)
         {
-            var available = _CPFontDetectFontAvailable(_CPFontDetectAllFonts[i]);
-            if (available)
-                self._availableFonts.push(_CPFontDetectAllFonts[i]);
+            _CPFontDetectSpan = document.createElement("span");
+            _CPFontDetectSpan.fontSize = "24px";
+            _CPFontDetectSpan.appendChild(document.createTextNode("mmmmmmmmmml"));
+            var div = document.createElement("div");
+            div.style.position = "absolute";
+            div.style.top = "-1000px";
+            div.appendChild(_CPFontDetectSpan);
+            document.getElementsByTagName("body")[0].appendChild(div);
+            _CPFontDetectReferenceFonts = _CPFontDetectPickTwoDifferentFonts(["monospace", "serif", "sans-serif", "cursive"]);
+            for (var i = 0; i < _CPFontDetectAllFonts.length; i++)
+            {
+                var available = _CPFontDetectFontAvailable(_CPFontDetectAllFonts[i]);
+                if (available)
+                    self._availableFonts.push(_CPFontDetectAllFonts[i]);
+            }
+        }
+        else
+        {
+            self._availableFonts = _CPFontDetectAllFonts;
         }
     }
     return self._availableFonts;
@@ -18335,7 +18446,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("currentContext"), func
 
 ,["CPGraphicsContext","CGContext","BOOL"])]);
 }
-p;9;CPImage.jt;46815;@STATIC;1.0;I;21;Foundation/CPBundle.jI;33;Foundation/CPNotificationCenter.jI;21;Foundation/CPObject.jI;22;Foundation/CPRunLoop.jI;21;Foundation/CPString.jI;19;Foundation/CPData.jI;28;Foundation/CPKeyedArchiver.jI;30;Foundation/CPKeyedUnarchiver.ji;12;CGGeometry.ji;17;CPCompatibility.ji;19;CPGraphicsContext.jt;46497;objj_executeFile("Foundation/CPBundle.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("Foundation/CPData.j", NO);objj_executeFile("Foundation/CPKeyedArchiver.j", NO);objj_executeFile("Foundation/CPKeyedUnarchiver.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPGraphicsContext.j", YES);{var the_protocol = objj_allocateProtocol("CPImageDelegate");
+p;9;CPImage.jt;46938;@STATIC;1.0;I;21;Foundation/CPBundle.jI;33;Foundation/CPNotificationCenter.jI;21;Foundation/CPObject.jI;22;Foundation/CPRunLoop.jI;21;Foundation/CPString.jI;19;Foundation/CPData.jI;28;Foundation/CPKeyedArchiver.jI;30;Foundation/CPKeyedUnarchiver.ji;12;CGGeometry.ji;17;CPCompatibility.ji;19;CPGraphicsContext.jt;46620;objj_executeFile("Foundation/CPBundle.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("Foundation/CPData.j", NO);objj_executeFile("Foundation/CPKeyedArchiver.j", NO);objj_executeFile("Foundation/CPKeyedUnarchiver.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPGraphicsContext.j", YES);{var the_protocol = objj_allocateProtocol("CPImageDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPImageDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -18437,6 +18548,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPIma
 
 ,["CPString"]), new objj_method(sel_getUid("data"), function $CPImage__data(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return;
     var dataURL;
     if (((___r1 = self._filename), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["hasPrefix:"] || _objj_forward)(___r1, "hasPrefix:", "data:image")))
         dataURL = self._filename;
@@ -18517,6 +18630,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPIma
     if (self._loadStatus == CPImageLoadStatusLoading || self._loadStatus == CPImageLoadStatusCompleted)
         return;
     self._loadStatus = CPImageLoadStatusLoading;
+    if (!CPDOMAvailable)
+        return;
     self._image = new Image();
     var isSynchronous = YES;
     self._image.onload =     function()
@@ -18734,6 +18849,8 @@ var meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_cssDic
 
 ,["BOOL"]), new objj_method(sel_getUid("applyCSSImageForView:onDOMElement:styleNode:previousState:"), function $CPImage__applyCSSImageForView_onDOMElement_styleNode_previousState_(self, _cmd, aView, aDOMElement, aStyleNode, aPreviousStateRef)
 {
+    if (!CPDOMAvailable)
+        return;
     var aPreviousState = aPreviousStateRef();
     for (var i = 0, count = aPreviousState.length; i < count; i++)
         aDOMElement.style[aPreviousState[i][0]] = aPreviousState[i][1];
@@ -19129,7 +19246,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["CPImage"])]);
 }
-p;13;CPImageView.jt;28227;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.ji;11;CPControl.ji;9;CPImage.ji;14;CPShadowView.jt;28121;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPControl.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPShadowView.j", YES);{var the_typedef = objj_allocateTypeDef("CPImageAlignment");
+p;13;CPImageView.jt;28458;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.ji;11;CPControl.ji;9;CPImage.ji;14;CPShadowView.ji;20;CPDOMDisplayServer.jt;28327;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPControl.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPShadowView.j", YES);objj_executeFile("CPDOMDisplayServer.j", YES);{var the_typedef = objj_allocateTypeDef("CPImageAlignment");
 objj_registerTypeDef(the_typedef);
 }CPImageAlignCenter = 0;
 CPImageAlignTop = 1;
@@ -19149,13 +19266,18 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
     self = (objj_getClass("CPImageView").super_class.method_dtable["initWithFrame:"] || _objj_forward)(self, "initWithFrame:", aFrame);
     if (self)
     {
-        (self == null ? self : (self.isa.method_msgSend["_createDOMImageElement"] || _objj_forward)(self, "_createDOMImageElement"));
+        if (CPDOMAvailable)
+        {
+            (self == null ? self : (self.isa.method_msgSend["_createDOMImageElement"] || _objj_forward)(self, "_createDOMImageElement"));
+        }
     }
     return self;
 }
 
 ,["id","CGRect"]), new objj_method(sel_getUid("_createDOMImageElement"), function $CPImageView___createDOMImageElement(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return;
     var image = (self.isa.method_msgSend["objectValue"] || _objj_forward)(self, "objectValue"),
         isCSSBasedImage = (image == null ? image : (image.isa.method_msgSend["isCSSBased"] || _objj_forward)(image, "isCSSBased")),
         isIMGImageElement = self._DOMImageElement && self._DOMImageElement.nodeName == "IMG";
@@ -19182,8 +19304,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
     }
     self._DOMImageElement.style.visibility = "hidden";
     AppKitTagDOMElement(self, self._DOMImageElement);
-    self._DOMElement.appendChild(self._DOMImageElement);
-;
+    CPDOMDisplayServerAppendChild(self._DOMElement, self._DOMImageElement);
     var ___r1;
 }
 
@@ -19207,17 +19328,23 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
     if (oldImage)
         (defaultCenter == null ? defaultCenter : (defaultCenter.isa.method_msgSend["removeObserver:name:object:"] || _objj_forward)(defaultCenter, "removeObserver:name:object:", self, CPImageDidLoadNotification, oldImage));
     var newImage = (self.isa.method_msgSend["objectValue"] || _objj_forward)(self, "objectValue");
-    (self.isa.method_msgSend["_createDOMImageElement"] || _objj_forward)(self, "_createDOMImageElement");
-    if ((newImage == null ? newImage : (newImage.isa.method_msgSend["isCSSBased"] || _objj_forward)(newImage, "isCSSBased")))
-        self._cssStyleNode = (newImage == null ? newImage : (newImage.isa.method_msgSend["applyCSSImageForView:onDOMElement:styleNode:previousState:"] || _objj_forward)(newImage, "applyCSSImageForView:onDOMElement:styleNode:previousState:", self, self._DOMImageElement, self._cssStyleNode, function(__input) { if (arguments.length) return self._cssStylePreviousState = __input; return self._cssStylePreviousState; }));
-    else
-        self._DOMImageElement.src = newImage ? (newImage == null ? newImage : (newImage.isa.method_msgSend["filename"] || _objj_forward)(newImage, "filename")) : (CPImageViewEmptyPlaceholderImage == null ? CPImageViewEmptyPlaceholderImage : (CPImageViewEmptyPlaceholderImage.isa.method_msgSend["filename"] || _objj_forward)(CPImageViewEmptyPlaceholderImage, "filename"));
+    if (CPDOMAvailable)
+    {
+        (self.isa.method_msgSend["_createDOMImageElement"] || _objj_forward)(self, "_createDOMImageElement");
+        if ((newImage == null ? newImage : (newImage.isa.method_msgSend["isCSSBased"] || _objj_forward)(newImage, "isCSSBased")))
+            self._cssStyleNode = (newImage == null ? newImage : (newImage.isa.method_msgSend["applyCSSImageForView:onDOMElement:styleNode:previousState:"] || _objj_forward)(newImage, "applyCSSImageForView:onDOMElement:styleNode:previousState:", self, self._DOMImageElement, self._cssStyleNode, function(__input) { if (arguments.length) return self._cssStylePreviousState = __input; return self._cssStylePreviousState; }));
+        else
+            self._DOMImageElement.src = newImage ? (newImage == null ? newImage : (newImage.isa.method_msgSend["filename"] || _objj_forward)(newImage, "filename")) : (CPImageViewEmptyPlaceholderImage == null ? CPImageViewEmptyPlaceholderImage : (CPImageViewEmptyPlaceholderImage.isa.method_msgSend["filename"] || _objj_forward)(CPImageViewEmptyPlaceholderImage, "filename"));
+    }
     var size = (newImage == null ? newImage : (newImage.isa.method_msgSend["size"] || _objj_forward)(newImage, "size"));
     if (size && size.width === -1 && size.height === -1)
     {
         (defaultCenter == null ? defaultCenter : (defaultCenter.isa.method_msgSend["addObserver:selector:name:object:"] || _objj_forward)(defaultCenter, "addObserver:selector:name:object:", self, sel_getUid("imageDidLoad:"), CPImageDidLoadNotification, newImage));
-        self._DOMImageElement.width = 0;
-        self._DOMImageElement.height = 0;
+        if (CPDOMAvailable)
+        {
+            self._DOMImageElement.width = 0;
+            self._DOMImageElement.height = 0;
+        }
         ((___r1 = self._shadowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setHidden:"] || _objj_forward)(___r1, "setHidden:", YES));
     }
     else
@@ -19283,15 +19410,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 ,["unsigned"]), new objj_method(sel_getUid("setImageScaling:"), function $CPImageView__setImageScaling_(self, _cmd, anImageScaling)
 {
     (objj_getClass("CPImageView").super_class.method_dtable["setImageScaling:"] || _objj_forward)(self, "setImageScaling:", anImageScaling);
-    if ((self.isa.method_msgSend["currentValueForThemeAttribute:"] || _objj_forward)(self, "currentValueForThemeAttribute:", "image-scaling") === CPImageScaleAxesIndependently)
+    if (CPDOMAvailable && (self.isa.method_msgSend["currentValueForThemeAttribute:"] || _objj_forward)(self, "currentValueForThemeAttribute:", "image-scaling") === CPImageScaleAxesIndependently)
     {
-        if (NULL)
-            var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, 0.0), NULL);
-        else
-            var ____p = CGPointMake(0.0, 0.0);
-        self._DOMImageElement.style.left = ROUND(____p.x) + "px";
-        self._DOMImageElement.style.top = ROUND(____p.y) + "px";
-;
+        CPDOMDisplayServerSetStyleLeftTop(self._DOMImageElement, NULL, 0.0, 0.0);
     }
     (self.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(self, "setNeedsLayout");
     (self.isa.method_msgSend["setNeedsDisplay:"] || _objj_forward)(self, "setNeedsDisplay:", YES);
@@ -19306,12 +19427,18 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 {
     if (!(self.isa.method_msgSend["image"] || _objj_forward)(self, "image"))
     {
-        self._DOMImageElement.style.visibility = "hidden";
+        if (CPDOMAvailable)
+        {
+            self._DOMImageElement.style.visibility = "hidden";
+        }
         ((___r1 = self._shadowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setHidden:"] || _objj_forward)(___r1, "setHidden:", YES));
     }
     else
     {
-        self._DOMImageElement.style.visibility = "visible";
+        if (CPDOMAvailable)
+        {
+            self._DOMImageElement.style.visibility = "visible";
+        }
         ((___r1 = self._shadowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setHidden:"] || _objj_forward)(___r1, "setHidden:", NO));
     }
     var ___r1;
@@ -19339,8 +19466,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
         height = boundsHeight - insetHeight;
     if (imageScaling === CPImageScaleAxesIndependently)
     {
-        self._DOMImageElement.width = ROUND(width);
-        self._DOMImageElement.height = ROUND(height);
+        if (CPDOMAvailable)
+        {
+            self._DOMImageElement.width = ROUND(width);
+            self._DOMImageElement.height = ROUND(height);
+        }
     }
     else
     {
@@ -19369,8 +19499,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
                 height = size.height;
                 break;
         }
-        self._DOMImageElement.width = ROUND(width);
-        self._DOMImageElement.height = ROUND(height);
+        if (CPDOMAvailable)
+        {
+            self._DOMImageElement.width = ROUND(width);
+            self._DOMImageElement.height = ROUND(height);
+        }
         var x,
             y;
         switch(self._imageAlignment) {
@@ -19403,15 +19536,12 @@ default:
                 y = (boundsHeight - height) / 2.0;
                 break;
         }
-        if (NULL)
-            var ____p = CGPointApplyAffineTransform(CGPointMake(x, y), NULL);
-        else
-            var ____p = CGPointMake(x, y);
-        self._DOMImageElement.style.left = ROUND(____p.x) + "px";
-        self._DOMImageElement.style.top = ROUND(____p.y) + "px";
-;
+        if (CPDOMAvailable)
+        {
+            CPDOMDisplayServerSetStyleLeftTop(self._DOMImageElement, NULL, x, y);
+        }
     }
-    if ((image == null ? image : (image.isa.method_msgSend["isCSSBased"] || _objj_forward)(image, "isCSSBased")) && (image == null ? image : (image.isa.method_msgSend["_shouldBeResized"] || _objj_forward)(image, "_shouldBeResized")))
+    if (CPDOMAvailable && (image == null ? image : (image.isa.method_msgSend["isCSSBased"] || _objj_forward)(image, "isCSSBased")) && (image == null ? image : (image.isa.method_msgSend["_shouldBeResized"] || _objj_forward)(image, "_shouldBeResized")))
     {
         (image == null ? image : (image.isa.method_msgSend["_setDisplaySize:"] || _objj_forward)(image, "_setDisplaySize:", CGSizeMake(ROUND(width), ROUND(height))));
         self._cssStyleNode = (image == null ? image : (image.isa.method_msgSend["applyCSSImageForView:onDOMElement:styleNode:previousState:"] || _objj_forward)(image, "applyCSSImageForView:onDOMElement:styleNode:previousState:", self, self._DOMImageElement, self._cssStyleNode, function(__input) { if (arguments.length) return self._cssStylePreviousState = __input; return self._cssStylePreviousState; }));
@@ -19541,7 +19671,10 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
     self = (objj_getClass("CPImageView").super_class.method_dtable["initWithCoder:"] || _objj_forward)(self, "initWithCoder:", aCoder);
     if (self)
     {
-        (self == null ? self : (self.isa.method_msgSend["_createDOMImageElement"] || _objj_forward)(self, "_createDOMImageElement"));
+        if (CPDOMAvailable)
+        {
+            (self == null ? self : (self.isa.method_msgSend["_createDOMImageElement"] || _objj_forward)(self, "_createDOMImageElement"));
+        }
         (self == null ? self : (self.isa.method_msgSend["setHasShadow:"] || _objj_forward)(self, "setHasShadow:", (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeBoolForKey:"] || _objj_forward)(aCoder, "decodeBoolForKey:", CPImageViewHasShadowKey))));
         (self == null ? self : (self.isa.method_msgSend["setImageAlignment:"] || _objj_forward)(self, "setImageAlignment:", (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeIntForKey:"] || _objj_forward)(aCoder, "decodeIntForKey:", CPImageViewImageAlignmentKey))));
         if ((aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeBoolForKey:"] || _objj_forward)(aCoder, "decodeBoolForKey:", CPImageViewIsEditableKey)))
@@ -21662,7 +21795,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("openPanel"), function 
 
 ,["id"])]);
 }
-p;15;CPOutlineView.jt;126416;@STATIC;1.0;i;10;CPButton.ji;15;CPTableColumn.ji;13;CPTableView.ji;12;CPTreeNode.jt;126325;objj_executeFile("CPButton.j", YES);objj_executeFile("CPTableColumn.j", YES);objj_executeFile("CPTableView.j", YES);objj_executeFile("CPTreeNode.j", YES);CPOutlineViewColumnDidMoveNotification = "CPOutlineViewColumnDidMoveNotification";
+p;15;CPOutlineView.jt;126106;@STATIC;1.0;i;10;CPButton.ji;15;CPTableColumn.ji;13;CPTableView.ji;12;CPTreeNode.jt;126015;objj_executeFile("CPButton.j", YES);objj_executeFile("CPTableColumn.j", YES);objj_executeFile("CPTableView.j", YES);objj_executeFile("CPTreeNode.j", YES);CPOutlineViewColumnDidMoveNotification = "CPOutlineViewColumnDidMoveNotification";
 CPOutlineViewColumnDidResizeNotification = "CPOutlineViewColumnDidResizeNotification";
 CPOutlineViewItemDidCollapseNotification = "CPOutlineViewItemDidCollapseNotification";
 CPOutlineViewItemDidExpandNotification = "CPOutlineViewItemDidExpandNotification";
@@ -21712,6 +21845,16 @@ CPOutlineViewDropOnItemIndex = -1;
 var CPOutlineViewCoalesceSelectionNotificationStateOff = 0,
     CPOutlineViewCoalesceSelectionNotificationStateOn = 1,
     CPOutlineViewCoalesceSelectionNotificationStateDid = 2;
+SELECTION_SHOULD_CHANGE = function(anOutlineView)
+{
+    return !(anOutlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_selectionShouldChangeInOutlineView_) || ((___r1 = anOutlineView._outlineViewDelegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["selectionShouldChangeInOutlineView:"] || _objj_forward)(___r1, "selectionShouldChangeInOutlineView:", anOutlineView));
+    var ___r1;
+}
+SHOULD_SELECT_ITEM = function(anOutlineView, anItem)
+{
+    return !(anOutlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_) || ((___r1 = anOutlineView._outlineViewDelegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["outlineView:shouldSelectItem:"] || _objj_forward)(___r1, "outlineView:shouldSelectItem:", anOutlineView, anItem));
+    var ___r1;
+}
 {var the_protocol = objj_allocateProtocol("CPOutlineViewDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPOutlineViewDelegate\"");
@@ -22641,7 +22784,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
             if (!(self.isa.method_msgSend["isItemExpanded:"] || _objj_forward)(self, "isItemExpanded:", theItem))
             {
                 var parent = (self.isa.method_msgSend["parentForItem:"] || _objj_forward)(self, "parentForItem:", theItem),
-                    shouldSelect = parent && (!(self._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_selectionShouldChangeInOutlineView_) || ((___r1 = self._outlineViewDelegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["selectionShouldChangeInOutlineView:"] || _objj_forward)(___r1, "selectionShouldChangeInOutlineView:", self))) && (!(self._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_) || ((___r1 = self._outlineViewDelegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["outlineView:shouldSelectItem:"] || _objj_forward)(___r1, "outlineView:shouldSelectItem:", self, parent)));
+                    shouldSelect = parent && SELECTION_SHOULD_CHANGE(self) && SHOULD_SELECT_ITEM(self, parent);
                 if (shouldSelect)
                 {
                     var rowIndex = (self.isa.method_msgSend["rowForItem:"] || _objj_forward)(self, "rowForItem:", parent);
@@ -22655,7 +22798,6 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
             (self.isa.method_msgSend["collapseItem:"] || _objj_forward)(self, "collapseItem:", items[i]);
     }
     (objj_getClass("CPOutlineView").super_class.method_dtable["keyDown:"] || _objj_forward)(self, "keyDown:", anEvent);
-    var ___r1;
 }
 
 ,["void","CPEvent"]), new objj_method(sel_getUid("_sendDelegateDeleteKeyPressed"), function $CPOutlineView___sendDelegateDeleteKeyPressed(self, _cmd)
@@ -22848,14 +22990,12 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 
 ,["CPString","id","CGRect","CPTableColumn","id","CGPoint"]), new objj_method(sel_getUid("tableView:shouldSelectRow:"), function $CPOutlineView__tableView_shouldSelectRow_(self, _cmd, theTableView, theRow)
 {
-    return !(self._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_) || ((___r1 = self._outlineViewDelegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["outlineView:shouldSelectItem:"] || _objj_forward)(___r1, "outlineView:shouldSelectItem:", self, (self.isa.method_msgSend["itemAtRow:"] || _objj_forward)(self, "itemAtRow:", theRow)));
-    var ___r1;
+    return SHOULD_SELECT_ITEM(self, (self.isa.method_msgSend["itemAtRow:"] || _objj_forward)(self, "itemAtRow:", theRow));
 }
 
 ,["BOOL","CPTableView","CPInteger"]), new objj_method(sel_getUid("selectionShouldChangeInTableView:"), function $CPOutlineView__selectionShouldChangeInTableView_(self, _cmd, theTableView)
 {
-    return !(self._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_selectionShouldChangeInOutlineView_) || ((___r1 = self._outlineViewDelegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["selectionShouldChangeInOutlineView:"] || _objj_forward)(___r1, "selectionShouldChangeInOutlineView:", self));
-    var ___r1;
+    return SELECTION_SHOULD_CHANGE(self);
 }
 
 ,["BOOL","CPTableView"]), new objj_method(sel_getUid("tableView:shouldEditTableColumn:row:"), function $CPOutlineView__tableView_shouldEditTableColumn_row_(self, _cmd, aTableView, aColumn, aRow)
@@ -25784,12 +25924,14 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("proposedFileURLWithDoc
 
 ,["id"])]);
 }
-p;10;CPScreen.jt;482;@STATIC;1.0;I;21;Foundation/CPObject.jt;438;objj_executeFile("Foundation/CPObject.j", NO);
+p;10;CPScreen.jt;539;@STATIC;1.0;I;21;Foundation/CPObject.jt;495;objj_executeFile("Foundation/CPObject.j", NO);
 {var the_class = objj_allocateClassPair(CPObject, "CPScreen"),
 meta_class = the_class.isa;objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("visibleFrame"), function $CPScreen__visibleFrame(self, _cmd)
 {
-    return CGRectMake(window.screen.availLeft, window.screen.availTop, window.screen.availWidth, window.screen.availHeight);
+    if (CPDOMAvailable)
+        return CGRectMake(window.screen.availLeft, window.screen.availTop, window.screen.availWidth, window.screen.availHeight);
+    return CGRectMakeZero();
 }
 
 ,["CGRect"])]);
@@ -26376,13 +26518,15 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","float","float"])]);
 }
-p;14;CPScrollView.jt;98140;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.ji;7;CPBox.ji;12;CPClipView.ji;12;CPScroller.ji;8;CPView.ji;13;CPRulerView.jt;98007;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPBox.j", YES);objj_executeFile("CPClipView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPRulerView.j", YES);{var the_protocol = objj_allocateProtocol("CPScrollViewDelegate");
+p;14;CPScrollView.jt;98255;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.ji;7;CPBox.ji;12;CPClipView.ji;12;CPScroller.ji;8;CPView.ji;13;CPRulerView.ji;17;CPCompatibility.jt;98100;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPBox.j", YES);objj_executeFile("CPClipView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("CPCompatibility.j", YES);{var the_protocol = objj_allocateProtocol("CPScrollViewDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPScrollViewDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
 objj_registerProtocol(the_protocol);
 }var _isBrowserUsingOverlayScrollers = function()
 {
+    if (!CPDOMAvailable)
+        return NO;
     var outer = document.createElement('div'),
         inner = document.createElement('p');
     outer.style.position = "absolute";
@@ -26872,14 +27016,14 @@ default:
         self._cornerView = documentCornerView;
         if (self._cornerView)
         {
-            ((___r1 = self._cornerView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setHidden:"] || _objj_forward)(___r1, "setHidden:", !(self._scrollerStyle === CPScrollerStyleLegacy && self._verticalScroller && !((___r2 = self._verticalScroller), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["isHidden"] || _objj_forward)(___r2, "isHidden")))));
+            ((___r1 = self._cornerView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setHidden:"] || _objj_forward)(___r1, "setHidden:", !(self.isa.method_msgSend["_shouldShowCornerView"] || _objj_forward)(self, "_shouldShowCornerView")));
             (self.isa.method_msgSend["addSubview:"] || _objj_forward)(self, "addSubview:", self._cornerView);
         }
     }
     (self.isa.method_msgSend["reflectScrolledClipView:"] || _objj_forward)(self, "reflectScrolledClipView:", self._contentView);
     (documentHeaderView == null ? documentHeaderView : (documentHeaderView.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(documentHeaderView, "setNeedsLayout"));
     (documentHeaderView == null ? documentHeaderView : (documentHeaderView.isa.method_msgSend["setNeedsDisplay:"] || _objj_forward)(documentHeaderView, "setNeedsDisplay:", YES));
-    var ___r1, ___r2;
+    var ___r1;
 }
 
 ,["void"]), new objj_method(sel_getUid("_headerView"), function $CPScrollView___headerView(self, _cmd)
@@ -26907,10 +27051,9 @@ default:
         return CGRectMakeZero();
     var frame = (self.isa.method_msgSend["_insetBounds"] || _objj_forward)(self, "_insetBounds");
     frame.size.height = CGRectGetHeight((headerView == null ? headerView : (headerView.isa.method_msgSend["frame"] || _objj_forward)(headerView, "frame")));
-    if (self._scrollerStyle === CPScrollerStyleLegacy && self._verticalScroller && !((___r1 = self._verticalScroller), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isHidden"] || _objj_forward)(___r1, "isHidden")))
+    if ((self.isa.method_msgSend["_shouldShowCornerView"] || _objj_forward)(self, "_shouldShowCornerView"))
         frame.size.width -= CGRectGetWidth((self.isa.method_msgSend["_cornerViewFrame"] || _objj_forward)(self, "_cornerViewFrame"));
     return frame;
-    var ___r1;
 }
 
 ,["CGRect"]), new objj_method(sel_getUid("_bottomCornerViewFrame"), function $CPScrollView___bottomCornerViewFrame(self, _cmd)
@@ -27183,7 +27326,7 @@ default:
     ((___r1 = self._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrame:"] || _objj_forward)(___r1, "setFrame:", contentFrame));
     ((___r1 = self._headerClipView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrame:"] || _objj_forward)(___r1, "setFrame:", (self.isa.method_msgSend["_headerClipViewFrame"] || _objj_forward)(self, "_headerClipViewFrame")));
     ((___r1 = ((___r2 = self._headerClipView), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["documentView"] || _objj_forward)(___r2, "documentView"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setNeedsDisplay:"] || _objj_forward)(___r1, "setNeedsDisplay:", YES));
-    if (self._scrollerStyle === CPScrollerStyleLegacy && self._verticalScroller && !((___r1 = self._verticalScroller), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isHidden"] || _objj_forward)(___r1, "isHidden")))
+    if ((self.isa.method_msgSend["_shouldShowCornerView"] || _objj_forward)(self, "_shouldShowCornerView"))
     {
         ((___r1 = self._cornerView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrame:"] || _objj_forward)(___r1, "setFrame:", (self.isa.method_msgSend["_cornerViewFrame"] || _objj_forward)(self, "_cornerViewFrame")));
         ((___r1 = self._cornerView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setHidden:"] || _objj_forward)(___r1, "setHidden:", NO));
@@ -27433,7 +27576,13 @@ default:
     var ___r1;
 }
 
-,["void","CGSize"])]);
+,["void","CGSize"]), new objj_method(sel_getUid("_shouldShowCornerView"), function $CPScrollView___shouldShowCornerView(self, _cmd)
+{
+    return self._scrollerStyle === CPScrollerStyleLegacy && self._verticalScroller && !((___r1 = self._verticalScroller), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isHidden"] || _objj_forward)(___r1, "isHidden"));
+    var ___r1;
+}
+
+,["BOOL"])]);
 class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function $CPScrollView__initialize(self, _cmd)
 {
     if (self !== (CPScrollView.isa.method_msgSend["class"] || _objj_forward)(CPScrollView, "class"))
@@ -29608,7 +29757,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), f
 
 ,["id","CPView","CPShadowWeight"])]);
 }
-p;10;CPSlider.jt;55692;@STATIC;1.0;i;11;CPControl.ji;20;CPWindow_Constants.jt;55631;objj_executeFile("CPControl.j", YES);objj_executeFile("CPWindow_Constants.j", YES);{var the_typedef = objj_allocateTypeDef("CPSliderType");
+p;10;CPSlider.jt;55710;@STATIC;1.0;i;11;CPControl.ji;20;CPWindow_Constants.jt;55649;objj_executeFile("CPControl.j", YES);objj_executeFile("CPWindow_Constants.j", YES);{var the_typedef = objj_allocateTypeDef("CPSliderType");
 objj_registerTypeDef(the_typedef);
 }CPLinearSlider = 0;
 CPCircularSlider = 1;
@@ -30306,7 +30455,7 @@ default:
             }
         }
     }
-    if (self._allowsTickMarkValuesOnly)
+    if (CPDOMAvailable && self._allowsTickMarkValuesOnly)
     {
         (self.isa.method_msgSend["setObjectValue:"] || _objj_forward)(self, "setObjectValue:", (self.isa.method_msgSend["closestTickMarkValueToValue:"] || _objj_forward)(self, "closestTickMarkValueToValue:", (self.isa.method_msgSend["doubleValue"] || _objj_forward)(self, "doubleValue")));
         self._currentTickMarkSegment = self._closestTickMarkIndex;
@@ -30945,7 +31094,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","BOOL"])]);
 }
-p;13;CPSplitView.jt;96732;@STATIC;1.0;i;13;CPButtonBar.ji;10;CPCursor.ji;9;CPImage.ji;16;CPTrackingArea.ji;8;CPView.jt;96633;objj_executeFile("CPButtonBar.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);{var the_protocol = objj_allocateProtocol("CPSplitViewDelegate");
+p;13;CPSplitView.jt;97090;@STATIC;1.0;i;13;CPButtonBar.ji;10;CPCursor.ji;9;CPImage.ji;16;CPTrackingArea.ji;8;CPView.jt;96991;objj_executeFile("CPButtonBar.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);{var the_protocol = objj_allocateProtocol("CPSplitViewDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPSplitViewDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -31333,12 +31482,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 
 ,["void","CGSize"]), new objj_method(sel_getUid("adjustSubviews"), function $CPSplitView__adjustSubviews(self, _cmd)
 {
-    if ((self._suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0)
-    {
-        (self.isa.method_msgSend["_postNotificationWillResize"] || _objj_forward)(self, "_postNotificationWillResize");
-        self._suppressResizeNotificationsMask |= DidPostWillResizeNotification;
-    }
-;
+    (self.isa.method_msgSend["_maybePostWillResizeNotification"] || _objj_forward)(self, "_maybePostWillResizeNotification");
     (self.isa.method_msgSend["_postNotificationWillResize"] || _objj_forward)(self, "_postNotificationWillResize");
     var sizeToFit = (self.isa.method_msgSend["frame"] || _objj_forward)(self, "frame").size[self._sizeComponent] - self._dividerSubviews.length * (self.isa.method_msgSend["dividerThickness"] || _objj_forward)(self, "dividerThickness"),
         fixedSize = 0,
@@ -31389,11 +31533,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
         if (remainingSpace > 0)
             (self.isa.method_msgSend["_distribute:amoung:onFlexible:fromIndex:toIndex:"] || _objj_forward)(self, "_distribute:amoung:onFlexible:fromIndex:toIndex:", remainingSpace, fixedCount, NO, 0, nbSubviews - 1);
     }
-    if ((self._suppressResizeNotificationsMask & ShouldSuppressResizeNotifications) !== 0)
-        self._suppressResizeNotificationsMask |= DidSuppressResizeNotification;
-    else
-        (self.isa.method_msgSend["_postNotificationDidResize"] || _objj_forward)(self, "_postNotificationDidResize");
-;
+    (self.isa.method_msgSend["_maybePostDidResizeNotification"] || _objj_forward)(self, "_maybePostDidResizeNotification");
     (self.isa.method_msgSend["layoutSubviews"] || _objj_forward)(self, "layoutSubviews");
     var ___r1;
 }
@@ -31692,11 +31832,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 ,["int","float","int"]), new objj_method(sel_getUid("setPosition:ofDividerAtIndex:"), function $CPSplitView__setPosition_ofDividerAtIndex_(self, _cmd, position, dividerIndex)
 {
     self._shouldRestoreFromAutosaveUnlessFrameSize = nil;
-    if (YES)
-        self._suppressResizeNotificationsMask |= ShouldSuppressResizeNotifications;
-    else
-        self._suppressResizeNotificationsMask = 0;
-;
+    (self.isa.method_msgSend["_setResizeNotificationsSuppressed:"] || _objj_forward)(self, "_setResizeNotificationsSuppressed:", YES);
     var realPosition = (self.isa.method_msgSend["_realPositionForPosition:ofDividerAtIndex:"] || _objj_forward)(self, "_realPositionForPosition:ofDividerAtIndex:", position, dividerIndex),
         viewA = self._arrangedSubviews[dividerIndex],
         frameA = (viewA == null ? viewA : (viewA.isa.method_msgSend["frame"] || _objj_forward)(viewA, "frame")),
@@ -31709,18 +31845,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
         preCollapsePosition = preSize;
     if (preSize !== frameA.size[self._sizeComponent])
     {
-        if ((self._suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0)
-        {
-            (self.isa.method_msgSend["_postNotificationWillResize"] || _objj_forward)(self, "_postNotificationWillResize");
-            self._suppressResizeNotificationsMask |= DidPostWillResizeNotification;
-        }
-;
+        (self.isa.method_msgSend["_maybePostWillResizeNotification"] || _objj_forward)(self, "_maybePostWillResizeNotification");
         ((___r1 = self._arrangedSubviews[dividerIndex]), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrame:"] || _objj_forward)(___r1, "setFrame:", frameA));
-        if ((self._suppressResizeNotificationsMask & ShouldSuppressResizeNotifications) !== 0)
-            self._suppressResizeNotificationsMask |= DidSuppressResizeNotification;
-        else
-            (self.isa.method_msgSend["_postNotificationDidResize"] || _objj_forward)(self, "_postNotificationDidResize");
-;
+        (self.isa.method_msgSend["_maybePostDidResizeNotification"] || _objj_forward)(self, "_maybePostDidResizeNotification");
     }
     preSize = frameB.size[self._sizeComponent];
     var preOrigin = frameB.origin[self._originComponent];
@@ -31730,18 +31857,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
     frameB.origin[self._originComponent] = realPosition + (self.isa.method_msgSend["dividerThickness"] || _objj_forward)(self, "dividerThickness");
     if (preSize !== frameB.size[self._sizeComponent] || preOrigin !== frameB.origin[self._originComponent])
     {
-        if ((self._suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0)
-        {
-            (self.isa.method_msgSend["_postNotificationWillResize"] || _objj_forward)(self, "_postNotificationWillResize");
-            self._suppressResizeNotificationsMask |= DidPostWillResizeNotification;
-        }
-;
+        (self.isa.method_msgSend["_maybePostWillResizeNotification"] || _objj_forward)(self, "_maybePostWillResizeNotification");
         ((___r1 = self._arrangedSubviews[dividerIndex + 1]), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrame:"] || _objj_forward)(___r1, "setFrame:", frameB));
-        if ((self._suppressResizeNotificationsMask & ShouldSuppressResizeNotifications) !== 0)
-            self._suppressResizeNotificationsMask |= DidSuppressResizeNotification;
-        else
-            (self.isa.method_msgSend["_postNotificationDidResize"] || _objj_forward)(self, "_postNotificationDidResize");
-;
+        (self.isa.method_msgSend["_maybePostDidResizeNotification"] || _objj_forward)(self, "_maybePostDidResizeNotification");
     }
     if (preCollapsePosition)
         ((___r1 = self._preCollapsePositions), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setObject:forKey:"] || _objj_forward)(___r1, "setObject:forKey:", preCollapsePosition, "" + dividerIndex));
@@ -31749,13 +31867,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
     dividerOrigin[self._originComponent] = realPosition;
     ((___r1 = self._dividerSubviews[dividerIndex]), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrameOrigin:"] || _objj_forward)(___r1, "setFrameOrigin:", dividerOrigin));
     (self.isa.method_msgSend["_updateRatios"] || _objj_forward)(self, "_updateRatios");
-    if ((self._suppressResizeNotificationsMask & DidSuppressResizeNotification) !== 0)
+    if ((self.isa.method_msgSend["_didSuppressResizeNotifications"] || _objj_forward)(self, "_didSuppressResizeNotifications"))
         (self.isa.method_msgSend["_postNotificationDidResize"] || _objj_forward)(self, "_postNotificationDidResize");
-    if (NO)
-        self._suppressResizeNotificationsMask |= ShouldSuppressResizeNotifications;
-    else
-        self._suppressResizeNotificationsMask = 0;
-;
+    (self.isa.method_msgSend["_setResizeNotificationsSuppressed:"] || _objj_forward)(self, "_setResizeNotificationsSuppressed:", NO);
     var ___r1;
 }
 
@@ -31896,7 +32010,37 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
     return "CPSplitView Subview Precollapse Positions " + theAutosaveName;
 }
 
-,["CPString","CPString"])]);
+,["CPString","CPString"]), new objj_method(sel_getUid("_maybePostWillResizeNotification"), function $CPSplitView___maybePostWillResizeNotification(self, _cmd)
+{
+    if ((self._suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0)
+    {
+        (self.isa.method_msgSend["_postNotificationWillResize"] || _objj_forward)(self, "_postNotificationWillResize");
+        self._suppressResizeNotificationsMask |= DidPostWillResizeNotification;
+    }
+}
+
+,["void"]), new objj_method(sel_getUid("_maybePostDidResizeNotification"), function $CPSplitView___maybePostDidResizeNotification(self, _cmd)
+{
+    if ((self._suppressResizeNotificationsMask & ShouldSuppressResizeNotifications) !== 0)
+        self._suppressResizeNotificationsMask |= DidSuppressResizeNotification;
+    else
+        (self.isa.method_msgSend["_postNotificationDidResize"] || _objj_forward)(self, "_postNotificationDidResize");
+}
+
+,["void"]), new objj_method(sel_getUid("_didSuppressResizeNotifications"), function $CPSplitView___didSuppressResizeNotifications(self, _cmd)
+{
+    return (self._suppressResizeNotificationsMask & DidSuppressResizeNotification) !== 0;
+}
+
+,["BOOL"]), new objj_method(sel_getUid("_setResizeNotificationsSuppressed:"), function $CPSplitView___setResizeNotificationsSuppressed_(self, _cmd, shouldSuppress)
+{
+    if (shouldSuppress)
+        self._suppressResizeNotificationsMask |= ShouldSuppressResizeNotifications;
+    else
+        self._suppressResizeNotificationsMask = 0;
+}
+
+,["void","BOOL"])]);
 class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), function $CPSplitView__defaultThemeClass(self, _cmd)
 {
     return "splitview";
@@ -33206,7 +33350,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPCoder"])]);
 }
-p;17;CPStringDrawing.jt;3442;@STATIC;1.0;I;21;Foundation/CPString.ji;12;CGGeometry.ji;18;CPPlatformString.ji;8;CPFont.ji;17;CPCompatibility.jt;3323;objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPPlatformString.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPCompatibility.j", YES);var CPStringSizeWithFontInWidthCache = [],
+p;17;CPStringDrawing.jt;3641;@STATIC;1.0;I;21;Foundation/CPString.ji;12;CGGeometry.ji;18;CPPlatformString.ji;8;CPFont.ji;17;CPCompatibility.jt;3522;objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPPlatformString.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPCompatibility.j", YES);var CPStringSizeWithFontInWidthCache = [],
     CPStringSizeWithFontHeightCache = [],
     CPStringSizeMeasuringContext;
 CPCanvasStringSizingIsFunctional = NO;
@@ -33226,26 +33370,31 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 ,["CGSize","CPFont"]), new objj_method(sel_getUid("sizeWithFont:inWidth:"), function $CPString__sizeWithFont_inWidth_(self, _cmd, aFont, aWidth)
 {
     var size;
-    var sizeCacheForFont = CPStringSizeWithFontInWidthCache[self];
-    if (sizeCacheForFont === undefined)
-        sizeCacheForFont = CPStringSizeWithFontInWidthCache[self] = [];
-    var cssString = (aFont == null ? aFont : (aFont.isa.method_msgSend["cssString"] || _objj_forward)(aFont, "cssString")),
-        cacheKey = cssString + '_' + (aWidth ? aWidth : '0');
-    size = sizeCacheForFont[cacheKey];
-    if (size !== undefined && sizeCacheForFont.hasOwnProperty(cacheKey))
-        return CGSizeMakeCopy(size);
-    if (!CPCanvasStringSizingIsFunctional || aWidth)
-        size = (CPPlatformString.isa.method_msgSend["sizeOfString:withFont:forWidth:"] || _objj_forward)(CPPlatformString, "sizeOfString:withFont:forWidth:", self, aFont, aWidth);
-    else
+    if (CPDOMAvailable)
     {
-        if (CPPlatformHasBug(CPTextSizingAlwaysNeedsSetFontBug) || CPStringSizeMeasuringContext.font !== cssString)
-            CPStringSizeMeasuringContext.font = cssString;
-        var fontHeight = CPStringSizeWithFontHeightCache[cssString];
-        if (fontHeight === undefined)
-            fontHeight = CPStringSizeWithFontHeightCache[cssString] = (aFont == null ? aFont : (aFont.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(aFont, "defaultLineHeightForFont"));
-        size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
+        var sizeCacheForFont = CPStringSizeWithFontInWidthCache[self];
+        if (sizeCacheForFont === undefined)
+            sizeCacheForFont = CPStringSizeWithFontInWidthCache[self] = [];
+        var cssString = (aFont == null ? aFont : (aFont.isa.method_msgSend["cssString"] || _objj_forward)(aFont, "cssString")),
+            cacheKey = cssString + '_' + (aWidth ? aWidth : '0');
+        size = sizeCacheForFont[cacheKey];
+        if (size !== undefined && sizeCacheForFont.hasOwnProperty(cacheKey))
+            return CGSizeMakeCopy(size);
+        if (!CPCanvasStringSizingIsFunctional || aWidth)
+            size = (CPPlatformString.isa.method_msgSend["sizeOfString:withFont:forWidth:"] || _objj_forward)(CPPlatformString, "sizeOfString:withFont:forWidth:", self, aFont, aWidth);
+        else
+        {
+            if (CPPlatformHasBug(CPTextSizingAlwaysNeedsSetFontBug) || CPStringSizeMeasuringContext.font !== cssString)
+                CPStringSizeMeasuringContext.font = cssString;
+            var fontHeight = CPStringSizeWithFontHeightCache[cssString];
+            if (fontHeight === undefined)
+                fontHeight = CPStringSizeWithFontHeightCache[cssString] = (aFont == null ? aFont : (aFont.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(aFont, "defaultLineHeightForFont"));
+            size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
+        }
+        sizeCacheForFont[cacheKey] = size;
     }
-    sizeCacheForFont[cacheKey] = size;
+    else
+        size = CGSizeMake(0, 0);
     return CGSizeMakeCopy(size);
 }
 
@@ -33258,6 +33407,8 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("metricsOfFont:"), func
 ,["CPDictionary","CPFont"]), new objj_method(sel_getUid("initialize"), function $CPString__initialize(self, _cmd)
 {
     if ((self.isa.method_msgSend["class"] || _objj_forward)(self, "class") != (CPString.isa.method_msgSend["class"] || _objj_forward)(CPString, "class"))
+        return;
+    if (!CPDOMAvailable)
         return;
     if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     {
@@ -34453,7 +34604,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPCoder"])]);
 }
-p;13;CPTableView.jt;330952;@STATIC;1.0;I;20;Foundation/CPArray.jI;23;Foundation/CPIndexSet.ji;24;CPDragServer_Constants.ji;12;CGGradient.ji;7;CPCib.ji;17;CPCompatibility.ji;11;CPControl.ji;13;CPImageView.ji;12;CPScroller.ji;14;CPScrollView.ji;15;CPTableColumn.ji;19;CPTableHeaderView.ji;8;CPText.ji;15;_CPCornerView.jt;330653;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPIndexSet.j", NO);objj_executeFile("CPDragServer_Constants.j", YES);objj_executeFile("CGGradient.j", YES);objj_executeFile("CPCib.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPControl.j", YES);objj_executeFile("CPImageView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPScrollView.j", YES);objj_executeFile("CPTableColumn.j", YES);objj_executeFile("CPTableHeaderView.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("_CPCornerView.j", YES);CPTableViewColumnDidMoveNotification = "CPTableViewColumnDidMoveNotification";
+p;13;CPTableView.jt;332868;@STATIC;1.0;I;20;Foundation/CPArray.jI;23;Foundation/CPIndexSet.ji;24;CPDragServer_Constants.ji;12;CGGradient.ji;7;CPCib.ji;17;CPCompatibility.ji;11;CPControl.ji;13;CPImageView.ji;12;CPScroller.ji;14;CPScrollView.ji;15;CPTableColumn.ji;19;CPTableHeaderView.ji;8;CPText.ji;15;_CPCornerView.jt;332569;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPIndexSet.j", NO);objj_executeFile("CPDragServer_Constants.j", YES);objj_executeFile("CGGradient.j", YES);objj_executeFile("CPCib.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPControl.j", YES);objj_executeFile("CPImageView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPScrollView.j", YES);objj_executeFile("CPTableColumn.j", YES);objj_executeFile("CPTableHeaderView.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("_CPCornerView.j", YES);CPTableViewColumnDidMoveNotification = "CPTableViewColumnDidMoveNotification";
 CPTableViewColumnDidResizeNotification = "CPTableViewColumnDidResizeNotification";
 CPTableViewSelectionDidChangeNotification = "CPTableViewSelectionDidChangeNotification";
 CPTableViewSelectionIsChangingNotification = "CPTableViewSelectionIsChangingNotification";
@@ -34980,9 +35131,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
     ((___r1 = self._tableColumns), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addObject:"] || _objj_forward)(___r1, "addObject:", aTableColumn));
     (aTableColumn == null ? aTableColumn : (aTableColumn.isa.method_msgSend["setTableView:"] || _objj_forward)(aTableColumn, "setTableView:", self));
     if (self._dirtyTableColumnRangeIndex < 0)
-        self._dirtyTableColumnRangeIndex = self._tableColumns.length - 1;
+        self._dirtyTableColumnRangeIndex = (self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns") - 1;
     else
-        self._dirtyTableColumnRangeIndex = MIN(self._tableColumns.length - 1, self._dirtyTableColumnRangeIndex);
+        self._dirtyTableColumnRangeIndex = MIN((self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns") - 1, self._dirtyTableColumnRangeIndex);
     if (((___r1 = (self.isa.method_msgSend["sortDescriptors"] || _objj_forward)(self, "sortDescriptors")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count")) > 0)
     {
         var mainSortDescriptor = ((___r1 = (self.isa.method_msgSend["sortDescriptors"] || _objj_forward)(self, "sortDescriptors")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", 0));
@@ -35095,7 +35246,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
 ,["CPArray"]), new objj_method(sel_getUid("columnWithIdentifier:"), function $CPTableView__columnWithIdentifier_(self, _cmd, anIdentifier)
 {
     var index = 0,
-        count = self._tableColumns.length;
+        count = (self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns");
     for (; index < count; ++index)
         if (((___r1 = self._tableColumns[index]), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["identifier"] || _objj_forward)(___r1, "identifier")) === anIdentifier)
             return index;
@@ -35332,7 +35483,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
 
 ,["void","id"]), new objj_method(sel_getUid("numberOfColumns"), function $CPTableView__numberOfColumns(self, _cmd)
 {
-    return self._tableColumns.length;
+    return (self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns");
 }
 
 ,["int"]), new objj_method(sel_getUid("numberOfRows"), function $CPTableView__numberOfRows(self, _cmd)
@@ -35411,7 +35562,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
         return;
     self._numberOfHiddenColumns = 0;
     var index = self._dirtyTableColumnRangeIndex,
-        count = self._tableColumns.length,
+        count = (self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns"),
         x = index === 0 ? 0.0 : CPMaxRange(self._tableColumnRanges[index - 1]);
     for (; index < count; ++index)
     {
@@ -35436,13 +35587,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
 ,["void"]), new objj_method(sel_getUid("rectOfColumn:"), function $CPTableView__rectOfColumn_(self, _cmd, aColumnIndex)
 {
     aColumnIndex = +aColumnIndex;
-    if (aColumnIndex < 0 || aColumnIndex >= self._tableColumns.length)
+    if (aColumnIndex < 0 || aColumnIndex >= (self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns"))
         return CGRectMakeZero();
     if (((___r1 = ((___r2 = self._tableColumns), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r2, "objectAtIndex:", aColumnIndex))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isHidden"] || _objj_forward)(___r1, "isHidden")))
         return CGRectMakeZero();
-    if (self._dirtyTableColumnRangeIndex !== CPNotFound)
-        (self.isa.method_msgSend["_recalculateTableColumnRanges"] || _objj_forward)(self, "_recalculateTableColumnRanges");
-;
+    (self.isa.method_msgSend["_updateColumnRangesIfNecessary"] || _objj_forward)(self, "_updateColumnRangesIfNecessary");
     var range = self._tableColumnRanges[aColumnIndex];
     return CGRectMake(range.location, 0.0, range.length, CGRectGetHeight((self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds")));
     var ___r1, ___r2;
@@ -35457,7 +35606,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
     var y = 0,
         height,
         fixedHeightRows = 0;
-    if (self._implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
+    if ((self.isa.method_msgSend["_hasVariableRowHeights"] || _objj_forward)(self, "_hasVariableRowHeights"))
     {
         (self.isa.method_msgSend["_populateRowHeightCacheIfNeeded"] || _objj_forward)(self, "_populateRowHeightCacheIfNeeded");
         var heightInfo;
@@ -35469,11 +35618,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
         }
         else
         {
-            height = self._rowHeight + self._intercellSpacing.height;
+            height = (self.isa.method_msgSend["_fullRowHeight"] || _objj_forward)(self, "_fullRowHeight");
             if (self._numberOfRows > 0)
             {
                 heightInfo = self._cachedRowHeights[lastIndex];
-                y = heightInfo.y + heightInfo.height + self._intercellSpacing.height;
+                y = (self.isa.method_msgSend["_rowBottomOfHeightInfo:"] || _objj_forward)(self, "_rowBottomOfHeightInfo:", heightInfo);
                 fixedHeightRows = aRowIndex - self._numberOfRows;
             }
         }
@@ -35481,9 +35630,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
     else
     {
         fixedHeightRows = aRowIndex;
-        height = self._rowHeight + self._intercellSpacing.height;
+        height = (self.isa.method_msgSend["_fullRowHeight"] || _objj_forward)(self, "_fullRowHeight");
     }
-    y += fixedHeightRows * (self._rowHeight + self._intercellSpacing.height);
+    y += fixedHeightRows * (self.isa.method_msgSend["_fullRowHeight"] || _objj_forward)(self, "_fullRowHeight");
     return CGRectMake(0.0, y, CGRectGetWidth((self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds")), height);
 }
 
@@ -35517,7 +35666,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
         rectBottom = CGRectGetMaxY(aRect);
     if (bottomOfRealRows >= rectBottom)
         return rowRange;
-    var numberOfSynthesizedRows = CEIL((rectBottom - bottomOfRealRows) / (self._rowHeight + self._intercellSpacing.height));
+    var numberOfSynthesizedRows = CEIL((rectBottom - bottomOfRealRows) / (self.isa.method_msgSend["_fullRowHeight"] || _objj_forward)(self, "_fullRowHeight"));
     rowRange.length += numberOfSynthesizedRows;
     return rowRange;
 }
@@ -35527,7 +35676,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
     var column = MAX(0, (self.isa.method_msgSend["columnAtPoint:"] || _objj_forward)(self, "columnAtPoint:", CGPointMake(aRect.origin.x, 0.0))),
         lastColumn = (self.isa.method_msgSend["columnAtPoint:"] || _objj_forward)(self, "columnAtPoint:", CGPointMake(CGRectGetMaxX(aRect), 0.0));
     if (lastColumn === CPNotFound)
-        lastColumn = self._tableColumns.length - 1;
+        lastColumn = (self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns") - 1;
     if (self._numberOfHiddenColumns <= 0)
         return (CPIndexSet.isa.method_msgSend["indexSetWithIndexesInRange:"] || _objj_forward)(CPIndexSet, "indexSetWithIndexesInRange:", CPMakeRange(column, lastColumn - column + 1));
     var indexSet = (CPIndexSet.isa.method_msgSend["indexSet"] || _objj_forward)(CPIndexSet, "indexSet");
@@ -35545,9 +35694,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
     var bounds = (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds");
     if (!CGRectContainsPoint(bounds, aPoint))
         return CPNotFound;
-    if (self._dirtyTableColumnRangeIndex !== CPNotFound)
-        (self.isa.method_msgSend["_recalculateTableColumnRanges"] || _objj_forward)(self, "_recalculateTableColumnRanges");
-;
+    (self.isa.method_msgSend["_updateColumnRangesIfNecessary"] || _objj_forward)(self, "_updateColumnRangesIfNecessary");
     var x = aPoint.x,
         low = 0,
         high = self._tableColumnRanges.length - 1;
@@ -35578,23 +35725,23 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
     var bounds = (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds");
     if (aPoint.x < CGRectGetMinX(bounds) || aPoint.x >= CGRectGetMaxX(bounds))
         return -1;
-    if (self._implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
+    if ((self.isa.method_msgSend["_hasVariableRowHeights"] || _objj_forward)(self, "_hasVariableRowHeights"))
     {
         var heightInfo = ((___r1 = self._cachedRowHeights), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["lastObject"] || _objj_forward)(___r1, "lastObject"));
-        if (!heightInfo || aPoint.y >= heightInfo.y + heightInfo.height + self._intercellSpacing.height)
+        if (!heightInfo || aPoint.y >= (self.isa.method_msgSend["_rowBottomOfHeightInfo:"] || _objj_forward)(self, "_rowBottomOfHeightInfo:", heightInfo))
             return -1;
         return ((___r1 = self._cachedRowHeights), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexOfObject:inSortedRange:options:usingComparator:"] || _objj_forward)(___r1, "indexOfObject:inSortedRange:options:usingComparator:", aPoint, nil, 0,         function(aPoint, heightInfo)
         {
             if (aPoint.y < heightInfo.y)
                 return CPOrderedAscending;
-            if (aPoint.y > heightInfo.y + heightInfo.height + self._intercellSpacing.height)
+            if (aPoint.y > (self.isa.method_msgSend["_rowBottomOfHeightInfo:"] || _objj_forward)(self, "_rowBottomOfHeightInfo:", heightInfo))
                 return CPOrderedDescending;
             return CPOrderedSame;
         }));
     }
     else
     {
-        var row = FLOOR(aPoint.y / (self._rowHeight + self._intercellSpacing.height));
+        var row = FLOOR(aPoint.y / (self.isa.method_msgSend["_fullRowHeight"] || _objj_forward)(self, "_fullRowHeight"));
         return row >= self._numberOfRows ? -1 : row;
     }
     var ___r1;
@@ -35664,9 +35811,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
 
 ,["void","Function","Function","CPView"]), new objj_method(sel_getUid("frameOfDataViewAtColumn:row:"), function $CPTableView__frameOfDataViewAtColumn_row_(self, _cmd, aColumn, aRow)
 {
-    if (self._dirtyTableColumnRangeIndex !== CPNotFound)
-        (self.isa.method_msgSend["_recalculateTableColumnRanges"] || _objj_forward)(self, "_recalculateTableColumnRanges");
-;
+    (self.isa.method_msgSend["_updateColumnRangesIfNecessary"] || _objj_forward)(self, "_updateColumnRangesIfNecessary");
     if (aColumn > (self.isa.method_msgSend["numberOfColumns"] || _objj_forward)(self, "numberOfColumns") || aRow > (self.isa.method_msgSend["numberOfRows"] || _objj_forward)(self, "numberOfRows"))
         return CGRectMakeZero();
     var tableColumnRange = self._tableColumnRanges[aColumn],
@@ -35707,10 +35852,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
     var superview = (self.isa.method_msgSend["superview"] || _objj_forward)(self, "superview");
     if (!superview)
         return;
-    if (self._dirtyTableColumnRangeIndex !== CPNotFound)
-        (self.isa.method_msgSend["_recalculateTableColumnRanges"] || _objj_forward)(self, "_recalculateTableColumnRanges");
-;
-    var count = self._tableColumns.length,
+    (self.isa.method_msgSend["_updateColumnRangesIfNecessary"] || _objj_forward)(self, "_updateColumnRangesIfNecessary");
+    var count = (self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns"),
         columnToResize = nil,
         totalWidth = 0,
         i = 0;
@@ -35739,11 +35882,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
     var superview = (self.isa.method_msgSend["superview"] || _objj_forward)(self, "superview");
     if (!superview || !(superview == null ? superview : (superview.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(superview, "isKindOfClass:", (CPClipView == null ? CPClipView : (CPClipView.isa.method_msgSend["class"] || _objj_forward)(CPClipView, "class")))))
         return;
-    if (self._dirtyTableColumnRangeIndex !== CPNotFound)
-        (self.isa.method_msgSend["_recalculateTableColumnRanges"] || _objj_forward)(self, "_recalculateTableColumnRanges");
-;
+    (self.isa.method_msgSend["_updateColumnRangesIfNecessary"] || _objj_forward)(self, "_updateColumnRangesIfNecessary");
     var superviewWidth = (superview == null ? superview : (superview.isa.method_msgSend["bounds"] || _objj_forward)(superview, "bounds")).size.width,
-        count = self._tableColumns.length,
+        count = (self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns"),
         resizableColumns = (CPIndexSet.isa.method_msgSend["indexSet"] || _objj_forward)(CPIndexSet, "indexSet"),
         remainingSpace = 0.0,
         i = 0;
@@ -35798,10 +35939,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
     if (!superview)
         return;
     var superviewSize = (superview == null ? superview : (superview.isa.method_msgSend["bounds"] || _objj_forward)(superview, "bounds")).size;
-    if (self._dirtyTableColumnRangeIndex !== CPNotFound)
-        (self.isa.method_msgSend["_recalculateTableColumnRanges"] || _objj_forward)(self, "_recalculateTableColumnRanges");
-;
-    var count = self._tableColumns.length;
+    (self.isa.method_msgSend["_updateColumnRangesIfNecessary"] || _objj_forward)(self, "_updateColumnRangesIfNecessary");
+    var count = (self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns");
     while (count-- && ((___r1 = self._tableColumns[count]), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isHidden"] || _objj_forward)(___r1, "isHidden")));
     if (count >= 0)
     {
@@ -35841,7 +35980,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
 
 ,["void"]), new objj_method(sel_getUid("_noteHeightOfRowsWithIndexesChanged:"), function $CPTableView___noteHeightOfRowsWithIndexesChanged_(self, _cmd, anIndexSet)
 {
-    if (!(self._implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
+    if (!(self.isa.method_msgSend["_hasVariableRowHeights"] || _objj_forward)(self, "_hasVariableRowHeights"))
         return;
     var i = (anIndexSet == null ? anIndexSet : (anIndexSet.isa.method_msgSend["indexGreaterThanOrEqualToIndex:"] || _objj_forward)(anIndexSet, "indexGreaterThanOrEqualToIndex:", 0));
     if (i === CPNotFound)
@@ -35867,19 +36006,17 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
 
 ,["void","CPIndexSet"]), new objj_method(sel_getUid("tile"), function $CPTableView__tile(self, _cmd)
 {
-    if (self._dirtyTableColumnRangeIndex !== CPNotFound)
-        (self.isa.method_msgSend["_recalculateTableColumnRanges"] || _objj_forward)(self, "_recalculateTableColumnRanges");
-;
+    (self.isa.method_msgSend["_updateColumnRangesIfNecessary"] || _objj_forward)(self, "_updateColumnRangesIfNecessary");
     var width = self._tableColumnRanges.length > 0 ? CPMaxRange(((___r1 = self._tableColumnRanges), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["lastObject"] || _objj_forward)(___r1, "lastObject"))) : 0.0,
         superview = (self.isa.method_msgSend["superview"] || _objj_forward)(self, "superview"),
         height = 0;
-    if (!(self._implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
-        height = (self._rowHeight + self._intercellSpacing.height) * self._numberOfRows;
+    if (!(self.isa.method_msgSend["_hasVariableRowHeights"] || _objj_forward)(self, "_hasVariableRowHeights"))
+        height = (self.isa.method_msgSend["_fullRowHeight"] || _objj_forward)(self, "_fullRowHeight") * self._numberOfRows;
     else if (self._numberOfRows > 0)
     {
         (self.isa.method_msgSend["_populateRowHeightCacheIfNeeded"] || _objj_forward)(self, "_populateRowHeightCacheIfNeeded");
         var heightInfo = self._cachedRowHeights[self._cachedRowHeights.length - 1];
-        height = heightInfo.y + heightInfo.height + self._intercellSpacing.height;
+        height = (self.isa.method_msgSend["_rowBottomOfHeightInfo:"] || _objj_forward)(self, "_rowBottomOfHeightInfo:", heightInfo);
     }
     if ((superview == null ? superview : (superview.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(superview, "isKindOfClass:", (CPClipView == null ? CPClipView : (CPClipView.isa.method_msgSend["class"] || _objj_forward)(CPClipView, "class")))))
     {
@@ -36509,9 +36646,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
 {
     if (!(rowIndexes == null ? rowIndexes : (rowIndexes.isa.method_msgSend["count"] || _objj_forward)(rowIndexes, "count")) || !(columnIndexes == null ? columnIndexes : (columnIndexes.isa.method_msgSend["count"] || _objj_forward)(columnIndexes, "count")))
         return;
-    if (self._dirtyTableColumnRangeIndex !== CPNotFound)
-        (self.isa.method_msgSend["_recalculateTableColumnRanges"] || _objj_forward)(self, "_recalculateTableColumnRanges");
-;
+    (self.isa.method_msgSend["_updateColumnRangesIfNecessary"] || _objj_forward)(self, "_updateColumnRangesIfNecessary");
     if (self._numberOfHiddenColumns > 0)
         columnIndexes = (columnIndexes == null ? columnIndexes : (columnIndexes.isa.method_msgSend["indexesPassingTest:"] || _objj_forward)(columnIndexes, "indexesPassingTest:",         function(idx, stop)
         {
@@ -36668,8 +36803,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
 {
     if (row > self._numberOfRows - 1)
         (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "Row " + row + " out of row range [0-" + (self._numberOfRows - 1) + "] for rowViewAtRow:createIfNeeded:");
-    if (column > self._tableColumns.length - 1)
-        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "Column " + column + " out of row range [0-" + (self._tableColumns.length - 1) + "] for rowViewAtRow:createIfNeeded:");
+    if (column > (self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns") - 1)
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "Column " + column + " out of row range [0-" + ((self.isa.method_msgSend["_numberOfColumns"] || _objj_forward)(self, "_numberOfColumns") - 1) + "] for rowViewAtRow:createIfNeeded:");
     var dataViewsForRow = self._dataViewsForRows[row],
         tableColumn = self._tableColumns[column],
         tableColumnUID = (tableColumn == null ? tableColumn : (tableColumn.isa.method_msgSend["UID"] || _objj_forward)(tableColumn, "UID")),
@@ -36924,7 +37059,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
         }
         if (self._rowHeight > 0.0)
         {
-            var rowHeight = self._rowHeight + self._intercellSpacing.height,
+            var rowHeight = (self.isa.method_msgSend["_fullRowHeight"] || _objj_forward)(self, "_fullRowHeight"),
                 totalHeight = CGRectGetMaxY(aRect) - lineThickness / 2;
             while (rowY < totalHeight)
             {
@@ -37917,7 +38052,33 @@ class_addMethods(the_class, [new objj_method(sel_getUid("doubleClickTarget"), fu
     var ___r1;
 }
 
-,["void","CPEvent","BOOL"])]);
+,["void","CPEvent","BOOL"]), new objj_method(sel_getUid("_numberOfColumns"), function $CPTableView___numberOfColumns(self, _cmd)
+{
+    return self._tableColumns.length;
+}
+
+,["int"]), new objj_method(sel_getUid("_updateColumnRangesIfNecessary"), function $CPTableView___updateColumnRangesIfNecessary(self, _cmd)
+{
+    if (self._dirtyTableColumnRangeIndex !== CPNotFound)
+        (self.isa.method_msgSend["_recalculateTableColumnRanges"] || _objj_forward)(self, "_recalculateTableColumnRanges");
+}
+
+,["void"]), new objj_method(sel_getUid("_fullRowHeight"), function $CPTableView___fullRowHeight(self, _cmd)
+{
+    return self._rowHeight + self._intercellSpacing.height;
+}
+
+,["CGFloat"]), new objj_method(sel_getUid("_rowBottomOfHeightInfo:"), function $CPTableView___rowBottomOfHeightInfo_(self, _cmd, heightInfo)
+{
+    return heightInfo.y + heightInfo.height + self._intercellSpacing.height;
+}
+
+,["CGFloat","JSObject"]), new objj_method(sel_getUid("_hasVariableRowHeights"), function $CPTableView___hasVariableRowHeights(self, _cmd)
+{
+    return self._implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_;
+}
+
+,["BOOL"])]);
 class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), function $CPTableView__defaultThemeClass(self, _cmd)
 {
     return "tableview";
@@ -40075,7 +40236,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPCoder"])]);
 }
-p;13;CPTextField.jt;134724;@STATIC;1.0;i;11;CPControl.ji;17;CPStringDrawing.ji;17;CPCompatibility.ji;8;CPText.ji;20;CPWindow_Constants.ji;21;_CPImageAndTextView.jt;134580;objj_executeFile("CPControl.j", YES);objj_executeFile("CPStringDrawing.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPImageAndTextView.j", YES);{var the_protocol = objj_allocateProtocol("CPTextFieldDelegate");
+p;13;CPTextField.jt;136317;@STATIC;1.0;i;11;CPControl.ji;17;CPStringDrawing.ji;17;CPCompatibility.ji;8;CPText.ji;20;CPWindow_Constants.ji;21;_CPImageAndTextView.jt;136173;objj_executeFile("CPControl.j", YES);objj_executeFile("CPStringDrawing.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPImageAndTextView.j", YES);{var the_protocol = objj_allocateProtocol("CPTextFieldDelegate");
 var aProtocol = objj_getProtocol("CPControlTextEditingDelegate");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPTextFieldDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -40168,6 +40329,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("setControlSize:"), func
 
 ,["void","CPControlSize"]), new objj_method(sel_getUid("_inputElement"), function $CPTextField___inputElement(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return nil;
     if (!CPTextFieldDOMTextAreaElement)
     {
         CPTextFieldDOMTextAreaElement = document.createElement("textarea");
@@ -40422,92 +40585,97 @@ class_addMethods(the_class, [new objj_method(sel_getUid("setControlSize:"), func
     (self.isa.method_msgSend["_updatePlaceholderState"] || _objj_forward)(self, "_updatePlaceholderState");
     (self.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(self, "setNeedsLayout");
     self._stringValue = (self.isa.method_msgSend["stringValue"] || _objj_forward)(self, "stringValue");
-    (self.isa.method_msgSend["_setCSSStyleForInputElement"] || _objj_forward)(self, "_setCSSStyleForInputElement");
-    var element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement");
-    element.value = self._stringValue;
-    if (element.parentNode !== self._DOMElement)
+    if (CPDOMAvailable)
     {
-        var previousOwner = CPTextFieldInputOwner;
-        _CPTextFieldDetachInputElement(element);
-        try {
-            self._DOMElement.appendChild(element);
-        }
-        catch(e) {
+        (self.isa.method_msgSend["_setCSSStyleForInputElement"] || _objj_forward)(self, "_setCSSStyleForInputElement");
+        var element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement");
+        element.value = self._stringValue;
+        if (element.parentNode !== self._DOMElement)
+        {
+            var previousOwner = CPTextFieldInputOwner;
             _CPTextFieldDetachInputElement(element);
             try {
                 self._DOMElement.appendChild(element);
             }
-            catch(e2) {
-                (self.isa.method_msgSend["unsetThemeState:"] || _objj_forward)(self, "unsetThemeState:", CPThemeStateEditing);
-                (self.isa.method_msgSend["_updatePlaceholderState"] || _objj_forward)(self, "_updatePlaceholderState");
-                (self.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(self, "setNeedsLayout");
-                return NO;
+            catch(e) {
+                _CPTextFieldDetachInputElement(element);
+                try {
+                    self._DOMElement.appendChild(element);
+                }
+                catch(e2) {
+                    (self.isa.method_msgSend["unsetThemeState:"] || _objj_forward)(self, "unsetThemeState:", CPThemeStateEditing);
+                    (self.isa.method_msgSend["_updatePlaceholderState"] || _objj_forward)(self, "_updatePlaceholderState");
+                    (self.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(self, "setNeedsLayout");
+                    return NO;
+                }
+            }
+            if (previousOwner && previousOwner !== self)
+            {
+                (previousOwner == null ? previousOwner : (previousOwner.isa.method_msgSend["unsetThemeState:"] || _objj_forward)(previousOwner, "unsetThemeState:", CPThemeStateEditing));
+                (previousOwner == null ? previousOwner : (previousOwner.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(previousOwner, "setNeedsLayout"));
             }
         }
-        if (previousOwner && previousOwner !== self)
+        CPTextFieldInputIsActive = YES;
+        if (document.attachEvent)
         {
-            (previousOwner == null ? previousOwner : (previousOwner.isa.method_msgSend["unsetThemeState:"] || _objj_forward)(previousOwner, "unsetThemeState:", CPThemeStateEditing));
-            (previousOwner == null ? previousOwner : (previousOwner.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(previousOwner, "setNeedsLayout"));
+            CPTextFieldCachedSelectStartFunction = ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["platformWindow"] || _objj_forward)(___r1, "platformWindow"))._DOMBodyElement.onselectstart;
+            CPTextFieldCachedDragFunction = ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["platformWindow"] || _objj_forward)(___r1, "platformWindow"))._DOMBodyElement.ondrag;
+            ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["platformWindow"] || _objj_forward)(___r1, "platformWindow"))._DOMBodyElement.ondrag =             function()
+            {
+            };
+            ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["platformWindow"] || _objj_forward)(___r1, "platformWindow"))._DOMBodyElement.onselectstart =             function()
+            {
+            };
         }
-    }
-    CPTextFieldInputIsActive = YES;
-    if (document.attachEvent)
-    {
-        CPTextFieldCachedSelectStartFunction = ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["platformWindow"] || _objj_forward)(___r1, "platformWindow"))._DOMBodyElement.onselectstart;
-        CPTextFieldCachedDragFunction = ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["platformWindow"] || _objj_forward)(___r1, "platformWindow"))._DOMBodyElement.ondrag;
-        ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["platformWindow"] || _objj_forward)(___r1, "platformWindow"))._DOMBodyElement.ondrag =         function()
+        CPTextFieldInputOwner = self;
+        ((___r1 = (CPRunLoop.isa.method_msgSend["mainRunLoop"] || _objj_forward)(CPRunLoop, "mainRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["performBlock:argument:order:modes:"] || _objj_forward)(___r1, "performBlock:argument:order:modes:",         function()
         {
-        };
-        ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["platformWindow"] || _objj_forward)(___r1, "platformWindow"))._DOMBodyElement.onselectstart =         function()
-        {
-        };
-    }
-    CPTextFieldInputOwner = self;
-    ((___r1 = (CPRunLoop.isa.method_msgSend["mainRunLoop"] || _objj_forward)(CPRunLoop, "mainRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["performBlock:argument:order:modes:"] || _objj_forward)(___r1, "performBlock:argument:order:modes:",     function()
-    {
-        if (CPTextFieldInputOwner !== self)
-            return;
-        var previousScrollingOrigin = (self.isa.method_msgSend["_scrollToVisibleRectAndReturnPreviousOrigin"] || _objj_forward)(self, "_scrollToVisibleRectAndReturnPreviousOrigin");
-        element.focus();
-        (self.isa.method_msgSend["_restorePreviousScrollingOrigin:"] || _objj_forward)(self, "_restorePreviousScrollingOrigin:", previousScrollingOrigin);
-        if (!self._willBecomeFirstResponderByClick)
-        {
-            (self.isa.method_msgSend["_selectText:immediately:"] || _objj_forward)(self, "_selectText:immediately:", self, YES);
-        }
-        else
-        {
-            var x = (self.isa.method_msgSend["convertPointFromBase:"] || _objj_forward)(self, "convertPointFromBase:", ((___r1 = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["currentEvent"] || _objj_forward)(CPApp, "currentEvent"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["locationInWindow"] || _objj_forward)(___r1, "locationInWindow"))).x,
-                contentInset = (self.isa.method_msgSend["currentValueForThemeAttribute:"] || _objj_forward)(self, "currentValueForThemeAttribute:", "content-inset"),
-                text = (self.isa.method_msgSend["stringValue"] || _objj_forward)(self, "stringValue"),
-                font = (self.isa.method_msgSend["font"] || _objj_forward)(self, "font");
-            switch((self.isa.method_msgSend["alignment"] || _objj_forward)(self, "alignment")) {
-                case CPCenterTextAlignment:
-                    var contentWidth = (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds").size.width - contentInset.left - contentInset.right,
-                        textWidth = (text == null ? text : (text.isa.method_msgSend["sizeWithFont:"] || _objj_forward)(text, "sizeWithFont:", font)).width;
-                    x -= (contentWidth - textWidth) / 2 + contentInset.left;
-                    break;
-                case CPRightTextAlignment:
-                    var contentWidth = (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds").size.width - contentInset.left - contentInset.right,
-                        textWidth = (text == null ? text : (text.isa.method_msgSend["sizeWithFont:"] || _objj_forward)(text, "sizeWithFont:", font)).width;
-                    x -= contentWidth - textWidth + contentInset.left;
-                    break;
+            if (CPTextFieldInputOwner !== self)
+                return;
+            var previousScrollingOrigin = (self.isa.method_msgSend["_scrollToVisibleRectAndReturnPreviousOrigin"] || _objj_forward)(self, "_scrollToVisibleRectAndReturnPreviousOrigin");
+            element.focus();
+            (self.isa.method_msgSend["_restorePreviousScrollingOrigin:"] || _objj_forward)(self, "_restorePreviousScrollingOrigin:", previousScrollingOrigin);
+            if (!self._willBecomeFirstResponderByClick)
+            {
+                (self.isa.method_msgSend["_selectText:immediately:"] || _objj_forward)(self, "_selectText:immediately:", self, YES);
+            }
+            else
+            {
+                var x = (self.isa.method_msgSend["convertPointFromBase:"] || _objj_forward)(self, "convertPointFromBase:", ((___r1 = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["currentEvent"] || _objj_forward)(CPApp, "currentEvent"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["locationInWindow"] || _objj_forward)(___r1, "locationInWindow"))).x,
+                    contentInset = (self.isa.method_msgSend["currentValueForThemeAttribute:"] || _objj_forward)(self, "currentValueForThemeAttribute:", "content-inset"),
+                    text = (self.isa.method_msgSend["stringValue"] || _objj_forward)(self, "stringValue"),
+                    font = (self.isa.method_msgSend["font"] || _objj_forward)(self, "font");
+                switch((self.isa.method_msgSend["alignment"] || _objj_forward)(self, "alignment")) {
+                    case CPCenterTextAlignment:
+                        var contentWidth = (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds").size.width - contentInset.left - contentInset.right,
+                            textWidth = (text == null ? text : (text.isa.method_msgSend["sizeWithFont:"] || _objj_forward)(text, "sizeWithFont:", font)).width;
+                        x -= (contentWidth - textWidth) / 2 + contentInset.left;
+                        break;
+                    case CPRightTextAlignment:
+                        var contentWidth = (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds").size.width - contentInset.left - contentInset.right,
+                            textWidth = (text == null ? text : (text.isa.method_msgSend["sizeWithFont:"] || _objj_forward)(text, "sizeWithFont:", font)).width;
+                        x -= contentWidth - textWidth + contentInset.left;
+                        break;
 default:
-                    x -= contentInset.left;
-                    break;
+                        x -= contentInset.left;
+                        break;
+                }
+                var position = (CPPlatformString.isa.method_msgSend["charPositionOfString:withFont:forPoint:"] || _objj_forward)(CPPlatformString, "charPositionOfString:withFont:forPoint:", text, font, CGPointMake(x, 0));
+                (self.isa.method_msgSend["setSelectedRange:"] || _objj_forward)(self, "setSelectedRange:", CPMakeRange(position, 0));
             }
-            var position = (CPPlatformString.isa.method_msgSend["charPositionOfString:withFont:forPoint:"] || _objj_forward)(CPPlatformString, "charPositionOfString:withFont:forPoint:", text, font, CGPointMake(x, 0));
-            (self.isa.method_msgSend["setSelectedRange:"] || _objj_forward)(self, "setSelectedRange:", CPMakeRange(position, 0));
-        }
-        self._willBecomeFirstResponderByClick = NO;
-        (self.isa.method_msgSend["textDidFocus:"] || _objj_forward)(self, "textDidFocus:", (CPNotification.isa.method_msgSend["notificationWithName:object:userInfo:"] || _objj_forward)(CPNotification, "notificationWithName:object:userInfo:", CPTextFieldDidFocusNotification, self, nil));
-        var ___r1;
-    }, nil, 0, [CPDefaultRunLoopMode]));
+            self._willBecomeFirstResponderByClick = NO;
+            (self.isa.method_msgSend["textDidFocus:"] || _objj_forward)(self, "textDidFocus:", (CPNotification.isa.method_msgSend["notificationWithName:object:userInfo:"] || _objj_forward)(CPNotification, "notificationWithName:object:userInfo:", CPTextFieldDidFocusNotification, self, nil));
+            var ___r1;
+        }, nil, 0, [CPDefaultRunLoopMode]));
+    }
     return YES;
     var ___r1;
 }
 
 ,["BOOL"]), new objj_method(sel_getUid("_setEnableCSSSelection:"), function $CPTextField___setEnableCSSSelection_(self, _cmd, shouldEnable)
 {
+    if (!CPDOMAvailable)
+        return;
     if (CPTexFieldCurrentCSSSelectableField)
         CPTexFieldCurrentCSSSelectableField._DOMElement.style[CPBrowserStyleProperty("user-select")] = "none";
     CPTexFieldCurrentCSSSelectableField = self;
@@ -40516,6 +40684,8 @@ default:
 
 ,["void","BOOL"]), new objj_method(sel_getUid("_setCSSStyleForInputElement"), function $CPTextField___setCSSStyleForInputElement(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return;
     var element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement"),
         font = (self.isa.method_msgSend["font"] || _objj_forward)(self, "font"),
         lineHeight = (font == null ? font : (font.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(font, "defaultLineHeightForFont")),
@@ -40572,21 +40742,24 @@ default:
 
 ,["void"]), new objj_method(sel_getUid("resignFirstResponder"), function $CPTextField__resignFirstResponder(self, _cmd)
 {
-    if (self._isEditing && CPTextFieldInputOwner === self)
+    if (CPDOMAvailable)
     {
-        var element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement"),
-            newValue = element.value,
-            error = "";
-        if (newValue !== self._stringValue)
+        if (self._isEditing && CPTextFieldInputOwner === self)
         {
-            (self.isa.method_msgSend["_setStringValue:"] || _objj_forward)(self, "_setStringValue:", newValue);
-        }
-        if ((self.isa.method_msgSend["_valueIsValid:"] || _objj_forward)(self, "_valueIsValid:", newValue) === NO)
-        {
-            var previousScrollingOrigin = (self.isa.method_msgSend["_scrollToVisibleRectAndReturnPreviousOrigin"] || _objj_forward)(self, "_scrollToVisibleRectAndReturnPreviousOrigin");
-            element.focus();
-            (self.isa.method_msgSend["_restorePreviousScrollingOrigin:"] || _objj_forward)(self, "_restorePreviousScrollingOrigin:", previousScrollingOrigin);
-            return NO;
+            var element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement"),
+                newValue = element.value,
+                error = "";
+            if (newValue !== self._stringValue)
+            {
+                (self.isa.method_msgSend["_setStringValue:"] || _objj_forward)(self, "_setStringValue:", newValue);
+            }
+            if ((self.isa.method_msgSend["_valueIsValid:"] || _objj_forward)(self, "_valueIsValid:", newValue) === NO)
+            {
+                var previousScrollingOrigin = (self.isa.method_msgSend["_scrollToVisibleRectAndReturnPreviousOrigin"] || _objj_forward)(self, "_scrollToVisibleRectAndReturnPreviousOrigin");
+                element.focus();
+                (self.isa.method_msgSend["_restorePreviousScrollingOrigin:"] || _objj_forward)(self, "_restorePreviousScrollingOrigin:", previousScrollingOrigin);
+                return NO;
+            }
         }
     }
     (self.isa.method_msgSend["_setObserveWindowKeyNotifications:"] || _objj_forward)(self, "_setObserveWindowKeyNotifications:", NO);
@@ -40611,6 +40784,8 @@ default:
     self._willBecomeFirstResponderByClick = NO;
     (self.isa.method_msgSend["_updatePlaceholderState"] || _objj_forward)(self, "_updatePlaceholderState");
     (self.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(self, "setNeedsLayout");
+    if (!CPDOMAvailable)
+        return;
     var element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement");
     CPTextFieldInputResigning = YES;
     if (CPTextFieldInputIsActive)
@@ -40690,28 +40865,31 @@ default:
 
 ,["void","CPNotification"]), new objj_method(sel_getUid("_valueIsValid:"), function $CPTextField___valueIsValid_(self, _cmd, aValue)
 {
-    var error = "";
-    if ((self.isa.method_msgSend["_setStringValue:isNewValue:errorDescription:"] || _objj_forward)(self, "_setStringValue:isNewValue:errorDescription:", aValue, NO, function(__input) { if (arguments.length) return error = __input; return error; }) === NO)
+    if (CPDOMAvailable)
     {
-        var acceptInvalidValue = NO;
-        if (self._implementedDelegateMethods & CPTextFieldDelegate_control_didFailToFormatString_errorDescription_)
+        var error = "";
+        if ((self.isa.method_msgSend["_setStringValue:isNewValue:errorDescription:"] || _objj_forward)(self, "_setStringValue:isNewValue:errorDescription:", aValue, NO, function(__input) { if (arguments.length) return error = __input; return error; }) === NO)
         {
-            var currentEvent = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["currentEvent"] || _objj_forward)(CPApp, "currentEvent"));
-            if (currentEvent && CPTextFieldLastValidationFailureField === self && CPTextFieldLastValidationFailureString === aValue && CPTextFieldLastValidationFailureEvent === currentEvent)
+            var acceptInvalidValue = NO;
+            if (self._implementedDelegateMethods & CPTextFieldDelegate_control_didFailToFormatString_errorDescription_)
             {
-                acceptInvalidValue = CPTextFieldLastValidationFailureResult;
+                var currentEvent = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["currentEvent"] || _objj_forward)(CPApp, "currentEvent"));
+                if (currentEvent && CPTextFieldLastValidationFailureField === self && CPTextFieldLastValidationFailureString === aValue && CPTextFieldLastValidationFailureEvent === currentEvent)
+                {
+                    acceptInvalidValue = CPTextFieldLastValidationFailureResult;
+                }
+                else
+                {
+                    acceptInvalidValue = ((___r1 = self._delegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["control:didFailToFormatString:errorDescription:"] || _objj_forward)(___r1, "control:didFailToFormatString:errorDescription:", self, aValue, error));
+                    CPTextFieldLastValidationFailureField = self;
+                    CPTextFieldLastValidationFailureString = aValue;
+                    CPTextFieldLastValidationFailureEvent = currentEvent;
+                    CPTextFieldLastValidationFailureResult = acceptInvalidValue;
+                }
             }
-            else
-            {
-                acceptInvalidValue = ((___r1 = self._delegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["control:didFailToFormatString:errorDescription:"] || _objj_forward)(___r1, "control:didFailToFormatString:errorDescription:", self, aValue, error));
-                CPTextFieldLastValidationFailureField = self;
-                CPTextFieldLastValidationFailureString = aValue;
-                CPTextFieldLastValidationFailureEvent = currentEvent;
-                CPTextFieldLastValidationFailureResult = acceptInvalidValue;
-            }
+            if (acceptInvalidValue === NO)
+                return NO;
         }
-        if (acceptInvalidValue === NO)
-            return NO;
     }
     return YES;
     var ___r1;
@@ -40812,13 +40990,16 @@ default:
 {
     if (!((self.isa.method_msgSend["isEnabled"] || _objj_forward)(self, "isEnabled") && (self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable")))
         return;
-    var newValue = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement").value;
-    if (newValue !== self._stringValue)
+    if (CPDOMAvailable)
     {
-        (self.isa.method_msgSend["_setStringValue:"] || _objj_forward)(self, "_setStringValue:", newValue);
-        (self.isa.method_msgSend["_didEdit"] || _objj_forward)(self, "_didEdit");
+        var newValue = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement").value;
+        if (newValue !== self._stringValue)
+        {
+            (self.isa.method_msgSend["_setStringValue:"] || _objj_forward)(self, "_setStringValue:", newValue);
+            (self.isa.method_msgSend["_didEdit"] || _objj_forward)(self, "_didEdit");
+        }
+        ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(___r1, "_propagateCurrentDOMEvent:", YES));
     }
-    ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(___r1, "_propagateCurrentDOMEvent:", YES));
     var ___r1, ___r2;
 }
 
@@ -40884,6 +41065,8 @@ default:
 ,["void","id"]), new objj_method(sel_getUid("_insertCharacterIgnoringFieldEditor:"), function $CPTextField___insertCharacterIgnoringFieldEditor_(self, _cmd, aCharacter)
 {
     if (!((self.isa.method_msgSend["isEnabled"] || _objj_forward)(self, "isEnabled") && (self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable")))
+        return;
+    if (!CPDOMAvailable)
         return;
     var oldValue = self._stringValue,
         range = (self.isa.method_msgSend["selectedRange"] || _objj_forward)(self, "selectedRange"),
@@ -41012,7 +41195,7 @@ default:
     }
     else
         self._stringValue = (self.isa.method_msgSend["stringValue"] || _objj_forward)(self, "stringValue");
-    if ((CPTextFieldInputOwner === self || ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["firstResponder"] || _objj_forward)(___r1, "firstResponder")) === self) && ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isKeyWindow"] || _objj_forward)(___r1, "isKeyWindow")))
+    if (CPDOMAvailable && (CPTextFieldInputOwner === self || ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["firstResponder"] || _objj_forward)(___r1, "firstResponder")) === self) && ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isKeyWindow"] || _objj_forward)(___r1, "isKeyWindow")))
         (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement").value = self._stringValue;
     (self.isa.method_msgSend["_updatePlaceholderState"] || _objj_forward)(self, "_updatePlaceholderState");
     var ___r1;
@@ -41095,25 +41278,33 @@ default:
     if ((self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable") || (self.isa.method_msgSend["isSelectable"] || _objj_forward)(self, "isSelectable"))
     {
         var wind = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window");
-        if ((self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable"))
+        if (CPDOMAvailable)
         {
-            var element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement");
-            if ((wind == null ? wind : (wind.isa.method_msgSend["firstResponder"] || _objj_forward)(wind, "firstResponder")) === self)
+            if ((self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable"))
             {
-                if (immediately)
-                    element.select();
-                else
-                    ((___r1 = (CPRunLoop.isa.method_msgSend["mainRunLoop"] || _objj_forward)(CPRunLoop, "mainRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["performBlock:argument:order:modes:"] || _objj_forward)(___r1, "performBlock:argument:order:modes:",                     function()
-                    {
+                var element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement");
+                if ((wind == null ? wind : (wind.isa.method_msgSend["firstResponder"] || _objj_forward)(wind, "firstResponder")) === self)
+                {
+                    if (immediately)
                         element.select();
-                    }, nil, 0, [CPDefaultRunLoopMode]));
+                    else
+                        ((___r1 = (CPRunLoop.isa.method_msgSend["mainRunLoop"] || _objj_forward)(CPRunLoop, "mainRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["performBlock:argument:order:modes:"] || _objj_forward)(___r1, "performBlock:argument:order:modes:",                         function()
+                        {
+                            element.select();
+                        }, nil, 0, [CPDefaultRunLoopMode]));
+                }
+                else if (wind != nil && (wind == null ? wind : (wind.isa.method_msgSend["makeFirstResponder:"] || _objj_forward)(wind, "makeFirstResponder:", self)))
+                    (self.isa.method_msgSend["_selectText:immediately:"] || _objj_forward)(self, "_selectText:immediately:", sender, immediately);
             }
-            else if (wind != nil && (wind == null ? wind : (wind.isa.method_msgSend["makeFirstResponder:"] || _objj_forward)(wind, "makeFirstResponder:", self)))
-                (self.isa.method_msgSend["_selectText:immediately:"] || _objj_forward)(self, "_selectText:immediately:", sender, immediately);
+            else
+            {
+                (self.isa.method_msgSend["setSelectedRange:"] || _objj_forward)(self, "setSelectedRange:", CPMakeRange(0, self._stringValue.length));
+            }
         }
         else
         {
-            (self.isa.method_msgSend["setSelectedRange:"] || _objj_forward)(self, "setSelectedRange:", CPMakeRange(0, self._stringValue.length));
+            if (wind != nil && (wind == null ? wind : (wind.isa.method_msgSend["firstResponder"] || _objj_forward)(wind, "firstResponder")) !== self)
+                (wind == null ? wind : (wind.isa.method_msgSend["makeFirstResponder:"] || _objj_forward)(wind, "makeFirstResponder:", self));
         }
     }
     var ___r1;
@@ -41131,7 +41322,10 @@ default:
     }
     else
     {
-        stringToCopy = ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_selectedText"] || _objj_forward)(___r1, "_selectedText"));
+        if (CPDOMAvailable)
+        {
+            stringToCopy = ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_selectedText"] || _objj_forward)(___r1, "_selectedText"));
+        }
     }
     var pasteboard = (CPPasteboard == null ? CPPasteboard : (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard"));
     (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["declareTypes:owner:"] || _objj_forward)(pasteboard, "declareTypes:owner:", [CPStringPboardType], nil));
@@ -41193,22 +41387,25 @@ default:
 {
     if (((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["firstResponder"] || _objj_forward)(___r1, "firstResponder")) !== self)
         return CPMakeRange(0, 0);
-    try {
-        var inputElement = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement"),
-            selectionStart = inputElement.selectionStart,
-            selectionEnd = inputElement.selectionEnd;
-        if ((selectionStart == null ? selectionStart : (selectionStart.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(selectionStart, "isKindOfClass:", CPNumber)))
-            return CPMakeRange(selectionStart, selectionEnd - selectionStart);
-        var theDocument = inputElement.ownerDocument || inputElement.document,
-            selectionRange = theDocument.selection.createRange(),
-            range = inputElement.createTextRange();
-        if (range.inRange(selectionRange))
-        {
-            range.setEndPoint('EndToStart', selectionRange);
-            return CPMakeRange(range.text.length, selectionRange.text.length);
+    if (CPDOMAvailable)
+    {
+        try {
+            var inputElement = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement"),
+                selectionStart = inputElement.selectionStart,
+                selectionEnd = inputElement.selectionEnd;
+            if ((selectionStart == null ? selectionStart : (selectionStart.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(selectionStart, "isKindOfClass:", CPNumber)))
+                return CPMakeRange(selectionStart, selectionEnd - selectionStart);
+            var theDocument = inputElement.ownerDocument || inputElement.document,
+                selectionRange = theDocument.selection.createRange(),
+                range = inputElement.createTextRange();
+            if (range.inRange(selectionRange))
+            {
+                range.setEndPoint('EndToStart', selectionRange);
+                return CPMakeRange(range.text.length, selectionRange.text.length);
+            }
         }
-    }
-    catch(e) {
+        catch(e) {
+        }
     }
     return CPMakeRange(0, 0);
     var ___r1;
@@ -41217,6 +41414,8 @@ default:
 ,["CPRange"]), new objj_method(sel_getUid("setSelectedRange:"), function $CPTextField__setSelectedRange_(self, _cmd, aRange)
 {
     if (!((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["firstResponder"] || _objj_forward)(___r1, "firstResponder")) === self)
+        return;
+    if (!CPDOMAvailable)
         return;
     if (!(self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable"))
     {
@@ -41308,7 +41507,10 @@ default:
     {
         (self.isa.method_msgSend["_setObjectValue:useFormatter:"] || _objj_forward)(self, "_setObjectValue:useFormatter:", newValue, NO);
         (self.isa.method_msgSend["setSelectedRange:"] || _objj_forward)(self, "setSelectedRange:", CPMakeRange(range.location, 0));
-        ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(___r1, "_propagateCurrentDOMEvent:", NO));
+        if (CPDOMAvailable)
+        {
+            ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(___r1, "_propagateCurrentDOMEvent:", NO));
+        }
     }
     (self.isa.method_msgSend["_didEdit"] || _objj_forward)(self, "_didEdit");
     var ___r1, ___r2;
@@ -42656,7 +42858,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("bundle"), function $CPT
 
 ,["void","CPBundle"])]);
 }
-p;14;CPTokenField.jt;96191;@STATIC;1.0;I;27;Foundation/CPCharacterSet.jI;23;Foundation/CPIndexSet.jI;20;Foundation/CPTimer.ji;21;_CPAutocompleteMenu.ji;10;CPButton.ji;15;CPPopUpButton.ji;14;CPScrollView.ji;13;CPTableView.ji;8;CPText.ji;13;CPTextField.ji;20;CPWindow_Constants.jt;95933;objj_executeFile("Foundation/CPCharacterSet.j", NO);objj_executeFile("Foundation/CPIndexSet.j", NO);objj_executeFile("Foundation/CPTimer.j", NO);objj_executeFile("_CPAutocompleteMenu.j", YES);objj_executeFile("CPButton.j", YES);objj_executeFile("CPPopUpButton.j", YES);objj_executeFile("CPScrollView.j", YES);objj_executeFile("CPTableView.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPWindow_Constants.j", YES);{var the_protocol = objj_allocateProtocol("CPTokenFieldDelegate");
+p;14;CPTokenField.jt;96688;@STATIC;1.0;I;27;Foundation/CPCharacterSet.jI;23;Foundation/CPIndexSet.jI;20;Foundation/CPTimer.ji;21;_CPAutocompleteMenu.ji;10;CPButton.ji;15;CPPopUpButton.ji;14;CPScrollView.ji;13;CPTableView.ji;8;CPText.ji;13;CPTextField.ji;20;CPWindow_Constants.ji;17;CPCompatibility.jt;96408;objj_executeFile("Foundation/CPCharacterSet.j", NO);objj_executeFile("Foundation/CPIndexSet.j", NO);objj_executeFile("Foundation/CPTimer.j", NO);objj_executeFile("_CPAutocompleteMenu.j", YES);objj_executeFile("CPButton.j", YES);objj_executeFile("CPPopUpButton.j", YES);objj_executeFile("CPScrollView.j", YES);objj_executeFile("CPTableView.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("CPCompatibility.j", YES);{var the_protocol = objj_allocateProtocol("CPTokenFieldDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPTokenFieldDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -42908,8 +43110,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("tokenizingCharacterSet"
 {
     if (!(objj_getClass("CPTokenField").super_class.method_dtable["becomeFirstResponder"] || _objj_forward)(self, "becomeFirstResponder"))
         return NO;
-    if (CPTokenFieldInputOwner && (CPTokenFieldInputOwner == null ? CPTokenFieldInputOwner : (CPTokenFieldInputOwner.isa.method_msgSend["window"] || _objj_forward)(CPTokenFieldInputOwner, "window")) !== (self.isa.method_msgSend["window"] || _objj_forward)(self, "window"))
+    if (CPDOMAvailable && CPTokenFieldInputOwner && (CPTokenFieldInputOwner == null ? CPTokenFieldInputOwner : (CPTokenFieldInputOwner.isa.method_msgSend["window"] || _objj_forward)(CPTokenFieldInputOwner, "window")) !== (self.isa.method_msgSend["window"] || _objj_forward)(self, "window"))
+    {
         ((___r1 = (CPTokenFieldInputOwner == null ? CPTokenFieldInputOwner : (CPTokenFieldInputOwner.isa.method_msgSend["window"] || _objj_forward)(CPTokenFieldInputOwner, "window"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["makeFirstResponder:"] || _objj_forward)(___r1, "makeFirstResponder:", nil));
+    }
     (self.isa.method_msgSend["_setObserveWindowKeyNotifications:"] || _objj_forward)(self, "_setObserveWindowKeyNotifications:", YES);
     (self.isa.method_msgSend["scrollRectToVisible:"] || _objj_forward)(self, "scrollRectToVisible:", (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds"));
     if (((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isKeyWindow"] || _objj_forward)(___r1, "isKeyWindow")))
@@ -42925,53 +43129,56 @@ class_addMethods(the_class, [new objj_method(sel_getUid("tokenizingCharacterSet"
     (self.isa.method_msgSend["setThemeState:"] || _objj_forward)(self, "setThemeState:", CPThemeStateEditing);
     (self.isa.method_msgSend["_updatePlaceholderState"] || _objj_forward)(self, "_updatePlaceholderState");
     (self.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(self, "setNeedsLayout");
-    var string = (self.isa.method_msgSend["stringValue"] || _objj_forward)(self, "stringValue"),
-        element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement"),
-        font = (self.isa.method_msgSend["currentValueForThemeAttribute:"] || _objj_forward)(self, "currentValueForThemeAttribute:", "font");
-    element.value = nil;
-    element.style.color = ((___r1 = (self.isa.method_msgSend["currentValueForThemeAttribute:"] || _objj_forward)(self, "currentValueForThemeAttribute:", "text-color")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString"));
-    element.style.font = (font == null ? font : (font.isa.method_msgSend["cssString"] || _objj_forward)(font, "cssString"));
-    element.style.zIndex = 1000;
-    switch((self.isa.method_msgSend["alignment"] || _objj_forward)(self, "alignment")) {
-        case CPCenterTextAlignment:
-            element.style.textAlign = "center";
-            break;
-        case CPRightTextAlignment:
-            element.style.textAlign = "right";
-            break;
-default:
-            element.style.textAlign = "left";
-    }
-    var contentRect = (self.isa.method_msgSend["contentRectForBounds:"] || _objj_forward)(self, "contentRectForBounds:", (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds"));
-    element.style.top = CGRectGetMinY(contentRect) + "px";
-    element.style.left = CGRectGetMinX(contentRect) - 1 + "px";
-    element.style.width = CGRectGetWidth(contentRect) + "px";
-    element.style.height = (font == null ? font : (font.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(font, "defaultLineHeightForFont")) + "px";
-    ((___r1 = (CPRunLoop.isa.method_msgSend["mainRunLoop"] || _objj_forward)(CPRunLoop, "mainRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["performBlock:argument:order:modes:"] || _objj_forward)(___r1, "performBlock:argument:order:modes:",     function()
+    if (CPDOMAvailable)
     {
-        ((___r1 = self._tokenScrollView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["documentView"] || _objj_forward)(___r1, "documentView"))._DOMElement.appendChild(element);
+        var string = (self.isa.method_msgSend["stringValue"] || _objj_forward)(self, "stringValue"),
+            element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement"),
+            font = (self.isa.method_msgSend["currentValueForThemeAttribute:"] || _objj_forward)(self, "currentValueForThemeAttribute:", "font");
+        element.value = nil;
+        element.style.color = ((___r1 = (self.isa.method_msgSend["currentValueForThemeAttribute:"] || _objj_forward)(self, "currentValueForThemeAttribute:", "text-color")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString"));
+        element.style.font = (font == null ? font : (font.isa.method_msgSend["cssString"] || _objj_forward)(font, "cssString"));
+        element.style.zIndex = 1000;
+        switch((self.isa.method_msgSend["alignment"] || _objj_forward)(self, "alignment")) {
+            case CPCenterTextAlignment:
+                element.style.textAlign = "center";
+                break;
+            case CPRightTextAlignment:
+                element.style.textAlign = "right";
+                break;
+default:
+                element.style.textAlign = "left";
+        }
+        var contentRect = (self.isa.method_msgSend["contentRectForBounds:"] || _objj_forward)(self, "contentRectForBounds:", (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds"));
+        element.style.top = CGRectGetMinY(contentRect) + "px";
+        element.style.left = CGRectGetMinX(contentRect) - 1 + "px";
+        element.style.width = CGRectGetWidth(contentRect) + "px";
+        element.style.height = (font == null ? font : (font.isa.method_msgSend["defaultLineHeightForFont"] || _objj_forward)(font, "defaultLineHeightForFont")) + "px";
         ((___r1 = (CPRunLoop.isa.method_msgSend["mainRunLoop"] || _objj_forward)(CPRunLoop, "mainRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["performBlock:argument:order:modes:"] || _objj_forward)(___r1, "performBlock:argument:order:modes:",         function()
         {
-            var previousScrollingOrigin = (self.isa.method_msgSend["_scrollToVisibleRectAndReturnPreviousOrigin"] || _objj_forward)(self, "_scrollToVisibleRectAndReturnPreviousOrigin");
-            element.focus();
-            (self.isa.method_msgSend["_restorePreviousScrollingOrigin:"] || _objj_forward)(self, "_restorePreviousScrollingOrigin:", previousScrollingOrigin);
-            CPTokenFieldInputOwner = self;
+            ((___r1 = self._tokenScrollView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["documentView"] || _objj_forward)(___r1, "documentView"))._DOMElement.appendChild(element);
+            ((___r1 = (CPRunLoop.isa.method_msgSend["mainRunLoop"] || _objj_forward)(CPRunLoop, "mainRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["performBlock:argument:order:modes:"] || _objj_forward)(___r1, "performBlock:argument:order:modes:",             function()
+            {
+                var previousScrollingOrigin = (self.isa.method_msgSend["_scrollToVisibleRectAndReturnPreviousOrigin"] || _objj_forward)(self, "_scrollToVisibleRectAndReturnPreviousOrigin");
+                element.focus();
+                (self.isa.method_msgSend["_restorePreviousScrollingOrigin:"] || _objj_forward)(self, "_restorePreviousScrollingOrigin:", previousScrollingOrigin);
+                CPTokenFieldInputOwner = self;
+            }, nil, 0, [CPDefaultRunLoopMode]));
+            (self.isa.method_msgSend["textDidFocus:"] || _objj_forward)(self, "textDidFocus:", (CPNotification.isa.method_msgSend["notificationWithName:object:userInfo:"] || _objj_forward)(CPNotification, "notificationWithName:object:userInfo:", CPTextFieldDidFocusNotification, self, nil));
+            var ___r1;
         }, nil, 0, [CPDefaultRunLoopMode]));
-        (self.isa.method_msgSend["textDidFocus:"] || _objj_forward)(self, "textDidFocus:", (CPNotification.isa.method_msgSend["notificationWithName:object:userInfo:"] || _objj_forward)(CPNotification, "notificationWithName:object:userInfo:", CPTextFieldDidFocusNotification, self, nil));
-        var ___r1;
-    }, nil, 0, [CPDefaultRunLoopMode]));
-    ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(___r1, "_propagateCurrentDOMEvent:", YES));
-    CPTokenFieldInputIsActive = YES;
-    if (document.attachEvent)
-    {
-        CPTokenFieldCachedSelectStartFunction = document.body.onselectstart;
-        CPTokenFieldCachedDragFunction = document.body.ondrag;
-        document.body.ondrag =         function()
+        ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(___r1, "_propagateCurrentDOMEvent:", YES));
+        CPTokenFieldInputIsActive = YES;
+        if (document.attachEvent)
         {
-        };
-        document.body.onselectstart =         function()
-        {
-        };
+            CPTokenFieldCachedSelectStartFunction = document.body.onselectstart;
+            CPTokenFieldCachedDragFunction = document.body.ondrag;
+            document.body.ondrag =             function()
+            {
+            };
+            document.body.onselectstart =             function()
+            {
+            };
+        }
     }
     return YES;
     var ___r1, ___r2;
@@ -43000,6 +43207,8 @@ default:
     (self.isa.method_msgSend["unsetThemeState:"] || _objj_forward)(self, "unsetThemeState:", CPThemeStateEditing);
     (self.isa.method_msgSend["_updatePlaceholderState"] || _objj_forward)(self, "_updatePlaceholderState");
     (self.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(self, "setNeedsLayout");
+    if (!CPDOMAvailable)
+        return;
     var element = (self.isa.method_msgSend["_inputElement"] || _objj_forward)(self, "_inputElement");
     CPTokenFieldInputResigning = YES;
     if (CPTokenFieldInputIsActive)
@@ -43075,7 +43284,7 @@ default:
             continue;
         (objectValue == null ? objectValue : (objectValue.isa.method_msgSend["addObject:"] || _objj_forward)(objectValue, "addObject:", (token == null ? token : (token.isa.method_msgSend["representedObject"] || _objj_forward)(token, "representedObject"))));
     }
-    if ((self.isa.method_msgSend["_editorValue"] || _objj_forward)(self, "_editorValue"))
+    if (CPDOMAvailable && (self.isa.method_msgSend["_editorValue"] || _objj_forward)(self, "_editorValue"))
     {
         var token = (self.isa.method_msgSend["_representedObjectForEditingString:"] || _objj_forward)(self, "_representedObjectForEditingString:", (self.isa.method_msgSend["_editorValue"] || _objj_forward)(self, "_editorValue"));
         (objectValue == null ? objectValue : (objectValue.isa.method_msgSend["insertObject:atIndex:"] || _objj_forward)(objectValue, "insertObject:atIndex:", token, self._selectedRange.location));
@@ -43168,6 +43377,8 @@ default:
 
 ,["BOOL","CPString"]), new objj_method(sel_getUid("_inputElement"), function $CPTokenField___inputElement(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return nil;
     if (!CPTokenFieldDOMInputElement)
     {
         CPTokenFieldDOMInputElement = document.createElement("input");
@@ -43400,7 +43611,10 @@ default:
 
 ,["void","id","BOOL"]), new objj_method(sel_getUid("keyDown:"), function $CPTokenField__keyDown_(self, _cmd, anEvent)
 {
-    CPTokenFieldTextDidChangeValue = (self.isa.method_msgSend["stringValue"] || _objj_forward)(self, "stringValue");
+    if (CPDOMAvailable)
+    {
+        CPTokenFieldTextDidChangeValue = (self.isa.method_msgSend["stringValue"] || _objj_forward)(self, "stringValue");
+    }
     if (!(self.isa.method_msgSend["isEnabled"] || _objj_forward)(self, "isEnabled") || !((self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable") || (self.isa.method_msgSend["isSelectable"] || _objj_forward)(self, "isSelectable")))
         return;
     if ((self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable") && !self._isEditing)
@@ -43415,7 +43629,7 @@ default:
 
 ,["void","CPEvent"]), new objj_method(sel_getUid("keyUp:"), function $CPTokenField__keyUp_(self, _cmd, anEvent)
 {
-    if ((self.isa.method_msgSend["stringValue"] || _objj_forward)(self, "stringValue") !== CPTokenFieldTextDidChangeValue)
+    if (CPDOMAvailable && (self.isa.method_msgSend["stringValue"] || _objj_forward)(self, "stringValue") !== CPTokenFieldTextDidChangeValue)
     {
         (self.isa.method_msgSend["textDidChange:"] || _objj_forward)(self, "textDidChange:", (CPNotification.isa.method_msgSend["notificationWithName:object:userInfo:"] || _objj_forward)(CPNotification, "notificationWithName:object:userInfo:", CPControlTextDidChangeNotification, self, nil));
     }
@@ -46304,7 +46518,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithController:"), 
 
 ,["BOOL"])]);
 }
-p;8;CPView.jt;181472;@STATIC;1.0;I;20;Foundation/CPArray.jI;26;Foundation/CPObjJRuntime.jI;18;Foundation/CPSet.ji;17;_CPObject+Theme.ji;19;CGAffineTransform.ji;12;CGGeometry.ji;14;CPAppearance.ji;9;CPColor.ji;19;CPGraphicsContext.ji;13;CPResponder.ji;9;CPTheme.ji;16;CPTrackingArea.ji;20;CPWindow_Constants.ji;18;_CPDisplayServer.jt;181153;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObjJRuntime.j", NO);objj_executeFile("Foundation/CPSet.j", NO);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CGAffineTransform.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAppearance.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPGraphicsContext.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPTheme.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPDisplayServer.j", YES);{var the_typedef = objj_allocateTypeDef("_CPViewFullScreenModeState");
+p;8;CPView.jt;175839;@STATIC;1.0;I;20;Foundation/CPArray.jI;26;Foundation/CPObjJRuntime.jI;18;Foundation/CPSet.ji;17;_CPObject+Theme.ji;19;CGAffineTransform.ji;20;CPDOMDisplayServer.ji;12;CGGeometry.ji;14;CPAppearance.ji;9;CPColor.ji;17;CPCompatibility.ji;19;CPGraphicsContext.ji;13;CPResponder.ji;9;CPTheme.ji;16;CPTrackingArea.ji;20;CPWindow_Constants.ji;18;_CPDisplayServer.jt;175473;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObjJRuntime.j", NO);objj_executeFile("Foundation/CPSet.j", NO);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CGAffineTransform.j", YES);objj_executeFile("CPDOMDisplayServer.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAppearance.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPGraphicsContext.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPTheme.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPDisplayServer.j", YES);{var the_typedef = objj_allocateTypeDef("_CPViewFullScreenModeState");
 objj_registerTypeDef(the_typedef);
 }if (typeof appkit_tag_dom_elements !== "undefined" && appkit_tag_dom_elements)
 {
@@ -46351,7 +46565,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 meta_class = the_class.isa;
 var aProtocol = objj_getProtocol("CPTheme");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPTheme\"");
-class_addProtocol(the_class, aProtocol);class_addIvars(the_class, [new objj_ivar("_window", "CPWindow"), new objj_ivar("_superview", "CPView"), new objj_ivar("_subviews", "CPArray"), new objj_ivar("_graphicsContext", "CPGraphicsContext"), new objj_ivar("_tag", "int"), new objj_ivar("_identifier", "CPString"), new objj_ivar("_frame", "CGRect"), new objj_ivar("_bounds", "CGRect"), new objj_ivar("_boundsTransform", "CGAffineTransform"), new objj_ivar("_inverseBoundsTransform", "CGAffineTransform"), new objj_ivar("_registeredDraggedTypes", "CPSet"), new objj_ivar("_registeredDraggedTypesArray", "CPArray"), new objj_ivar("_isHidden", "BOOL"), new objj_ivar("_isHiddenOrHasHiddenAncestor", "BOOL"), new objj_ivar("_hitTests", "BOOL"), new objj_ivar("_clipsToBounds", "BOOL"), new objj_ivar("_postsFrameChangedNotifications", "BOOL"), new objj_ivar("_postsBoundsChangedNotifications", "BOOL"), new objj_ivar("_inhibitFrameAndBoundsChangedNotifications", "BOOL"), new objj_ivar("_inLiveResize", "BOOL"), new objj_ivar("_isSuperviewAClipView", "BOOL"), new objj_ivar("_DOMElement", "DOMElement"), new objj_ivar("_DOMContentsElement", "DOMElement"), new objj_ivar("_DOMImageParts", "CPArray"), new objj_ivar("_DOMImageSizes", "CPArray"), new objj_ivar("_backgroundType", "unsigned"), new objj_ivar("_cssStylePreviousState", "CPArray"), new objj_ivar("_cssStyleNode", "DOMElement"), new objj_ivar("_dirtyRect", "CGRect"), new objj_ivar("_opacity", "float"), new objj_ivar("_backgroundColor", "CPColor"), new objj_ivar("_autoresizesSubviews", "BOOL"), new objj_ivar("_autoresizingMask", "unsigned"), new objj_ivar("_layer", "CALayer"), new objj_ivar("_wantsLayer", "BOOL"), new objj_ivar("_isInFullScreenMode", "BOOL"), new objj_ivar("_fullScreenModeState", "_CPViewFullScreenModeState"), new objj_ivar("_isScaled", "BOOL"), new objj_ivar("_hierarchyScaleSize", "CGSize"), new objj_ivar("_scaleSize", "CGSize"), new objj_ivar("_needToSetTransformMatrix", "BOOL"), new objj_ivar("_highDPIRatio", "float"), new objj_ivar("_needsLayout", "BOOL"), new objj_ivar("_ephemeralSubviews", "JSObject"), new objj_ivar("_ephemeralSubviewsForNames", "JSObject"), new objj_ivar("_ephemeralSubviews", "CPSet"), new objj_ivar("_nextKeyView", "CPView"), new objj_ivar("_previousKeyView", "CPView"), new objj_ivar("_viewClassFlags", "unsigned"), new objj_ivar("_toolTip", "CPString"), new objj_ivar("_toolTipFunctionIn", "Function"), new objj_ivar("_toolTipFunctionOut", "Function"), new objj_ivar("_toolTipInstalled", "BOOL"), new objj_ivar("_isObserving", "BOOL"), new objj_ivar("_allowsVibrancy", "BOOL"), new objj_ivar("_appearance", "CPAppearance"), new objj_ivar("_currentAppearance", "CPAppearance"), new objj_ivar("_trackingAreas", "CPMutableArray"), new objj_ivar("_animator", "id"), new objj_ivar("_animationsDictionary", "CPDictionary"), new objj_ivar("_inhibitDOMUpdates", "BOOL"), new objj_ivar("_forceUpdates", "BOOL")]);objj_registerClassPair(the_class);
+class_addProtocol(the_class, aProtocol);class_addIvars(the_class, [new objj_ivar("_window", "CPWindow"), new objj_ivar("_superview", "CPView"), new objj_ivar("_subviews", "CPArray"), new objj_ivar("_graphicsContext", "CPGraphicsContext"), new objj_ivar("_tag", "int"), new objj_ivar("_identifier", "CPString"), new objj_ivar("_frame", "CGRect"), new objj_ivar("_bounds", "CGRect"), new objj_ivar("_boundsTransform", "CGAffineTransform"), new objj_ivar("_inverseBoundsTransform", "CGAffineTransform"), new objj_ivar("_registeredDraggedTypes", "CPSet"), new objj_ivar("_registeredDraggedTypesArray", "CPArray"), new objj_ivar("_isHidden", "BOOL"), new objj_ivar("_isHiddenOrHasHiddenAncestor", "BOOL"), new objj_ivar("_hitTests", "BOOL"), new objj_ivar("_clipsToBounds", "BOOL"), new objj_ivar("_postsFrameChangedNotifications", "BOOL"), new objj_ivar("_postsBoundsChangedNotifications", "BOOL"), new objj_ivar("_inhibitFrameAndBoundsChangedNotifications", "BOOL"), new objj_ivar("_inLiveResize", "BOOL"), new objj_ivar("_isSuperviewAClipView", "BOOL"), new objj_ivar("_DOMElement", "DOMElement"), new objj_ivar("_DOMContentsElement", "DOMElement"), new objj_ivar("_DOMImageParts", "CPArray"), new objj_ivar("_DOMImageSizes", "CPArray"), new objj_ivar("_backgroundType", "unsigned"), new objj_ivar("_cssStylePreviousState", "CPArray"), new objj_ivar("_cssStyleNode", "DOMElement"), new objj_ivar("_dirtyRect", "CGRect"), new objj_ivar("_opacity", "float"), new objj_ivar("_backgroundColor", "CPColor"), new objj_ivar("_autoresizesSubviews", "BOOL"), new objj_ivar("_autoresizingMask", "unsigned"), new objj_ivar("_layer", "CALayer"), new objj_ivar("_wantsLayer", "BOOL"), new objj_ivar("_isInFullScreenMode", "BOOL"), new objj_ivar("_fullScreenModeState", "_CPViewFullScreenModeState"), new objj_ivar("_isScaled", "BOOL"), new objj_ivar("_hierarchyScaleSize", "CGSize"), new objj_ivar("_scaleSize", "CGSize"), new objj_ivar("_needToSetTransformMatrix", "BOOL"), new objj_ivar("_highDPIRatio", "float"), new objj_ivar("_needsLayout", "BOOL"), new objj_ivar("_ephemeralSubviewsForNames", "JSObject"), new objj_ivar("_ephemeralSubviews", "CPSet"), new objj_ivar("_nextKeyView", "CPView"), new objj_ivar("_previousKeyView", "CPView"), new objj_ivar("_viewClassFlags", "unsigned"), new objj_ivar("_toolTip", "CPString"), new objj_ivar("_toolTipFunctionIn", "Function"), new objj_ivar("_toolTipFunctionOut", "Function"), new objj_ivar("_toolTipInstalled", "BOOL"), new objj_ivar("_isObserving", "BOOL"), new objj_ivar("_allowsVibrancy", "BOOL"), new objj_ivar("_appearance", "CPAppearance"), new objj_ivar("_currentAppearance", "CPAppearance"), new objj_ivar("_trackingAreas", "CPMutableArray"), new objj_ivar("_animator", "id"), new objj_ivar("_animationsDictionary", "CPDictionary"), new objj_ivar("_inhibitDOMUpdates", "BOOL"), new objj_ivar("_forceUpdates", "BOOL")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function $CPView__identifier(self, _cmd)
 {
     return self._identifier;
@@ -46472,21 +46686,16 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
         self._isScaled = NO;
         self._theme = (CPTheme.isa.method_msgSend["defaultTheme"] || _objj_forward)(CPTheme, "defaultTheme");
         self._themeState = CPThemeStateNormal;
-        self._DOMElement = DOMElementPrototype.cloneNode(false);
-        AppKitTagDOMElement(self, self._DOMElement);
-        if (NULL)
-            var ____p = CGPointApplyAffineTransform(CGPointMake(CGRectGetMinX(aFrame), CGRectGetMinY(aFrame)), NULL);
-        else
-            var ____p = CGPointMake(CGRectGetMinX(aFrame), CGRectGetMinY(aFrame));
-        self._DOMElement.style.left = ROUND(____p.x) + "px";
-        self._DOMElement.style.top = ROUND(____p.y) + "px";
-;
-        self._DOMElement.style.width = MAX(0.0, ROUND(width)) + "px";
-        self._DOMElement.style.height = MAX(0.0, ROUND(height)) + "px";
-;
-        self._DOMImageParts = [];
-        self._DOMImageSizes = [];
-        self._cssStylePreviousState = (___r1 = (CPArray.isa.method_msgSend["alloc"] || _objj_forward)(CPArray, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
+        if (CPDOMAvailable)
+        {
+            self._DOMElement = DOMElementPrototype.cloneNode(false);
+            AppKitTagDOMElement(self, self._DOMElement);
+            CPDOMDisplayServerSetStyleLeftTop(self._DOMElement, NULL, CGRectGetMinX(aFrame), CGRectGetMinY(aFrame));
+            CPDOMDisplayServerSetStyleSize(self._DOMElement, width, height);
+            self._DOMImageParts = [];
+            self._DOMImageSizes = [];
+            self._cssStylePreviousState = (___r1 = (CPArray.isa.method_msgSend["alloc"] || _objj_forward)(CPArray, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
+        }
         self._animator = nil;
         self._animationsDictionary = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
         self._currentAppearance = aFrame;
@@ -46532,17 +46741,20 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
         {
             (_CPToolTip == null ? _CPToolTip : (_CPToolTip.isa.method_msgSend["invalidateCurrentToolTipIfNeeded"] || _objj_forward)(_CPToolTip, "invalidateCurrentToolTipIfNeeded"));
         };
-    if (self._DOMElement.addEventListener)
+    if (CPDOMAvailable)
     {
-        self._DOMElement.addEventListener("mouseover", self._toolTipFunctionIn, YES);
-        self._DOMElement.addEventListener("keypress", self._toolTipFunctionOut, YES);
-        self._DOMElement.addEventListener("mouseout", self._toolTipFunctionOut, YES);
-    }
-    else if (self._DOMElement.attachEvent)
-    {
-        self._DOMElement.attachEvent("onmouseover", self._toolTipFunctionIn);
-        self._DOMElement.attachEvent("onkeypress", self._toolTipFunctionOut);
-        self._DOMElement.attachEvent("onmouseout", self._toolTipFunctionOut);
+        if (self._DOMElement.addEventListener)
+        {
+            self._DOMElement.addEventListener("mouseover", self._toolTipFunctionIn, YES);
+            self._DOMElement.addEventListener("keypress", self._toolTipFunctionOut, YES);
+            self._DOMElement.addEventListener("mouseout", self._toolTipFunctionOut, YES);
+        }
+        else if (self._DOMElement.attachEvent)
+        {
+            self._DOMElement.attachEvent("onmouseover", self._toolTipFunctionIn);
+            self._DOMElement.attachEvent("onkeypress", self._toolTipFunctionOut);
+            self._DOMElement.attachEvent("onmouseout", self._toolTipFunctionOut);
+        }
     }
     self._toolTipInstalled = YES;
 }
@@ -46551,17 +46763,20 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
 {
     if (!self._toolTipInstalled)
         return;
-    if (self._DOMElement.removeEventListener)
+    if (CPDOMAvailable)
     {
-        self._DOMElement.removeEventListener("mouseover", self._toolTipFunctionIn, YES);
-        self._DOMElement.removeEventListener("keypress", self._toolTipFunctionOut, YES);
-        self._DOMElement.removeEventListener("mouseout", self._toolTipFunctionOut, YES);
-    }
-    else if (self._DOMElement.detachEvent)
-    {
-        self._DOMElement.detachEvent("onmouseover", self._toolTipFunctionIn);
-        self._DOMElement.detachEvent("onkeypress", self._toolTipFunctionOut);
-        self._DOMElement.detachEvent("onmouseout", self._toolTipFunctionOut);
+        if (self._DOMElement.removeEventListener)
+        {
+            self._DOMElement.removeEventListener("mouseover", self._toolTipFunctionIn, YES);
+            self._DOMElement.removeEventListener("keypress", self._toolTipFunctionOut, YES);
+            self._DOMElement.removeEventListener("mouseout", self._toolTipFunctionOut, YES);
+        }
+        else if (self._DOMElement.detachEvent)
+        {
+            self._DOMElement.detachEvent("onmouseover", self._toolTipFunctionIn);
+            self._DOMElement.detachEvent("onkeypress", self._toolTipFunctionOut);
+            self._DOMElement.detachEvent("onmouseout", self._toolTipFunctionOut);
+        }
     }
     self._toolTipFunctionIn = nil;
     self._toolTipFunctionOut = nil;
@@ -46604,6 +46819,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
 {
     if (aSubview === self)
         (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "can't add a view as a subview of itself");
+    if (!aSubview._superview && self._subviews.indexOf(aSubview) !== CPNotFound)
+        (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInvalidArgumentException, "can't insert a subview in duplicate (probably partially decoded)");
     (aSubview == null ? aSubview : (aSubview.isa.method_msgSend["viewWillMoveToSuperview:"] || _objj_forward)(aSubview, "viewWillMoveToSuperview:", self));
     var count = self._subviews.length,
         lastWindow,
@@ -46615,8 +46832,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
         if (index === anIndex || index === count - 1 && anIndex === count)
             return;
         ((___r1 = self._subviews), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectAtIndex:"] || _objj_forward)(___r1, "removeObjectAtIndex:", index));
-        self._DOMElement.removeChild(aSubview._DOMElement);
-;
+        if (CPDOMAvailable)
+        {
+            CPDOMDisplayServerRemoveChild(self._DOMElement, aSubview._DOMElement);
+        }
         if (anIndex > index)
             --anIndex;
         --count;
@@ -46632,23 +46851,24 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
     if (anIndex === CPNotFound || anIndex >= count)
     {
         self._subviews.push(aSubview);
-        self._DOMElement.appendChild(aSubview._DOMElement);
-;
+        if (CPDOMAvailable)
+        {
+            CPDOMDisplayServerAppendChild(self._DOMElement, aSubview._DOMElement);
+        }
     }
     else
     {
         self._subviews.splice(anIndex, 0, aSubview);
-        self._DOMElement.insertBefore(aSubview._DOMElement, self._subviews[anIndex + 1]._DOMElement);
-;
+        if (CPDOMAvailable)
+        {
+            CPDOMDisplayServerInsertBefore(self._DOMElement, aSubview._DOMElement, self._subviews[anIndex + 1]._DOMElement);
+        }
     }
-    var origin = aSubview._frame.origin;
-    if (self._boundsTransform)
-        var ____p = CGPointApplyAffineTransform(CGPointMake(origin.x, origin.y), self._boundsTransform);
-    else
-        var ____p = CGPointMake(origin.x, origin.y);
-    aSubview._DOMElement.style.left = ROUND(____p.x) + "px";
-    aSubview._DOMElement.style.top = ROUND(____p.y) + "px";
-;
+    if (CPDOMAvailable)
+    {
+        var origin = aSubview._frame.origin;
+        CPDOMDisplayServerSetStyleLeftTop(aSubview._DOMElement, self._boundsTransform, origin.x, origin.y);
+    }
     (aSubview == null ? aSubview : (aSubview.isa.method_msgSend["setNextResponder:"] || _objj_forward)(aSubview, "setNextResponder:", self));
     (aSubview == null ? aSubview : (aSubview.isa.method_msgSend["_scaleSizeUnitSquareToSize:"] || _objj_forward)(aSubview, "_scaleSizeUnitSquareToSize:", (self.isa.method_msgSend["_hierarchyScaleSize"] || _objj_forward)(self, "_hierarchyScaleSize")));
     (aSubview == null ? aSubview : (aSubview.isa.method_msgSend["viewDidMoveToSuperview"] || _objj_forward)(aSubview, "viewDidMoveToSuperview"));
@@ -46695,8 +46915,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
     ((___r1 = self._superview), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["willRemoveSubview:"] || _objj_forward)(___r1, "willRemoveSubview:", self));
     (self.isa.method_msgSend["_postViewWillDisappearNotification"] || _objj_forward)(self, "_postViewWillDisappearNotification");
     ((___r1 = self._superview._subviews), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectIdenticalTo:"] || _objj_forward)(___r1, "removeObjectIdenticalTo:", self));
-    self._superview._DOMElement.removeChild(self._DOMElement);
-;
+    if (CPDOMAvailable)
+    {
+        CPDOMDisplayServerRemoveChild(self._superview._DOMElement, self._DOMElement);
+    }
     (self.isa.method_msgSend["_setSuperview:"] || _objj_forward)(self, "_setSuperview:", nil);
     (self.isa.method_msgSend["_postViewDidDisappearNotification"] || _objj_forward)(self, "_postViewDidDisappearNotification");
     (self.isa.method_msgSend["_notifyWindowDidResignKey"] || _objj_forward)(self, "_notifyWindowDidResignKey");
@@ -46747,15 +46969,15 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
     if (((___r1 = self._subviews), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isEqual:"] || _objj_forward)(___r1, "isEqual:", newSubviews)))
         return;
     self._subviews = (newSubviews == null ? newSubviews : (newSubviews.isa.method_msgSend["copy"] || _objj_forward)(newSubviews, "copy"));
+    if (!CPDOMAvailable)
+        return;
     var index = 0,
         count = ((___r1 = self._subviews), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count"));
     for (; index < count; ++index)
     {
         var subview = self._subviews[index];
-        self._DOMElement.removeChild(subview._DOMElement);
-;
-        self._DOMElement.appendChild(subview._DOMElement);
-;
+        CPDOMDisplayServerRemoveChild(self._DOMElement, subview._DOMElement);
+        CPDOMDisplayServerAppendChild(self._DOMElement, subview._DOMElement);
     }
     var ___r1;
 }
@@ -46958,16 +47180,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
         (CachedNotificationCenter == null ? CachedNotificationCenter : (CachedNotificationCenter.isa.method_msgSend["postNotificationName:object:"] || _objj_forward)(CachedNotificationCenter, "postNotificationName:object:", CPViewFrameDidChangeNotification, self));
     if (self._isSuperviewAClipView && !self._inhibitFrameAndBoundsChangedNotifications)
         ((___r1 = (self.isa.method_msgSend["superview"] || _objj_forward)(self, "superview")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["viewFrameChanged:"] || _objj_forward)(___r1, "viewFrameChanged:", ((___r2 = (CPNotification.isa.method_msgSend["alloc"] || _objj_forward)(CPNotification, "alloc")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["initWithName:object:userInfo:"] || _objj_forward)(___r2, "initWithName:object:userInfo:", CPViewFrameDidChangeNotification, self, nil))));
-    if (!self._inhibitDOMUpdates)
+    if (CPDOMAvailable && !self._inhibitDOMUpdates)
     {
         var transform = self._superview ? self._superview._boundsTransform : NULL;
-        if (transform)
-            var ____p = CGPointApplyAffineTransform(CGPointMake(origin.x, origin.y), transform);
-        else
-            var ____p = CGPointMake(origin.x, origin.y);
-        self._DOMElement.style.left = ROUND(____p.x) + "px";
-        self._DOMElement.style.top = ROUND(____p.y) + "px";
-;
+        CPDOMDisplayServerSetStyleLeftTop(self._DOMElement, transform, origin.x, origin.y);
     }
     if (self._window && !self._window._inhibitUpdateTrackingAreas && !self._inhibitFrameAndBoundsChangedNotifications)
         (self.isa.method_msgSend["_updateTrackingAreasWithRecursion:"] || _objj_forward)(self, "_updateTrackingAreasWithRecursion:", YES);
@@ -46993,131 +47209,104 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
         (self.isa.method_msgSend["resizeSubviewsWithOldSize:"] || _objj_forward)(self, "resizeSubviewsWithOldSize:", oldSize);
     (self.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(self, "setNeedsLayout");
     (self.isa.method_msgSend["setNeedsDisplay:"] || _objj_forward)(self, "setNeedsDisplay:", YES);
-    (self.isa.method_msgSend["_setDisplayServerSetStyleSize:"] || _objj_forward)(self, "_setDisplayServerSetStyleSize:", size);
-    if (self._backgroundType !== BackgroundTrivialColor)
+    if (CPDOMAvailable)
     {
-        if (self._backgroundType === BackgroundTransparentColor)
+        (self.isa.method_msgSend["_setDisplayServerSetStyleSize:"] || _objj_forward)(self, "_setDisplayServerSetStyleSize:", size);
+        if (self._backgroundType !== BackgroundTrivialColor)
         {
-            self._DOMImageParts[0].style.width = MAX(0.0, ROUND(size.width)) + "px";
-            self._DOMImageParts[0].style.height = MAX(0.0, ROUND(size.height)) + "px";
-;
-        }
-        else
-        {
-            var images = ((___r1 = ((___r2 = self._backgroundColor), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["patternImage"] || _objj_forward)(___r2, "patternImage"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["imageSlices"] || _objj_forward)(___r1, "imageSlices")),
-                partIndex = 0,
-                frameSize = aSize;
-            if (self._backgroundType === BackgroundVerticalThreePartImage)
+            if (self._backgroundType === BackgroundTransparentColor)
             {
-                var top = self._DOMImageSizes[0] ? self._DOMImageSizes[0].height : 0,
-                    bottom = self._DOMImageSizes[2] ? self._DOMImageSizes[2].height : 0;
-                if (top)
-                {
-                    self._DOMImageParts[partIndex].style.backgroundSize = frameSize.width + "px" + ' ' + top + "px";
-;
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(size.width)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(top)) + "px";
-;
-                    partIndex++;
-                }
-                if (self._DOMImageSizes[1])
-                {
-                    var height = frameSize.height - top - bottom;
-                    self._DOMImageParts[partIndex].style.backgroundSize = frameSize.width + "px" + ' ' + height + "px";
-;
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(size.width)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(size.height - top - bottom)) + "px";
-;
-                    partIndex++;
-                }
-                if (bottom)
-                {
-                    self._DOMImageParts[partIndex].style.backgroundSize = frameSize.width + "px" + ' ' + bottom + "px";
-;
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(size.width)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(bottom)) + "px";
-;
-                }
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[0], size.width, size.height);
             }
-            else if (self._backgroundType === BackgroundHorizontalThreePartImage)
+            else
             {
-                var left = self._DOMImageSizes[0] ? self._DOMImageSizes[0].width : 0,
-                    right = self._DOMImageSizes[2] ? self._DOMImageSizes[2].width : 0;
-                if (left)
+                var images = ((___r1 = ((___r2 = self._backgroundColor), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["patternImage"] || _objj_forward)(___r2, "patternImage"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["imageSlices"] || _objj_forward)(___r1, "imageSlices")),
+                    partIndex = 0,
+                    frameSize = aSize;
+                if (self._backgroundType === BackgroundVerticalThreePartImage)
                 {
-                    self._DOMImageParts[partIndex].style.backgroundSize = left + "px" + ' ' + frameSize.height + "px";
-;
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(left)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(size.height)) + "px";
-;
-                    partIndex++;
+                    var top = self._DOMImageSizes[0] ? self._DOMImageSizes[0].height : 0,
+                        bottom = self._DOMImageSizes[2] ? self._DOMImageSizes[2].height : 0;
+                    if (top)
+                    {
+                        CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], frameSize.width + "px", top + "px");
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], size.width, top);
+                        partIndex++;
+                    }
+                    if (self._DOMImageSizes[1])
+                    {
+                        var height = frameSize.height - top - bottom;
+                        CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], frameSize.width + "px", height + "px");
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], size.width, size.height - top - bottom);
+                        partIndex++;
+                    }
+                    if (bottom)
+                    {
+                        CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], size.width, bottom);
+                    }
                 }
-                if (self._DOMImageSizes[1])
+                else if (self._backgroundType === BackgroundHorizontalThreePartImage)
                 {
-                    var width = frameSize.width - left - right;
-                    self._DOMImageParts[partIndex].style.backgroundSize = width + "px" + ' ' + frameSize.height + "px";
-;
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(size.width - left - right)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(size.height)) + "px";
-;
-                    partIndex++;
+                    var left = self._DOMImageSizes[0] ? self._DOMImageSizes[0].width : 0,
+                        right = self._DOMImageSizes[2] ? self._DOMImageSizes[2].width : 0;
+                    if (left)
+                    {
+                        CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], left + "px", frameSize.height + "px");
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], left, size.height);
+                        partIndex++;
+                    }
+                    if (self._DOMImageSizes[1])
+                    {
+                        var width = frameSize.width - left - right;
+                        CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], width + "px", frameSize.height + "px");
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], size.width - left - right, size.height);
+                        partIndex++;
+                    }
+                    if (right)
+                    {
+                        CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], right + "px", frameSize.height + "px");
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], right, size.height);
+                    }
                 }
-                if (right)
+                else if (self._backgroundType === BackgroundNinePartImage)
                 {
-                    self._DOMImageParts[partIndex].style.backgroundSize = right + "px" + ' ' + frameSize.height + "px";
-;
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(right)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(size.height)) + "px";
-;
-                }
-            }
-            else if (self._backgroundType === BackgroundNinePartImage)
-            {
-                var left = self._DOMImageSizes[0] ? self._DOMImageSizes[0].width : 0,
-                    right = self._DOMImageSizes[2] ? self._DOMImageSizes[2].width : 0,
-                    top = self._DOMImageSizes[0] ? self._DOMImageSizes[0].height : 0,
-                    bottom = self._DOMImageSizes[6] ? self._DOMImageSizes[6].height : 0,
-                    width = size.width - left - right,
-                    height = size.height - top - bottom;
-                if (self._DOMImageSizes[0])
-                    partIndex++;
-                if (self._DOMImageSizes[1])
-                {
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(width)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(top)) + "px";
-;
-                    partIndex++;
-                }
-                if (self._DOMImageSizes[2])
-                    partIndex++;
-                if (self._DOMImageSizes[3])
-                {
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(self._DOMImageSizes[3].width)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(height)) + "px";
-;
-                    partIndex++;
-                }
-                if (self._DOMImageSizes[4])
-                {
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(width)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(height)) + "px";
-;
-                    partIndex++;
-                }
-                if (self._DOMImageSizes[5])
-                {
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(self._DOMImageSizes[5].width)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(height)) + "px";
-;
-                    partIndex++;
-                }
-                if (self._DOMImageSizes[6])
-                    partIndex++;
-                if (self._DOMImageSizes[7])
-                {
-                    self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(width)) + "px";
-                    self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(self._DOMImageSizes[7].height)) + "px";
-;
+                    var left = self._DOMImageSizes[0] ? self._DOMImageSizes[0].width : 0,
+                        right = self._DOMImageSizes[2] ? self._DOMImageSizes[2].width : 0,
+                        top = self._DOMImageSizes[0] ? self._DOMImageSizes[0].height : 0,
+                        bottom = self._DOMImageSizes[6] ? self._DOMImageSizes[6].height : 0,
+                        width = size.width - left - right,
+                        height = size.height - top - bottom;
+                    if (self._DOMImageSizes[0])
+                        partIndex++;
+                    if (self._DOMImageSizes[1])
+                    {
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], width, top);
+                        partIndex++;
+                    }
+                    if (self._DOMImageSizes[2])
+                        partIndex++;
+                    if (self._DOMImageSizes[3])
+                    {
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], self._DOMImageSizes[3].width, height);
+                        partIndex++;
+                    }
+                    if (self._DOMImageSizes[4])
+                    {
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], width, height);
+                        partIndex++;
+                    }
+                    if (self._DOMImageSizes[5])
+                    {
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], self._DOMImageSizes[5].width, height);
+                        partIndex++;
+                    }
+                    if (self._DOMImageSizes[6])
+                        partIndex++;
+                    if (self._DOMImageSizes[7])
+                    {
+                        CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], width, self._DOMImageSizes[7].height);
+                    }
                 }
             }
         }
@@ -47133,19 +47322,15 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
 
 ,["void","CGSize"]), new objj_method(sel_getUid("_setDisplayServerSetStyleSize:"), function $CPView___setDisplayServerSetStyleSize_(self, _cmd, aSize)
 {
+    if (!CPDOMAvailable)
+        return;
     var scale = (self.isa.method_msgSend["scaleSize"] || _objj_forward)(self, "scaleSize");
     if (!self._inhibitDOMUpdates)
-        self._DOMElement.style.width = MAX(0.0, ROUND(aSize.width * 1 / scale.width)) + "px";
-    self._DOMElement.style.height = MAX(0.0, ROUND(aSize.height * 1 / scale.height)) + "px";
-;
+        CPDOMDisplayServerSetStyleSize(self._DOMElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
     if (self._DOMContentsElement)
     {
-        self._DOMContentsElement.width = MAX(0.0, ROUND(aSize.width * self._highDPIRatio * 1 / scale.width));
-        self._DOMContentsElement.height = MAX(0.0, ROUND(aSize.height * self._highDPIRatio * 1 / scale.height));
-;
-        self._DOMContentsElement.style.width = MAX(0.0, ROUND(aSize.width * 1 / scale.width)) + "px";
-        self._DOMContentsElement.style.height = MAX(0.0, ROUND(aSize.height * 1 / scale.height)) + "px";
-;
+        CPDOMDisplayServerSetSize(self._DOMContentsElement, aSize.width * self._highDPIRatio * 1 / scale.width, aSize.height * self._highDPIRatio * 1 / scale.height);
+        CPDOMDisplayServerSetStyleSize(self._DOMContentsElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
         self._needToSetTransformMatrix = YES;
     }
 }
@@ -47201,18 +47386,15 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
     }
     if (self._layer)
         ((___r1 = self._layer), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_owningViewBoundsChanged"] || _objj_forward)(___r1, "_owningViewBoundsChanged"));
-    var index = self._subviews.length;
-    while (index--)
+    if (CPDOMAvailable)
     {
-        var view = self._subviews[index],
-            origin = view._frame.origin;
-        if (self._boundsTransform)
-            var ____p = CGPointApplyAffineTransform(CGPointMake(origin.x, origin.y), self._boundsTransform);
-        else
-            var ____p = CGPointMake(origin.x, origin.y);
-        view._DOMElement.style.left = ROUND(____p.x) + "px";
-        view._DOMElement.style.top = ROUND(____p.y) + "px";
-;
+        var index = self._subviews.length;
+        while (index--)
+        {
+            var view = self._subviews[index],
+                origin = view._frame.origin;
+            CPDOMDisplayServerSetStyleLeftTop(view._DOMElement, self._boundsTransform, origin.x, origin.y);
+        }
     }
     if (self._postsBoundsChangedNotifications && !self._inhibitFrameAndBoundsChangedNotifications)
         (CachedNotificationCenter == null ? CachedNotificationCenter : (CachedNotificationCenter.isa.method_msgSend["postNotificationName:object:"] || _objj_forward)(CachedNotificationCenter, "postNotificationName:object:", CPViewBoundsDidChangeNotification, self));
@@ -47369,7 +47551,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
     aFlag = !!aFlag;
     if (self._isHidden === aFlag)
         return;
-    self._DOMElement.style.display = aFlag ? "none" : "block";
+    if (CPDOMAvailable)
+    {
+        self._DOMElement.style.display = aFlag ? "none" : "block";
+    }
     if (aFlag)
     {
         var view = ((___r1 = self._window), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["firstResponder"] || _objj_forward)(___r1, "firstResponder"));
@@ -47474,6 +47659,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
     if (self._clipsToBounds === shouldClip)
         return;
     self._clipsToBounds = shouldClip;
+    if (!CPDOMAvailable)
+        return;
     self._DOMElement.style.overflow = self._clipsToBounds ? "hidden" : "visible";
 }
 
@@ -47487,6 +47674,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
     if (self._opacity === anAlphaValue)
         return;
     self._opacity = anAlphaValue;
+    if (!CPDOMAvailable)
+        return;
     if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
     {
         if (anAlphaValue === 1.0)
@@ -47619,6 +47808,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
     if (aColor === (CPNull.isa.method_msgSend["null"] || _objj_forward)(CPNull, "null"))
         aColor = nil;
     self._backgroundColor = aColor;
+    if (!CPDOMAvailable)
+        return;
     if (self._backgroundType === BackgroundCSSStyling)
         (CPColor.isa.method_msgSend["restorePreviousCSSState:forDOMElement:"] || _objj_forward)(CPColor, "restorePreviousCSSState:forDOMElement:", function(__input) { if (arguments.length) return self._cssStylePreviousState = __input; return self._cssStylePreviousState; }, self._DOMElement);
     var patternImage = ((___r1 = self._backgroundColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["patternImage"] || _objj_forward)(___r1, "patternImage")),
@@ -47693,23 +47884,19 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
             self._DOMElement.style.background = "";
             self._DOMImageParts[0].style.background = ((___r1 = self._backgroundColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString"));
             if (patternImage)
-                self._DOMImageParts[0].style.backgroundSize = (patternImage == null ? patternImage : (patternImage.isa.method_msgSend["size"] || _objj_forward)(patternImage, "size")).width + "px" + ' ' + (patternImage == null ? patternImage : (patternImage.isa.method_msgSend["size"] || _objj_forward)(patternImage, "size")).height + "px";
-;
+                CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[0], (patternImage == null ? patternImage : (patternImage.isa.method_msgSend["size"] || _objj_forward)(patternImage, "size")).width + "px", (patternImage == null ? patternImage : (patternImage.isa.method_msgSend["size"] || _objj_forward)(patternImage, "size")).height + "px");
             if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
                 self._DOMImageParts[0].style.filter = "alpha(opacity=" + ((___r1 = self._backgroundColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["alphaComponent"] || _objj_forward)(___r1, "alphaComponent")) * 100 + ")";
             else
                 self._DOMImageParts[0].style.opacity = ((___r1 = self._backgroundColor), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["alphaComponent"] || _objj_forward)(___r1, "alphaComponent"));
             var size = (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds").size;
-            self._DOMImageParts[0].style.width = MAX(0.0, ROUND(size.width)) + "px";
-            self._DOMImageParts[0].style.height = MAX(0.0, ROUND(size.height)) + "px";
-;
+            CPDOMDisplayServerSetStyleSize(self._DOMImageParts[0], size.width, size.height);
         }
         else
         {
             self._DOMElement.style.background = colorCSS;
             if (patternImage)
-                self._DOMElement.style.backgroundSize = (patternImage == null ? patternImage : (patternImage.isa.method_msgSend["size"] || _objj_forward)(patternImage, "size")).width + "px" + ' ' + (patternImage == null ? patternImage : (patternImage.isa.method_msgSend["size"] || _objj_forward)(patternImage, "size")).height + "px";
-;
+                CPDOMDisplayServerSetStyleBackgroundSize(self._DOMElement, (patternImage == null ? patternImage : (patternImage.isa.method_msgSend["size"] || _objj_forward)(patternImage, "size")).width + "px", (patternImage == null ? patternImage : (patternImage.isa.method_msgSend["size"] || _objj_forward)(patternImage, "size")).height + "px");
         }
     }
     else
@@ -47722,9 +47909,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
             if (!size)
                 continue;
             var image = slices[i];
-            self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(size.width)) + "px";
-            self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(size.height)) + "px";
-;
+            CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], size.width, size.height);
             self._DOMImageParts[partIndex].style.background = "url(\"" + (image == null ? image : (image.isa.method_msgSend["filename"] || _objj_forward)(image, "filename")) + "\")";
             if (!supportsRGBA)
             {
@@ -47750,120 +47935,56 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
             partIndex = 0;
             if (self._DOMImageSizes[0])
             {
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(0.0, 0.0);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
+                CPDOMDisplayServerSetStyleLeftTop(self._DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 partIndex++;
             }
             if (self._DOMImageSizes[1])
             {
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(left, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(left, 0.0);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(width)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(self._DOMImageSizes[1].height)) + "px";
-;
+                CPDOMDisplayServerSetStyleLeftTop(self._DOMImageParts[partIndex], NULL, left, 0.0);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], width, self._DOMImageSizes[1].height);
                 self._DOMImageParts[partIndex].style.backgroundRepeat = "repeat-x";
                 partIndex++;
             }
             if (self._DOMImageSizes[2])
             {
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(0.0, 0.0);
-                self._DOMImageParts[partIndex].style.right = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
+                CPDOMDisplayServerSetStyleRightTop(self._DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 partIndex++;
             }
             if (self._DOMImageSizes[3])
             {
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, top), NULL);
-                else
-                    var ____p = CGPointMake(0.0, top);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(self._DOMImageSizes[3].width)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(height)) + "px";
-;
+                CPDOMDisplayServerSetStyleLeftTop(self._DOMImageParts[partIndex], NULL, 0.0, top);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], self._DOMImageSizes[3].width, height);
                 self._DOMImageParts[partIndex].style.backgroundRepeat = "repeat-y";
                 partIndex++;
             }
             if (self._DOMImageSizes[4])
             {
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(left, top), NULL);
-                else
-                    var ____p = CGPointMake(left, top);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(width)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(height)) + "px";
-;
+                CPDOMDisplayServerSetStyleLeftTop(self._DOMImageParts[partIndex], NULL, left, top);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], width, height);
                 partIndex++;
             }
             if (self._DOMImageSizes[5])
             {
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, top), NULL);
-                else
-                    var ____p = CGPointMake(0.0, top);
-                self._DOMImageParts[partIndex].style.right = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(self._DOMImageSizes[5].width)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(height)) + "px";
-;
+                CPDOMDisplayServerSetStyleRightTop(self._DOMImageParts[partIndex], NULL, 0.0, top);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], self._DOMImageSizes[5].width, height);
                 self._DOMImageParts[partIndex].style.backgroundRepeat = "repeat-y";
                 partIndex++;
             }
             if (self._DOMImageSizes[6])
             {
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(0.0, 0.0);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.bottom = ROUND(____p.y) + "px";
-;
+                CPDOMDisplayServerSetStyleLeftBottom(self._DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 partIndex++;
             }
             if (self._DOMImageSizes[7])
             {
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(left, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(left, 0.0);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.bottom = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(width)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(self._DOMImageSizes[7].height)) + "px";
-;
+                CPDOMDisplayServerSetStyleLeftBottom(self._DOMImageParts[partIndex], NULL, left, 0.0);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], width, self._DOMImageSizes[7].height);
                 self._DOMImageParts[partIndex].style.backgroundRepeat = "repeat-x";
                 partIndex++;
             }
             if (self._DOMImageSizes[8])
             {
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(0.0, 0.0);
-                self._DOMImageParts[partIndex].style.right = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.bottom = ROUND(____p.y) + "px";
-;
+                CPDOMDisplayServerSetStyleRightBottom(self._DOMImageParts[partIndex], NULL, 0.0, 0.0);
             }
         }
         else if (self._backgroundType === BackgroundVerticalThreePartImage)
@@ -47873,51 +47994,24 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
             partIndex = 0;
             if (top)
             {
-                self._DOMImageParts[partIndex].style.backgroundSize = frameSize.width + "px" + ' ' + top + "px";
-;
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(0.0, 0.0);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(frameSize.width)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(top)) + "px";
-;
+                CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], frameSize.width + "px", top + "px");
+                CPDOMDisplayServerSetStyleLeftTop(self._DOMImageParts[partIndex], NULL, 0.0, 0.0);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], frameSize.width, top);
                 partIndex++;
             }
             if (self._DOMImageSizes[1])
             {
                 var height = frameSize.height - top - bottom;
-                self._DOMImageParts[partIndex].style.backgroundSize = frameSize.width + "px" + ' ' + height + "px";
-;
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, top), NULL);
-                else
-                    var ____p = CGPointMake(0.0, top);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(frameSize.width)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(height)) + "px";
-;
+                CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], frameSize.width + "px", height + "px");
+                CPDOMDisplayServerSetStyleLeftTop(self._DOMImageParts[partIndex], NULL, 0.0, top);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], frameSize.width, height);
                 partIndex++;
             }
             if (bottom)
             {
-                self._DOMImageParts[partIndex].style.backgroundSize = frameSize.width + "px" + ' ' + bottom + "px";
-;
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(0.0, 0.0);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.bottom = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(frameSize.width)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(bottom)) + "px";
-;
+                CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
+                CPDOMDisplayServerSetStyleLeftBottom(self._DOMImageParts[partIndex], NULL, 0.0, 0.0);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], frameSize.width, bottom);
             }
         }
         else if (self._backgroundType === BackgroundHorizontalThreePartImage)
@@ -47927,51 +48021,24 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
             partIndex = 0;
             if (left)
             {
-                self._DOMImageParts[partIndex].style.backgroundSize = left + "px" + ' ' + frameSize.height + "px";
-;
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(0.0, 0.0);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(left)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(frameSize.height)) + "px";
-;
+                CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], left + "px", frameSize.height + "px");
+                CPDOMDisplayServerSetStyleLeftTop(self._DOMImageParts[partIndex], NULL, 0.0, 0.0);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], left, frameSize.height);
                 partIndex++;
             }
             if (self._DOMImageSizes[1])
             {
                 var width = frameSize.width - left - right;
-                self._DOMImageParts[partIndex].style.backgroundSize = width + "px" + ' ' + frameSize.height + "px";
-;
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(left, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(left, 0.0);
-                self._DOMImageParts[partIndex].style.left = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(width)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(frameSize.height)) + "px";
-;
+                CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], width + "px", frameSize.height + "px");
+                CPDOMDisplayServerSetStyleLeftTop(self._DOMImageParts[partIndex], NULL, left, 0.0);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], width, frameSize.height);
                 partIndex++;
             }
             if (right)
             {
-                self._DOMImageParts[partIndex].style.backgroundSize = right + "px" + ' ' + frameSize.height + "px";
-;
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, 0.0), NULL);
-                else
-                    var ____p = CGPointMake(0.0, 0.0);
-                self._DOMImageParts[partIndex].style.right = ROUND(____p.x) + "px";
-                self._DOMImageParts[partIndex].style.top = ROUND(____p.y) + "px";
-;
-                self._DOMImageParts[partIndex].style.width = MAX(0.0, ROUND(right)) + "px";
-                self._DOMImageParts[partIndex].style.height = MAX(0.0, ROUND(frameSize.height)) + "px";
-;
+                CPDOMDisplayServerSetStyleBackgroundSize(self._DOMImageParts[partIndex], right + "px", frameSize.height + "px");
+                CPDOMDisplayServerSetStyleRightTop(self._DOMImageParts[partIndex], NULL, 0.0, 0.0);
+                CPDOMDisplayServerSetStyleSize(self._DOMImageParts[partIndex], right, frameSize.height);
             }
         }
     }
@@ -48157,7 +48224,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
 
 ,["CGSize"]), new objj_method(sel_getUid("_applyCSSScalingTranformations"), function $CPView___applyCSSScalingTranformations(self, _cmd)
 {
-    if (self._isScaled)
+    if (CPDOMAvailable && self._isScaled)
     {
         var scale = (self.isa.method_msgSend["scaleSize"] || _objj_forward)(self, "scaleSize"),
             browserPropertyTransform = CPBrowserStyleProperty("transform"),
@@ -48223,6 +48290,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
 {
     if ((self.isa.method_msgSend["isHidden"] || _objj_forward)(self, "isHidden"))
         return;
+    if (!CPDOMAvailable)
+        return;
     (self.isa.method_msgSend["lockFocus"] || _objj_forward)(self, "lockFocus");
     CGContextClearRect(((___r1 = (CPGraphicsContext.isa.method_msgSend["currentContext"] || _objj_forward)(CPGraphicsContext, "currentContext")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["graphicsPort"] || _objj_forward)(___r1, "graphicsPort")), aRect);
     (self.isa.method_msgSend["drawRect:"] || _objj_forward)(self, "drawRect:", aRect);
@@ -48239,37 +48308,29 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
     if (!self._graphicsContext)
     {
         var graphicsPort = CGBitmapGraphicsContextCreate();
-        var width = CGRectGetWidth(self._frame),
-            height = CGRectGetHeight(self._frame),
-            devicePixelRatio = window.devicePixelRatio || 1,
-            backingStoreRatio = CPBrowserBackingStorePixelRatio(graphicsPort);
-        self._highDPIRatio = CPViewHighDPIDrawingEnabled ? devicePixelRatio / backingStoreRatio : 1;
-        self._DOMContentsElement = graphicsPort.DOMElement;
-        self._DOMContentsElement.style.zIndex = -100;
-        self._DOMContentsElement.style.overflow = "hidden";
-        self._DOMContentsElement.style.position = "absolute";
-        self._DOMContentsElement.style.visibility = "visible";
-        self._DOMContentsElement.width = MAX(0.0, ROUND(width * self._highDPIRatio));
-        self._DOMContentsElement.height = MAX(0.0, ROUND(height * self._highDPIRatio));
-;
-        if (NULL)
-            var ____p = CGPointApplyAffineTransform(CGPointMake(0.0, 0.0), NULL);
-        else
-            var ____p = CGPointMake(0.0, 0.0);
-        self._DOMContentsElement.style.left = ROUND(____p.x) + "px";
-        self._DOMContentsElement.style.top = ROUND(____p.y) + "px";
-;
-        self._DOMContentsElement.style.width = MAX(0.0, ROUND(width)) + "px";
-        self._DOMContentsElement.style.height = MAX(0.0, ROUND(height)) + "px";
-;
-        if (CPPlatformHasBug(CPCanvasParentDrawErrorsOnMovementBug))
-            self._DOMElement.style.webkitTransform = 'translateX(0)';
-        self._DOMElement.appendChild(self._DOMContentsElement);
-;
+        if (CPDOMAvailable)
+        {
+            var width = CGRectGetWidth(self._frame),
+                height = CGRectGetHeight(self._frame),
+                devicePixelRatio = window.devicePixelRatio || 1,
+                backingStoreRatio = CPBrowserBackingStorePixelRatio(graphicsPort);
+            self._highDPIRatio = CPViewHighDPIDrawingEnabled ? devicePixelRatio / backingStoreRatio : 1;
+            self._DOMContentsElement = graphicsPort.DOMElement;
+            self._DOMContentsElement.style.zIndex = -100;
+            self._DOMContentsElement.style.overflow = "hidden";
+            self._DOMContentsElement.style.position = "absolute";
+            self._DOMContentsElement.style.visibility = "visible";
+            CPDOMDisplayServerSetSize(self._DOMContentsElement, width * self._highDPIRatio, height * self._highDPIRatio);
+            CPDOMDisplayServerSetStyleLeftTop(self._DOMContentsElement, NULL, 0.0, 0.0);
+            CPDOMDisplayServerSetStyleSize(self._DOMContentsElement, width, height);
+            if (CPPlatformHasBug(CPCanvasParentDrawErrorsOnMovementBug))
+                self._DOMElement.style.webkitTransform = 'translateX(0)';
+            CPDOMDisplayServerAppendChild(self._DOMElement, self._DOMContentsElement);
+        }
         self._graphicsContext = (CPGraphicsContext.isa.method_msgSend["graphicsContextWithGraphicsPort:flipped:"] || _objj_forward)(CPGraphicsContext, "graphicsContextWithGraphicsPort:flipped:", graphicsPort, YES);
         self._needToSetTransformMatrix = YES;
     }
-    if (self._needToSetTransformMatrix && self._highDPIRatio !== 1)
+    if (CPDOMAvailable && self._needToSetTransformMatrix && self._highDPIRatio !== 1)
         ((___r1 = self._graphicsContext), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["graphicsPort"] || _objj_forward)(___r1, "graphicsPort")).setTransform(self._highDPIRatio, 0, 0, self._highDPIRatio, 0, 0);
     self._needToSetTransformMatrix = NO;
     (CPGraphicsContext.isa.method_msgSend["setCurrentContext:"] || _objj_forward)(CPGraphicsContext, "setCurrentContext:", self._graphicsContext);
@@ -48468,12 +48529,15 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 {
     if (self !== (CPView.isa.method_msgSend["class"] || _objj_forward)(CPView, "class"))
         return;
-    DOMElementPrototype = document.createElement("div");
-    var style = DOMElementPrototype.style;
-    style.overflow = "hidden";
-    style.position = "absolute";
-    style.visibility = "visible";
-    style.zIndex = 0;
+    if (CPDOMAvailable)
+    {
+        DOMElementPrototype = document.createElement("div");
+        var style = DOMElementPrototype.style;
+        style.overflow = "hidden";
+        style.position = "absolute";
+        style.visibility = "visible";
+        style.zIndex = 0;
+    }
     CachedNotificationCenter = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter");
 }
 
@@ -48621,7 +48685,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
     if (self._layer)
     {
         self._layer._owningView = nil;
-        if (self._layer._DOMElement && self._layer._DOMElement.parentNode === self._DOMElement)
+        if (CPDOMAvailable && self._layer._DOMElement && self._layer._DOMElement.parentNode === self._DOMElement)
             self._DOMElement.removeChild(self._layer._DOMElement);
     }
     self._layer = aLayer;
@@ -48629,8 +48693,11 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
     {
         ((___r1 = self._layer), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setOwningView:"] || _objj_forward)(___r1, "_setOwningView:", self));
         ((___r1 = self._layer), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrame:"] || _objj_forward)(___r1, "setFrame:", (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds")));
-        self._layer._DOMElement.style.zIndex = 100;
-        self._DOMElement.appendChild(self._layer._DOMElement);
+        if (CPDOMAvailable)
+        {
+            self._layer._DOMElement.style.zIndex = 100;
+            self._DOMElement.appendChild(self._layer._DOMElement);
+        }
     }
     var ___r1;
 }
@@ -48879,6 +48946,8 @@ var the_class = objj_getClass("CPView")
 if(!the_class) throw new SyntaxError("*** Could not find definition for class \"CPView\"");
 var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_getUid("setDOMClassName:"), function $CPView__setDOMClassName_(self, _cmd, aClassName)
 {
+    if (!CPDOMAvailable)
+        return;
     self._DOMElement.className = aClassName;
 }
 
@@ -49088,8 +49157,11 @@ var the_class = objj_getClass("CPView")
 if(!the_class) throw new SyntaxError("*** Could not find definition for class \"CPView\"");
 var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_getUid("initWithCoder:"), function $CPView__initWithCoder_(self, _cmd, aCoder)
 {
-    self._DOMElement = DOMElementPrototype.cloneNode(false);
-    AppKitTagDOMElement(self, self._DOMElement);
+    if (CPDOMAvailable)
+    {
+        self._DOMElement = DOMElementPrototype.cloneNode(false);
+        AppKitTagDOMElement(self, self._DOMElement);
+    }
     self._frame = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeRectForKey:"] || _objj_forward)(aCoder, "decodeRectForKey:", CPViewFrameKey));
     self._bounds = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeRectForKey:"] || _objj_forward)(aCoder, "decodeRectForKey:", CPViewBoundsKey));
     self._scaleSize = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["containsValueForKey:"] || _objj_forward)(aCoder, "containsValueForKey:", CPViewScaleKey)) ? (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeSizeForKey:"] || _objj_forward)(aCoder, "decodeSizeForKey:", CPViewScaleKey)) : CGSizeMake(1.0, 1.0);
@@ -49121,23 +49193,19 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
         self._toolTip = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPViewToolTipKey));
         if (self._toolTip)
             (self == null ? self : (self.isa.method_msgSend["_installToolTipEventHandlers"] || _objj_forward)(self, "_installToolTipEventHandlers"));
-        self._cssStylePreviousState = (___r1 = (CPArray.isa.method_msgSend["alloc"] || _objj_forward)(CPArray, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
-        self._DOMImageParts = [];
-        self._DOMImageSizes = [];
-        if (NULL)
-            var ____p = CGPointApplyAffineTransform(CGPointMake(CGRectGetMinX(self._frame), CGRectGetMinY(self._frame)), NULL);
-        else
-            var ____p = CGPointMake(CGRectGetMinX(self._frame), CGRectGetMinY(self._frame));
-        self._DOMElement.style.left = ROUND(____p.x) + "px";
-        self._DOMElement.style.top = ROUND(____p.y) + "px";
-;
-        (self == null ? self : (self.isa.method_msgSend["_setDisplayServerSetStyleSize:"] || _objj_forward)(self, "_setDisplayServerSetStyleSize:", self._frame.size));
-        var index = 0,
-            count = self._subviews.length;
-        for (; index < count; ++index)
+        if (CPDOMAvailable)
         {
-            self._DOMElement.appendChild(self._subviews[index]._DOMElement);
-;
+            self._cssStylePreviousState = (___r1 = (CPArray.isa.method_msgSend["alloc"] || _objj_forward)(CPArray, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
+            self._DOMImageParts = [];
+            self._DOMImageSizes = [];
+            CPDOMDisplayServerSetStyleLeftTop(self._DOMElement, NULL, CGRectGetMinX(self._frame), CGRectGetMinY(self._frame));
+            (self == null ? self : (self.isa.method_msgSend["_setDisplayServerSetStyleSize:"] || _objj_forward)(self, "_setDisplayServerSetStyleSize:", self._frame.size));
+            var index = 0,
+                count = self._subviews.length;
+            for (; index < count; ++index)
+            {
+                CPDOMDisplayServerAppendChild(self._DOMElement, self._subviews[index]._DOMElement);
+            }
         }
         (self == null ? self : (self.isa.method_msgSend["setHidden:"] || _objj_forward)(self, "setHidden:", (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeBoolForKey:"] || _objj_forward)(aCoder, "decodeBoolForKey:", CPViewIsHiddenKey))));
         self._isHiddenOrHasHiddenAncestor = NO;
@@ -49768,7 +49836,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPCoder"])]);
 }
-p;20;CPVisualEffectView.jt;9201;@STATIC;1.0;I;23;Foundation/Foundation.ji;14;CPAppearance.ji;8;CPView.jt;9123;objj_executeFile("Foundation/Foundation.j", NO);objj_executeFile("CPAppearance.j", YES);objj_executeFile("CPView.j", YES);{var the_typedef = objj_allocateTypeDef("CPVisualEffectMaterial");
+p;20;CPVisualEffectView.jt;9306;@STATIC;1.0;I;23;Foundation/Foundation.ji;14;CPAppearance.ji;8;CPView.ji;17;CPCompatibility.jt;9206;objj_executeFile("Foundation/Foundation.j", NO);objj_executeFile("CPAppearance.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPCompatibility.j", YES);{var the_typedef = objj_allocateTypeDef("CPVisualEffectMaterial");
 objj_registerTypeDef(the_typedef);
 }CPVisualEffectMaterialAppearanceBased = 0;
 CPVisualEffectMaterialLight = 1;
@@ -49863,7 +49931,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("maskImage"), function $
         color = dark ? (CPColor.isa.method_msgSend["colorWithHexString:"] || _objj_forward)(CPColor, "colorWithHexString:", "1e1e1e") : (CPColor.isa.method_msgSend["whiteColor"] || _objj_forward)(CPColor, "whiteColor"),
         finalColor = shouldEnable ? (color == null ? color : (color.isa.method_msgSend["colorWithAlphaComponent:"] || _objj_forward)(color, "colorWithAlphaComponent:", 0.6)) : color;
     (self.isa.method_msgSend["setBackgroundColor:"] || _objj_forward)(self, "setBackgroundColor:", finalColor);
-    self._DOMElement.style[prop] = shouldEnable ? "blur(30px)" : nil;
+    if (CPDOMAvailable)
+    {
+        self._DOMElement.style[prop] = shouldEnable ? "blur(30px)" : nil;
+    }
     var ___r1;
 }
 
@@ -49910,7 +49981,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("maskImage"), function $
 
 ,["void","CPCoder"])]);
 }
-p;11;CPWebView.jt;35541;@STATIC;1.0;i;8;CPView.ji;14;CPScrollView.jt;35490;objj_executeFile("CPView.j", YES);objj_executeFile("CPScrollView.j", YES);{var the_typedef = objj_allocateTypeDef("Window");
+p;11;CPWebView.jt;35658;@STATIC;1.0;i;8;CPView.ji;14;CPScrollView.ji;17;CPCompatibility.jt;35585;objj_executeFile("CPView.j", YES);objj_executeFile("CPScrollView.j", YES);objj_executeFile("CPCompatibility.j", YES);{var the_typedef = objj_allocateTypeDef("Window");
 objj_registerTypeDef(the_typedef);
 }CPWebViewProgressStartedNotification = "CPWebViewProgressStartedNotification";
 CPWebViewProgressFinishedNotification = "CPWebViewProgressFinishedNotification";
@@ -50512,7 +50583,10 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
         self._backwardStack = [];
         self._forwardStack = [];
         self._scrollMode = CPWebViewScrollAuto;
-        (self == null ? self : (self.isa.method_msgSend["_initDOMWithFrame:"] || _objj_forward)(self, "_initDOMWithFrame:", (self == null ? self : (self.isa.method_msgSend["frame"] || _objj_forward)(self, "frame"))));
+        if (CPDOMAvailable)
+        {
+            (self == null ? self : (self.isa.method_msgSend["_initDOMWithFrame:"] || _objj_forward)(self, "_initDOMWithFrame:", (self == null ? self : (self.isa.method_msgSend["frame"] || _objj_forward)(self, "frame"))));
+        }
         if (!(self == null ? self : (self.isa.method_msgSend["backgroundColor"] || _objj_forward)(self, "backgroundColor")))
             (self == null ? self : (self.isa.method_msgSend["setBackgroundColor:"] || _objj_forward)(self, "setBackgroundColor:", (CPColor.isa.method_msgSend["whiteColor"] || _objj_forward)(CPColor, "whiteColor")));
         (self == null ? self : (self.isa.method_msgSend["_updateEffectiveScrollMode"] || _objj_forward)(self, "_updateEffectiveScrollMode"));
@@ -50962,7 +51036,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("allocObjectWithCoder:c
 
 ,["id","CPCoder"])]);
 }
-p;20;_CPCibCustomObject.jt;3190;@STATIC;1.0;I;21;Foundation/CPObject.jI;26;Foundation/CPObjJRuntime.jt;3114;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPObjJRuntime.j", NO);var _CPCibCustomObjectClassName = "_CPCibCustomObjectClassName";
+p;20;_CPCibCustomObject.jt;3262;@STATIC;1.0;I;21;Foundation/CPObject.jI;26;Foundation/CPObjJRuntime.jt;3186;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPObjJRuntime.j", NO);var _CPCibCustomObjectClassName = "_CPCibCustomObjectClassName";
 
 {var the_class = objj_allocateClassPair(CPObject, "_CPCibCustomObject"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_className", "CPString")]);objj_registerClassPair(the_class);
@@ -51009,6 +51083,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
     }
     if (!theClass)
     {
+        CPLog("Unknown class \"" + self._className + "\" in cib file");
         theClass = (CPObject.isa.method_msgSend["class"] || _objj_forward)(CPObject, "class");
     }
     if (theClass === (CPApplication == null ? CPApplication : (CPApplication.isa.method_msgSend["class"] || _objj_forward)(CPApplication, "class")))
@@ -51228,7 +51303,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["BOOL"])]);
 }
-p;18;_CPCibCustomView.jt;5798;@STATIC;1.0;i;8;CPView.jt;5767;objj_executeFile("CPView.j", YES);
+p;18;_CPCibCustomView.jt;5893;@STATIC;1.0;i;8;CPView.jt;5862;objj_executeFile("CPView.j", YES);
 {var the_class = objj_allocateClassPair(CPView, "_CPCibCustomView"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_className", "CPString")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("customClassName"), function $_CPCibCustomView__customClassName(self, _cmd)
@@ -51275,6 +51350,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
     var theClass = CPClassFromString(self._className);
     if (!theClass)
     {
+        CPLog("Unknown class \"" + self._className + "\" in cib file, using CPView instead.");
         theClass = (CPView.isa.method_msgSend["class"] || _objj_forward)(CPView, "class");
     }
     if (theClass === (self.isa.method_msgSend["class"] || _objj_forward)(self, "class"))
@@ -51578,7 +51654,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPCoder"])]);
 }
-p;22;_CPCibWindowTemplate.jt;12241;@STATIC;1.0;I;21;Foundation/CPObject.jI;26;Foundation/CPObjJRuntime.ji;12;CGGeometry.ji;11;CPToolbar.ji;8;CPView.ji;20;CPWindow_Constants.ji;12;_CPToolTip.jt;12077;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPObjJRuntime.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPToolbar.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPToolTip.j", YES);
+p;22;_CPCibWindowTemplate.jt;12402;@STATIC;1.0;I;21;Foundation/CPObject.jI;26;Foundation/CPObjJRuntime.ji;12;CGGeometry.ji;11;CPToolbar.ji;8;CPView.ji;20;CPWindow_Constants.ji;12;_CPToolTip.jt;12238;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPObjJRuntime.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPToolbar.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPToolTip.j", YES);
 {var the_class = objj_allocateClassPair(CPObject, "_CPCibWindowTemplate"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_minSize", "CGSize"), new objj_ivar("_maxSize", "CGSize"), new objj_ivar("_screenRect", "CGRect"), new objj_ivar("_viewClass", "id"), new objj_ivar("_wtFlags", "unsigned"), new objj_ivar("_windowClass", "CPString"), new objj_ivar("_windowRect", "CGRect"), new objj_ivar("_windowStyleMask", "unsigned"), new objj_ivar("_windowTitle", "CPString"), new objj_ivar("_windowView", "CPView"), new objj_ivar("_windowAutorecalculatesKeyViewLoop", "BOOL"), new objj_ivar("_windowIsFullPlatformWindow", "BOOL")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPCibWindowTemplate__init(self, _cmd)
@@ -51618,6 +51694,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPCi
     var windowClass = CPClassFromString((self.isa.method_msgSend["windowClass"] || _objj_forward)(self, "windowClass"));
     if (!windowClass)
     {
+        CPLog.warn("Unknown class \"%@\" in cib file, using CPWindow instead.", (self.isa.method_msgSend["windowClass"] || _objj_forward)(self, "windowClass"));
         windowClass = (CPWindow.isa.method_msgSend["class"] || _objj_forward)(CPWindow, "class");
     }
     var theWindow = ((___r1 = (windowClass == null ? windowClass : (windowClass.isa.method_msgSend["alloc"] || _objj_forward)(windowClass, "alloc"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithContentRect:styleMask:"] || _objj_forward)(___r1, "initWithContentRect:styleMask:", self._windowRect, self._windowStyleMask));
@@ -52495,7 +52572,11 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("group"), function $CAA
 
 ,["id"])]);
 }
-p;16;CABackingStore.jt;1095;@STATIC;1.0;i;12;CGGeometry.ji;17;CPCompatibility.jt;1037;objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPCompatibility.j", YES);CABackingStoreGetContext = function(aBackingStore)
+p;16;CABackingStore.jt;1146;@STATIC;1.0;i;12;CGGeometry.ji;17;CPCompatibility.jt;1088;objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPCompatibility.j", YES);PIXEL = function(pixels)
+{
+    return pixels + "px";
+}
+CABackingStoreGetContext = function(aBackingStore)
 {
     return aBackingStore.context;
 }
@@ -52513,10 +52594,8 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
         var buffer = aBackingStore.buffer;
         buffer.width = aSize.width;
         buffer.height = aSize.height;
-        buffer.style.width = aSize.width + "px";
-;
-        buffer.style.height = aSize.height + "px";
-;
+        buffer.style.width = PIXEL(aSize.width);
+        buffer.style.height = PIXEL(aSize.height);
     };
 }
 else
@@ -52689,7 +52768,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("values"), function $CAK
 
 ,["id"])]);
 }
-p;9;CALayer.jt;45526;@STATIC;1.0;I;21;Foundation/CPObject.jI;22;Foundation/CPRunLoop.ji;16;CABackingStore.ji;11;CGContext.ji;12;CGGeometry.ji;9;CPColor.ji;8;CPView.ji;23;CAMediaTimingFunction.jt;45346;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("CABackingStore.j", YES);objj_executeFile("CGContext.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CAMediaTimingFunction.j", YES);var CALayerGeometryBoundsMask = 1,
+p;9;CALayer.jt;46206;@STATIC;1.0;I;21;Foundation/CPObject.jI;22;Foundation/CPRunLoop.ji;16;CABackingStore.ji;11;CGContext.ji;12;CGGeometry.ji;9;CPColor.ji;17;CPCompatibility.ji;8;CPView.ji;23;CAMediaTimingFunction.jt;46004;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("CABackingStore.j", YES);objj_executeFile("CGContext.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CAMediaTimingFunction.j", YES);DOM = function(aLayer)
+{
+    return aLayer._DOMElement;
+}
+var CALayerGeometryBoundsMask = 1,
     CALayerGeometryPositionMask = 2,
     CALayerGeometryAnchorPointMask = 4,
     CALayerGeometryAffineTransformMask = 8,
@@ -52726,15 +52809,18 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CALay
         self._masksToBounds = NO;
         self._sublayers = [];
         self._activeAnimations = (CPMutableDictionary.isa.method_msgSend["dictionary"] || _objj_forward)(CPMutableDictionary, "dictionary");
-        self._DOMElement = document.createElement("div");
-        self._DOMElement.style.overflow = "visible";
-        self._DOMElement.style.position = "absolute";
-        self._DOMElement.style.visibility = "visible";
-        self._DOMElement.style.top = "0px";
-        self._DOMElement.style.left = "0px";
-        self._DOMElement.style.zIndex = 0;
-        self._DOMElement.style.width = "0px";
-        self._DOMElement.style.height = "0px";
+        if (CPDOMAvailable)
+        {
+            self._DOMElement = document.createElement("div");
+            self._DOMElement.style.overflow = "visible";
+            self._DOMElement.style.position = "absolute";
+            self._DOMElement.style.visibility = "visible";
+            self._DOMElement.style.top = "0px";
+            self._DOMElement.style.left = "0px";
+            self._DOMElement.style.zIndex = 0;
+            self._DOMElement.style.width = "0px";
+            self._DOMElement.style.height = "0px";
+        }
     }
     return self;
 }
@@ -52921,32 +53007,35 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CALay
 
 ,["void"]), new objj_method(sel_getUid("display"), function $CALayer__display(self, _cmd)
 {
-    if (!self._context)
+    if (CPDOMAvailable)
     {
-        self._context = CGBitmapGraphicsContextCreate();
-        self._DOMContentsElement = self._context.DOMElement;
-        self._DOMContentsElement.style.zIndex = -100;
-        self._DOMContentsElement.style.overflow = "hidden";
-        self._DOMContentsElement.style.position = "absolute";
-        self._DOMContentsElement.style.visibility = "visible";
-        self._DOMContentsElement.width = ROUND(CGRectGetWidth(self._backingStoreFrame));
-        self._DOMContentsElement.height = ROUND(CGRectGetHeight(self._backingStoreFrame));
-        self._DOMContentsElement.style.top = "0px";
-        self._DOMContentsElement.style.left = "0px";
-        self._DOMContentsElement.style.width = ROUND(CGRectGetWidth(self._backingStoreFrame)) + "px";
-        self._DOMContentsElement.style.height = ROUND(CGRectGetHeight(self._backingStoreFrame)) + "px";
-        self._DOMElement.appendChild(self._DOMContentsElement);
-    }
-    if (USE_BUFFER)
-    {
-        if (self._delegateRespondsToDisplayLayerSelector)
-            return ((___r1 = self._delegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["displayLayer:"] || _objj_forward)(___r1, "displayLayer:", self));
-        if (CGRectGetWidth(self._backingStoreFrame) == 0.0 || CGRectGetHeight(self._backingStoreFrame) == 0.0)
-            return;
-        if (!self._contents)
-            self._contents = CABackingStoreCreate();
-        CABackingStoreSetSize(self._contents, self._bounds.size);
-        (self.isa.method_msgSend["drawInContext:"] || _objj_forward)(self, "drawInContext:", CABackingStoreGetContext(self._contents));
+        if (!self._context)
+        {
+            self._context = CGBitmapGraphicsContextCreate();
+            self._DOMContentsElement = self._context.DOMElement;
+            self._DOMContentsElement.style.zIndex = -100;
+            self._DOMContentsElement.style.overflow = "hidden";
+            self._DOMContentsElement.style.position = "absolute";
+            self._DOMContentsElement.style.visibility = "visible";
+            self._DOMContentsElement.width = ROUND(CGRectGetWidth(self._backingStoreFrame));
+            self._DOMContentsElement.height = ROUND(CGRectGetHeight(self._backingStoreFrame));
+            self._DOMContentsElement.style.top = "0px";
+            self._DOMContentsElement.style.left = "0px";
+            self._DOMContentsElement.style.width = ROUND(CGRectGetWidth(self._backingStoreFrame)) + "px";
+            self._DOMContentsElement.style.height = ROUND(CGRectGetHeight(self._backingStoreFrame)) + "px";
+            self._DOMElement.appendChild(self._DOMContentsElement);
+        }
+        if (USE_BUFFER)
+        {
+            if (self._delegateRespondsToDisplayLayerSelector)
+                return ((___r1 = self._delegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["displayLayer:"] || _objj_forward)(___r1, "displayLayer:", self));
+            if (CGRectGetWidth(self._backingStoreFrame) == 0.0 || CGRectGetHeight(self._backingStoreFrame) == 0.0)
+                return;
+            if (!self._contents)
+                self._contents = CABackingStoreCreate();
+            CABackingStoreSetSize(self._contents, self._bounds.size);
+            (self.isa.method_msgSend["drawInContext:"] || _objj_forward)(self, "drawInContext:", CABackingStoreGetContext(self._contents));
+        }
     }
     (self.isa.method_msgSend["composite"] || _objj_forward)(self, "composite");
     var ___r1;
@@ -53056,14 +53145,15 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CALay
     }
     else if (superlayer != nil)
         (aLayer == null ? aLayer : (aLayer.isa.method_msgSend["removeFromSuperlayer"] || _objj_forward)(aLayer, "removeFromSuperlayer"));
-    if (self._DOMContentsElement && aLayer._zPosition > self._DOMContentsElement.style.zIndex)
-        self._DOMContentsElement.style.zIndex -= 100.0;
-;
+    (self.isa.method_msgSend["_adjustContentsZIndexForLayer:"] || _objj_forward)(self, "_adjustContentsZIndexForLayer:", aLayer);
     ((___r1 = self._sublayers), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["insertObject:atIndex:"] || _objj_forward)(___r1, "insertObject:atIndex:", aLayer, anIndex));
-    if (anIndex >= self._sublayers.length - 1)
-        self._DOMElement.appendChild(aLayer._DOMElement);
-    else
-        self._DOMElement.insertBefore(aLayer._DOMElement, self._sublayers[anIndex + 1]._DOMElement);
+    if (CPDOMAvailable)
+    {
+        if (anIndex >= self._sublayers.length - 1)
+            self._DOMElement.appendChild(DOM(aLayer));
+        else
+            self._DOMElement.insertBefore(DOM(aLayer), self._sublayers[anIndex + 1]._DOMElement);
+    }
     aLayer._superlayer = self;
     if (self != superlayer)
         _CALayerRecalculateGeometry(aLayer, 0xFFFFFFF);
@@ -53095,11 +53185,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CALay
         CPLog.warn("Attempt to replace a sublayer (%s) which is not in the sublayers of the receiver (%s).", (aSublayer == null ? aSublayer : (aSublayer.isa.method_msgSend["description"] || _objj_forward)(aSublayer, "description")), (self.isa.method_msgSend["description"] || _objj_forward)(self, "description"));
         return;
     }
-    if (self._DOMContentsElement && aLayer._zPosition > self._DOMContentsElement.style.zIndex)
-        self._DOMContentsElement.style.zIndex -= 100.0;
-;
+    (self.isa.method_msgSend["_adjustContentsZIndexForLayer:"] || _objj_forward)(self, "_adjustContentsZIndexForLayer:", aLayer);
     ((___r1 = self._sublayers), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["replaceObjectAtIndex:withObject:"] || _objj_forward)(___r1, "replaceObjectAtIndex:withObject:", ((___r2 = self._sublayers), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["indexOfObjectIdenticalTo:"] || _objj_forward)(___r2, "indexOfObjectIdenticalTo:", aSublayer)), aLayer));
-    self._DOMElement.replaceChild(aSublayer._DOMElement, aLayer._DOMElement);
+    self._DOMElement.replaceChild(DOM(aSublayer), DOM(aLayer));
     var ___r1, ___r2;
 }
 
@@ -53392,7 +53480,13 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CALay
     window.loop = false;
 }
 
-,["void"])]);
+,["void"]), new objj_method(sel_getUid("_adjustContentsZIndexForLayer:"), function $CALayer___adjustContentsZIndexForLayer_(self, _cmd, aLayer)
+{
+    if (self._DOMContentsElement && aLayer._zPosition > self._DOMContentsElement.style.zIndex)
+        self._DOMContentsElement.style.zIndex -= 100.0;
+}
+
+,["void","CALayer"])]);
 class_addMethods(meta_class, [new objj_method(sel_getUid("layer"), function $CALayer__layer(self, _cmd)
 {
     return ((___r1 = ((___r2 = (self.isa.method_msgSend["class"] || _objj_forward)(self, "class")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["alloc"] || _objj_forward)(___r2, "alloc"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
@@ -53429,6 +53523,8 @@ _CALayerUpdateSublayerTransformForSublayers = function(aLayer)
 }
 _CALayerUpdateDOM = function(aLayer, aMask)
 {
+    if (!CPDOMAvailable)
+        return;
     var DOMElementStyle = aLayer._DOMElement.style;
     if (aMask & CALayerZPositionUpdateMask)
         DOMElementStyle.zIndex = aLayer._zPosition;
@@ -54125,7 +54221,7 @@ var _animationFlushingObserverCallback = function()
         _animationFlushingObserver = nil;
     }
 };
-p;16;CPViewAnimator.jt;27643;@STATIC;1.0;i;19;_CPObjectAnimator.ji;8;CPView.ji;17;CPCompatibility.ji;14;CSSAnimation.jt;27546;objj_executeFile("_CPObjectAnimator.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CSSAnimation.j", YES);var DEFAULT_CSS_PROPERTIES = nil,
+p;16;CPViewAnimator.jt;27687;@STATIC;1.0;i;19;_CPObjectAnimator.ji;8;CPView.ji;17;CPCompatibility.ji;14;CSSAnimation.jt;27590;objj_executeFile("_CPObjectAnimator.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CSSAnimation.j", YES);var DEFAULT_CSS_PROPERTIES = nil,
     FRAME_UPDATERS = {};
 
 {var the_class = objj_allocateClassPair(_CPObjectAnimator, "CPViewAnimator"),
@@ -54441,7 +54537,9 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPDictionary"]), new objj_method(sel_getUid("_DOMElement"), function $CPView___DOMElement(self, _cmd)
 {
-    return self._DOMElement;
+    if (CPDOMAvailable)
+        return self._DOMElement;
+    return nil;
 }
 
 ,["Object"]), new objj_method(sel_getUid("debug_description"), function $CPView__debug_description(self, _cmd)
@@ -55033,7 +55131,7 @@ CGColorGetPattern = function(aColor)
 {
     return aColor.pattern;
 }
-p;14;CGColorSpace.jt;5191;@STATIC;1.0;t;5172;{var the_typedef = objj_allocateTypeDef("CGColorSpace");
+p;14;CGColorSpace.jt;5274;@STATIC;1.0;t;5255;{var the_typedef = objj_allocateTypeDef("CGColorSpace");
 objj_registerTypeDef(the_typedef);
 }kCGColorSpaceModelUnknown = -1;
 kCGColorSpaceModelMonochrome = 0;
@@ -55051,13 +55149,17 @@ kCGColorSpaceGenericRGBHDR = "CGColorSpaceGenericRGBHDR";
 kCGColorSpaceAdobeRGB1998 = "CGColorSpaceAdobeRGB1998";
 kCGColorSpaceSRGB = "CGColorSpaceSRGB";
 var _CGNamedColorSpaces = {};
+_CGColorSpaceCreateWithModel = function(aModel, aComponentCount, aBaseColorSpace)
+{
+    return {model: aModel, count: aComponentCount, base: aBaseColorSpace};
+}
 CGColorSpaceCreateCalibratedGray = function(aWhitePoint, aBlackPoint, gamma)
 {
-    return {model: kCGColorSpaceModelMonochrome, count: 1, base: NULL};
+    return _CGColorSpaceCreateWithModel(kCGColorSpaceModelMonochrome, 1, NULL);
 }
 CGColorSpaceCreateCalibratedRGB = function(aWhitePoint, aBlackPoint, gamma)
 {
-    return {model: kCGColorSpaceModelRGB, count: 1, base: NULL};
+    return _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 1, NULL);
 }
 CGColorSpaceCreateICCBased = function(aComponentCount, range, profile, alternate)
 {
@@ -55090,8 +55192,8 @@ CGColorSpaceCreateIndexed = function(aBaseColorSpace, lastIndex, colorTable)
 CGColorSpaceCreatePattern = function(aBaseColorSpace)
 {
     if (aBaseColorSpace)
-        return {model: kCGColorSpaceModelPattern, count: aBaseColorSpace.count, base: aBaseColorSpace};
-    return {model: kCGColorSpaceModelPattern, count: 0, base: NULL};
+        return _CGColorSpaceCreateWithModel(kCGColorSpaceModelPattern, aBaseColorSpace.count, aBaseColorSpace);
+    return _CGColorSpaceCreateWithModel(kCGColorSpaceModelPattern, 0, NULL);
 }
 CGColorSpaceCreateWithName = function(aName)
 {
@@ -55100,19 +55202,19 @@ CGColorSpaceCreateWithName = function(aName)
         return colorSpace;
     switch(aName) {
         case kCGColorSpaceGenericGray:
-            return _CGNamedColorSpaces[aName] = {model: kCGColorSpaceModelMonochrome, count: 1, base: NULL};
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelMonochrome, 1, NULL);
         case kCGColorSpaceGenericRGB:
-            return _CGNamedColorSpaces[aName] = {model: kCGColorSpaceModelRGB, count: 3, base: NULL};
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
         case kCGColorSpaceGenericCMYK:
-            return _CGNamedColorSpaces[aName] = {model: kCGColorSpaceModelCMYK, count: 4, base: NULL};
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelCMYK, 4, NULL);
         case kCGColorSpaceGenericRGBLinear:
-            return _CGNamedColorSpaces[aName] = {model: kCGColorSpaceModelRGB, count: 3, base: NULL};
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
         case kCGColorSpaceGenericRGBHDR:
-            return _CGNamedColorSpaces[aName] = {model: kCGColorSpaceModelRGB, count: 3, base: NULL};
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
         case kCGColorSpaceAdobeRGB1998:
-            return _CGNamedColorSpaces[aName] = {model: kCGColorSpaceModelRGB, count: 3, base: NULL};
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
         case kCGColorSpaceSRGB:
-            return _CGNamedColorSpaces[aName] = {model: kCGColorSpaceModelRGB, count: 3, base: NULL};
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
     }
     return NULL;
 }
@@ -55150,21 +55252,18 @@ CGColorSpaceRetain = function(aColorSpace)
 CGColorSpaceStandardizeComponents = function(aColorSpace, components)
 {
     var count = aColorSpace.count;
+    if (count > components.length)
     {
-        if (count > components.length)
-        {
-            components[count] = 1;
-            return;
-        }
-        var component = components[count];
-        if (component < 0)
-            components[count] = 0;
-        else if (component > 1)
-            components[count] = 1;
-        else
-            components[count] = ROUND(component * 1000) / 1000;
+        components[count] = 1;
+        return;
     }
-;
+    var component = components[count];
+    if (component < 0)
+        components[count] = 0;
+    else if (component > 1)
+        components[count] = 1;
+    else
+        components[count] = ROUND(component * 1000) / 1000;
     if (aColorSpace.base)
         aColorSpace = aColorSpace.base;
     switch(aColorSpace.model) {
@@ -55174,20 +55273,14 @@ CGColorSpaceStandardizeComponents = function(aColorSpace, components)
         case kCGColorSpaceModelDeviceN:
             while (count--)
             {
-                if (count > components.length)
-                {
-                    components[count] = 1;
-                    return;
-                }
-                var component = components[count];
-                if (component < 0)
+                var standardizingComponent = components[count];
+                if (standardizingComponent < 0)
                     components[count] = 0;
-                else if (component > 1)
+                else if (standardizingComponent > 1)
                     components[count] = 1;
                 else
-                    components[count] = ROUND(component * 255) / 255;
+                    components[count] = ROUND(standardizingComponent * 255) / 255;
             }
-;
             break;
         case kCGColorSpaceModelIndexed:
         case kCGColorSpaceModelLab:
@@ -55195,7 +55288,7 @@ CGColorSpaceStandardizeComponents = function(aColorSpace, components)
             break;
     }
 }
-p;11;CGContext.jt;40247;@STATIC;1.0;i;19;CGAffineTransform.ji;17;CPCompatibility.ji;12;CGGeometry.ji;8;CGPath.ji;15;CGContextText.jt;40132;objj_executeFile("CGAffineTransform.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CGPath.j", YES);objj_executeFile("CGContextText.j", YES);{var the_typedef = objj_allocateTypeDef("CGContext");
+p;11;CGContext.jt;30676;@STATIC;1.0;i;19;CGAffineTransform.ji;17;CPCompatibility.ji;12;CGGeometry.ji;8;CGPath.ji;15;CGContextText.jt;30561;objj_executeFile("CGAffineTransform.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CGPath.j", YES);objj_executeFile("CGContextText.j", YES);{var the_typedef = objj_allocateTypeDef("CGContext");
 objj_registerTypeDef(the_typedef);
 }kCGLineCapButt = 0;
 kCGLineCapRound = 1;
@@ -55502,6 +55595,50 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     var CANVAS_LINECAP_TABLE = ["butt", "round", "square"],
         CANVAS_LINEJOIN_TABLE = ["miter", "round", "bevel"],
         CANVAS_COMPOSITE_TABLE = ["source-over", "source-over", "source-over", "source-over", "darker", "lighter", "source-over", "source-over", "source-over", "source-over", "source-over", "source-over", "source-over", "source-over", "source-over", "source-over", "source-over", "copy", "source-in", "source-out", "source-atop", "destination-over", "destination-in", "destination-out", "destination-atop", "xor", "source-over", "source-over"];
+    _CGContextAddArcCanvas = function(aContext, x, y, radius, startAngle, endAngle, anticlockwise)
+    {
+        return aContext.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+    }
+    _CGContextAddArcToPointCanvas = function(aContext, x1, y1, x2, y2, radius)
+    {
+        return aContext.arcTo(x1, y1, x2, y2, radius);
+    }
+    _CGContextAddCurveToPointCanvas = function(aContext, cp1x, cp1y, cp2x, cp2y, x, y)
+    {
+        return aContext.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+    }
+    _CGContextAddQuadCurveToPointCanvas = function(aContext, cpx, cpy, x, y)
+    {
+        return aContext.quadraticCurveTo(cpx, cpy, x, y);
+    }
+    _CGContextAddLineToPointCanvas = function(aContext, x, y)
+    {
+        return aContext.lineTo(x, y);
+    }
+    _CGContextClosePathCanvas = function(aContext)
+    {
+        return aContext.closePath();
+    }
+    _CGContextMoveToPointCanvas = function(aContext, x, y)
+    {
+        return aContext.moveTo(x, y);
+    }
+    _CGContextAddRectCanvas = function(aContext, aRect)
+    {
+        return aContext.rect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+    }
+    _CGContextBeginPathCanvas = function(aContext)
+    {
+        return aContext.beginPath();
+    }
+    _CGContextFillRectCanvas = function(aContext, aRect)
+    {
+        return aContext.fillRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+    }
+    _CGContextClipCanvas = function(aContext)
+    {
+        return aContext.clip();
+    }
     var hasPath =     function(aContext, methodName)
     {
         if (!aContext.hasPath)
@@ -55560,20 +55697,20 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     }
     CGContextAddArc = function(aContext, x, y, radius, startAngle, endAngle, clockwise)
     {
-        aContext.arc(x, y, radius, startAngle, endAngle, !clockwise);
+        _CGContextAddArcCanvas(aContext, x, y, radius, startAngle, endAngle, !clockwise);
         aContext.hasPath = YES;
     }
     CGContextAddArcToPoint = function(aContext, x1, y1, x2, y2, radius)
     {
         if (!hasPath(aContext, "CGContextAddArcToPoint"))
             return;
-        aContext.arcTo(x1, y1, x2, y2, radius);
+        _CGContextAddArcToPointCanvas(aContext, x1, y1, x2, y2, radius);
     }
     CGContextAddCurveToPoint = function(aContext, cp1x, cp1y, cp2x, cp2y, x, y)
     {
         if (!hasPath(aContext, "CGContextAddCurveToPoint"))
             return;
-        aContext.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+        _CGContextAddCurveToPointCanvas(aContext, cp1x, cp1y, cp2x, cp2y, x, y);
     }
     CGContextAddLines = function(aContext, points, count)
     {
@@ -55581,24 +55718,24 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
             count = points.length;
         if (count < 1)
             return;
-        aContext.moveTo(points[0].x, points[0].y);
+        _CGContextMoveToPointCanvas(aContext, points[0].x, points[0].y);
         for (var i = 1; i < count; ++i)
-            aContext.lineTo(points[i].x, points[i].y);
+            _CGContextAddLineToPointCanvas(aContext, points[i].x, points[i].y);
         aContext.hasPath = YES;
     }
     CGContextAddLineToPoint = function(aContext, x, y)
     {
         if (!hasPath(aContext, "CGContextAddLineToPoint"))
             return;
-        aContext.lineTo(x, y);
+        _CGContextAddLineToPointCanvas(aContext, x, y);
     }
     CGContextAddPath = function(aContext, aPath)
     {
         if (!aContext || CGPathIsEmpty(aPath))
             return;
         if (!aContext.hasPath)
-            aContext.beginPath();
-        aContext.moveTo(aPath.start.x, aPath.start.y);
+            _CGContextBeginPathCanvas(aContext);
+        _CGContextMoveToPointCanvas(aContext, aPath.start.x, aPath.start.y);
         var elements = aPath.elements,
             i = 0,
             count = aPath.count;
@@ -55608,25 +55745,25 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
                 type = element.type;
             switch(type) {
                 case kCGPathElementMoveToPoint:
-                    aContext.moveTo(element.x, element.y);
+                    _CGContextMoveToPointCanvas(aContext, element.x, element.y);
                     break;
                 case kCGPathElementAddLineToPoint:
-                    aContext.lineTo(element.x, element.y);
+                    _CGContextAddLineToPointCanvas(aContext, element.x, element.y);
                     break;
                 case kCGPathElementAddQuadCurveToPoint:
-                    aContext.quadraticCurveTo(element.cpx, element.cpy, element.x, element.y);
+                    _CGContextAddQuadCurveToPointCanvas(aContext, element.cpx, element.cpy, element.x, element.y);
                     break;
                 case kCGPathElementAddCurveToPoint:
-                    aContext.bezierCurveTo(element.cp1x, element.cp1y, element.cp2x, element.cp2y, element.x, element.y);
+                    _CGContextAddCurveToPointCanvas(aContext, element.cp1x, element.cp1y, element.cp2x, element.cp2y, element.x, element.y);
                     break;
                 case kCGPathElementCloseSubpath:
-                    aContext.closePath();
+                    _CGContextClosePathCanvas(aContext);
                     break;
                 case kCGPathElementAddArc:
-                    aContext.arc(element.x, element.y, element.radius, element.startAngle, element.endAngle, element.clockwise);
+                    _CGContextAddArcCanvas(aContext, element.x, element.y, element.radius, element.startAngle, element.endAngle, element.clockwise);
                     break;
                 case kCGPathElementAddArcToPoint:
-                    aContext.arcTo(element.p1x, element.p1y, element.p2x, element.p2y, element.radius);
+                    _CGContextAddArcToPointCanvas(aContext, element.p1x, element.p1y, element.p2x, element.p2y, element.radius);
                     break;
             }
         }
@@ -55634,14 +55771,14 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     }
     CGContextAddRect = function(aContext, aRect)
     {
-        aContext.rect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+        _CGContextAddRectCanvas(aContext, aRect);
         aContext.hasPath = YES;
     }
     CGContextAddQuadCurveToPoint = function(aContext, cpx, cpy, x, y)
     {
         if (!hasPath(aContext, "CGContextAddQuadCurveToPoint"))
             return;
-        aContext.quadraticCurveTo(cpx, cpy, x, y);
+        _CGContextAddQuadCurveToPointCanvas(aContext, cpx, cpy, x, y);
     }
     CGContextAddRects = function(aContext, rects, count)
     {
@@ -55650,18 +55787,18 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
         for (var i = 0; i < count; ++i)
         {
             var rect = rects[i];
-            aContext.rect(CGRectGetMinX(rect), CGRectGetMinY(rect), CGRectGetWidth(rect), CGRectGetHeight(rect));
+            _CGContextAddRectCanvas(aContext, rect);
         }
         aContext.hasPath = YES;
     }
     CGContextBeginPath = function(aContext)
     {
-        aContext.beginPath();
+        _CGContextBeginPathCanvas(aContext);
         aContext.hasPath = NO;
     }
     CGContextClosePath = function(aContext)
     {
-        aContext.closePath();
+        _CGContextClosePathCanvas(aContext);
     }
     CGContextIsPathEmpty = function(aContext)
     {
@@ -55669,7 +55806,7 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     }
     CGContextMoveToPoint = function(aContext, x, y)
     {
-        aContext.moveTo(x, y);
+        _CGContextMoveToPointCanvas(aContext, x, y);
         aContext.hasPath = YES;
     }
     CGContextClearRect = function(aContext, aRect)
@@ -55691,7 +55828,7 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     }
     CGContextFillRect = function(aContext, aRect)
     {
-        aContext.fillRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+        _CGContextFillRectCanvas(aContext, aRect);
         aContext.hasPath = NO;
     }
     CGContextFillRects = function(aContext, rects, count)
@@ -55701,7 +55838,7 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
         for (var i = 0; i < count; ++i)
         {
             var rect = rects[i];
-            aContext.fillRect(CGRectGetMinX(rect), CGRectGetMinY(rect), CGRectGetWidth(rect), CGRectGetHeight(rect));
+            _CGContextFillRectCanvas(aContext, rect);
         }
         aContext.hasPath = NO;
     }
@@ -55712,24 +55849,24 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     }
     CGContextClip = function(aContext)
     {
-        aContext.clip();
+        _CGContextClipCanvas(aContext);
         aContext.hasPath = NO;
     }
     CGContextClipToRect = function(aContext, aRect)
     {
-        aContext.beginPath();
-        aContext.rect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
-        aContext.closePath();
-        aContext.clip();
+        _CGContextBeginPathCanvas(aContext);
+        _CGContextAddRectCanvas(aContext, aRect);
+        _CGContextClosePathCanvas(aContext);
+        _CGContextClipCanvas(aContext);
         aContext.hasPath = NO;
     }
     CGContextClipToRects = function(aContext, rects, count)
     {
         if (count == null)
             count = rects.length;
-        aContext.beginPath();
+        _CGContextBeginPathCanvas(aContext);
         CGContextAddRects(aContext, rects, count);
-        aContext.clip();
+        _CGContextClipCanvas(aContext);
         aContext.hasPath = NO;
     }
     CGContextSetAlpha = function(aContext, anAlpha)
@@ -55963,194 +56100,6 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
         context.DOMElement = DOMElement;
         context.hasPath = NO;
         return context;
-    }
-}
-else if (CPFeatureIsCompatible(CPVMLFeature))
-{
-    var VML_TRUTH_TABLE = ["f", "t"],
-        VML_LINECAP_TABLE = ["flat", "round", "square"],
-        VML_LINEJOIN_TABLE = ["miter", "round", "bevel"],
-        VML_ELEMENT_TABLE = [" m ", " l ", "qb", " c ", " x ", [" at ", " wa "]];
-    var _CGBitmapGraphicsContextCreate = CGBitmapGraphicsContextCreate;
-    CGBitmapGraphicsContextCreate = function()
-    {
-        document.namespaces.add("cg_vml_", "urn:schemas-microsoft-com:vml");
-        document.createStyleSheet().cssText = "cg_vml_\\:*{behavior:url(#default#VML)}";
-        CGBitmapGraphicsContextCreate = _CGBitmapGraphicsContextCreate;
-        return _CGBitmapGraphicsContextCreate();
-    }
-    CGContextSetFillColor = function(aContext, aColor)
-    {
-        if ((aColor == null ? aColor : (aColor.isa.method_msgSend["patternImage"] || _objj_forward)(aColor, "patternImage")))
-            aContext.gState.fillStyle = "!" + ((___r1 = (aColor == null ? aColor : (aColor.isa.method_msgSend["patternImage"] || _objj_forward)(aColor, "patternImage"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["filename"] || _objj_forward)(___r1, "filename"));
-        else
-            aContext.gState.fillStyle = (aColor == null ? aColor : (aColor.isa.method_msgSend["cssString"] || _objj_forward)(aColor, "cssString"));
-        var ___r1;
-    }
-    CGContextClearRect = function(aContext, aRect)
-    {
-        if (aContext.buffer != nil)
-            aContext.buffer = "";
-        else
-            aContext.DOMElement.innerHTML = "";
-        aContext.path = NULL;
-    }
-    var W = 10.0,
-        H = 10.0,
-        Z = 10.0,
-        Z_2 = Z / 2.0;
-    CGContextDrawImage = function(aContext, aRect, anImage)
-    {
-        var string = "";
-        if (anImage.buffer != nil)
-            string = anImage.buffer;
-        else
-        {
-            var ctm = aContext.gState.CTM,
-                origin = CGPointApplyAffineTransform(aRect.origin, ctm),
-                similarity = ctm.a == ctm.d && ctm.b == -ctm.c,
-                vml = ["<cg_vml_:group coordsize=\"1,1\" coordorigin=\"0,0\" style=\"width:1;height:1;position:absolute"];
-            {
-                var transformedRect = CGRectApplyAffineTransform(aRect, ctm);
-                vml.push(";padding:0 ", ROUND(CGRectGetMaxX(transformedRect)), "px ", ROUND(CGRectGetMaxY(transformedRect)), "px 0;filter:progid:DXImageTransform.Microsoft.Matrix(", "M11='", ctm.a, "',M12='", ctm.c, "',M21='", ctm.b, "',M22='", ctm.d, "',", "Dx='", ROUND(origin.x), "', Dy='", ROUND(origin.y), "', sizingmethod='clip');");
-            }
-            vml.push("\"><cg_vml_:image src=\"", anImage._image.src, "\" style=\"width:", CGRectGetWidth(aRect), "px;height:", CGRectGetHeight(aRect), "px;\"/></g_vml_:group>");
-            string = vml.join("");
-        }
-        if (aContext.buffer != nil)
-            aContext.buffer += string;
-        else
-            aContext.DOMElement.insertAdjacentHTML("BeforeEnd", string);
-    }
-    CGContextDrawPath = function(aContext, aMode)
-    {
-        if (!aContext || CGPathIsEmpty(aContext.path))
-            return;
-        var elements = aContext.path.elements,
-            i = 0,
-            count = aContext.path.count,
-            gState = aContext.gState,
-            fill = aMode == kCGPathFill || aMode == kCGPathFillStroke ? 1 : 0,
-            stroke = aMode == kCGPathStroke || aMode == kCGPathFillStroke ? 1 : 0,
-            opacity = gState.alpha,
-            vml = ["<cg_vml_:shape"];
-        if (gState.fillStyle.charAt(0) !== "!")
-            vml.push(" fillcolor=\"", gState.fillStyle, "\"");
-        vml.push(" filled=\"", VML_TRUTH_TABLE[fill], "\" style=\"position:absolute;width:", W, ";height:", H, ";\" coordorigin=\"0 0\" coordsize=\"", Z * W, " ", Z * H, "\" stroked=\"", VML_TRUTH_TABLE[stroke], "\" strokeweight=\"", gState.lineWidth, "\" strokecolor=\"", gState.strokeStyle, "\" path=\"");
-        for (; i < count; ++i)
-        {
-            var element = elements[i],
-                type = element.type;
-            switch(type) {
-                case kCGPathElementMoveToPoint:
-                case kCGPathElementAddLineToPoint:
-                    vml.push(VML_ELEMENT_TABLE[type], element.x === 0.0 ? 0 : ROUND(Z * element.x - Z_2), ',', element.y === 0.0 ? 0 : ROUND(Z * element.y - Z_2));
-                    break;
-                case kCGPathElementAddQuadCurveToPoint:
-                    vml.push(VML_ELEMENT_TABLE[type], element.cpx === 0.0 ? 0 : ROUND(Z * element.cpx - Z_2), ',', element.cpy === 0.0 ? 0 : ROUND(Z * element.cpy - Z_2), ',', element.x === 0.0 ? 0 : ROUND(Z * element.x - Z_2), ',', element.y === 0.0 ? 0 : ROUND(Z * element.y - Z_2));
-                    break;
-                case kCGPathElementAddCurveToPoint:
-                    vml.push(VML_ELEMENT_TABLE[type], element.cp1x === 0.0 ? 0 : ROUND(Z * element.cp1x - Z_2), ',', element.cp1y === 0.0 ? 0 : ROUND(Z * element.cp1y - Z_2), ',', element.cp2x === 0.0 ? 0 : ROUND(Z * element.cp2x - Z_2), ',', element.cp2y === 0.0 ? 0 : ROUND(Z * element.cp2y - Z_2), ',', element.x === 0.0 ? 0 : ROUND(Z * element.x - Z_2), ',', element.y === 0.0 ? 0 : ROUND(Z * element.y - Z_2));
-                    break;
-                case kCGPathElementCloseSubpath:
-                    vml.push(VML_ELEMENT_TABLE[type]);
-                    break;
-                case kCGPathElementAddArc:
-                    var x = element.x,
-                        y = element.y,
-                        radius = element.radius,
-                        clockwise = element.clockwise ? 1 : 0,
-                        endAngle = element.endAngle,
-                        startAngle = element.startAngle,
-                        start = CGPointMake(x + radius * COS(startAngle), y + radius * SIN(startAngle));
-                    if (startAngle == endAngle && !clockwise)
-                    {
-                        vml.push(VML_ELEMENT_TABLE[kCGPathElementMoveToPoint], start.x === 0.0 ? 0 : ROUND(Z * start.x - Z_2), ',', start.y === 0.0 ? 0 : ROUND(Z * start.y - Z_2));
-                        continue;
-                    }
-                    var end = CGPointMake(x + radius * COS(endAngle), y + radius * SIN(endAngle));
-                    if (clockwise && startAngle != endAngle && CGPointEqualToPoint(start, end))
-                        if (start.x >= x)
-                        {
-                            if (start.y < y)
-                                start.x += 0.125;
-                            else
-                                start.y += 0.125;
-                        }
-                        else
-                        {
-                            if (end.y <= y)
-                                end.x += 0.125;
-                            else
-                                end.y += 0.125;
-                        }
-                    vml.push(VML_ELEMENT_TABLE[type][clockwise], x - radius === 0.0 ? 0 : ROUND(Z * (x - radius) - Z_2), ',', y - radius === 0.0 ? 0 : ROUND(Z * (y - radius) - Z_2), " ", x + radius === 0.0 ? 0 : ROUND(Z * (x + radius) - Z_2), ',', y + radius === 0.0 ? 0 : ROUND(Z * (y + radius) - Z_2), " ", start.x === 0.0 ? 0 : ROUND(Z * start.x - Z_2), ',', start.y === 0.0 ? 0 : ROUND(Z * start.y - Z_2), " ", end.x === 0.0 ? 0 : ROUND(Z * end.x - Z_2), ',', end.y === 0.0 ? 0 : ROUND(Z * end.y - Z_2));
-                    break;
-                case kCGPathElementAddArcToPoint:
-                    break;
-            }
-        }
-        vml.push("\">");
-        if (gState.gradient)
-            vml.push(gState.gradient);
-        else if (fill)
-        {
-            if (gState.fillStyle.charAt(0) === "!")
-                vml.push("<cg_vml_:fill type=\"tile\" src=\"", gState.fillStyle.substring(1), "\" opacity=\"", opacity, "\" />");
-            else
-                vml.push("<cg_vml_:fill color=\"", gState.fillStyle, "\" opacity=\"", opacity, "\" />");
-        }
-        if (stroke)
-            vml.push("<cg_vml_:stroke opacity=\"", opacity, "\" joinstyle=\"", VML_LINEJOIN_TABLE[gState.lineJoin], "\" miterlimit=\"", gState.miterLimit, "\" endcap=\"", VML_LINECAP_TABLE[gState.lineCap], "\" weight=\"", gState.lineWidth, "", "px\" color=\"", gState.strokeStyle, "\" />");
-        var shadowColor = gState.shadowColor;
-        if (shadowColor)
-        {
-            var shadowOffset = gState.shadowOffset;
-            vml.push("<cg_vml_:shadow on=\"t\" offset=\"", shadowOffset.width, "pt ", shadowOffset.height, "pt\" opacity=\"", (shadowColor == null ? shadowColor : (shadowColor.isa.method_msgSend["alphaComponent"] || _objj_forward)(shadowColor, "alphaComponent")), "\" color=black />");
-        }
-        vml.push("</cg_vml_:shape>");
-        if (aContext.buffer != nil)
-            aContext.buffer += vml.join("");
-        else
-            aContext.DOMElement.insertAdjacentHTML("BeforeEnd", vml.join(""));
-    }
-    to_string = function(aColor)
-    {
-        return "rgb(" + ROUND(aColor.components[0] * 255) + ", " + ROUND(aColor.components[1] * 255) + ", " + ROUND(255 * aColor.components[2]) + ")";
-    }
-    CGContextDrawLinearGradient = function(aContext, aGradient, aStartPoint, anEndPoint, options)
-    {
-        if (!aContext || !aGradient)
-            return;
-        var vml = nil;
-        if (aGradient.vml_gradient)
-        {
-            var stops = ((___r1 = ((___r2 = aGradient.vml_gradient), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["stops"] || _objj_forward)(___r2, "stops"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["sortedArrayUsingSelector:"] || _objj_forward)(___r1, "sortedArrayUsingSelector:", sel_getUid("comparePosition:"))),
-                count = (stops == null ? stops : (stops.isa.method_msgSend["count"] || _objj_forward)(stops, "count"));
-            vml = ["<cg_vml_:fill type=\"gradient\" method=\"linear sigma\" "];
-            vml.push("angle=\"" + (((___r1 = aGradient.vml_gradient), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["angle"] || _objj_forward)(___r1, "angle")) + 90) + "\" ");
-            vml.push("colors=\"");
-            for (var i = 0; i < count; i++)
-            {
-                vml.push((((___r1 = stops[i]), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["position"] || _objj_forward)(___r1, "position")) * 100).toFixed(0) + "% ");
-                vml.push(((___r1 = ((___r2 = ((___r3 = stops[i]), ___r3 == null ? ___r3 : (___r3.isa.method_msgSend["color"] || _objj_forward)(___r3, "color"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["colorForSlideBase:"] || _objj_forward)(___r2, "colorForSlideBase:", nil))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString")));
-                if (i < count - 1)
-                    vml.push(",");
-            }
-            vml.push("\" />");
-        }
-        else
-        {
-            var colors = aGradient.colors,
-                count = colors.length;
-            vml = ["<cg_vml_:fill type=\"gradient\" "];
-            vml.push("colors=\"");
-            for (var i = 0; i < count; i++)
-                vml.push((aGradient.locations[i] * 100).toFixed(0) + "% " + to_string(colors[i]) + (i < count - 1 ? "," : ""));
-            vml.push("\" />");
-        }
-        aContext.gState.gradient = vml.join("");
-        var ___r1, ___r2, ___r3;
     }
 }
 else
@@ -56938,7 +56887,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("datePickerElements"), f
 
 ,["void","id"])]);
 }
-p;20;_CPDatePickerClock.jt;37803;@STATIC;1.0;I;28;Foundation/CPKeyedArchiver.jI;30;Foundation/CPKeyedUnarchiver.ji;8;CPView.ji;13;CPTextField.ji;9;CPImage.ji;9;CALayer.jt;37659;objj_executeFile("Foundation/CPKeyedArchiver.j", NO);objj_executeFile("Foundation/CPKeyedUnarchiver.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CALayer.j", YES);var RADIANS = Math.PI / 180;
+p;20;_CPDatePickerClock.jt;38013;@STATIC;1.0;I;28;Foundation/CPKeyedArchiver.jI;30;Foundation/CPKeyedUnarchiver.ji;8;CPView.ji;13;CPTextField.ji;9;CPImage.ji;9;CALayer.ji;17;CPCompatibility.jt;37847;objj_executeFile("Foundation/CPKeyedArchiver.j", NO);objj_executeFile("Foundation/CPKeyedUnarchiver.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CALayer.j", YES);objj_executeFile("CPCompatibility.j", YES);var RADIANS = Math.PI / 180;
 {var the_typedef = objj_allocateTypeDef("_CPDatePickerClockHand");
 objj_registerTypeDef(the_typedef);
 }_CPDatePickerClockHours = 1;
@@ -57049,6 +56998,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("datePickerElements"), f
 ,["void"]), new objj_method(sel_getUid("setDatePickerElements:"), function $_CPDatePickerClock__setDatePickerElements_(self, _cmd, aDatePickerElements)
 {
     self._datePickerElements = aDatePickerElements;
+    if (!CPDOMAvailable)
+        return;
     ((___r1 = self._secondHandLayer), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setHidden:"] || _objj_forward)(___r1, "setHidden:", !((self._datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)));
     var ___r1;
 }
@@ -57187,9 +57138,15 @@ class_addMethods(the_class, [new objj_method(sel_getUid("datePickerElements"), f
                 dateValue.setSeconds(value);
                 break;
         }
-        self._datePicker._invokedByUserEvent = YES;
+        if (CPDOMAvailable)
+        {
+            self._datePicker._invokedByUserEvent = YES;
+        }
         ((___r1 = self._datePicker), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setDateValue:timeInterval:"] || _objj_forward)(___r1, "_setDateValue:timeInterval:", dateValue, ((___r2 = self._datePicker), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["timeInterval"] || _objj_forward)(___r2, "timeInterval"))));
-        self._datePicker._invokedByUserEvent = NO;
+        if (CPDOMAvailable)
+        {
+            self._datePicker._invokedByUserEvent = NO;
+        }
         self._representedHours = dateValue.getHours();
         self._representedMinutes = dateValue.getMinutes();
         self._representedSeconds = dateValue.getSeconds();
@@ -57626,7 +57583,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), f
 
 ,["CPDictionary"])]);
 }
-p;31;_CPDatePickerElementTextField.jt;27541;@STATIC;1.0;i;13;CPTextField.jt;27503;objj_executeFile("CPTextField.j", YES);CPDatePickerElementTextFieldBecomeFirstResponder = "CPDatePickerElementTextFieldBecomeFirstResponder";
+p;31;_CPDatePickerElementTextField.jt;27686;@STATIC;1.0;i;13;CPTextField.ji;17;CPCompatibility.jt;27626;objj_executeFile("CPTextField.j", YES);objj_executeFile("CPCompatibility.j", YES);CPDatePickerElementTextFieldBecomeFirstResponder = "CPDatePickerElementTextFieldBecomeFirstResponder";
 CPDatePickerElementTextFieldAMPMChangedNotification = "CPDatePickerElementTextFieldAMPMChangedNotification";
 CPMonthDateType = 0;
 CPDayDateType = 1;
@@ -58001,9 +57958,15 @@ class_addMethods(the_class, [new objj_method(sel_getUid("nextTextField"), functi
             secondsFromGMTTimeZone = (timeZone == null ? timeZone : (timeZone.isa.method_msgSend["secondsFromGMT"] || _objj_forward)(timeZone, "secondsFromGMT"));
         newDateValue.setSeconds(newDateValue.getSeconds() + secondsFromGMT - secondsFromGMTTimeZone);
     }
-    self._datePicker._invokedByUserEvent = YES;
+    if (CPDOMAvailable)
+    {
+        self._datePicker._invokedByUserEvent = YES;
+    }
     ((___r1 = self._datePicker), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setDateValue:timeInterval:"] || _objj_forward)(___r1, "_setDateValue:timeInterval:", newDateValue, ((___r2 = self._datePicker), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["timeInterval"] || _objj_forward)(___r2, "timeInterval"))));
-    self._datePicker._invokedByUserEvent = NO;
+    if (CPDOMAvailable)
+    {
+        self._datePicker._invokedByUserEvent = NO;
+    }
     var ___r1, ___r2;
 }
 
@@ -58105,7 +58068,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), f
 
 ,["CPDictionary"])]);
 }
-p;26;_CPDatePickerElementView.jt;95287;@STATIC;1.0;i;11;CPControl.ji;31;_CPDatePickerElementTextField.jt;95215;objj_executeFile("CPControl.j", YES);objj_executeFile("_CPDatePickerElementTextField.j", YES);
+p;26;_CPDatePickerElementView.jt;95432;@STATIC;1.0;i;11;CPControl.ji;31;_CPDatePickerElementTextField.ji;17;CPCompatibility.jt;95338;objj_executeFile("CPControl.j", YES);objj_executeFile("_CPDatePickerElementTextField.j", YES);objj_executeFile("CPCompatibility.j", YES);
 {var the_class = objj_allocateClassPair(CPControl, "_CPDatePickerElementView"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_textFieldDay", "_CPDatePickerElementTextField"), new objj_ivar("_textFieldMonth", "_CPDatePickerElementTextField"), new objj_ivar("_textFieldYear", "_CPDatePickerElementTextField"), new objj_ivar("_textFieldHour", "_CPDatePickerElementTextField"), new objj_ivar("_textFieldMinute", "_CPDatePickerElementTextField"), new objj_ivar("_textFieldSecond", "_CPDatePickerElementTextField"), new objj_ivar("_textFieldPMAM", "_CPDatePickerElementTextField"), new objj_ivar("_datePicker", "CPDatePicker"), new objj_ivar("_textFieldSeparatorOne", "CPTextField"), new objj_ivar("_textFieldSeparatorTwo", "CPTextField"), new objj_ivar("_textFieldSeparatorThree", "CPTextField"), new objj_ivar("_textFieldSeparatorFour", "CPTextField")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:withDatePicker:"), function $_CPDatePickerElementView__initWithFrame_withDatePicker_(self, _cmd, aFrame, aDatePicker)
@@ -58397,9 +58360,15 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:withDateP
         if (d.getHours() > 11)
             dateValue.setHours(dateValue.getHours() - 12);
     }
-    self._datePicker._invokedByUserEvent = YES;
+    if (CPDOMAvailable)
+    {
+        self._datePicker._invokedByUserEvent = YES;
+    }
     ((___r1 = self._datePicker), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setDateValue:timeInterval:"] || _objj_forward)(___r1, "_setDateValue:timeInterval:", dateValue, ((___r2 = self._datePicker), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["timeInterval"] || _objj_forward)(___r2, "timeInterval"))));
-    self._datePicker._invokedByUserEvent = NO;
+    if (CPDOMAvailable)
+    {
+        self._datePicker._invokedByUserEvent = NO;
+    }
     var ___r1, ___r2;
 }
 
@@ -59123,7 +59092,7 @@ default:
 
 ,["void"])]);
 }
-p;24;_CPDatePickerMonthView.jt;35938;@STATIC;1.0;I;23;Foundation/Foundation.ji;11;CPControl.ji;22;_CPDatePickerDayView.jt;35847;objj_executeFile("Foundation/Foundation.j", NO);objj_executeFile("CPControl.j", YES);objj_executeFile("_CPDatePickerDayView.j", YES);
+p;24;_CPDatePickerMonthView.jt;36163;@STATIC;1.0;I;23;Foundation/Foundation.ji;11;CPControl.ji;22;_CPDatePickerDayView.ji;17;CPCompatibility.jt;36050;objj_executeFile("Foundation/Foundation.j", NO);objj_executeFile("CPControl.j", YES);objj_executeFile("_CPDatePickerDayView.j", YES);objj_executeFile("CPCompatibility.j", YES);
 {var the_class = objj_allocateClassPair(CPControl, "_CPDatePickerMonthView"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_isMonthJustChanged", "BOOL"), new objj_ivar("_dayTiles", "CPArray"), new objj_ivar("_clickDate", "CPDate"), new objj_ivar("_dragDate", "CPDate"), new objj_ivar("_date", "CPDate"), new objj_ivar("_previousMonth", "CPDate"), new objj_ivar("_nextMonth", "CPDate"), new objj_ivar("_datePicker", "CPDatePicker"), new objj_ivar("_eventDragged", "CPEvent"), new objj_ivar("_timerMonth", "CPTimer"), new objj_ivar("_delegate", "id"), new objj_ivar("_indexDayTile", "int")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("previousMonth"), function $_CPDatePickerMonthView__previousMonth(self, _cmd)
@@ -59433,7 +59402,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("previousMonth"), functi
     self._dragDate = nil;
     self._indexDayTile = -1;
     self._eventDragged = nil;
-    self._datePicker._invokedByUserEvent = YES;
+    if (CPDOMAvailable)
+    {
+        self._datePicker._invokedByUserEvent = YES;
+    }
     if ((dayTile == null ? dayTile : (dayTile.isa.method_msgSend["date"] || _objj_forward)(dayTile, "date")).getMonth() == self._date.getMonth())
     {
         if (((___r1 = self._datePicker), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["datePickerMode"] || _objj_forward)(___r1, "datePickerMode")) == CPRangeDateMode && (anEvent == null ? anEvent : (anEvent.isa.method_msgSend["modifierFlags"] || _objj_forward)(anEvent, "modifierFlags")) & CPShiftKeyMask)
@@ -59476,7 +59448,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("previousMonth"), functi
         else
             ((___r1 = self._delegate), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_displayNextMonth"] || _objj_forward)(___r1, "_displayNextMonth"));
     }
-    self._datePicker._invokedByUserEvent = NO;
+    if (CPDOMAvailable)
+    {
+        self._datePicker._invokedByUserEvent = NO;
+    }
     var ___r1, ___r2;
 }
 
@@ -59490,7 +59465,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("previousMonth"), functi
     self._dragDate = (dateTile == null ? dateTile : (dateTile.isa.method_msgSend["copy"] || _objj_forward)(dateTile, "copy"));
     self._indexDayTile = (self.isa.method_msgSend["indexOfTileForEvent:"] || _objj_forward)(self, "indexOfTileForEvent:", anEvent);
     self._eventDragged = anEvent;
-    self._datePicker._invokedByUserEvent = YES;
+    if (CPDOMAvailable)
+    {
+        self._datePicker._invokedByUserEvent = YES;
+    }
     if (((___r1 = self._datePicker), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["datePickerMode"] || _objj_forward)(___r1, "datePickerMode")) == CPSingleDateMode)
     {
         if ((dayTile == null ? dayTile : (dayTile.isa.method_msgSend["date"] || _objj_forward)(dayTile, "date")).getMonth() == self._date.getMonth())
@@ -59525,7 +59503,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("previousMonth"), functi
                 ((___r1 = self._datePicker), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setDateValue:timeInterval:"] || _objj_forward)(___r1, "_setDateValue:timeInterval:", (self.isa.method_msgSend["_hoursMinutesSecondsFromDatePickerForDate:"] || _objj_forward)(self, "_hoursMinutesSecondsFromDatePickerForDate:", self._clickDate), (dateTile == null ? dateTile : (dateTile.isa.method_msgSend["timeIntervalSinceDate:"] || _objj_forward)(dateTile, "timeIntervalSinceDate:", dateValueAtMidnight))));
         }
     }
-    self._datePicker._invokedByUserEvent = NO;
+    if (CPDOMAvailable)
+    {
+        self._datePicker._invokedByUserEvent = NO;
+    }
     var ___r1, ___r2;
 }
 
@@ -59572,7 +59553,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("previousMonth"), functi
 
 ,["CPDate","CPDate"])]);
 }
-p;24;_CPDatePickerTextField.jt;35920;@STATIC;1.0;i;11;CPControl.ji;8;CPFont.ji;13;CPTextField.ji;11;CPStepper.jI;20;Foundation/CPArray.jI;21;Foundation/CPObject.jI;19;Foundation/CPDate.jI;28;Foundation/CPDateFormatter.jI;21;Foundation/CPLocale.ji;26;_CPDatePickerElementView.jt;35673;objj_executeFile("CPControl.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPStepper.j", YES);objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPDate.j", NO);objj_executeFile("Foundation/CPDateFormatter.j", NO);objj_executeFile("Foundation/CPLocale.j", NO);objj_executeFile("_CPDatePickerElementView.j", YES);
+p;24;_CPDatePickerTextField.jt;36045;@STATIC;1.0;i;11;CPControl.ji;8;CPFont.ji;13;CPTextField.ji;11;CPStepper.jI;20;Foundation/CPArray.jI;21;Foundation/CPObject.jI;19;Foundation/CPDate.jI;28;Foundation/CPDateFormatter.jI;21;Foundation/CPLocale.ji;26;_CPDatePickerElementView.ji;17;CPCompatibility.jt;35776;objj_executeFile("CPControl.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPStepper.j", YES);objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPDate.j", NO);objj_executeFile("Foundation/CPDateFormatter.j", NO);objj_executeFile("Foundation/CPLocale.j", NO);objj_executeFile("_CPDatePickerElementView.j", YES);objj_executeFile("CPCompatibility.j", YES);
 {var the_class = objj_allocateClassPair(CPControl, "_CPDatePickerTextField"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_firstTextField", "_CPDatePickerElementTextField"), new objj_ivar("_lastTextField", "_CPDatePickerElementTextField"), new objj_ivar("_currentTextField", "_CPDatePickerElementTextField"), new objj_ivar("_datePickerElementView", "_CPDatePickerElementView"), new objj_ivar("_datePicker", "CPDatePicker"), new objj_ivar("_stepper", "CPStepper"), new objj_ivar("_datePickerElements", "CPInteger")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("firstTextField"), function $_CPDatePickerTextField__firstTextField(self, _cmd)
@@ -59628,9 +59609,12 @@ class_addMethods(the_class, [new objj_method(sel_getUid("firstTextField"), funct
     (self.isa.method_msgSend["setNeedsDisplay:"] || _objj_forward)(self, "setNeedsDisplay:", YES);
     if (((___r1 = self._datePicker), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["currentValueForThemeAttribute:"] || _objj_forward)(___r1, "currentValueForThemeAttribute:", "uses-focus-ring")))
     {
-        self._datePicker._DOMElement.style.overflow = "visible";
-        self._DOMElement.style.overflow = "visible";
-        self._datePickerElementView._DOMElement.style.overflow = "visible";
+        if (CPDOMAvailable)
+        {
+            self._datePicker._DOMElement.style.overflow = "visible";
+            self._DOMElement.style.overflow = "visible";
+            self._datePickerElementView._DOMElement.style.overflow = "visible";
+        }
     }
     var ___r1;
 }
@@ -60024,7 +60008,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("firstTextField"), funct
 
 ,["void"])]);
 }
-p;14;CPDatePicker.jt;43935;@STATIC;1.0;i;11;CPControl.ji;8;CPFont.ji;13;CPTextField.ji;24;_CPDatePickerTextField.ji;23;_CPDatePickerCalendar.jI;20;Foundation/CPArray.jI;21;Foundation/CPObject.jI;19;Foundation/CPDate.jI;21;Foundation/CPLocale.jI;23;Foundation/CPTimeZone.jt;43683;objj_executeFile("CPControl.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("_CPDatePickerTextField.j", YES);objj_executeFile("_CPDatePickerCalendar.j", YES);objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPDate.j", NO);objj_executeFile("Foundation/CPLocale.j", NO);objj_executeFile("Foundation/CPTimeZone.j", NO);var CPDatePicker_validateProposedDateValue_timeInterval = 1 << 1;
+p;14;CPDatePicker.jt;44040;@STATIC;1.0;i;11;CPControl.ji;8;CPFont.ji;13;CPTextField.ji;24;_CPDatePickerTextField.ji;23;_CPDatePickerCalendar.jI;20;Foundation/CPArray.jI;21;Foundation/CPObject.jI;19;Foundation/CPDate.jI;21;Foundation/CPLocale.jI;23;Foundation/CPTimeZone.ji;17;CPCompatibility.jt;43766;objj_executeFile("CPControl.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("_CPDatePickerTextField.j", YES);objj_executeFile("_CPDatePickerCalendar.j", YES);objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPDate.j", NO);objj_executeFile("Foundation/CPLocale.j", NO);objj_executeFile("Foundation/CPTimeZone.j", NO);objj_executeFile("CPCompatibility.j", YES);var CPDatePicker_validateProposedDateValue_timeInterval = 1 << 1;
 CPSingleDateMode = 0;
 CPRangeDateMode = 1;
 CPTextFieldAndStepperDatePickerStyle = 0;
@@ -60232,7 +60216,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("isBordered"), function 
     ((___r1 = self._datePickerComponent), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setDateValue:"] || _objj_forward)(___r1, "setDateValue:", self._dateValue));
     ((___r1 = self._datePickerComponent), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setControlSize:"] || _objj_forward)(___r1, "setControlSize:", (self.isa.method_msgSend["controlSize"] || _objj_forward)(self, "controlSize")));
     ((___r1 = self._datePickerComponent), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setDatePickerElements:"] || _objj_forward)(___r1, "setDatePickerElements:", self._datePickerElements));
-    ((___r1 = self._datePickerComponent), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setEnabled:"] || _objj_forward)(___r1, "setEnabled:", (self.isa.method_msgSend["isEnabled"] || _objj_forward)(self, "isEnabled")));
+    if (CPDOMAvailable)
+    {
+        ((___r1 = self._datePickerComponent), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setEnabled:"] || _objj_forward)(___r1, "setEnabled:", (self.isa.method_msgSend["isEnabled"] || _objj_forward)(self, "isEnabled")));
+    }
     if (self._isTextual)
         ((___r1 = self._datePickerComponent), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setTextColor:"] || _objj_forward)(___r1, "setTextColor:", (self.isa.method_msgSend["textColor"] || _objj_forward)(self, "textColor")));
     (self.isa.method_msgSend["addSubview:"] || _objj_forward)(self, "addSubview:", self._datePickerComponent);
@@ -60662,7 +60649,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;18;_CPMenuBarWindow.jt;30858;@STATIC;1.0;i;9;CPPanel.ji;16;_CPMenuManager.jt;30804;objj_executeFile("CPPanel.j", YES);objj_executeFile("_CPMenuManager.j", YES);
+p;18;_CPMenuBarWindow.jt;30987;@STATIC;1.0;i;9;CPPanel.ji;16;_CPMenuManager.ji;17;CPCompatibility.jt;30911;objj_executeFile("CPPanel.j", YES);objj_executeFile("_CPMenuManager.j", YES);objj_executeFile("CPCompatibility.j", YES);
 {var the_class = objj_allocateClassPair(CPPanel, "_CPMenuBarWindow"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_highlightView", "CPView"), new objj_ivar("_menuItemViews", "CPArray"), new objj_ivar("_trackingMenuItem", "CPMenuItem"), new objj_ivar("_iconImageView", "CPImageView"), new objj_ivar("_titleField", "CPTextField"), new objj_ivar("_textColor", "CPColor"), new objj_ivar("_titleColor", "CPColor"), new objj_ivar("_textShadowColor", "CPColor"), new objj_ivar("_titleShadowColor", "CPColor"), new objj_ivar("_highlightColor", "CPColor"), new objj_ivar("_highlightTextColor", "CPColor"), new objj_ivar("_highlightTextShadowColor", "CPColor")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPMenuBarWindow__init(self, _cmd)
@@ -60692,13 +60679,16 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPMe
 
 ,["id"]), new objj_method(sel_getUid("setTitle:"), function $_CPMenuBarWindow__setTitle_(self, _cmd, aTitle)
 {
-    var bundleName = ((___r1 = (CPBundle.isa.method_msgSend["mainBundle"] || _objj_forward)(CPBundle, "mainBundle")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(___r1, "objectForInfoDictionaryKey:", "CPBundleName"));
-    if (!(bundleName == null ? bundleName : (bundleName.isa.method_msgSend["length"] || _objj_forward)(bundleName, "length")))
-        document.title = aTitle;
-    else if ((aTitle == null ? aTitle : (aTitle.isa.method_msgSend["length"] || _objj_forward)(aTitle, "length")))
-        document.title = aTitle + " - " + bundleName;
-    else
-        document.title = bundleName;
+    if (CPDOMAvailable)
+    {
+        var bundleName = ((___r1 = (CPBundle.isa.method_msgSend["mainBundle"] || _objj_forward)(CPBundle, "mainBundle")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(___r1, "objectForInfoDictionaryKey:", "CPBundleName"));
+        if (!(bundleName == null ? bundleName : (bundleName.isa.method_msgSend["length"] || _objj_forward)(bundleName, "length")))
+            document.title = aTitle;
+        else if ((aTitle == null ? aTitle : (aTitle.isa.method_msgSend["length"] || _objj_forward)(aTitle, "length")))
+            document.title = aTitle + " - " + bundleName;
+        else
+            document.title = bundleName;
+    }
     ((___r1 = self._titleField), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setStringValue:"] || _objj_forward)(___r1, "setStringValue:", aTitle));
     ((___r1 = self._titleField), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["sizeToFit"] || _objj_forward)(___r1, "sizeToFit"));
     (self.isa.method_msgSend["tile"] || _objj_forward)(self, "tile");
@@ -62021,7 +62011,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPTheme"])]);
 }
-p;8;CPMenu.jt;76516;@STATIC;1.0;I;20;Foundation/CPArray.jI;25;Foundation/CPDictionary.jI;33;Foundation/CPNotificationCenter.jI;21;Foundation/CPString.ji;19;CPKeyValueBinding.ji;12;CPMenuItem.ji;9;CALayer.ji;18;_CPMenuBarWindow.ji;15;_CPMenuWindow.jt;76280;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPDictionary.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPKeyValueBinding.j", YES);objj_executeFile("CPMenuItem.j", YES);objj_executeFile("CALayer.j", YES);{var the_protocol = objj_allocateProtocol("CPMenuDelegate");
+p;8;CPMenu.jt;76675;@STATIC;1.0;I;20;Foundation/CPArray.jI;25;Foundation/CPDictionary.jI;33;Foundation/CPNotificationCenter.jI;21;Foundation/CPString.ji;19;CPKeyValueBinding.ji;12;CPMenuItem.ji;9;CALayer.ji;17;CPCompatibility.ji;18;_CPMenuBarWindow.ji;15;_CPMenuWindow.jt;76417;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPDictionary.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPKeyValueBinding.j", YES);objj_executeFile("CPMenuItem.j", YES);objj_executeFile("CALayer.j", YES);objj_executeFile("CPCompatibility.j", YES);{var the_protocol = objj_allocateProtocol("CPMenuDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPMenuDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -62493,8 +62483,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("menuBarHeight"), functi
                     (self.isa.method_msgSend["_flashItemAtIndex:"] || _objj_forward)(self, "_flashItemAtIndex:", index);
                 anEvent._isKeyEquivalent = YES;
                 (self.isa.method_msgSend["performActionForItemAtIndex:"] || _objj_forward)(self, "performActionForItemAtIndex:", index);
-                if (characters != "c" && characters != "x" && characters != "v")
+                if (CPDOMAvailable && characters != "c" && characters != "x" && characters != "v")
+                {
                     _CPDOMEventStop(anEvent._DOMEvent);
+                }
             }
             else
             {
@@ -62623,7 +62615,10 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
     }
     else
         (_CPMenuBarSharedWindow == null ? _CPMenuBarSharedWindow : (_CPMenuBarSharedWindow.isa.method_msgSend["orderOut:"] || _objj_forward)(_CPMenuBarSharedWindow, "orderOut:", self));
-    ((___r1 = (CPPlatformWindow.isa.method_msgSend["primaryPlatformWindow"] || _objj_forward)(CPPlatformWindow, "primaryPlatformWindow")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["resizeEvent:"] || _objj_forward)(___r1, "resizeEvent:", nil));
+    if (CPDOMAvailable)
+    {
+        ((___r1 = (CPPlatformWindow.isa.method_msgSend["primaryPlatformWindow"] || _objj_forward)(CPPlatformWindow, "primaryPlatformWindow")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["resizeEvent:"] || _objj_forward)(___r1, "resizeEvent:", nil));
+    }
     var ___r1;
 }
 
@@ -63757,7 +63752,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("setColor:"), function $
 
 ,["void","CGRect"])]);
 }
-p;12;CPMenuItem.jt;37650;@STATIC;1.0;I;20;Foundation/CPCoder.jI;21;Foundation/CPObject.jI;21;Foundation/CPString.ji;9;CPImage.ji;8;CPText.ji;8;CPView.ji;17;_CPMenuItemView.jt;37494;objj_executeFile("Foundation/CPCoder.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPImage.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("_CPMenuItemView.j", YES);var CPMenuItemStringRepresentationDictionary = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", ["\u238B", "\u21E5", "\u21E4", "\u2423", "\u23CE", "\u232B", "\u232B", "\u2326", "\u21F1", "\u21F2", "\u21DE", "\u21DF", "\u2191", "\u2193", "\u2190", "\u2192", "\u2327"], [CPEscapeFunctionKey, CPTabCharacter, CPBackTabCharacter, CPSpaceFunctionKey, CPCarriageReturnCharacter, CPBackspaceCharacter, CPDeleteFunctionKey, CPDeleteCharacter, CPHomeFunctionKey, CPEndFunctionKey, CPPageUpFunctionKey, CPPageDownFunctionKey, CPUpArrowFunctionKey, CPDownArrowFunctionKey, CPLeftArrowFunctionKey, CPRightArrowFunctionKey, CPClearDisplayFunctionKey]));
+p;12;CPMenuItem.jt;38200;@STATIC;1.0;I;20;Foundation/CPCoder.jI;21;Foundation/CPObject.jI;21;Foundation/CPString.ji;9;CPImage.ji;8;CPText.ji;8;CPView.ji;17;_CPMenuItemView.jt;38044;objj_executeFile("Foundation/CPCoder.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPImage.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("_CPMenuItemView.j", YES);var CPMenuItemStringRepresentationDictionary = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", ["\u238B", "\u21E5", "\u21E4", "\u2423", "\u23CE", "\u232B", "\u232B", "\u2326", "\u21F1", "\u21F2", "\u21DE", "\u21DF", "\u2191", "\u2193", "\u2190", "\u2192", "\u2327"], [CPEscapeFunctionKey, CPTabCharacter, CPBackTabCharacter, CPSpaceFunctionKey, CPCarriageReturnCharacter, CPBackspaceCharacter, CPDeleteFunctionKey, CPDeleteCharacter, CPHomeFunctionKey, CPEndFunctionKey, CPPageUpFunctionKey, CPPageDownFunctionKey, CPUpArrowFunctionKey, CPDownArrowFunctionKey, CPLeftArrowFunctionKey, CPRightArrowFunctionKey, CPClearDisplayFunctionKey]));
 
 {var the_class = objj_allocateClassPair(CPObject, "CPMenuItem"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_isSeparator", "BOOL"), new objj_ivar("_title", "CPString"), new objj_ivar("_font", "CPFont"), new objj_ivar("_target", "id"), new objj_ivar("_action", "SEL"), new objj_ivar("_isEnabled", "BOOL"), new objj_ivar("_isHidden", "BOOL"), new objj_ivar("_tag", "int"), new objj_ivar("_state", "int"), new objj_ivar("_image", "CPImage"), new objj_ivar("_alternateImage", "CPImage"), new objj_ivar("_onStateImage", "CPImage"), new objj_ivar("_offStateImage", "CPImage"), new objj_ivar("_mixedStateImage", "CPImage"), new objj_ivar("_submenu", "CPMenu"), new objj_ivar("_menu", "CPMenu"), new objj_ivar("_keyEquivalent", "CPString"), new objj_ivar("_keyEquivalentModifierMask", "unsigned"), new objj_ivar("_mnemonicLocation", "int"), new objj_ivar("_isAlternate", "BOOL"), new objj_ivar("_indentationLevel", "int"), new objj_ivar("_toolTip", "CPString"), new objj_ivar("_representedObject", "id"), new objj_ivar("_view", "CPView"), new objj_ivar("_changeCount", "int"), new objj_ivar("_menuItemView", "_CPMenuItemView")]);objj_registerClassPair(the_class);
@@ -64225,7 +64220,18 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPMen
     return (objj_getClass("CPMenuItem").super_class.method_dtable["description"] || _objj_forward)(self, "description") + " target: " + (self.isa.method_msgSend["target"] || _objj_forward)(self, "target") + " action: " + CPStringFromSelector((self.isa.method_msgSend["action"] || _objj_forward)(self, "action"));
 }
 
-,["CPString"])]);
+,["CPString"]), new objj_method(sel_getUid("_decodeValueForKey:defaultValue:coder:"), function $CPMenuItem___decodeValueForKey_defaultValue_coder_(self, _cmd, aKey, aDefaultValue, aCoder)
+{
+    return (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["containsValueForKey:"] || _objj_forward)(aCoder, "containsValueForKey:", aKey)) ? (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", aKey)) : aDefaultValue;
+}
+
+,["id","CPString","id","CPCoder"]), new objj_method(sel_getUid("_encodeValue:forKey:ifNotEqualTo:coder:"), function $CPMenuItem___encodeValue_forKey_ifNotEqualTo_coder_(self, _cmd, aValue, aKey, aDefaultValue, aCoder)
+{
+    if (aValue !== aDefaultValue)
+        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", aValue, aKey));
+}
+
+,["void","id","CPString","id","CPCoder"])]);
 class_addMethods(meta_class, [new objj_method(sel_getUid("_binderClassForBinding:"), function $CPMenuItem___binderClassForBinding_(self, _cmd, aBinding)
 {
     if ((aBinding == null ? aBinding : (aBinding.isa.method_msgSend["hasPrefix:"] || _objj_forward)(aBinding, "hasPrefix:", CPEnabledBinding)))
@@ -64290,7 +64296,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
         self._title = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPMenuItemTitleKey));
         self._target = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPMenuItemTargetKey));
         self._action = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPMenuItemActionKey));
-        self._isEnabled = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["containsValueForKey:"] || _objj_forward)(aCoder, "containsValueForKey:", CPMenuItemIsEnabledKey)) ? (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPMenuItemIsEnabledKey)) : YES;
+        self._isEnabled = (self == null ? self : (self.isa.method_msgSend["_decodeValueForKey:defaultValue:coder:"] || _objj_forward)(self, "_decodeValueForKey:defaultValue:coder:", CPMenuItemIsEnabledKey, YES, aCoder));
         self._isHidden = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeBoolForKey:"] || _objj_forward)(aCoder, "decodeBoolForKey:", CPMenuItemIsHiddenKey));
         self._tag = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeIntForKey:"] || _objj_forward)(aCoder, "decodeIntForKey:", CPMenuItemTagKey));
         self._state = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeIntForKey:"] || _objj_forward)(aCoder, "decodeIntForKey:", CPMenuItemStateKey));
@@ -64317,51 +64323,25 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
     (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._title, CPMenuItemTitleKey));
     (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._target, CPMenuItemTargetKey));
     (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._action, CPMenuItemActionKey));
-    if (self._isEnabled !== YES)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._isEnabled, CPMenuItemIsEnabledKey));
-;
-    if (self._isHidden !== NO)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._isHidden, CPMenuItemIsHiddenKey));
-;
-    if (self._tag !== 0)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._tag, CPMenuItemTagKey));
-;
-    if (self._state !== CPOffState)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._state, CPMenuItemStateKey));
-;
-    if (self._image !== nil)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._image, CPMenuItemImageKey));
-;
-    if (self._alternateImage !== nil)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._alternateImage, CPMenuItemAlternateImageKey));
-;
-    if (self._onStateImage !== nil)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._onStateImage, CPMenuItemOnStateImageKey));
-;
-    if (self._offStateImage !== nil)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._offStateImage, CPMenuItemOffStateImageKey));
-;
-    if (self._mixedStateImage !== nil)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._mixedStateImage, CPMenuItemMixedStateImageKey));
-;
-    if (self._submenu !== nil)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._submenu, CPMenuItemSubmenuKey));
-;
-    if (self._menu !== nil)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._menu, CPMenuItemMenuKey));
-;
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._isEnabled, CPMenuItemIsEnabledKey, YES, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._isHidden, CPMenuItemIsHiddenKey, NO, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._tag, CPMenuItemTagKey, 0, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._state, CPMenuItemStateKey, CPOffState, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._image, CPMenuItemImageKey, nil, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._alternateImage, CPMenuItemAlternateImageKey, nil, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._onStateImage, CPMenuItemOnStateImageKey, nil, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._offStateImage, CPMenuItemOffStateImageKey, nil, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._mixedStateImage, CPMenuItemMixedStateImageKey, nil, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._submenu, CPMenuItemSubmenuKey, nil, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._menu, CPMenuItemMenuKey, nil, aCoder);
     if (self._keyEquivalent && self._keyEquivalent.length)
         (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._keyEquivalent, CPMenuItemKeyEquivalentKey));
     if (self._keyEquivalentModifierMask)
         (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._keyEquivalentModifierMask, CPMenuItemKeyEquivalentModifierMaskKey));
     if (self._indentationLevel > 0)
         (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeInt:forKey:"] || _objj_forward)(aCoder, "encodeInt:forKey:", self._indentationLevel, CPMenuItemIndentationLevelKey));
-    if (self._representedObject !== nil)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._representedObject, CPMenuItemRepresentedObjectKey));
-;
-    if (self._view !== nil)
-        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._view, CPMenuItemViewKey));
-;
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._representedObject, CPMenuItemRepresentedObjectKey, nil, aCoder);
+    (self.isa.method_msgSend["_encodeValue:forKey:ifNotEqualTo:coder:"] || _objj_forward)(self, "_encodeValue:forKey:ifNotEqualTo:coder:", self._view, CPMenuItemViewKey, nil, aCoder);
 }
 
 ,["void","CPCoder"])]);
@@ -66666,7 +66646,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["id"])]);
 }
-p;14;CPRuleEditor.jt;156712;@STATIC;1.0;I;24;Foundation/CPPredicate.jI;20;Foundation/CPArray.jI;25;Foundation/CPDictionary.jI;23;Foundation/CPIndexSet.ji;14;CPPasteboard.ji;24;CPRuleEditor_Constants.ji;13;CPTextField.ji;17;CPViewAnimation.ji;8;CPView.ji;27;_CPRuleEditorViewSliceRow.ji;24;_CPRuleEditorLocalizer.jt;156418;objj_executeFile("Foundation/CPPredicate.j", NO);objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPDictionary.j", NO);objj_executeFile("Foundation/CPIndexSet.j", NO);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPRuleEditor_Constants.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPViewAnimation.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("_CPRuleEditorViewSliceRow.j", YES);objj_executeFile("_CPRuleEditorLocalizer.j", YES);{var the_protocol = objj_allocateProtocol("CPRuleEditorDelegate");
+p;14;CPRuleEditor.jt;156821;@STATIC;1.0;I;24;Foundation/CPPredicate.jI;20;Foundation/CPArray.jI;25;Foundation/CPDictionary.jI;23;Foundation/CPIndexSet.ji;14;CPPasteboard.ji;24;CPRuleEditor_Constants.ji;13;CPTextField.ji;17;CPViewAnimation.ji;8;CPView.ji;27;_CPRuleEditorViewSliceRow.ji;24;_CPRuleEditorLocalizer.ji;17;CPCompatibility.jt;156505;objj_executeFile("Foundation/CPPredicate.j", NO);objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPDictionary.j", NO);objj_executeFile("Foundation/CPIndexSet.j", NO);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPRuleEditor_Constants.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPViewAnimation.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("_CPRuleEditorViewSliceRow.j", YES);objj_executeFile("_CPRuleEditorLocalizer.j", YES);objj_executeFile("CPCompatibility.j", YES);{var the_protocol = objj_allocateProtocol("CPRuleEditorDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPRuleEditorDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -68202,8 +68182,11 @@ default:
     var firstIndex = ((___r1 = self._draggingRows), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["firstIndex"] || _objj_forward)(___r1, "firstIndex")),
         firstSlice = ((___r1 = self._slices), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectAtIndex:"] || _objj_forward)(___r1, "objectAtIndex:", firstIndex)),
         dragview = ((___r1 = (CPView.isa.method_msgSend["alloc"] || _objj_forward)(CPView, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFrame:"] || _objj_forward)(___r1, "initWithFrame:", (firstSlice == null ? firstSlice : (firstSlice.isa.method_msgSend["frame"] || _objj_forward)(firstSlice, "frame"))));
-    var html = firstSlice._DOMElement.innerHTML;
-    dragview._DOMElement.innerHTML = (html == null ? html : (html.isa.method_msgSend["copy"] || _objj_forward)(html, "copy"));
+    if (CPDOMAvailable)
+    {
+        var html = firstSlice._DOMElement.innerHTML;
+        dragview._DOMElement.innerHTML = (html == null ? html : (html.isa.method_msgSend["copy"] || _objj_forward)(html, "copy"));
+    }
     (dragview == null ? dragview : (dragview.isa.method_msgSend["setBackgroundColor:"] || _objj_forward)(dragview, "setBackgroundColor:", (firstSlice == null ? firstSlice : (firstSlice.isa.method_msgSend["backgroundColor"] || _objj_forward)(firstSlice, "backgroundColor"))));
     (dragview == null ? dragview : (dragview.isa.method_msgSend["setAlphaValue:"] || _objj_forward)(dragview, "setAlphaValue:", 0.7));
     dragPoint = CGPointMake(0, firstIndex * self._sliceHeight);
@@ -71552,7 +71535,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 ,["void","CPEvent"])]);
 }
 (CPFontManager == null ? CPFontManager : (CPFontManager.isa.method_msgSend["setFontPanelFactory:"] || _objj_forward)(CPFontManager, "setFontPanelFactory:", (CPFontPanel.isa.method_msgSend["class"] || _objj_forward)(CPFontPanel, "class")));
-p;17;CPLayoutManager.jt;68257;@STATIC;1.0;i;8;CPText.ji;17;CPTextContainer.ji;11;CGContext.ji;14;CPTypesetter.ji;8;CPFont.jt;68156;objj_executeFile("CPText.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CGContext.j", YES);objj_executeFile("CPTypesetter.j", YES);objj_executeFile("CPFont.j", YES);_isNewlineCharacter = function(chr)
+p;17;CPLayoutManager.jt;68342;@STATIC;1.0;i;8;CPText.ji;11;CGContext.ji;14;CPTypesetter.ji;8;CPFont.ji;17;CPCompatibility.jt;68241;objj_executeFile("CPText.j", YES);objj_executeFile("CGContext.j", YES);objj_executeFile("CPTypesetter.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPCompatibility.j", YES);_isNewlineCharacter = function(chr)
 {
     return chr === '\n' || chr === '\r';
 }
@@ -71802,7 +71785,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_lineFragmentFactory"),
     if (!startIndex)
         (self.isa.method_msgSend["setExtraLineFragmentRect:usedRect:textContainer:"] || _objj_forward)(self, "setExtraLineFragmentRect:usedRect:textContainer:", CGRectMake(0, 0), CGRectMake(0, 0), nil);
     ((___r1 = self._typesetter), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["layoutGlyphsInLayoutManager:startingAtGlyphIndex:maxNumberOfLineFragments:nextGlyphIndex:"] || _objj_forward)(___r1, "layoutGlyphsInLayoutManager:startingAtGlyphIndex:maxNumberOfLineFragments:nextGlyphIndex:", self, startIndex, -1, nil));
-    (self.isa.method_msgSend["_cleanUpDOM"] || _objj_forward)(self, "_cleanUpDOM");
+    if (CPDOMAvailable)
+    {
+        (self.isa.method_msgSend["_cleanUpDOM"] || _objj_forward)(self, "_cleanUpDOM");
+    }
     self._isValidatingLayoutAndGlyphs = NO;
     var ___r1;
 }
@@ -72508,6 +72494,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("glyphFrames"), function
 ,["id","CPString","CPFont","CPColor"]), new objj_method(sel_getUid("createDOMElementWithText:andFont:andColor:andBackgroundColor:andUnderline:"), function $_CPLineFragment__createDOMElementWithText_andFont_andColor_andBackgroundColor_andUnderline_(self, _cmd, aString, aFont, fgColor, bgColor, aUnderline)
 {
     if (!aString || aString.length === 0)
+        return nil;
+    if (!CPDOMAvailable)
         return nil;
     var style,
         span = document.createElement("span");
@@ -74334,7 +74322,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTextView.jt;236433;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPTextContainer.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;236215;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
+p;12;CPTextView.jt;236961;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;17;CPTextContainer.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;236743;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
 ;
 ;
 ;
@@ -74388,7 +74376,7 @@ kDelegateRespondsTo_textView_menu_forEvent_atIndex = 1 << 11;
 ;
 
 {var the_class = objj_allocateClassPair(CPText, "CPTextView"),
-meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_allowsUndo", "BOOL"), new objj_ivar("_isHorizontallyResizable", "BOOL"), new objj_ivar("_isVerticallyResizable", "BOOL"), new objj_ivar("_usesFontPanel", "BOOL"), new objj_ivar("_textContainerOrigin", "CGPoint"), new objj_ivar("_minSize", "CGSize"), new objj_ivar("_maxSize", "CGSize"), new objj_ivar("_textContainerInset", "CGSize"), new objj_ivar("_insertionPointColor", "CPColor"), new objj_ivar("_textColor", "CPColor"), new objj_ivar("_selectedTextAttributes", "CPDictionary"), new objj_ivar("_typingAttributes", "CPDictionary"), new objj_ivar("_font", "CPFont"), new objj_ivar("_layoutManager", "CPLayoutManager"), new objj_ivar("_selectionRange", "CPRange"), new objj_ivar("_selectionGranularity", "CPSelectionGranularity"), new objj_ivar("_previousSelectionGranularity", "CPSelectionGranularity"), new objj_ivar("_textContainer", "CPTextContainer"), new objj_ivar("_textStorage", "CPTextStorage"), new objj_ivar("_delegate", "id"), new objj_ivar("_delegateRespondsToSelectorMask", "unsigned"), new objj_ivar("_startTrackingLocation", "int"), new objj_ivar("_caret", "_CPCaret"), new objj_ivar("_scrollingTimer", "CPTimer"), new objj_ivar("_scrollingDownward", "BOOL"), new objj_ivar("_movingSelection", "CPRange"), new objj_ivar("_stickyXLocation", "int"), new objj_ivar("_selectionSpans", "CPArray"), new objj_ivar("_observedClipView", "CPView"), new objj_ivar("_exposedRect", "CGRect"), new objj_ivar("_scrollingTimer", "CPTimer"), new objj_ivar("_placeholderString", "CPString"), new objj_ivar("_firstResponderButNotEditingYet", "BOOL"), new objj_ivar("_mouseDownOldSelection", "CPRange")]);objj_registerClassPair(the_class);
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_allowsUndo", "BOOL"), new objj_ivar("_isHorizontallyResizable", "BOOL"), new objj_ivar("_isVerticallyResizable", "BOOL"), new objj_ivar("_usesFontPanel", "BOOL"), new objj_ivar("_textContainerOrigin", "CGPoint"), new objj_ivar("_minSize", "CGSize"), new objj_ivar("_maxSize", "CGSize"), new objj_ivar("_textContainerInset", "CGSize"), new objj_ivar("_insertionPointColor", "CPColor"), new objj_ivar("_textColor", "CPColor"), new objj_ivar("_selectedTextAttributes", "CPDictionary"), new objj_ivar("_typingAttributes", "CPDictionary"), new objj_ivar("_font", "CPFont"), new objj_ivar("_layoutManager", "CPLayoutManager"), new objj_ivar("_selectionRange", "CPRange"), new objj_ivar("_selectionGranularity", "CPSelectionGranularity"), new objj_ivar("_previousSelectionGranularity", "CPSelectionGranularity"), new objj_ivar("_textContainer", "CPTextContainer"), new objj_ivar("_textStorage", "CPTextStorage"), new objj_ivar("_delegate", "id"), new objj_ivar("_delegateRespondsToSelectorMask", "unsigned"), new objj_ivar("_startTrackingLocation", "int"), new objj_ivar("_caret", "_CPCaret"), new objj_ivar("_scrollingDownward", "BOOL"), new objj_ivar("_movingSelection", "CPRange"), new objj_ivar("_stickyXLocation", "int"), new objj_ivar("_selectionSpans", "CPArray"), new objj_ivar("_observedClipView", "CPView"), new objj_ivar("_exposedRect", "CGRect"), new objj_ivar("_scrollingTimer", "CPTimer"), new objj_ivar("_placeholderString", "CPString"), new objj_ivar("_firstResponderButNotEditingYet", "BOOL"), new objj_ivar("_mouseDownOldSelection", "CPRange")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function $CPTextView__allowsUndo(self, _cmd)
 {
     return self._allowsUndo;
@@ -74601,7 +74589,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
 
 ,["id","CGRect"]), new objj_method(sel_getUid("_init"), function $CPTextView___init(self, _cmd)
 {
-    self._DOMElement.style.cursor = "text";
+    if (CPDOMAvailable)
+    {
+        self._DOMElement.style.cursor = "text";
+    }
     self._selectionRange = CPMakeRange(0, 0);
     self._textContainerInset = CGSizeMake(2, 0);
     self._textContainerOrigin = CGPointMake(self._bounds.origin.x, self._bounds.origin.y);
@@ -75126,6 +75117,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
 
 ,["void","CGRect","CPGraphicsContext"]), new objj_method(sel_getUid("drawRect:"), function $CPTextView__drawRect_(self, _cmd, aRect)
 {
+    if (!CPDOMAvailable)
+        return;
     var range = ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["glyphRangeForBoundingRect:inTextContainer:"] || _objj_forward)(___r1, "glyphRangeForBoundingRect:inTextContainer:", aRect, self._textContainer));
     for (var i = 0; i < ((___r1 = self._selectionSpans), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count")); i++)
         ((___r1 = self._selectionSpans[i]), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeFromTextView"] || _objj_forward)(___r1, "removeFromTextView"));
@@ -75230,6 +75223,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
 
 ,["void","CPRange","CPSelectionAffinity","BOOL","BOOL"]), new objj_method(sel_getUid("_cumulativeOffset"), function $CPTextView___cumulativeOffset(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return CGPointMake(0, 0);
     var top = 0,
         left = 0,
         element = self._DOMElement;
@@ -76912,6 +76907,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithTextView:rect:c
 
 ,["void"]), new objj_method(sel_getUid("_createSpan"), function $_CPSelectionBox___createSpan(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return;
     self._selectionBoxDOM = document.createElement("span");
     self._selectionBoxDOM.style.position = "absolute";
     self._selectionBoxDOM.style.visibility = "visible";
@@ -76949,30 +76946,36 @@ class_addMethods(the_class, [new objj_method(sel_getUid("permanentlyVisible"), f
 ,["void","BOOL"]), new objj_method(sel_getUid("setRect:"), function $_CPCaret__setRect_(self, _cmd, aRect)
 {
     self._rect = CGRectCreateCopy(aRect);
-    self._caretDOM.style.left = aRect.origin.x + "px";
-    self._caretDOM.style.top = aRect.origin.y + "px";
-    self._caretDOM.style.height = aRect.size.height + "px";
+    if (CPDOMAvailable)
+    {
+        self._caretDOM.style.left = aRect.origin.x + "px";
+        self._caretDOM.style.top = aRect.origin.y + "px";
+        self._caretDOM.style.height = aRect.size.height + "px";
+    }
 }
 
 ,["void","CGRect"]), new objj_method(sel_getUid("initWithTextView:"), function $_CPCaret__initWithTextView_(self, _cmd, aView)
 {
     if (self = (objj_getClass("_CPCaret").super_class.method_dtable["init"] || _objj_forward)(self, "init"))
     {
-        var style;
-        if (!self._caretDOM)
+        if (CPDOMAvailable)
         {
-            self._caretDOM = document.createElement("span");
-            style = self._caretDOM.style;
-            style.position = "absolute";
-            style.visibility = "visible";
-            style.padding = "0px";
-            style.margin = "0px";
-            style.whiteSpace = "pre";
-            style.backgroundColor = "black";
-            self._caretDOM.style.width = "1px";
-            self._caretDOM.style.zIndex = 10001;
-            self._textView = aView;
-            self._textView._DOMElement.appendChild(self._caretDOM);
+            var style;
+            if (!self._caretDOM)
+            {
+                self._caretDOM = document.createElement("span");
+                style = self._caretDOM.style;
+                style.position = "absolute";
+                style.visibility = "visible";
+                style.padding = "0px";
+                style.margin = "0px";
+                style.whiteSpace = "pre";
+                style.backgroundColor = "black";
+                self._caretDOM.style.width = "1px";
+                self._caretDOM.style.zIndex = 10001;
+                self._textView = aView;
+                self._textView._DOMElement.appendChild(self._caretDOM);
+            }
         }
     }
     return self;
@@ -76980,7 +76983,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("permanentlyVisible"), f
 
 ,["id","CPTextView"]), new objj_method(sel_getUid("setVisibility:stop:"), function $_CPCaret__setVisibility_stop_(self, _cmd, visibilityFlag, stopFlag)
 {
-    self._caretDOM.style.visibility = visibilityFlag ? "visible" : "hidden";
+    if (CPDOMAvailable)
+    {
+        self._caretDOM.style.visibility = visibilityFlag ? "visible" : "hidden";
+    }
     if (!visibilityFlag && stopFlag)
         (self.isa.method_msgSend["stopBlinking"] || _objj_forward)(self, "stopBlinking");
 }
@@ -77041,12 +77047,15 @@ var _CPCopyPlaceholder = '-';
 meta_class = the_class.isa;objj_registerClassPair(the_class);
 class_addMethods(meta_class, [new objj_method(sel_getUid("isDeadKey:"), function $_CPNativeInputManager__isDeadKey_(self, _cmd, event)
 {
-    return event._DOMEvent && (event._DOMEvent.key === 'Dead' || event._DOMEvent.key === 'Process');
+    if (CPDOMAvailable)
+        return event._DOMEvent && (event._DOMEvent.key === 'Dead' || event._DOMEvent.key === 'Process');
     return NO;
 }
 
 ,["void","CPEvent"]), new objj_method(sel_getUid("cancelCurrentInputSessionIfNeeded"), function $_CPNativeInputManager__cancelCurrentInputSessionIfNeeded(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return;
     if (_CPNativeInputField)
     {
         _CPNativeInputField.innerHTML = '';
@@ -77056,6 +77065,8 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("isDeadKey:"), function
 
 ,["void"]), new objj_method(sel_getUid("initialize"), function $_CPNativeInputManager__initialize(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return;
     _CPNativeInputField = document.createElement("div");
     _CPNativeInputField.contentEditable = YES;
     _CPNativeInputField.style.position = "absolute";
@@ -77179,12 +77190,16 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("isDeadKey:"), function
 
 ,["void"]), new objj_method(sel_getUid("focusForTextView:"), function $_CPNativeInputManager__focusForTextView_(self, _cmd, currentFirstResponder)
 {
+    if (!CPDOMAvailable)
+        return;
     if (_CPNativeInputField && document.activeElement !== _CPNativeInputField)
         _CPNativeInputField.focus();
 }
 
 ,["void","CPTextView"]), new objj_method(sel_getUid("focusForClipboardOfTextView:"), function $_CPNativeInputManager__focusForClipboardOfTextView_(self, _cmd, textview)
 {
+    if (!CPDOMAvailable)
+        return;
     var selectedRange = (textview == null ? textview : (textview.isa.method_msgSend["selectedRange"] || _objj_forward)(textview, "selectedRange"));
     if (selectedRange.length > 0)
     {
@@ -77672,7 +77687,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("sharedInstance"), func
 
 ,["id"])]);
 }
-p;31;_CPBorderlessBridgeWindowView.jt;5144;@STATIC;1.0;i;15;_CPWindowView.jt;5105;objj_executeFile("_CPWindowView.j", YES);
+p;31;_CPBorderlessBridgeWindowView.jt;5253;@STATIC;1.0;i;15;_CPWindowView.ji;17;CPCompatibility.jt;5192;objj_executeFile("_CPWindowView.j", YES);objj_executeFile("CPCompatibility.j", YES);
 {var the_class = objj_allocateClassPair(_CPWindowView, "_CPBorderlessBridgeWindowView"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_toolbarBackgroundView", "CPView")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("setShowsResizeIndicator:"), function $_CPBorderlessBridgeWindowView__setShowsResizeIndicator_(self, _cmd, shouldShowResizeIndicator)
@@ -77712,8 +77727,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("setShowsResizeIndicator
     var theWindow = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window");
     if (self._frame.size.width < theWindow._minSize.width || self._frame.size.height < theWindow._minSize.height)
         ((___r1 = theWindow._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrameSize:"] || _objj_forward)(___r1, "setFrameSize:", CGSizeMake(MAX(self._frame.size.width, theWindow._minSize.width), MAX(self._frame.size.height, theWindow._minSize.height))));
-    self._DOMElement.style.overflowX = self._frame.size.width < theWindow._minSize.width ? "scroll" : "hidden";
-    self._DOMElement.style.overflowY = self._frame.size.height < theWindow._minSize.height ? "scroll" : "hidden";
+    if (CPDOMAvailable)
+    {
+        self._DOMElement.style.overflowX = self._frame.size.width < theWindow._minSize.width ? "scroll" : "hidden";
+        self._DOMElement.style.overflowY = self._frame.size.height < theWindow._minSize.height ? "scroll" : "hidden";
+    }
     var ___r1;
 }
 
@@ -79519,7 +79537,7 @@ var meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_window
 
 ,["void"])]);
 }
-p;10;CPWindow.jt;208656;@STATIC;1.0;I;25;Foundation/CPCountedSet.jI;33;Foundation/CPNotificationCenter.jI;26;Foundation/CPUndoManager.ji;12;CGGeometry.ji;13;CPAnimation.ji;10;CPCursor.ji;14;CPDragServer.ji;9;CPEvent.ji;18;CPPlatformWindow.ji;22;CPPlatformWindow+DOM.ji;13;CPResponder.ji;10;CPScreen.ji;8;CPText.ji;16;CPTrackingArea.ji;8;CPView.ji;20;CPWindow_Constants.ji;31;_CPBorderlessBridgeWindowView.ji;25;_CPBorderlessWindowView.ji;23;_CPDocModalWindowView.ji;18;_CPHUDWindowView.ji;20;_CPModalWindowView.ji;22;_CPPopoverWindowView.ji;21;_CPShadowWindowView.ji;23;_CPStandardWindowView.ji;22;_CPToolTipWindowView.jt;208051;objj_executeFile("Foundation/CPCountedSet.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPUndoManager.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDragServer.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPPlatformWindow+DOM.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPScreen.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPBorderlessBridgeWindowView.j", YES);objj_executeFile("_CPBorderlessWindowView.j", YES);objj_executeFile("_CPDocModalWindowView.j", YES);objj_executeFile("_CPHUDWindowView.j", YES);objj_executeFile("_CPModalWindowView.j", YES);objj_executeFile("_CPPopoverWindowView.j", YES);objj_executeFile("_CPShadowWindowView.j", YES);objj_executeFile("_CPStandardWindowView.j", YES);objj_executeFile("_CPToolTipWindowView.j", YES);{var the_typedef = objj_allocateTypeDef("_CPWindowFullPlatformWindowSession");
+p;10;CPWindow.jt;209128;@STATIC;1.0;I;25;Foundation/CPCountedSet.jI;33;Foundation/CPNotificationCenter.jI;26;Foundation/CPUndoManager.ji;12;CGGeometry.ji;13;CPAnimation.ji;10;CPCursor.ji;14;CPDragServer.ji;9;CPEvent.ji;18;CPPlatformWindow.ji;22;CPPlatformWindow+DOM.ji;13;CPResponder.ji;10;CPScreen.ji;8;CPText.ji;16;CPTrackingArea.ji;8;CPView.ji;20;CPWindow_Constants.ji;31;_CPBorderlessBridgeWindowView.ji;25;_CPBorderlessWindowView.ji;23;_CPDocModalWindowView.ji;18;_CPHUDWindowView.ji;20;_CPModalWindowView.ji;22;_CPPopoverWindowView.ji;21;_CPShadowWindowView.ji;23;_CPStandardWindowView.ji;22;_CPToolTipWindowView.jt;208523;objj_executeFile("Foundation/CPCountedSet.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPUndoManager.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDragServer.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPPlatformWindow+DOM.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPScreen.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPBorderlessBridgeWindowView.j", YES);objj_executeFile("_CPBorderlessWindowView.j", YES);objj_executeFile("_CPDocModalWindowView.j", YES);objj_executeFile("_CPHUDWindowView.j", YES);objj_executeFile("_CPModalWindowView.j", YES);objj_executeFile("_CPPopoverWindowView.j", YES);objj_executeFile("_CPShadowWindowView.j", YES);objj_executeFile("_CPStandardWindowView.j", YES);objj_executeFile("_CPToolTipWindowView.j", YES);{var the_typedef = objj_allocateTypeDef("_CPWindowFullPlatformWindowSession");
 objj_registerTypeDef(the_typedef);
 }{var the_protocol = objj_allocateProtocol("CPWindowDelegate");
 var aProtocol = objj_getProtocol("CPObject");
@@ -79639,39 +79657,36 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
         self._windowView = ((___r1 = (windowViewClass == null ? windowViewClass : (windowViewClass.isa.method_msgSend["alloc"] || _objj_forward)(windowViewClass, "alloc"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFrame:styleMask:"] || _objj_forward)(___r1, "initWithFrame:styleMask:", CGRectMake(0.0, 0.0, CGRectGetWidth(self._frame), CGRectGetHeight(self._frame)), aStyleMask));
         ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setWindow:"] || _objj_forward)(___r1, "_setWindow:", self));
         ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setNextResponder:"] || _objj_forward)(___r1, "setNextResponder:", self));
-        var radius;
-        if (radius = ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["actualValueForThemeAttribute:"] || _objj_forward)(___r1, "actualValueForThemeAttribute:", "border-top-left-radius")))
-            self._windowView._DOMElement.style.borderTopLeftRadius = radius;
-        if (radius = ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["actualValueForThemeAttribute:"] || _objj_forward)(___r1, "actualValueForThemeAttribute:", "border-top-right-radius")))
-            self._windowView._DOMElement.style.borderTopRightRadius = radius;
-        if (radius = ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["actualValueForThemeAttribute:"] || _objj_forward)(___r1, "actualValueForThemeAttribute:", "border-bottom-left-radius")))
-            self._windowView._DOMElement.style.borderBottomLeftRadius = radius;
-        if (radius = ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["actualValueForThemeAttribute:"] || _objj_forward)(___r1, "actualValueForThemeAttribute:", "border-bottom-right-radius")))
-            self._windowView._DOMElement.style.borderBottomRightRadius = radius;
+        if (CPDOMAvailable)
+        {
+            var radius;
+            if (radius = ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["actualValueForThemeAttribute:"] || _objj_forward)(___r1, "actualValueForThemeAttribute:", "border-top-left-radius")))
+                self._windowView._DOMElement.style.borderTopLeftRadius = radius;
+            if (radius = ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["actualValueForThemeAttribute:"] || _objj_forward)(___r1, "actualValueForThemeAttribute:", "border-top-right-radius")))
+                self._windowView._DOMElement.style.borderTopRightRadius = radius;
+            if (radius = ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["actualValueForThemeAttribute:"] || _objj_forward)(___r1, "actualValueForThemeAttribute:", "border-bottom-left-radius")))
+                self._windowView._DOMElement.style.borderBottomLeftRadius = radius;
+            if (radius = ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["actualValueForThemeAttribute:"] || _objj_forward)(___r1, "actualValueForThemeAttribute:", "border-bottom-right-radius")))
+                self._windowView._DOMElement.style.borderBottomRightRadius = radius;
+        }
         self._minSize = (self == null ? self : (self.isa.method_msgSend["_calculateMinSizeForProposedSize:"] || _objj_forward)(self, "_calculateMinSizeForProposedSize:", CGSizeMake(0.0, 0.0)));
         self._maxSize = CGSizeMake(1000000.0, 1000000.0);
         (self == null ? self : (self.isa.method_msgSend["setMovableByWindowBackground:"] || _objj_forward)(self, "setMovableByWindowBackground:", aStyleMask & CPHUDBackgroundWindowMask));
         (self == null ? self : (self.isa.method_msgSend["setContentView:"] || _objj_forward)(self, "setContentView:", ((___r1 = (CPView.isa.method_msgSend["alloc"] || _objj_forward)(CPView, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFrame:"] || _objj_forward)(___r1, "initWithFrame:", CGRectMakeZero()))));
         self._firstResponder = self;
-        self._DOMElement = document.createElement("div");
-        self._DOMElement.style.position = "absolute";
-        self._DOMElement.style.visibility = "visible";
-        self._DOMElement.style.zIndex = 0;
-        if (!(self == null ? self : (self.isa.method_msgSend["_sharesChromeWithPlatformWindow"] || _objj_forward)(self, "_sharesChromeWithPlatformWindow")))
+        if (CPDOMAvailable)
         {
-            if (NULL)
-                var ____p = CGPointApplyAffineTransform(CGPointMake(CGRectGetMinX(self._frame), CGRectGetMinY(self._frame)), NULL);
-            else
-                var ____p = CGPointMake(CGRectGetMinX(self._frame), CGRectGetMinY(self._frame));
-            self._DOMElement.style.left = ROUND(____p.x) + "px";
-            self._DOMElement.style.top = ROUND(____p.y) + "px";
-;
+            self._DOMElement = document.createElement("div");
+            self._DOMElement.style.position = "absolute";
+            self._DOMElement.style.visibility = "visible";
+            self._DOMElement.style.zIndex = 0;
+            if (!(self == null ? self : (self.isa.method_msgSend["_sharesChromeWithPlatformWindow"] || _objj_forward)(self, "_sharesChromeWithPlatformWindow")))
+            {
+                CPDOMDisplayServerSetStyleLeftTop(self._DOMElement, NULL, CGRectGetMinX(self._frame), CGRectGetMinY(self._frame));
+            }
+            CPDOMDisplayServerSetStyleSize(self._DOMElement, 1, 1);
+            CPDOMDisplayServerAppendChild(self._DOMElement, self._windowView._DOMElement);
         }
-        self._DOMElement.style.width = MAX(0.0, ROUND(1)) + "px";
-        self._DOMElement.style.height = MAX(0.0, ROUND(1)) + "px";
-;
-        self._DOMElement.appendChild(self._windowView._DOMElement);
-;
         (self == null ? self : (self.isa.method_msgSend["setNextResponder:"] || _objj_forward)(self, "setNextResponder:", CPApp));
         (self == null ? self : (self.isa.method_msgSend["setHasShadow:"] || _objj_forward)(self, "setHasShadow:", aStyleMask !== CPBorderlessWindowMask));
         if (aStyleMask & CPBorderlessBridgeWindowMask)
@@ -79770,13 +79785,17 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
     {
         (oldWindowView == null ? oldWindowView : (oldWindowView.isa.method_msgSend["_setWindow:"] || _objj_forward)(oldWindowView, "_setWindow:", nil));
         (oldWindowView == null ? oldWindowView : (oldWindowView.isa.method_msgSend["noteToolbarChanged"] || _objj_forward)(oldWindowView, "noteToolbarChanged"));
-        self._DOMElement.removeChild(oldWindowView._DOMElement);
-;
+        if (CPDOMAvailable)
+        {
+            CPDOMDisplayServerRemoveChild(self._DOMElement, oldWindowView._DOMElement);
+        }
     }
     if (self._windowView)
     {
-        self._DOMElement.appendChild(self._windowView._DOMElement);
-;
+        if (CPDOMAvailable)
+        {
+            CPDOMDisplayServerAppendChild(self._DOMElement, self._windowView._DOMElement);
+        }
         var contentRect = ((___r1 = self._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["convertRect:toView:"] || _objj_forward)(___r1, "convertRect:toView:", ((___r2 = self._contentView), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["bounds"] || _objj_forward)(___r2, "bounds")), nil));
         contentRect.origin = (self.isa.method_msgSend["convertBaseToGlobal:"] || _objj_forward)(self, "convertBaseToGlobal:", contentRect.origin);
         ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setWindow:"] || _objj_forward)(___r1, "_setWindow:", self));
@@ -79897,15 +79916,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
             delta = CGPointMake(newOrigin.x - origin.x, newOrigin.y - origin.y);
             origin.x = newOrigin.x;
             origin.y = newOrigin.y;
-            if (!(self.isa.method_msgSend["_sharesChromeWithPlatformWindow"] || _objj_forward)(self, "_sharesChromeWithPlatformWindow"))
+            if (CPDOMAvailable && !(self.isa.method_msgSend["_sharesChromeWithPlatformWindow"] || _objj_forward)(self, "_sharesChromeWithPlatformWindow"))
             {
-                if (NULL)
-                    var ____p = CGPointApplyAffineTransform(CGPointMake(origin.x, origin.y), NULL);
-                else
-                    var ____p = CGPointMake(origin.x, origin.y);
-                self._DOMElement.style.left = ROUND(____p.x) + "px";
-                self._DOMElement.style.top = ROUND(____p.y) + "px";
-;
+                CPDOMDisplayServerSetStyleLeftTop(self._DOMElement, NULL, origin.x, origin.y);
             }
             if ((self.isa.method_msgSend["attachedSheet"] || _objj_forward)(self, "attachedSheet"))
                 (self.isa.method_msgSend["_setAttachedSheetFrameOrigin"] || _objj_forward)(self, "_setAttachedSheetFrameOrigin");
@@ -80030,15 +80043,18 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
 
 ,["void","id"]), new objj_method(sel_getUid("_orderFront"), function $CPWindow___orderFront(self, _cmd)
 {
-    if (!self._isVisible)
-        ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setShouldUpdateContentRect:"] || _objj_forward)(___r1, "_setShouldUpdateContentRect:", NO));
-    if (self._isSheet)
-        ((___r1 = self._parentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["orderFront:"] || _objj_forward)(___r1, "orderFront:", self));
-    var wasVisible = self._isVisible;
-    ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["orderFront:"] || _objj_forward)(___r1, "orderFront:", self));
-    ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["order:window:relativeTo:"] || _objj_forward)(___r1, "order:window:relativeTo:", CPWindowAbove, self, nil));
-    if (!wasVisible)
-        (self.isa.method_msgSend["_setFrame:display:animate:constrainWidth:constrainHeight:"] || _objj_forward)(self, "_setFrame:display:animate:constrainWidth:constrainHeight:", self._frame, YES, NO, YES, YES);
+    if (CPDOMAvailable)
+    {
+        if (!self._isVisible)
+            ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setShouldUpdateContentRect:"] || _objj_forward)(___r1, "_setShouldUpdateContentRect:", NO));
+        if (self._isSheet)
+            ((___r1 = self._parentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["orderFront:"] || _objj_forward)(___r1, "orderFront:", self));
+        var wasVisible = self._isVisible;
+        ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["orderFront:"] || _objj_forward)(___r1, "orderFront:", self));
+        ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["order:window:relativeTo:"] || _objj_forward)(___r1, "order:window:relativeTo:", CPWindowAbove, self, nil));
+        if (!wasVisible)
+            (self.isa.method_msgSend["_setFrame:display:animate:constrainWidth:constrainHeight:"] || _objj_forward)(self, "_setFrame:display:animate:constrainWidth:constrainHeight:", self._frame, YES, NO, YES, YES);
+    }
     if (!CPApp._keyWindow)
         (self.isa.method_msgSend["makeKeyWindow"] || _objj_forward)(self, "makeKeyWindow");
     if ((self.isa.method_msgSend["isKeyWindow"] || _objj_forward)(self, "isKeyWindow") && (self._firstResponder === self || !self._firstResponder))
@@ -80095,11 +80111,14 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
     }
     if (recursive)
         ((___r1 = self._childWindows), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["makeObjectsPerformSelector:withObject:"] || _objj_forward)(___r1, "makeObjectsPerformSelector:withObject:", sel_getUid("_orderOutRecursively:"), recursive));
-    if ((self.isa.method_msgSend["_sharesChromeWithPlatformWindow"] || _objj_forward)(self, "_sharesChromeWithPlatformWindow"))
-        ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["orderOut:"] || _objj_forward)(___r1, "orderOut:", self));
-    if (self._isFullPlatformWindow && self._platformWindow != (CPPlatformWindow.isa.method_msgSend["primaryPlatformWindow"] || _objj_forward)(CPPlatformWindow, "primaryPlatformWindow"))
-        ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["orderOut:"] || _objj_forward)(___r1, "orderOut:", self));
-    ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["order:window:relativeTo:"] || _objj_forward)(___r1, "order:window:relativeTo:", CPWindowOut, self, nil));
+    if (CPDOMAvailable)
+    {
+        if ((self.isa.method_msgSend["_sharesChromeWithPlatformWindow"] || _objj_forward)(self, "_sharesChromeWithPlatformWindow"))
+            ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["orderOut:"] || _objj_forward)(___r1, "orderOut:", self));
+        if (self._isFullPlatformWindow && self._platformWindow != (CPPlatformWindow.isa.method_msgSend["primaryPlatformWindow"] || _objj_forward)(CPPlatformWindow, "primaryPlatformWindow"))
+            ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["orderOut:"] || _objj_forward)(___r1, "orderOut:", self));
+        ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["order:window:relativeTo:"] || _objj_forward)(___r1, "order:window:relativeTo:", CPWindowOut, self, nil));
+    }
     (self.isa.method_msgSend["makeFirstResponder:"] || _objj_forward)(self, "makeFirstResponder:", nil);
     (self.isa.method_msgSend["_updateMainAndKeyWindows"] || _objj_forward)(self, "_updateMainAndKeyWindows");
     var ___r1;
@@ -80117,7 +80136,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
     else if (orderingMode === CPWindowBelow && otherWindowNumber === 0)
         (self.isa.method_msgSend["_orderBack"] || _objj_forward)(self, "_orderBack");
     else
-        ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["order:window:relativeTo:"] || _objj_forward)(___r1, "order:window:relativeTo:", orderingMode, self, CPApp._windows[otherWindowNumber]));
+    {
+        if (CPDOMAvailable)
+            ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["order:window:relativeTo:"] || _objj_forward)(___r1, "order:window:relativeTo:", orderingMode, self, CPApp._windows[otherWindowNumber]));
+    }
     var ___r1;
 }
 
@@ -80291,8 +80313,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
     {
         if (self._shadowView)
         {
-            self._DOMElement.removeChild(self._shadowView._DOMElement);
-;
+            if (CPDOMAvailable)
+            {
+                CPDOMDisplayServerRemoveChild(self._DOMElement, self._shadowView._DOMElement);
+            }
             self._shadowView = nil;
         }
         ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setHasShadow:"] || _objj_forward)(___r1, "setHasShadow:", self._hasShadow));
@@ -80300,16 +80324,19 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
     }
     if (((___r1 = (self.isa.method_msgSend["actualTheme"] || _objj_forward)(self, "actualTheme")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isCSSBased"] || _objj_forward)(___r1, "isCSSBased")))
     {
-        if (self._windowView && self._windowView._DOMElement)
+        if (CPDOMAvailable)
         {
-            var currentBoxShadow = self._windowView._DOMElement.style.boxShadow;
-            if (self._hasShadow && currentBoxShadow.length == 0)
+            if (self._windowView && self._windowView._DOMElement)
             {
-                self._windowView._DOMElement.style.boxShadow = ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["actualValueForThemeAttribute:"] || _objj_forward)(___r1, "actualValueForThemeAttribute:", "window-shadow-color"));
-            }
-            else if (!self._hasShadow && currentBoxShadow.length > 0)
-            {
-                self._windowView._DOMElement.style.boxShadow = "";
+                var currentBoxShadow = self._windowView._DOMElement.style.boxShadow;
+                if (self._hasShadow && currentBoxShadow.length == 0)
+                {
+                    self._windowView._DOMElement.style.boxShadow = ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["actualValueForThemeAttribute:"] || _objj_forward)(___r1, "actualValueForThemeAttribute:", "window-shadow-color"));
+                }
+                else if (!self._hasShadow && currentBoxShadow.length > 0)
+                {
+                    self._windowView._DOMElement.style.boxShadow = "";
+                }
             }
         }
     }
@@ -80321,13 +80348,17 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
             ((___r1 = self._shadowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setWindowView:"] || _objj_forward)(___r1, "setWindowView:", self._windowView));
             ((___r1 = self._shadowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setAutoresizingMask:"] || _objj_forward)(___r1, "setAutoresizingMask:", CPViewWidthSizable | CPViewHeightSizable));
             ((___r1 = self._shadowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(___r1, "setNeedsLayout"));
-            self._DOMElement.insertBefore(self._shadowView._DOMElement, self._windowView._DOMElement);
-;
+            if (CPDOMAvailable)
+            {
+                CPDOMDisplayServerInsertBefore(self._DOMElement, self._shadowView._DOMElement, self._windowView._DOMElement);
+            }
         }
         else if (!self._hasShadow && self._shadowView)
         {
-            self._DOMElement.removeChild(self._shadowView._DOMElement);
-;
+            if (CPDOMAvailable)
+            {
+                CPDOMDisplayServerRemoveChild(self._DOMElement, self._shadowView._DOMElement);
+            }
             self._shadowView = nil;
         }
     }
@@ -80624,7 +80655,10 @@ default:
                     (self.isa.method_msgSend["selectPreviousKeyView:"] || _objj_forward)(self, "selectPreviousKeyView:", self);
                 else
                     (self.isa.method_msgSend["selectNextKeyView:"] || _objj_forward)(self, "selectNextKeyView:", self);
-                ((___r1 = ((___r2 = (anEvent == null ? anEvent : (anEvent.isa.method_msgSend["window"] || _objj_forward)(anEvent, "window"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(___r1, "_propagateCurrentDOMEvent:", NO));
+                if (CPDOMAvailable)
+                {
+                    ((___r1 = ((___r2 = (anEvent == null ? anEvent : (anEvent.isa.method_msgSend["window"] || _objj_forward)(anEvent, "window"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(___r1, "_propagateCurrentDOMEvent:", NO));
+                }
                 return;
             }
             else if ((anEvent == null ? anEvent : (anEvent.isa.method_msgSend["charactersIgnoringModifiers"] || _objj_forward)(anEvent, "charactersIgnoringModifiers")) === CPBackTabCharacter)
@@ -80632,7 +80666,10 @@ default:
                 var didTabBack = (self.isa.method_msgSend["selectPreviousKeyView:"] || _objj_forward)(self, "selectPreviousKeyView:", self);
                 if (didTabBack)
                 {
-                    ((___r1 = ((___r2 = (anEvent == null ? anEvent : (anEvent.isa.method_msgSend["window"] || _objj_forward)(anEvent, "window"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(___r1, "_propagateCurrentDOMEvent:", NO));
+                    if (CPDOMAvailable)
+                    {
+                        ((___r1 = ((___r2 = (anEvent == null ? anEvent : (anEvent.isa.method_msgSend["window"] || _objj_forward)(anEvent, "window"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["platformWindow"] || _objj_forward)(___r2, "platformWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_propagateCurrentDOMEvent:"] || _objj_forward)(___r1, "_propagateCurrentDOMEvent:", NO));
+                    }
                 }
                 return didTabBack;
             }
@@ -81878,7 +81915,9 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["CGPoint","CGPoint"]), new objj_method(sel_getUid("_nativeScrollOffset"), function $CPWindow___nativeScrollOffset(self, _cmd)
 {
-    return CGPointMake(self._windowView._DOMElement.scrollLeft, self._windowView._DOMElement.scrollTop);
+    if (CPDOMAvailable)
+        return CGPointMake(self._windowView._DOMElement.scrollLeft, self._windowView._DOMElement.scrollTop);
+    CGPointMake(0, 0);
 }
 
 ,["CGPoint"]), new objj_method(sel_getUid("convertGlobalToBase:"), function $CPWindow__convertGlobalToBase_(self, _cmd, aPoint)
@@ -82479,7 +82518,7 @@ CPMenuWindowShadowStyle = 1;
 CPPanelWindowShadowStyle = 2;
 CPCustomWindowShadowStyle = 3;
 CPWindowConstrainToScreen = YES;
-p;12;CPPlatform.jt;8959;@STATIC;1.0;I;21;Foundation/CPObject.jt;8914;objj_executeFile("Foundation/CPObject.j", NO);
+p;12;CPPlatform.jt;9047;@STATIC;1.0;I;21;Foundation/CPObject.jt;9002;objj_executeFile("Foundation/CPObject.j", NO);
 {var the_class = objj_allocateClassPair(CPObject, "CPBasePlatform"),
 meta_class = the_class.isa;objj_registerClassPair(the_class);
 class_addMethods(meta_class, [new objj_method(sel_getUid("bootstrap"), function $CPBasePlatform__bootstrap(self, _cmd)
@@ -82570,11 +82609,15 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["void"]), new objj_method(sel_getUid("isBrowser"), function $CPPlatform__isBrowser(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return NO;
     return typeof window.cpIsDesktop === "undefined";
 }
 
 ,["BOOL"]), new objj_method(sel_getUid("supportsDragAndDrop"), function $CPPlatform__supportsDragAndDrop(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return NO;
     return CPFeatureIsCompatible(CPHTMLDragAndDropFeature) && (CPPlatformEnableHTMLDragAndDrop || !(self.isa.method_msgSend["isBrowser"] || _objj_forward)(self, "isBrowser"));
 }
 
@@ -82655,7 +82698,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["void"])]);
 }
-p;18;CPPlatformString.jt;7721;@STATIC;1.0;I;21;Foundation/CPObject.jt;7676;objj_executeFile("Foundation/CPObject.j", NO);
+p;18;CPPlatformString.jt;8222;@STATIC;1.0;I;21;Foundation/CPObject.jt;8177;objj_executeFile("Foundation/CPObject.j", NO);
 {var the_class = objj_allocateClassPair(CPObject, "CPBasePlatformString"),
 meta_class = the_class.isa;objj_registerClassPair(the_class);
 class_addMethods(meta_class, [new objj_method(sel_getUid("bootstrap"), function $CPBasePlatformString__bootstrap(self, _cmd)
@@ -82691,6 +82734,8 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["void"]), new objj_method(sel_getUid("createDOMElements"), function $CPPlatformString__createDOMElements(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return;
     var style,
         bodyElement = (CPPlatform.isa.method_msgSend["mainBodyElement"] || _objj_forward)(CPPlatform, "mainBodyElement");
     DOMFlexibleWidthSpanElement = document.createElement("span");
@@ -82731,6 +82776,8 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["void"]), new objj_method(sel_getUid("createDOMMetricsElements"), function $CPPlatformString__createDOMMetricsElements(self, _cmd)
 {
+    if (!CPDOMAvailable)
+        return;
     var style,
         bodyElement = (CPPlatform.isa.method_msgSend["mainBodyElement"] || _objj_forward)(CPPlatform, "mainBodyElement");
     DOMMetricsDivElement = document.createElement("div");
@@ -82766,6 +82813,8 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["void"]), new objj_method(sel_getUid("charPositionOfString:withFont:forPoint:"), function $CPPlatformString__charPositionOfString_withFont_forPoint_(self, _cmd, aString, aFont, aPoint)
 {
+    if (!CPDOMAvailable)
+        return 0;
     if (!aString)
         return 0;
     var position = 0,
@@ -82787,6 +82836,8 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["int","CPString","CPFont","CGPoint"]), new objj_method(sel_getUid("sizeOfString:withFont:forWidth:"), function $CPPlatformString__sizeOfString_withFont_forWidth_(self, _cmd, aString, aFont, aWidth)
 {
+    if (!CPDOMAvailable)
+        return CGSizeMakeZero();
     if (!DOMFixedWidthSpanElement)
         (self.isa.method_msgSend["createDOMElements"] || _objj_forward)(self, "createDOMElements");
     var span;
@@ -82810,6 +82861,8 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["CGSize","CPString","CPFont","float"]), new objj_method(sel_getUid("metricsOfFont:"), function $CPPlatformString__metricsOfFont_(self, _cmd, aFont)
 {
+    if (!CPDOMAvailable)
+        return (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", [0, 0, 0], ["ascender", "descender", "lineHeight"]));
     if (!DOMMetricsDivElement)
         (self.isa.method_msgSend["createDOMMetricsElements"] || _objj_forward)(self, "createDOMMetricsElements");
     DOMMetricsDivElement.style.font = ((___r1 = aFont || DefaultFont), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["cssString"] || _objj_forward)(___r1, "cssString"));
@@ -82822,7 +82875,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["CPDictionary","CPFont"])]);
 }
-p;18;CPPlatformWindow.jt;11258;@STATIC;1.0;I;25;Foundation/CPDictionary.jI;21;Foundation/CPObject.ji;14;CPKeyBinding.ji;12;CPPlatform.jt;11146;objj_executeFile("Foundation/CPDictionary.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPKeyBinding.j", YES);objj_executeFile("CPPlatform.j", YES);{var the_typedef = objj_allocateTypeDef("DOMWindow");
+p;18;CPPlatformWindow.jt;11572;@STATIC;1.0;I;25;Foundation/CPDictionary.jI;21;Foundation/CPObject.ji;14;CPKeyBinding.ji;12;CPPlatform.ji;17;CPCompatibility.jt;11438;objj_executeFile("Foundation/CPDictionary.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPKeyBinding.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPCompatibility.j", YES);{var the_typedef = objj_allocateTypeDef("DOMWindow");
 objj_registerTypeDef(the_typedef);
 }var PrimaryPlatformWindow = NULL;
 
@@ -82834,10 +82887,13 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithContentRect:"),
     if (self)
     {
         self._contentRect = CGRectMakeCopy(aRect);
-        self._windowLevels = [];
-        self._windowLayers = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
-        self._charCodes = {};
-        self._platformPasteboard = (CPPlatformPasteboard == null ? CPPlatformPasteboard : (CPPlatformPasteboard.isa.method_msgSend["new"] || _objj_forward)(CPPlatformPasteboard, "new"));
+        if (CPDOMAvailable)
+        {
+            self._windowLevels = [];
+            self._windowLayers = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
+            self._charCodes = {};
+            self._platformPasteboard = (CPPlatformPasteboard == null ? CPPlatformPasteboard : (CPPlatformPasteboard.isa.method_msgSend["new"] || _objj_forward)(CPPlatformPasteboard, "new"));
+        }
     }
     return self;
     var ___r1;
@@ -82893,7 +82949,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithContentRect:"),
     if (!aRect || CGRectEqualToRect(self._contentRect, aRect))
         return;
     self._contentRect = CGRectMakeCopy(aRect);
-    (self.isa.method_msgSend["updateNativeContentRect"] || _objj_forward)(self, "updateNativeContentRect");
+    if (CPDOMAvailable)
+    {
+        (self.isa.method_msgSend["updateNativeContentRect"] || _objj_forward)(self, "updateNativeContentRect");
+    }
 }
 
 ,["void","CGRect"]), new objj_method(sel_getUid("updateFromNativeContentRect"), function $CPPlatformWindow__updateFromNativeContentRect(self, _cmd)
@@ -82915,7 +82974,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithContentRect:"),
 
 ,["CGPoint","CGPoint"]), new objj_method(sel_getUid("isVisible"), function $CPPlatformWindow__isVisible(self, _cmd)
 {
-    return self._DOMWindow !== NULL && self._DOMWindow !== undefined;
+    if (CPDOMAvailable)
+        return self._DOMWindow !== NULL && self._DOMWindow !== undefined;
+    return NO;
 }
 
 ,["BOOL"]), new objj_method(sel_getUid("deminiaturize:"), function $CPPlatformWindow__deminiaturize_(self, _cmd, sender)
@@ -82928,6 +82989,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithContentRect:"),
 
 ,["void","id"]), new objj_method(sel_getUid("moveWindow:fromLevel:toLevel:"), function $CPPlatformWindow__moveWindow_fromLevel_toLevel_(self, _cmd, aWindow, fromLevel, toLevel)
 {
+    if (!CPDOMAvailable)
+        return;
     if (!aWindow._isVisible)
         return;
     var fromLayer = (self.isa.method_msgSend["layerAtLevel:create:"] || _objj_forward)(self, "layerAtLevel:create:", fromLevel, NO),
@@ -82959,7 +83022,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithContentRect:"),
 ,["BOOL"]), new objj_method(sel_getUid("_setTitle:window:"), function $CPPlatformWindow___setTitle_window_(self, _cmd, aTitle, aWindow)
 {
     self._title = aTitle;
-    if (self._DOMWindow && self._DOMWindow.document && (aWindow == null ? aWindow : (aWindow.isa.method_msgSend["isFullPlatformWindow"] || _objj_forward)(aWindow, "isFullPlatformWindow")))
+    if (CPDOMAvailable && self._DOMWindow && self._DOMWindow.document && (aWindow == null ? aWindow : (aWindow.isa.method_msgSend["isFullPlatformWindow"] || _objj_forward)(aWindow, "isFullPlatformWindow")))
     {
         self._DOMWindow.document.title = self._title;
     }
@@ -82993,7 +83056,9 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("visiblePlatformWindows
 
 ,["CPSet"]), new objj_method(sel_getUid("supportsMultipleInstances"), function $CPPlatformWindow__supportsMultipleInstances(self, _cmd)
 {
-    return !CPBrowserIsEngine(CPInternetExplorerBrowserEngine);
+    if (CPDOMAvailable)
+        return !CPBrowserIsEngine(CPInternetExplorerBrowserEngine);
+    return NO;
 }
 
 ,["BOOL"]), new objj_method(sel_getUid("primaryPlatformWindow"), function $CPPlatformWindow__primaryPlatformWindow(self, _cmd)
@@ -83008,7 +83073,75 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("visiblePlatformWindows
 
 ,["void","CPPlatformWindow"])]);
 }
-p;18;CPDOMWindowLayer.jt;5442;@STATIC;1.0;I;20;Foundation/CPArray.jI;21;Foundation/CPObject.ji;12;CGGeometry.jt;5355;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CGGeometry.j", YES);
+p;20;CPDOMDisplayServer.jt;2476;@STATIC;1.0;t;2457;CPDOMDisplayServerSetStyleLeftTop = function(aDOMElement, aTransform, aLeft, aTop)
+{
+    if (aTransform)
+        var ____p = CGPointApplyAffineTransform(CGPointMake(aLeft, aTop), aTransform);
+    else
+        var ____p = CGPointMake(aLeft, aTop);
+    aDOMElement.style.left = ROUND(____p.x) + "px";
+    aDOMElement.style.top = ROUND(____p.y) + "px";
+}
+CPDOMDisplayServerSetStyleRightTop = function(aDOMElement, aTransform, aRight, aTop)
+{
+    if (aTransform)
+        var ____p = CGPointApplyAffineTransform(CGPointMake(aRight, aTop), aTransform);
+    else
+        var ____p = CGPointMake(aRight, aTop);
+    aDOMElement.style.right = ROUND(____p.x) + "px";
+    aDOMElement.style.top = ROUND(____p.y) + "px";
+}
+CPDOMDisplayServerSetStyleLeftBottom = function(aDOMElement, aTransform, aLeft, aBottom)
+{
+    if (aTransform)
+        var ____p = CGPointApplyAffineTransform(CGPointMake(aLeft, aBottom), aTransform);
+    else
+        var ____p = CGPointMake(aLeft, aBottom);
+    aDOMElement.style.left = ROUND(____p.x) + "px";
+    aDOMElement.style.bottom = ROUND(____p.y) + "px";
+}
+CPDOMDisplayServerSetStyleRightBottom = function(aDOMElement, aTransform, aRight, aBottom)
+{
+    if (aTransform)
+        var ____p = CGPointApplyAffineTransform(CGPointMake(aRight, aBottom), aTransform);
+    else
+        var ____p = CGPointMake(aRight, aBottom);
+    aDOMElement.style.right = ROUND(____p.x) + "px";
+    aDOMElement.style.bottom = ROUND(____p.y) + "px";
+}
+CPDOMDisplayServerSetStyleSize = function(aDOMElement, aWidth, aHeight)
+{
+    aDOMElement.style.width = MAX(0.0, ROUND(aWidth)) + "px";
+    aDOMElement.style.height = MAX(0.0, ROUND(aHeight)) + "px";
+}
+CPDOMDisplayServerSetSize = function(aDOMElement, aWidth, aHeight)
+{
+    aDOMElement.width = MAX(0.0, ROUND(aWidth));
+    aDOMElement.height = MAX(0.0, ROUND(aHeight));
+}
+CPDOMDisplayServerSetStyleBackgroundSize = function(aDOMElement, aWidth, aHeight)
+{
+    aDOMElement.style.backgroundSize = aWidth + ' ' + aHeight;
+}
+CPDOMDisplayServerAppendChild = function(aParentElement, aChildElement)
+{
+    aParentElement.appendChild(aChildElement);
+}
+CPDOMDisplayServerInsertBefore = function(aParentElement, aChildElement, aBeforeElement)
+{
+    aParentElement.insertBefore(aChildElement, aBeforeElement);
+}
+CPDOMDisplayServerRemoveChild = function(aParentElement, aChildElement)
+{
+    aParentElement.removeChild(aChildElement);
+}
+PREPARE_DOM_OPTIMIZATION = function()
+{
+}
+EXECUTE_DOM_INSTRUCTIONS = function()
+{
+}
+p;18;CPDOMWindowLayer.jt;5578;@STATIC;1.0;I;20;Foundation/CPArray.jI;21;Foundation/CPObject.ji;12;CGGeometry.jt;5491;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CGGeometry.j", YES);
 {var the_class = objj_allocateClassPair(CPObject, "CPDOMWindowLayer"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_level", "int"), new objj_ivar("_windows", "CPArray"), new objj_ivar("_DOMElement", "DOMElement")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("initWithLevel:"), function $CPDOMWindowLayer__initWithLevel_(self, _cmd, aLevel)
@@ -83039,8 +83172,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithLevel:"), funct
         return;
     var index = aWindow._index,
         count = self._windows.length - 1;
-    self._DOMElement.removeChild(aWindow._DOMElement);
-;
+    CPDOMDisplayServerRemoveChild(self._DOMElement, aWindow._DOMElement);
     ((___r1 = self._windows), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectAtIndex:"] || _objj_forward)(___r1, "removeObjectAtIndex:", aWindow._index));
     for (; index < count; ++index)
     {
@@ -83076,8 +83208,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithLevel:"), funct
     }
     if (aWindow._DOMElement.parentNode !== self._DOMElement)
     {
-        self._DOMElement.appendChild(aWindow._DOMElement);
-;
+        CPDOMDisplayServerAppendChild(self._DOMElement, aWindow._DOMElement);
         aWindow._isVisible = YES;
         if ((aWindow == null ? aWindow : (aWindow.isa.method_msgSend["isFullPlatformWindow"] || _objj_forward)(aWindow, "isFullPlatformWindow")))
             (aWindow == null ? aWindow : (aWindow.isa.method_msgSend["setFrame:"] || _objj_forward)(aWindow, "setFrame:", ((___r1 = aWindow._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["usableContentFrame"] || _objj_forward)(___r1, "usableContentFrame"))));
@@ -83104,12 +83235,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithLevel:"), funct
     style.width = clipRect.size.width + "px";
     style.height = clipRect.size.height + "px";
     var parent = windowElement.parentNode;
-    parent.insertBefore(clip, windowElement);
-;
-    parent.removeChild(windowElement);
-;
-    clip.appendChild(windowElement);
-;
+    CPDOMDisplayServerInsertBefore(parent, clip, windowElement);
+    CPDOMDisplayServerRemoveChild(parent, windowElement);
+    CPDOMDisplayServerAppendChild(clip, windowElement);
 }
 
 ,["void","CPWindow","CGRect"]), new objj_method(sel_getUid("removeClipForWindow:"), function $CPDOMWindowLayer__removeClipForWindow_(self, _cmd, aWindow)
@@ -83117,13 +83245,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithLevel:"), funct
     var windowElement = aWindow._DOMElement,
         clip = windowElement.parentNode,
         parent = clip.parentNode;
-    clip.removeChild(windowElement);
-;
+    CPDOMDisplayServerRemoveChild(clip, windowElement);
     (aWindow == null ? aWindow : (aWindow.isa.method_msgSend["setFrameOrigin:"] || _objj_forward)(aWindow, "setFrameOrigin:", CGPointMake((aWindow == null ? aWindow : (aWindow.isa.method_msgSend["frame"] || _objj_forward)(aWindow, "frame")).origin.x, clip.offsetTop)));
-    parent.insertBefore(windowElement, clip);
-;
-    parent.removeChild(clip);
-;
+    CPDOMDisplayServerInsertBefore(parent, windowElement, clip);
+    CPDOMDisplayServerRemoveChild(parent, clip);
 }
 
 ,["void","CPWindow"])]);
@@ -83496,7 +83621,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPPla
 
 ,["BOOL","DOMEvent"])]);
 }
-p;22;CPPlatformWindow+DOM.jt;86714;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.jI;21;Foundation/CPObject.jI;22;Foundation/CPRunLoop.jI;18;Foundation/CPSet.jI;20;Foundation/CPTimer.ji;25;CPApplication_Constants.ji;17;CPCompatibility.ji;10;CPCursor.ji;18;CPDOMWindowLayer.ji;24;CPDragServer_Constants.ji;9;CPEvent.ji;14;CPPasteboard.ji;12;CPPlatform.ji;22;CPPlatformPasteboard.ji;26;CPPlatformWindow+DOMKeys.ji;18;CPPlatformWindow.ji;8;CPText.ji;20;CPWindow_Constants.jt;86269;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("Foundation/CPSet.j", NO);objj_executeFile("Foundation/CPTimer.j", NO);objj_executeFile("CPApplication_Constants.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDOMWindowLayer.j", YES);objj_executeFile("CPDragServer_Constants.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPPlatformPasteboard.j", YES);objj_executeFile("CPPlatformWindow+DOMKeys.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPWindow_Constants.j", YES);var PlatformWindows = (CPSet.isa.method_msgSend["set"] || _objj_forward)(CPSet, "set");
+p;22;CPPlatformWindow+DOM.jt;87204;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.jI;21;Foundation/CPObject.jI;22;Foundation/CPRunLoop.jI;18;Foundation/CPSet.jI;20;Foundation/CPTimer.ji;25;CPApplication_Constants.ji;17;CPCompatibility.ji;10;CPCursor.ji;18;CPDOMWindowLayer.ji;24;CPDragServer_Constants.ji;9;CPEvent.ji;14;CPPasteboard.ji;12;CPPlatform.ji;22;CPPlatformPasteboard.ji;26;CPPlatformWindow+DOMKeys.ji;18;CPPlatformWindow.ji;8;CPText.ji;20;CPWindow_Constants.jt;86759;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPRunLoop.j", NO);objj_executeFile("Foundation/CPSet.j", NO);objj_executeFile("Foundation/CPTimer.j", NO);objj_executeFile("CPApplication_Constants.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDOMWindowLayer.j", YES);objj_executeFile("CPDragServer_Constants.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPPlatformPasteboard.j", YES);objj_executeFile("CPPlatformWindow+DOMKeys.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPWindow_Constants.j", YES);var PlatformWindows = (CPSet.isa.method_msgSend["set"] || _objj_forward)(CPSet, "set");
 var CPDOMEventGetClickCount,
     StopDOMEventPropagation,
     StopContextMenuDOMEventPropagation;
@@ -83578,6 +83703,7 @@ var MOMENTUM_DAMPING = 0.95,
 var touchStartingPointX,
     touchStartingPointY;
 _CPPlatformWindowWillCloseNotification = "_CPPlatformWindowWillCloseNotification";
+var SCROLLWHEEL_LINE_PIXELS = 6.0;
 {
 var the_class = objj_getClass("CPPlatformWindow")
 if(!the_class) throw new SyntaxError("*** Could not find definition for class \"CPPlatformWindow\"");
@@ -83586,13 +83712,22 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
     self = (objj_getClass("CPPlatformWindow").super_class.method_dtable["init"] || _objj_forward)(self, "init");
     if (self)
     {
-        self._DOMWindow = window;
-        self._contentRect = CGRectMakeZero();
-        self._windowLevels = [];
-        self._windowLayers = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
-        self._platformPasteboard = (CPPlatformPasteboard.isa.method_msgSend["new"] || _objj_forward)(CPPlatformPasteboard, "new");
-        (self == null ? self : (self.isa.method_msgSend["registerDOMWindow"] || _objj_forward)(self, "registerDOMWindow"));
-        (self == null ? self : (self.isa.method_msgSend["updateFromNativeContentRect"] || _objj_forward)(self, "updateFromNativeContentRect"));
+        if (CPDOMAvailable)
+        {
+            self._DOMWindow = window;
+            self._contentRect = CGRectMakeZero();
+            self._windowLevels = [];
+            self._windowLayers = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
+            self._platformPasteboard = (CPPlatformPasteboard.isa.method_msgSend["new"] || _objj_forward)(CPPlatformPasteboard, "new");
+            (self == null ? self : (self.isa.method_msgSend["registerDOMWindow"] || _objj_forward)(self, "registerDOMWindow"));
+            (self == null ? self : (self.isa.method_msgSend["updateFromNativeContentRect"] || _objj_forward)(self, "updateFromNativeContentRect"));
+        }
+        else
+        {
+            self._contentRect = CGRectMakeZero();
+            self._windowLevels = [];
+            self._windowLayers = (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
+        }
         self._charCodes = {};
         self._momentumScrollTimer = nil;
         self._touchVelocityX = 0;
@@ -84143,8 +84278,8 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
             event._hasPreciseScrollingDeltas = NO;
             event._scrollingDeltaX = aDOMEvent.deltaX;
             event._scrollingDeltaY = aDOMEvent.deltaY;
-            event._deltaX = aDOMEvent.deltaX * 6.0;
-            event._deltaY = aDOMEvent.deltaY * 6.0;
+            event._deltaX = aDOMEvent.deltaX * SCROLLWHEEL_LINE_PIXELS;
+            event._deltaY = aDOMEvent.deltaY * SCROLLWHEEL_LINE_PIXELS;
         }
         else
         {
