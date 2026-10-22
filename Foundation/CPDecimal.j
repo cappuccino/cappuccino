@@ -608,7 +608,7 @@ function CPDecimalAdd(result, leftOperand, rightOperand, roundingMode, longMode)
         // swap sign over over/underflow exception
         if (CPCalculationUnderflow == adderror)
             adderror = CPCalculationOverflow;
-        else if (CPCalculationUnderflow == adderror)
+        else if (CPCalculationOverflow == adderror)
             adderror = CPCalculationUnderflow;
     }
     else

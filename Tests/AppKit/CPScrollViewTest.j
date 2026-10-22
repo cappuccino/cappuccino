@@ -379,5 +379,48 @@
     [self assertSize:expected.size equals:actual.size message:message]
 }
 
+- (void)testFrameSizeForContentSizeUsesScrollerStyleForBothScrollers
+{
+    var frameSize = [CPScrollView frameSizeForContentSize:CGSizeMake(100.0, 100.0)
+                                  horizontalScrollerClass:[_CPScrollViewTestScroller class]
+                                    verticalScrollerClass:[_CPScrollViewTestScroller class]
+                                               borderType:CPNoBorder
+                                              controlSize:CPRegularControlSize
+                                            scrollerStyle:CPScrollerStyleOverlay];
+
+    [self assertSize:CGSizeMake(105.0, 105.0) equals:frameSize message:@"both scroller widths come from scrollerWidthInStyle:"];
+}
+
+- (void)testContentSizeForFrameSizeUsesScrollerStyleForBothScrollers
+{
+    var contentSize = [CPScrollView contentSizeForFrameSize:CGSizeMake(100.0, 100.0)
+                                    horizontalScrollerClass:[_CPScrollViewTestScroller class]
+                                      verticalScrollerClass:[_CPScrollViewTestScroller class]
+                                                 borderType:CPNoBorder
+                                                controlSize:CPRegularControlSize
+                                              scrollerStyle:CPScrollerStyleOverlay];
+
+    [self assertSize:CGSizeMake(95.0, 95.0) equals:contentSize message:@"both scroller widths come from scrollerWidthInStyle:"];
+}
+
 @end
 
+
+/*!
+    A scroller whose widths differ by style, and whose control-size width differs
+    from both, so a size calculation that uses the wrong method is detectable
+    regardless of the theme.
+*/
+@implementation _CPScrollViewTestScroller : CPScroller
+
++ (float)scrollerWidthInStyle:(CPScrollerStyle)aStyle
+{
+    return aStyle === CPScrollerStyleOverlay ? 5.0 : 20.0;
+}
+
++ (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
+{
+    return 99.0;
+}
+
+@end
