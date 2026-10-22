@@ -1039,7 +1039,8 @@ var CPControlBlackColor = [CPColor blackColor];
     _baseWritingDirection = writingDirection;
     [self didChangeValueForKey:@"baseWritingDirection"];
 
-#if PLATFORM(DOM)
+    if (CPDOMAvailable)
+    {
 
     var style;
 
@@ -1062,7 +1063,7 @@ var CPControlBlackColor = [CPColor blackColor];
     }
 
     _DOMElement.style.direction = style;
-#endif
+    }
 }
 
 @end

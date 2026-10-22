@@ -23,6 +23,7 @@
 @import <Foundation/CPObject.j>
 
 @import "CPView.j"
+@import "CPCompatibility.j"
 
 @class CPSlider
 @class CPColorPanel
@@ -235,24 +236,25 @@
 {
     if (self = [super initWithFrame:aFrame])
     {
-#if PLATFORM(DOM)
-        var path = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"wheel.png"];
+        if (CPDOMAvailable)
+        {
+            var path = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"wheel.png"];
 
-        _wheelImage = new Image();
-        _wheelImage.src = path;
-        _wheelImage.style.position = "absolute";
+            _wheelImage = new Image();
+            _wheelImage.src = path;
+            _wheelImage.style.position = "absolute";
 
-        path = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"wheel_black.png"];
+            path = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"wheel_black.png"];
 
-        _blackWheelImage = new Image();
-        _blackWheelImage.src = path;
-        _blackWheelImage.style.opacity = "0";
-        _blackWheelImage.style.filter = "alpha(opacity=0)";
-        _blackWheelImage.style.position = "absolute";
+            _blackWheelImage = new Image();
+            _blackWheelImage.src = path;
+            _blackWheelImage.style.opacity = "0";
+            _blackWheelImage.style.filter = "alpha(opacity=0)";
+            _blackWheelImage.style.position = "absolute";
 
-        _DOMElement.appendChild(_wheelImage);
-        _DOMElement.appendChild(_blackWheelImage);
-#endif
+            _DOMElement.appendChild(_wheelImage);
+            _DOMElement.appendChild(_blackWheelImage);
+        }
 
         [self setWheelSize:aFrame.size];
 
@@ -272,10 +274,10 @@
 
 - (void)setWheelBrightness:(float)brightness
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return;
+
     _blackWheelImage.style.opacity = 1.0 - brightness;
     _blackWheelImage.style.filter = "alpha(opacity=" + (1.0 - brightness) * 100 + ")"
-#endif
 }
 
 - (void)setFrameSize:(CGSize)aSize
@@ -288,21 +290,22 @@
 {
     var min = MIN(aSize.width, aSize.height);
 
-#if PLATFORM(DOM)
-    _blackWheelImage.style.width = min;
-    _blackWheelImage.style.height = min;
-    _blackWheelImage.width = min;
-    _blackWheelImage.height = min;
-    _blackWheelImage.style.top = (aSize.height - min) / 2.0 + "px";
-    _blackWheelImage.style.left = (aSize.width - min) / 2.0 + "px";
+    if (CPDOMAvailable)
+    {
+        _blackWheelImage.style.width = min;
+        _blackWheelImage.style.height = min;
+        _blackWheelImage.width = min;
+        _blackWheelImage.height = min;
+        _blackWheelImage.style.top = (aSize.height - min) / 2.0 + "px";
+        _blackWheelImage.style.left = (aSize.width - min) / 2.0 + "px";
 
-    _wheelImage.style.width = min;
-    _wheelImage.style.height = min;
-    _wheelImage.width = min;
-    _wheelImage.height = min;
-    _wheelImage.style.top = (aSize.height - min) / 2.0 + "px";
-    _wheelImage.style.left = (aSize.width - min) / 2.0 + "px";
-#endif
+        _wheelImage.style.width = min;
+        _wheelImage.style.height = min;
+        _wheelImage.width = min;
+        _wheelImage.height = min;
+        _wheelImage.style.top = (aSize.height - min) / 2.0 + "px";
+        _wheelImage.style.left = (aSize.width - min) / 2.0 + "px";
+    }
 
     _radius = min / 2.0;
 

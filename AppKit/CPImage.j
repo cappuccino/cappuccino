@@ -239,7 +239,8 @@ function CPAppKitImage(aFilename, aSize)
 */
 - (CPData)data
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return;
+
     var dataURL;
 
     if ([_filename hasPrefix:@"data:image"])
@@ -261,7 +262,6 @@ function CPAppKitImage(aFilename, aSize)
 
     var base64 = dataURL.replace(/^data:image\/png;base64,/, "");
     return [CPData dataWithBase64:base64];
-#endif
 }
 
 /*!
@@ -384,7 +384,8 @@ function CPAppKitImage(aFilename, aSize)
 
     _loadStatus = CPImageLoadStatusLoading;
 
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return;
+
     _image = new Image();
 
     var isSynchronous = YES;
@@ -431,7 +432,6 @@ function CPAppKitImage(aFilename, aSize)
     // onload and friends may fire after this point but BEFORE the end of the run loop,
     // crazy, I know. So don't set isSynchronous here, rather wait a bit longer.
     window.setTimeout(function() { isSynchronous = NO; }, 0);
-#endif
 }
 
 - (BOOL)isSingleImage
@@ -641,7 +641,8 @@ function CPAppKitImage(aFilename, aSize)
 
 - (DOMElement)applyCSSImageForView:(CPView)aView onDOMElement:(DOMElement)aDOMElement styleNode:(DOMElement)aStyleNode previousState:(CPArrayRef)aPreviousStateRef
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return;
+
     // First, restore previous CSS styling before applying the new one
 
     var aPreviousState = @deref(aPreviousStateRef);
@@ -724,7 +725,6 @@ function CPAppKitImage(aFilename, aSize)
     @deref(aPreviousStateRef) = aPreviousState;
 
     return aStyleNode;
-#endif
 }
 
 - (BOOL)_shouldBeResized

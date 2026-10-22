@@ -20,6 +20,7 @@
 */
 
 @import "CPTextField.j"
+@import "CPCompatibility.j"
 
 @class CPDatePicker
 @class _CPDatePickerElementView
@@ -471,13 +472,15 @@ CPAMPMDateType = 6;
         newDateValue.setSeconds(newDateValue.getSeconds() + secondsFromGMT - secondsFromGMTTimeZone);
     }
 
-#if PLATFORM(DOM)
-    _datePicker._invokedByUserEvent = YES;
-#endif
+    if (CPDOMAvailable)
+    {
+        _datePicker._invokedByUserEvent = YES;
+    }
     [_datePicker _setDateValue:newDateValue timeInterval:[_datePicker timeInterval]];
-#if PLATFORM(DOM)
-    _datePicker._invokedByUserEvent = NO;
-#endif
+    if (CPDOMAvailable)
+    {
+        _datePicker._invokedByUserEvent = NO;
+    }
 }
 
 

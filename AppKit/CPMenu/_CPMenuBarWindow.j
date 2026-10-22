@@ -22,6 +22,7 @@
 
 @import "CPPanel.j"
 @import "_CPMenuManager.j"
+@import "CPCompatibility.j"
 
 @class _CPMenuView
 @class CPMenu
@@ -100,16 +101,17 @@
 
 - (void)setTitle:(CPString)aTitle
 {
-#if PLATFORM(DOM)
-    var bundleName = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"];
+    if (CPDOMAvailable)
+    {
+        var bundleName = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"];
 
-    if (![bundleName length])
-        document.title = aTitle;
-    else if ([aTitle length])
-        document.title = aTitle + @" - " + bundleName;
-    else
-        document.title = bundleName;
-#endif
+        if (![bundleName length])
+            document.title = aTitle;
+        else if ([aTitle length])
+            document.title = aTitle + @" - " + bundleName;
+        else
+            document.title = bundleName;
+    }
 
     [_titleField setStringValue:aTitle];
     [_titleField sizeToFit];

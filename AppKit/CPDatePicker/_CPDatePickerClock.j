@@ -26,6 +26,7 @@
 @import "CPTextField.j"
 @import "CPImage.j"
 @import "CALayer.j"
+@import "CPCompatibility.j"
 
 @class _CPCibCustomResource
 @class CPDatePicker
@@ -194,10 +195,10 @@ _CPDatePickerClockSeconds = 3;
 
     // Check if we have to display the hand second
     // FIXME: Don't know why but next line will cause theme compilation to fail...
-    // Workaround: added "if PLATFORM(DOM)"
-#if PLATFORM(DOM)
+    // Workaround: guarded with CPDOMAvailable (was: "if PLATFORM(DOM)")
+    if (!CPDOMAvailable) return;
+
     [_secondHandLayer setHidden:!((_datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)];
-#endif
 }
 
 // MARK: Layout methods
@@ -381,13 +382,15 @@ _CPDatePickerClockSeconds = 3;
                 break;
         }
 
-#if PLATFORM(DOM)
-        _datePicker._invokedByUserEvent = YES;
-#endif
+        if (CPDOMAvailable)
+        {
+            _datePicker._invokedByUserEvent = YES;
+        }
         [_datePicker _setDateValue:dateValue timeInterval:[_datePicker timeInterval]];
-#if PLATFORM(DOM)
-        _datePicker._invokedByUserEvent = NO;
-#endif
+        if (CPDOMAvailable)
+        {
+            _datePicker._invokedByUserEvent = NO;
+        }
 
         // We have to adapt represented values
         _representedHours    = dateValue.getHours();

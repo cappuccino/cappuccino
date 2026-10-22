@@ -30,9 +30,7 @@
 @import "CPDragServer.j"
 @import "CPEvent.j"
 @import "CPPlatformWindow.j"
-#if PLATFORM(BROWSER)
 @import "CPPlatformWindow+DOM.j"
-#endif
 @import "CPResponder.j"
 @import "CPScreen.j"
 @import "CPText.j"
@@ -247,9 +245,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _sharesChromeWithPlatformWindow;
 
     // Bridge Support
-#if PLATFORM(DOM)
     DOMElement                          _DOMElement;
-#endif
 
     unsigned                            _autoresizingMask;
 
@@ -373,21 +369,22 @@ CPTexturedBackgroundWindowMask
         [_windowView setNextResponder:self];
 
         // CSS Styling
-#if PLATFORM(DOM)
-        var radius;
-        
-        if (radius = [_windowView actualValueForThemeAttribute:@"border-top-left-radius"])
-            _windowView._DOMElement.style.borderTopLeftRadius = radius;
-        
-        if (radius = [_windowView actualValueForThemeAttribute:@"border-top-right-radius"])
-            _windowView._DOMElement.style.borderTopRightRadius = radius;
-        
-        if (radius = [_windowView actualValueForThemeAttribute:@"border-bottom-left-radius"])
-            _windowView._DOMElement.style.borderBottomLeftRadius = radius;
-        
-        if (radius = [_windowView actualValueForThemeAttribute:@"border-bottom-right-radius"])
-            _windowView._DOMElement.style.borderBottomRightRadius = radius;
-#endif
+        if (CPDOMAvailable)
+        {
+            var radius;
+
+            if (radius = [_windowView actualValueForThemeAttribute:@"border-top-left-radius"])
+                _windowView._DOMElement.style.borderTopLeftRadius = radius;
+
+            if (radius = [_windowView actualValueForThemeAttribute:@"border-top-right-radius"])
+                _windowView._DOMElement.style.borderTopRightRadius = radius;
+
+            if (radius = [_windowView actualValueForThemeAttribute:@"border-bottom-left-radius"])
+                _windowView._DOMElement.style.borderBottomLeftRadius = radius;
+
+            if (radius = [_windowView actualValueForThemeAttribute:@"border-bottom-right-radius"])
+                _windowView._DOMElement.style.borderBottomRightRadius = radius;
+        }
         
         // Size calculation needs _windowView
         _minSize = [self _calculateMinSizeForProposedSize:CGSizeMake(0.0, 0.0)];
@@ -400,21 +397,22 @@ CPTexturedBackgroundWindowMask
 
         _firstResponder = self;
 
-#if PLATFORM(DOM)
-        _DOMElement = document.createElement("div");
-
-        _DOMElement.style.position = "absolute";
-        _DOMElement.style.visibility = "visible";
-        _DOMElement.style.zIndex = 0;
-
-        if (![self _sharesChromeWithPlatformWindow])
+        if (CPDOMAvailable)
         {
-            CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, CGRectGetMinX(_frame), CGRectGetMinY(_frame));
-        }
+            _DOMElement = document.createElement("div");
 
-        CPDOMDisplayServerSetStyleSize(_DOMElement, 1, 1);
-        CPDOMDisplayServerAppendChild(_DOMElement, _windowView._DOMElement);
-#endif
+            _DOMElement.style.position = "absolute";
+            _DOMElement.style.visibility = "visible";
+            _DOMElement.style.zIndex = 0;
+
+            if (![self _sharesChromeWithPlatformWindow])
+            {
+                CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, CGRectGetMinX(_frame), CGRectGetMinY(_frame));
+            }
+
+            CPDOMDisplayServerSetStyleSize(_DOMElement, 1, 1);
+            CPDOMDisplayServerAppendChild(_DOMElement, _windowView._DOMElement);
+        }
 
         [self setNextResponder:CPApp];
 
@@ -580,16 +578,18 @@ CPTexturedBackgroundWindowMask
         [oldWindowView _setWindow:nil];
         [oldWindowView noteToolbarChanged];
 
-#if PLATFORM(DOM)
-        CPDOMDisplayServerRemoveChild(_DOMElement, oldWindowView._DOMElement);
-#endif
+        if (CPDOMAvailable)
+        {
+            CPDOMDisplayServerRemoveChild(_DOMElement, oldWindowView._DOMElement);
+        }
     }
 
     if (_windowView)
     {
-#if PLATFORM(DOM)
-        CPDOMDisplayServerAppendChild(_DOMElement, _windowView._DOMElement);
-#endif
+        if (CPDOMAvailable)
+        {
+            CPDOMDisplayServerAppendChild(_DOMElement, _windowView._DOMElement);
+        }
 
         var contentRect = [_contentView convertRect:[_contentView bounds] toView:nil];
 
@@ -785,12 +785,10 @@ CPTexturedBackgroundWindowMask
             origin.x = newOrigin.x;
             origin.y = newOrigin.y;
 
-#if PLATFORM(DOM)
-            if (![self _sharesChromeWithPlatformWindow])
+            if (CPDOMAvailable && ![self _sharesChromeWithPlatformWindow])
             {
                 CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, origin.x, origin.y);
             }
-#endif
 
             // reposition sheet
             if ([self attachedSheet])
@@ -984,25 +982,25 @@ CPTexturedBackgroundWindowMask
 - (void)_orderFront
 {
 
-#if PLATFORM(DOM)
+    if (CPDOMAvailable)
+    {
+        if (!_isVisible)
+            [_platformWindow _setShouldUpdateContentRect:NO];
 
-    if (!_isVisible)
-        [_platformWindow _setShouldUpdateContentRect:NO];
+        // -dw- if a sheet is clicked, the parent window should come up too
+        if (_isSheet)
+            [_parentView orderFront:self];
 
-    // -dw- if a sheet is clicked, the parent window should come up too
-    if (_isSheet)
-        [_parentView orderFront:self];
+        // Save the boolean since it will be updated in the method order:window:relativeTo:
+        var wasVisible = _isVisible;
 
-    // Save the boolean since it will be updated in the method order:window:relativeTo:
-    var wasVisible = _isVisible;
+        [_platformWindow orderFront:self];
+        [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 
-    [_platformWindow orderFront:self];
-    [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
-
-    // setFrame is set after ordering the window as this method can send some notifications
-    if (!wasVisible)
-        [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
-#endif
+        // setFrame is set after ordering the window as this method can send some notifications
+        if (!wasVisible)
+            [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
+    }
 
     if (!CPApp._keyWindow)
         [self makeKeyWindow];
@@ -1091,15 +1089,16 @@ CPTexturedBackgroundWindowMask
     if (recursive)
         [_childWindows makeObjectsPerformSelector:@selector(_orderOutRecursively:) withObject:recursive];
 
-#if PLATFORM(DOM)
-    if ([self _sharesChromeWithPlatformWindow])
-        [_platformWindow orderOut:self];
+    if (CPDOMAvailable)
+    {
+        if ([self _sharesChromeWithPlatformWindow])
+            [_platformWindow orderOut:self];
 
-    if (_isFullPlatformWindow && _platformWindow != [CPPlatformWindow primaryPlatformWindow])
-        [_platformWindow orderOut:self];
+        if (_isFullPlatformWindow && _platformWindow != [CPPlatformWindow primaryPlatformWindow])
+            [_platformWindow orderOut:self];
 
-    [_platformWindow order:CPWindowOut window:self relativeTo:nil];
-#endif
+        [_platformWindow order:CPWindowOut window:self relativeTo:nil];
+    }
 
     [self makeFirstResponder:nil];
     [self _updateMainAndKeyWindows];
@@ -1124,10 +1123,11 @@ CPTexturedBackgroundWindowMask
         [self _orderFront];
     else if (orderingMode === CPWindowBelow && otherWindowNumber === 0)
         [self _orderBack];
-#if PLATFORM(DOM)
     else
-        [_platformWindow order:orderingMode window:self relativeTo:CPApp._windows[otherWindowNumber]];
-#endif
+    {
+        if (CPDOMAvailable)
+            [_platformWindow order:orderingMode window:self relativeTo:CPApp._windows[otherWindowNumber]];
+    }
 }
 
 /*!
@@ -1424,9 +1424,10 @@ CPTexturedBackgroundWindowMask
     {
         if (_shadowView)
         {
-#if PLATFORM(DOM)
-            CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
-#endif
+            if (CPDOMAvailable)
+            {
+                CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
+            }
             _shadowView = nil;
         }
 
@@ -1440,23 +1441,24 @@ CPTexturedBackgroundWindowMask
         // When using CSS theming, we get rid of _shadowView and add CSS shadowing directly
         // on the _windowView
         
-#if PLATFORM(DOM)
-        // We must check that _windowView exists as _updateShadow can be called by
-        // _setSharesChromeWithPlatformWindow whereas _windowView is not yet created
-        if (_windowView && _windowView._DOMElement)
+        if (CPDOMAvailable)
         {
-            var currentBoxShadow = _windowView._DOMElement.style.boxShadow;
-            
-            if (_hasShadow && (currentBoxShadow.length == 0))
+            // We must check that _windowView exists as _updateShadow can be called by
+            // _setSharesChromeWithPlatformWindow whereas _windowView is not yet created
+            if (_windowView && _windowView._DOMElement)
             {
-                _windowView._DOMElement.style.boxShadow = [_windowView actualValueForThemeAttribute:@"window-shadow-color"];
-            }
-            else if (!_hasShadow && (currentBoxShadow.length > 0))
-            {
-                _windowView._DOMElement.style.boxShadow = "";
+                var currentBoxShadow = _windowView._DOMElement.style.boxShadow;
+
+                if (_hasShadow && (currentBoxShadow.length == 0))
+                {
+                    _windowView._DOMElement.style.boxShadow = [_windowView actualValueForThemeAttribute:@"window-shadow-color"];
+                }
+                else if (!_hasShadow && (currentBoxShadow.length > 0))
+                {
+                    _windowView._DOMElement.style.boxShadow = "";
+                }
             }
         }
-#endif
     }
     else
     {
@@ -1468,15 +1470,17 @@ CPTexturedBackgroundWindowMask
             [_shadowView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
             [_shadowView setNeedsLayout];
             
-#if PLATFORM(DOM)
-            CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
-#endif
+            if (CPDOMAvailable)
+            {
+                CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
+            }
         }
         else if (!_hasShadow && _shadowView)
         {
-#if PLATFORM(DOM)
-            CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
-#endif
+            if (CPDOMAvailable)
+            {
+                CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
+            }
             _shadowView = nil;
         }
     }
@@ -1958,12 +1962,13 @@ CPTexturedBackgroundWindowMask
                     [self selectPreviousKeyView:self];
                 else
                     [self selectNextKeyView:self];
-#if PLATFORM(DOM)
-                // Make sure the browser doesn't try to do its own tab handling.
-                // This is important or the browser might blur the shared text field or token field input field,
-                // even that we just moved it to a new first responder.
-                [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
-#endif
+                if (CPDOMAvailable)
+                {
+                    // Make sure the browser doesn't try to do its own tab handling.
+                    // This is important or the browser might blur the shared text field or token field input field,
+                    // even that we just moved it to a new first responder.
+                    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
+                }
                 return;
             }
             else if ([anEvent charactersIgnoringModifiers] === CPBackTabCharacter)
@@ -1972,13 +1977,13 @@ CPTexturedBackgroundWindowMask
 
                 if (didTabBack)
                 {
-#if PLATFORM(DOM)
-                    // Make sure the browser doesn't try to do its own tab handling.
-                    // This is important or the browser might blur the shared text field or token field input field,
-                    // even that we just moved it to a new first responder.
-                    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
-#endif
-
+                    if (CPDOMAvailable)
+                    {
+                        // Make sure the browser doesn't try to do its own tab handling.
+                        // This is important or the browser might blur the shared text field or token field input field,
+                        // even that we just moved it to a new first responder.
+                        [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
+                    }
                 }
                 return didTabBack;
             }
@@ -3711,12 +3716,10 @@ var keyViewComparator = function(lhs, rhs, context)
 */
 - (CGPoint)_nativeScrollOffset
 {
-#if PLATFORM(DOM)
-    return  CGPointMake(_windowView._DOMElement.scrollLeft, _windowView._DOMElement.scrollTop);
-#else
-    CGPointMake(0, 0);
-#endif
+    if (CPDOMAvailable)
+        return  CGPointMake(_windowView._DOMElement.scrollLeft, _windowView._DOMElement.scrollTop);
 
+    CGPointMake(0, 0);
 }
 
 /*!

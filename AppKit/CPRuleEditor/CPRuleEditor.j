@@ -33,6 +33,7 @@
 
 @import "_CPRuleEditorViewSliceRow.j"
 @import "_CPRuleEditorLocalizer.j"
+@import "CPCompatibility.j"
 
 @class CPCompoundPredicate
 @class CPComparisonPredicate
@@ -2248,10 +2249,11 @@ TODO: implement
         firstSlice = [_slices objectAtIndex:firstIndex],
         dragview = [[CPView alloc] initWithFrame:[firstSlice frame]];
 
-#if PLATFORM(DOM)
-    var html = firstSlice._DOMElement.innerHTML;
-    dragview._DOMElement.innerHTML = [html copy];
-#endif
+    if (CPDOMAvailable)
+    {
+        var html = firstSlice._DOMElement.innerHTML;
+        dragview._DOMElement.innerHTML = [html copy];
+    }
     [dragview setBackgroundColor:[firstSlice backgroundColor]];
     [dragview setAlphaValue:0.7];
 

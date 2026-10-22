@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-//#define _IS_NUMERIC(n) (!isNaN(parseFloat(n)) && isFinite(n))
-
 /*
  Objective-J is a strict superset of JavaScript and compiles down to a shared global runtime scope.
  This file (_CPFoundationUtilities.j) is the canonical place for otherwise "homeless" low-level

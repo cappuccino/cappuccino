@@ -37,6 +37,8 @@
 @import "CPWindowController.j"
 @import "_CPPopoverWindow.j"
 
+@global CPWindowObjectList
+
 @typedef CPModalSession
 
 var CPMainCibFile               = @"CPMainCibFile",
@@ -241,9 +243,10 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     // At this point we clear the window.status to eliminate Safari's "Cancelled" error message
     // The message shouldn't be displayed, because only an XHR is cancelled, but it is a usability issue.
     // We do it here so that applications can change it in willFinish or didFinishLaunching
-#if PLATFORM(DOM)
-    window.status = " ";
-#endif
+    if (CPDOMAvailable)
+    {
+        window.status = " ";
+    }
 
     // We also want to set the default cursor on the body, so that buttons and things don't have an iBeam
     [[CPCursor arrowCursor] set];
@@ -273,9 +276,10 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     var needsUntitled = !!_documentController,
         URLStrings = nil;
 
-#if PLATFORM(DOM)
-    URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings();
-#endif
+    if (CPDOMAvailable)
+    {
+        URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings();
+    }
 
     var index = 0,
         count = [URLStrings count];
@@ -727,11 +731,10 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 */
 - (CPArray)orderedWindows
 {
-#if PLATFORM(DOM)
-    return CPWindowObjectList();
-#else
+    if (CPDOMAvailable)
+        return CPWindowObjectList();
+
     return [];
-#endif
 }
 
 - (void)hide:(id)aSender
@@ -1304,22 +1307,22 @@ _CPRunModalLoop = function(anEvent)
 
 function CPApplicationMain(args, namedArgs)
 {
-
-#if PLATFORM(DOM)
-    // hook to allow recorder, etc to manipulate things before starting AppKit
-    if (window.parent !== window && typeof window.parent._childAppIsStarting === "function")
+    if (CPDOMAvailable)
     {
-        try
+        // hook to allow recorder, etc to manipulate things before starting AppKit
+        if (window.parent !== window && typeof window.parent._childAppIsStarting === "function")
         {
-            window.parent._childAppIsStarting(window);
-        }
-        catch(err)
-        {
-            // This could happen if we're in an iframe without access to the parent frame.
-            CPLog.warn("Failed to call parent frame's _childAppIsStarting().");
+            try
+            {
+                window.parent._childAppIsStarting(window);
+            }
+            catch(err)
+            {
+                // This could happen if we're in an iframe without access to the parent frame.
+                CPLog.warn("Failed to call parent frame's _childAppIsStarting().");
+            }
         }
     }
-#endif
 
     var mainBundle = [CPBundle mainBundle],
         principalClass = [mainBundle principalClass];

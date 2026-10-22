@@ -115,6 +115,7 @@ ConverterConversionException  = @"ConverterConversionException";
 - (CPData)CPCompliantNibDataAtFilePath:(CPString)aFilePath
 {
     var temporaryNibFilePath = "",
+        temporaryXibFilePath = "",
         temporaryPlistFilePath = "";
 
 

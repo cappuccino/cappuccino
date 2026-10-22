@@ -982,8 +982,6 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 @end
 
-# pragma mark -
-
 // This subclass of CPSegmentedControl implements specific behaviour needed by CPTabView, which
 // differs in some ways from normal CPSegmentedControl habits :
 //

@@ -23,6 +23,7 @@
 
 @import "CPControl.j"
 @import "_CPDatePickerDayView.j"
+@import "CPCompatibility.j"
 
 @class CPDatePicker
 
@@ -457,9 +458,10 @@
     _indexDayTile = -1;
     _eventDragged = nil;
 
-#if PLATFORM(DOM)
-    _datePicker._invokedByUserEvent = YES;
-#endif
+    if (CPDOMAvailable)
+    {
+        _datePicker._invokedByUserEvent = YES;
+    }
 
     // Check if we have to change or not the month of the component
     if ([dayTile date].getMonth() == _date.getMonth())
@@ -514,9 +516,10 @@
             [_delegate _displayNextMonth];
     }
 
-#if PLATFORM(DOM)
-    _datePicker._invokedByUserEvent = NO;
-#endif
+    if (CPDOMAvailable)
+    {
+        _datePicker._invokedByUserEvent = NO;
+    }
 }
 
 /*! Mouse dragged event
@@ -534,9 +537,10 @@
     _indexDayTile = [self indexOfTileForEvent:anEvent];
     _eventDragged = anEvent;
 
-#if PLATFORM(DOM)
-    _datePicker._invokedByUserEvent = YES;
-#endif
+    if (CPDOMAvailable)
+    {
+        _datePicker._invokedByUserEvent = YES;
+    }
 
     if ([_datePicker datePickerMode] == CPSingleDateMode)
     {
@@ -580,9 +584,10 @@
         }
     }
 
-#if PLATFORM(DOM)
-    _datePicker._invokedByUserEvent = NO;
-#endif
+    if (CPDOMAvailable)
+    {
+        _datePicker._invokedByUserEvent = NO;
+    }
 }
 
 - (void)mouseUp:(CPEvent)anEvent

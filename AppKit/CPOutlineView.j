@@ -86,9 +86,15 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     CPOutlineViewCoalesceSelectionNotificationStateOn   = 1,
     CPOutlineViewCoalesceSelectionNotificationStateDid  = 2;
 
-#define SELECTION_SHOULD_CHANGE(anOutlineView) (!((anOutlineView)._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_selectionShouldChangeInOutlineView_) || [(anOutlineView)._outlineViewDelegate selectionShouldChangeInOutlineView:(anOutlineView)])
+function SELECTION_SHOULD_CHANGE(anOutlineView)
+{
+    return (!((anOutlineView)._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_selectionShouldChangeInOutlineView_) || [(anOutlineView)._outlineViewDelegate selectionShouldChangeInOutlineView:(anOutlineView)]);
+}
 
-#define SHOULD_SELECT_ITEM(anOutlineView, anItem) (!((anOutlineView)._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_) || [(anOutlineView)._outlineViewDelegate outlineView:(anOutlineView) shouldSelectItem:(anItem)])
+function SHOULD_SELECT_ITEM(anOutlineView, anItem)
+{
+    return (!((anOutlineView)._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_) || [(anOutlineView)._outlineViewDelegate outlineView:(anOutlineView) shouldSelectItem:(anItem)]);
+}
 
 
 @protocol CPOutlineViewDelegate <CPObject>

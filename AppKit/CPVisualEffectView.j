@@ -23,6 +23,7 @@
 @import <Foundation/Foundation.j>
 @import "CPAppearance.j"
 @import "CPView.j"
+@import "CPCompatibility.j"
 
 @typedef CPVisualEffectMaterial
 CPVisualEffectMaterialAppearanceBased       = 0;
@@ -126,9 +127,10 @@ CPVisualEffectStateInactive                 = 2;
 
     [self setBackgroundColor:finalColor];
 
-#if PLATFORM(DOM)
-    self._DOMElement.style[prop] = shouldEnable ? "blur(30px)" : nil;
-#endif
+    if (CPDOMAvailable)
+    {
+        self._DOMElement.style[prop] = shouldEnable ? "blur(30px)" : nil;
+    }
 
 }
 

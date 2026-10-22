@@ -82,10 +82,8 @@ var _CPEventPeriodicEventPeriod         = 0,
     float               _scrollingDeltaY;
     BOOL                _hasPreciseScrollingDeltas;
 
-#if PLATFORM(DOM)
     BOOL                _suppressCappuccinoCut;
     BOOL                _suppressCappuccinoPaste;
-#endif
 
     CPTrackingArea      _trackingArea;
 }
@@ -609,11 +607,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 */
 - (BOOL)_platformIsEffectingCutOrPaste
 {
-#if PLATFORM(DOM)
     return _suppressCappuccinoCut || _suppressCappuccinoPaste;
-#else
-    return NO;
-#endif
 }
 
 

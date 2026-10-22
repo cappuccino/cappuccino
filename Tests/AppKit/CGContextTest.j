@@ -19,7 +19,6 @@
     //{
         [self assert:YES equals:!CPFeatureIsCompatible(CPHTMLCanvasFeature)];
     //}
-    [self assert:YES equals:!CPFeatureIsCompatible(CPVMLFeature)];
 }
 
 - (void)testGStateCreate

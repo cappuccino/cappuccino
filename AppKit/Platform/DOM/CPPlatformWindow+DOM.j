@@ -246,9 +246,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
 // When scrolling with an old-style scroll wheel with discete steps ('clicks'), the scroll amount can indicate how many "lines" to
 // scroll.
-#define SCROLLWHEEL_LINE_PIXELS 6.0
-
-#if PLATFORM(DOM)
+var SCROLLWHEEL_LINE_PIXELS = 6.0;
 
 @implementation CPPlatformWindow (DOM)
 
@@ -258,16 +256,26 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
     if (self)
     {
-        _DOMWindow = window;
-        _contentRect = CGRectMakeZero();
+        if (CPDOMAvailable)
+        {
+            _DOMWindow = window;
+            _contentRect = CGRectMakeZero();
 
-        _windowLevels = [];
-        _windowLayers = @{};
+            _windowLevels = [];
+            _windowLayers = @{};
 
-        _platformPasteboard = [CPPlatformPasteboard new];
+            _platformPasteboard = [CPPlatformPasteboard new];
 
-        [self registerDOMWindow];
-        [self updateFromNativeContentRect];
+            [self registerDOMWindow];
+            [self updateFromNativeContentRect];
+        }
+        else
+        {
+            _contentRect = CGRectMakeZero();
+
+            _windowLevels = [];
+            _windowLayers = @{};
+        }
 
         _charCodes = {};
 
@@ -1928,7 +1936,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 }
 
 @end
-#endif
 
 var CPEventClass = [CPEvent class];
 

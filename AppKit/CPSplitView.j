@@ -62,28 +62,6 @@ var CPSplitViewDelegate_splitView_canCollapseSubview_                           
     CPSplitViewDelegate_splitViewDidResizeSubviews_                                     = 1 << 9,
     CPSplitViewDelegate_splitViewWillResizeSubviews_                                    = 1 << 10;
 
-#define SPLIT_VIEW_MAYBE_POST_WILL_RESIZE() \
-    if ((_suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0) \
-    { \
-        [self _postNotificationWillResize]; \
-        _suppressResizeNotificationsMask |= DidPostWillResizeNotification; \
-    }
-
-#define SPLIT_VIEW_MAYBE_POST_DID_RESIZE() \
-    if ((_suppressResizeNotificationsMask & ShouldSuppressResizeNotifications) !== 0) \
-        _suppressResizeNotificationsMask |= DidSuppressResizeNotification; \
-    else \
-        [self _postNotificationDidResize];
-
-#define SPLIT_VIEW_DID_SUPPRESS_RESIZE_NOTIFICATION() \
-    ((_suppressResizeNotificationsMask & DidSuppressResizeNotification) !== 0)
-
-#define SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(shouldSuppress) \
-    if (shouldSuppress) \
-        _suppressResizeNotificationsMask |= ShouldSuppressResizeNotifications; \
-    else \
-        _suppressResizeNotificationsMask = 0;
-
 CPSplitViewDidResizeSubviewsNotification = @"CPSplitViewDidResizeSubviewsNotification";
 CPSplitViewWillResizeSubviewsNotification = @"CPSplitViewWillResizeSubviewsNotification";
 
@@ -733,7 +711,7 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
  */
 - (void)adjustSubviews
 {
-    SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
+    [self _maybePostWillResizeNotification];
     [self _postNotificationWillResize];
 
     // 2 possibilities : we have, or not, enough flexible space to accomodate fixed size subviews
@@ -815,7 +793,7 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
             [self _distribute:remainingSpace amoung:fixedCount onFlexible:NO fromIndex:0 toIndex:nbSubviews-1];
     }
 
-    SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
+    [self _maybePostDidResizeNotification];
 
     [self layoutSubviews];
 }
@@ -1211,7 +1189,7 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
     // autosave.
     _shouldRestoreFromAutosaveUnlessFrameSize = nil;
 
-    SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(YES);
+    [self _setResizeNotificationsSuppressed:YES];
 
     var realPosition = [self _realPositionForPosition:position ofDividerAtIndex:dividerIndex],
         viewA = _arrangedSubviews[dividerIndex],
@@ -1228,9 +1206,9 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 
     if (preSize !== frameA.size[_sizeComponent])
     {
-        SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
+        [self _maybePostWillResizeNotification];
         [_arrangedSubviews[dividerIndex] setFrame:frameA];
-        SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
+        [self _maybePostDidResizeNotification];
     }
 
     preSize = frameB.size[_sizeComponent];
@@ -1245,9 +1223,9 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 
     if (preSize !== frameB.size[_sizeComponent] || preOrigin !== frameB.origin[_originComponent])
     {
-        SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
+        [self _maybePostWillResizeNotification];
         [_arrangedSubviews[dividerIndex + 1] setFrame:frameB];
-        SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
+        [self _maybePostDidResizeNotification];
     }
 
     if (preCollapsePosition)
@@ -1260,10 +1238,10 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 
     [self _updateRatios];
 
-    if (SPLIT_VIEW_DID_SUPPRESS_RESIZE_NOTIFICATION())
+    if ([self _didSuppressResizeNotifications])
         [self _postNotificationDidResize];
 
-    SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(NO);
+    [self _setResizeNotificationsSuppressed:NO];
 }
 
 /*!
@@ -1484,6 +1462,36 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
         return nil;
 
     return @"CPSplitView Subview Precollapse Positions " + theAutosaveName;
+}
+
+- (void)_maybePostWillResizeNotification
+{
+    if ((_suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0)
+    {
+        [self _postNotificationWillResize];
+        _suppressResizeNotificationsMask |= DidPostWillResizeNotification;
+    }
+}
+
+- (void)_maybePostDidResizeNotification
+{
+    if ((_suppressResizeNotificationsMask & ShouldSuppressResizeNotifications) !== 0)
+        _suppressResizeNotificationsMask |= DidSuppressResizeNotification;
+    else
+        [self _postNotificationDidResize];
+}
+
+- (BOOL)_didSuppressResizeNotifications
+{
+    return ((_suppressResizeNotificationsMask & DidSuppressResizeNotification) !== 0);
+}
+
+- (void)_setResizeNotificationsSuppressed:(BOOL)shouldSuppress
+{
+    if (shouldSuppress)
+        _suppressResizeNotificationsMask |= ShouldSuppressResizeNotifications;
+    else
+        _suppressResizeNotificationsMask = 0;
 }
 
 @end
@@ -1898,5 +1906,6 @@ var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
 
     [self setDividerStyle:(shouldBePaneSplitter ? CPSplitViewDividerStylePaneSplitter : CPSplitViewDividerStyleThin)];
 }
+
 
 @end

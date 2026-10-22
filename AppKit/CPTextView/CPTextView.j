@@ -29,13 +29,12 @@
 @import "CPColorPanel.j"
 @import "CPFontManager.j"
 @import "CPTextStorage.j"
-@import "CPTextContainer.j"
 @import "CPLayoutManager.j"
 @import "CPParagraphStyle.j"
+@import "CPTextContainer.j"
 
 @import "_CPRTFParser.j"
 @import "_CPRTFProducer.j"
-
 
 @class CPClipView;
 @class CPMenu;
@@ -149,7 +148,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     int                         _startTrackingLocation;
 
     _CPCaret                    _caret;
-    CPTimer                     _scrollingTimer;
 
     BOOL                        _scrollingDownward;
     CPRange                     _movingSelection;
@@ -242,9 +240,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)_init
 {
-#if PLATFORM(DOM)
+    if (CPDOMAvailable)
+    {
         _DOMElement.style.cursor = "text";
-#endif
+    }
 
     _selectionRange = CPMakeRange(0, 0);
     _textContainerInset = CGSizeMake(2, 0);
@@ -882,7 +881,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)drawRect:(CGRect)aRect
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     var range = [_layoutManager glyphRangeForBoundingRect:aRect inTextContainer:_textContainer];
 
     for (var i = 0; i < [_selectionSpans count]; i++)
@@ -919,7 +920,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
     else
         [_caret setVisibility:NO];
-#endif
 }
 
 
@@ -1031,9 +1031,10 @@ Sets the selection to a range of characters in response to user action.
        [_CPNativeInputManager focusForClipboardOfTextView:self];
 }
 
-#if PLATFORM(DOM)
 - (CGPoint)_cumulativeOffset
 {
+    if (!CPDOMAvailable) return CGPointMake(0, 0);
+
     var top = 0,
         left = 0,
         element = self._DOMElement;
@@ -1048,7 +1049,6 @@ Sets the selection to a range of characters in response to user action.
 
     return CGPointMake(left, top);
 }
-#endif
 
 - (CPArray)selectedRanges
 {
@@ -3042,8 +3042,9 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 - (void)_createSpan
 {
+    if (!CPDOMAvailable)
+        return;
 
-#if PLATFORM(DOM)
     _selectionBoxDOM = document.createElement("span");
     _selectionBoxDOM.style.position = "absolute";
     _selectionBoxDOM.style.visibility = "visible";
@@ -3058,8 +3059,6 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     _selectionBoxDOM.style.height = (_rect.size.height) + "px";
     _selectionBoxDOM.style.zIndex = -1000;
     _selectionBoxDOM.oncontextmenu = _selectionBoxDOM.onmousedown = _selectionBoxDOM.onselectstart = function () { return false; };
-#endif
-
 }
 
 @end
@@ -3079,36 +3078,38 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 {
     _rect = CGRectCreateCopy(aRect);
 
-#if PLATFORM(DOM)
-    _caretDOM.style.left = (aRect.origin.x) + "px";
-    _caretDOM.style.top = (aRect.origin.y) + "px";
-    _caretDOM.style.height = (aRect.size.height) + "px";
-#endif
+    if (CPDOMAvailable)
+    {
+        _caretDOM.style.left = (aRect.origin.x) + "px";
+        _caretDOM.style.top = (aRect.origin.y) + "px";
+        _caretDOM.style.height = (aRect.size.height) + "px";
+    }
 }
 
 - (id)initWithTextView:(CPTextView)aView
 {
     if (self = [super init])
     {
-#if PLATFORM(DOM)
-        var style;
-
-        if (!_caretDOM)
+        if (CPDOMAvailable)
         {
-            _caretDOM = document.createElement("span");
-            style = _caretDOM.style;
-            style.position = "absolute";
-            style.visibility = "visible";
-            style.padding = "0px";
-            style.margin = "0px";
-            style.whiteSpace = "pre";
-            style.backgroundColor = "black";
-            _caretDOM.style.width = "1px";
-            _caretDOM.style.zIndex = 10001;
-            _textView = aView;
-            _textView._DOMElement.appendChild(_caretDOM);
+            var style;
+
+            if (!_caretDOM)
+            {
+                _caretDOM = document.createElement("span");
+                style = _caretDOM.style;
+                style.position = "absolute";
+                style.visibility = "visible";
+                style.padding = "0px";
+                style.margin = "0px";
+                style.whiteSpace = "pre";
+                style.backgroundColor = "black";
+                _caretDOM.style.width = "1px";
+                _caretDOM.style.zIndex = 10001;
+                _textView = aView;
+                _textView._DOMElement.appendChild(_caretDOM);
+            }
         }
-#endif
     }
 
     return self;
@@ -3116,10 +3117,10 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 - (void)setVisibility:(BOOL)visibilityFlag stop:(BOOL)stopFlag
 {
-
-#if PLATFORM(DOM)
-    _caretDOM.style.visibility = visibilityFlag ? "visible" : "hidden";
-#endif
+    if (CPDOMAvailable)
+    {
+        _caretDOM.style.visibility = visibilityFlag ? "visible" : "hidden";
+    }
 
     if (!visibilityFlag && stopFlag)
         [self stopBlinking];
@@ -3184,25 +3185,28 @@ var _CPCopyPlaceholder = '-';
 
 + (void)isDeadKey:(CPEvent)event
 {
-#if PLATFORM(DOM)
-    return event._DOMEvent && (event._DOMEvent.key === 'Dead' || event._DOMEvent.key === 'Process');
-#endif
+    if (CPDOMAvailable)
+        return event._DOMEvent && (event._DOMEvent.key === 'Dead' || event._DOMEvent.key === 'Process');
+
     return NO;
 }
 
 + (void)cancelCurrentInputSessionIfNeeded
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     if (_CPNativeInputField) {
         _CPNativeInputField.innerHTML = '';
     }
     _isComposing = NO;
-#endif
 }
 
 + (void)initialize
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     _CPNativeInputField = document.createElement("div");
     _CPNativeInputField.contentEditable = YES;
 
@@ -3380,21 +3384,22 @@ var _CPCopyPlaceholder = '-';
             [currentFirstResponder deleteBackward:self];
         }, 20);
     };
-#endif
 }
 
 + (void)focusForTextView:(CPTextView)currentFirstResponder
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
 
     if (_CPNativeInputField && document.activeElement !== _CPNativeInputField)
         _CPNativeInputField.focus();
-#endif
 }
 
 + (void)focusForClipboardOfTextView:(CPTextView)textview
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     var selectedRange = [textview selectedRange];
     if (selectedRange.length > 0) {
         // Put the selected text into the hidden div so the browser can natively copy it.
@@ -3415,7 +3420,6 @@ var _CPCopyPlaceholder = '-';
         selection.removeAllRanges();
         selection.addRange(range);
     }
-#endif
 }
 
 @end

@@ -22,6 +22,7 @@
 
 @import "CPView.j"
 @import "CPScrollView.j"
+@import "CPCompatibility.j"
 
 @class CPWebScriptObject
 
@@ -1031,9 +1032,10 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         _forwardStack   = [];
         _scrollMode     = CPWebViewScrollAuto;
 
-#if PLATFORM(DOM)
-        [self _initDOMWithFrame:[self frame]];
-#endif
+        if (CPDOMAvailable)
+        {
+            [self _initDOMWithFrame:[self frame]];
+        }
 
         if (![self backgroundColor])
             [self setBackgroundColor:[CPColor whiteColor]];

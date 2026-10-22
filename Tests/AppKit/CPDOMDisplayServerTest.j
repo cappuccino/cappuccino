@@ -1,6 +1,6 @@
 @import <OJUnit/OJTestCase.j>
+@import <AppKit/CPDOMDisplayServer.j>
 
-#include "../../AppKit/Platform/DOM/CPDOMDisplayServer.h"
 
 @implementation CPDOMDisplayServerTest : OJTestCase
 {

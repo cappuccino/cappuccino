@@ -21,6 +21,7 @@
 
 @import "CPControl.j"
 @import "_CPDatePickerElementTextField.j"
+@import "CPCompatibility.j"
 
 @class CPDatePicker
 
@@ -403,13 +404,15 @@
             dateValue.setHours(dateValue.getHours() - 12);
     }
 
-#if PLATFORM(DOM)
-    _datePicker._invokedByUserEvent = YES;
-#endif
+    if (CPDOMAvailable)
+    {
+        _datePicker._invokedByUserEvent = YES;
+    }
     [_datePicker _setDateValue:dateValue timeInterval:[_datePicker timeInterval]];
-#if PLATFORM(DOM)
-    _datePicker._invokedByUserEvent = NO;
-#endif
+    if (CPDOMAvailable)
+    {
+        _datePicker._invokedByUserEvent = NO;
+    }
 }
 
 

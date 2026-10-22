@@ -1002,15 +1002,13 @@ var AFFINITY = 5;
        }
     }
 
-#if PLATFORM(DOM)
     // Don't do this in nib2cib !..
-    if (_allowsTickMarkValuesOnly)
+    if (CPDOMAvailable && _allowsTickMarkValuesOnly)
     {
         [self setObjectValue:[self closestTickMarkValueToValue:[self doubleValue]]];
         _currentTickMarkSegment = _closestTickMarkIndex;
         [self sendAction:[self action] to:[self target]];
     }
-#endif
 }
 
 /*! @ignore */

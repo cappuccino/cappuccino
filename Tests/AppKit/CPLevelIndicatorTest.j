@@ -1,8 +1,6 @@
 @import <AppKit/CPLevelIndicator.j>
 
-// You should never do this. This is only for testing purposes.
-#define GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, i) [(levelIndicator) layoutEphemeralSubviewNamed:@"segment-bezel-" + (i) positioned:CPWindowAbove relativeToEphemeralSubviewNamed:"bezel"]
-
+// You should never access a view's ephemeral layout subviews directly. This is only for testing purposes.
 @implementation CPLevelIndicatorTest : OJTestCase
 {
 }
@@ -41,7 +39,7 @@
     [levelIndicator setObjectValue:5];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    [self assert:[CPColor greenColor] equals:[GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, 0) backgroundColor]];
+    [self assert:[CPColor greenColor] equals:[[levelIndicator layoutEphemeralSubviewNamed:@"segment-bezel-0" positioned:CPWindowAbove relativeToEphemeralSubviewNamed:"bezel"] backgroundColor]];
 }
 
 - (void)testLevelIndicatorWithLowWarningAndCriticalShouldShowWarningColor
@@ -51,7 +49,7 @@
     [levelIndicator setObjectValue:4];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    [self assert:[CPColor yellowColor] equals:[GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, 0) backgroundColor]];
+    [self assert:[CPColor yellowColor] equals:[[levelIndicator layoutEphemeralSubviewNamed:@"segment-bezel-0" positioned:CPWindowAbove relativeToEphemeralSubviewNamed:"bezel"] backgroundColor]];
 }
 
 - (void)testLevelIndicatorWithLowWarningAndCriticalShouldShowCriticalColor
@@ -61,7 +59,7 @@
     [levelIndicator setObjectValue:2];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    [self assert:[CPColor redColor] equals:[GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, 0) backgroundColor]];
+    [self assert:[CPColor redColor] equals:[[levelIndicator layoutEphemeralSubviewNamed:@"segment-bezel-0" positioned:CPWindowAbove relativeToEphemeralSubviewNamed:"bezel"] backgroundColor]];
 }
 
 - (void)testLevelIndicatorWithHighWarningAndCriticalShouldShowNormalColor
@@ -71,7 +69,7 @@
     [levelIndicator setObjectValue:5];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    [self assert:[CPColor greenColor] equals:[GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, 0) backgroundColor]];
+    [self assert:[CPColor greenColor] equals:[[levelIndicator layoutEphemeralSubviewNamed:@"segment-bezel-0" positioned:CPWindowAbove relativeToEphemeralSubviewNamed:"bezel"] backgroundColor]];
 }
 
 - (void)testLevelIndicatorWithHighWarningAndCriticalShouldShowWarningColor
@@ -81,7 +79,7 @@
     [levelIndicator setObjectValue:6];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    [self assert:[CPColor yellowColor] equals:[GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, 0) backgroundColor]];
+    [self assert:[CPColor yellowColor] equals:[[levelIndicator layoutEphemeralSubviewNamed:@"segment-bezel-0" positioned:CPWindowAbove relativeToEphemeralSubviewNamed:"bezel"] backgroundColor]];
 }
 
 - (void)testLevelIndicatorWithHighWarningAndCriticalShouldShowCriticalColor
@@ -91,6 +89,6 @@
     [levelIndicator setObjectValue:8];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    [self assert:[CPColor redColor] equals:[GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, 0) backgroundColor]];
+    [self assert:[CPColor redColor] equals:[[levelIndicator layoutEphemeralSubviewNamed:@"segment-bezel-0" positioned:CPWindowAbove relativeToEphemeralSubviewNamed:"bezel"] backgroundColor]];
 }
 @end

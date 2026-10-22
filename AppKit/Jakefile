@@ -9,10 +9,7 @@ const utilsFile = ObjectiveJ.utils.file;
 
 $BUILD_PATH = path.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
 
-AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*', "Platform/DOM/CPPlatform.j", "Platform/DOM/CPPlatformString.j");
-
-FIXME_fileDependency (path.join("Platform", "CPPlatform.j"), path.join("Platform", "DOM", "CPPlatform.j"));
-FIXME_fileDependency (path.join("Platform", "CPPlatformString.j"), path.join("Platform", "DOM", "CPPlatformString.j"));
+AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*');
 
 appKitTask = framework ("AppKit", function(appKitTask)
 {

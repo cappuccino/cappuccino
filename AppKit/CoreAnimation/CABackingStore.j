@@ -23,7 +23,10 @@
 @import "CGGeometry.j"
 @import "CPCompatibility.j"
 
-#define PIXEL(pixels) pixels + "px";
+function PIXEL(pixels)
+{
+    return pixels + "px";
+}
 
 
 function CABackingStoreGetContext(aBackingStore)

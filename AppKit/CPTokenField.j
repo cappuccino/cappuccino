@@ -32,6 +32,7 @@
 @import "CPText.j"
 @import "CPTextField.j"
 @import "CPWindow_Constants.j"
+@import "CPCompatibility.j"
 
 @class _CPTokenFieldTokenCloseButton
 @class _CPTokenFieldTokenDisclosureButton
@@ -63,8 +64,6 @@ var CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_                
     CPTokenFieldDelegate_tokenField_representedObjectForEditingString_                          = 1 << 6;
 
 
-#if PLATFORM(DOM)
-
 var CPTokenFieldDOMInputElement = nil,
     CPTokenFieldDOMPasswordInputElement = nil,
     CPTokenFieldDOMStandardInputElement = nil,
@@ -78,8 +77,6 @@ var CPTokenFieldDOMInputElement = nil,
     CPTokenFieldFocusInput = NO,
 
     CPTokenFieldBlurHandler = nil;
-
-#endif
 
 var CPScrollDestinationNone             = 0,
     CPScrollDestinationLeft             = 1,
@@ -394,10 +391,10 @@ CPTokenFieldDeleteButtonType     = 1;
     if (![super becomeFirstResponder])
         return NO;
 
-#if PLATFORM(DOM)
-    if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner window] !== [self window])
+    if (CPDOMAvailable && CPTokenFieldInputOwner && [CPTokenFieldInputOwner window] !== [self window])
+    {
         [[CPTokenFieldInputOwner window] makeFirstResponder:nil];
-#endif
+    }
 
     // As long as we are the first responder we need to monitor the key status of our window.
     [self _setObserveWindowKeyNotifications:YES];
@@ -423,74 +420,73 @@ CPTokenFieldDeleteButtonType     = 1;
 
     [self setNeedsLayout];
 
-#if PLATFORM(DOM)
-
-    var string = [self stringValue],
-        element = [self _inputElement],
-        font = [self currentValueForThemeAttribute:@"font"];
-
-    element.value = nil;
-    element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
-    element.style.font = [font cssString];
-    element.style.zIndex = 1000;
-
-    switch ([self alignment])
+    if (CPDOMAvailable)
     {
-        case CPCenterTextAlignment:
-            element.style.textAlign = "center";
-            break;
+        var string = [self stringValue],
+            element = [self _inputElement],
+            font = [self currentValueForThemeAttribute:@"font"];
 
-        case CPRightTextAlignment:
-            element.style.textAlign = "right";
-            break;
+        element.value = nil;
+        element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
+        element.style.font = [font cssString];
+        element.style.zIndex = 1000;
 
-        default:
-            element.style.textAlign = "left";
-    }
+        switch ([self alignment])
+        {
+            case CPCenterTextAlignment:
+                element.style.textAlign = "center";
+                break;
 
-    var contentRect = [self contentRectForBounds:[self bounds]];
+            case CPRightTextAlignment:
+                element.style.textAlign = "right";
+                break;
 
-    element.style.top = CGRectGetMinY(contentRect) + "px";
-    element.style.left = (CGRectGetMinX(contentRect) - 1) + "px"; // <input> element effectively imposes a 1px left margin
-    element.style.width = CGRectGetWidth(contentRect) + "px";
-    element.style.height = [font defaultLineHeightForFont] + "px";
+            default:
+                element.style.textAlign = "left";
+        }
 
-    [[CPRunLoop mainRunLoop] performBlock:function()
-    {
-        [_tokenScrollView documentView]._DOMElement.appendChild(element);
+        var contentRect = [self contentRectForBounds:[self bounds]];
 
-        // Removed so CPTokenField doesn't fire the notification the moment it becomes the first responder, but instead defers to the first keystroke, just like Cocoa (see keyDown: in CPTextField).
-        // [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+        element.style.top = CGRectGetMinY(contentRect) + "px";
+        element.style.left = (CGRectGetMinX(contentRect) - 1) + "px"; // <input> element effectively imposes a 1px left margin
+        element.style.width = CGRectGetWidth(contentRect) + "px";
+        element.style.height = [font defaultLineHeightForFont] + "px";
 
         [[CPRunLoop mainRunLoop] performBlock:function()
         {
-            // This will prevent to jump to the focused element
-            var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
+            [_tokenScrollView documentView]._DOMElement.appendChild(element);
 
-            element.focus();
+            // Removed so CPTokenField doesn't fire the notification the moment it becomes the first responder, but instead defers to the first keystroke, just like Cocoa (see keyDown: in CPTextField).
+            // [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
 
-            [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
+            [[CPRunLoop mainRunLoop] performBlock:function()
+            {
+                // This will prevent to jump to the focused element
+                var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
 
-            CPTokenFieldInputOwner = self;
+                element.focus();
+
+                [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
+
+                CPTokenFieldInputOwner = self;
+            } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+
+            [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
         } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 
-        [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
-    } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+        CPTokenFieldInputIsActive = YES;
 
-    CPTokenFieldInputIsActive = YES;
+        if (document.attachEvent)
+        {
+            CPTokenFieldCachedSelectStartFunction = document.body.onselectstart;
+            CPTokenFieldCachedDragFunction = document.body.ondrag;
 
-    if (document.attachEvent)
-    {
-        CPTokenFieldCachedSelectStartFunction = document.body.onselectstart;
-        CPTokenFieldCachedDragFunction = document.body.ondrag;
-
-        document.body.ondrag = function () {};
-        document.body.onselectstart = function () {};
+            document.body.ondrag = function () {};
+            document.body.onselectstart = function () {};
+        }
     }
-
-#endif
 
     return YES;
 }
@@ -527,7 +523,7 @@ CPTokenFieldDeleteButtonType     = 1;
     [self _updatePlaceholderState];
     [self setNeedsLayout];
 
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return;
 
     var element = [self _inputElement];
 
@@ -561,8 +557,6 @@ CPTokenFieldDeleteButtonType     = 1;
         document.body.ondrag = CPTokenFieldCachedDragFunction;
         document.body.onselectstart = CPTokenFieldCachedSelectStartFunction;
     }
-
-#endif
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -630,15 +624,11 @@ CPTokenFieldDeleteButtonType     = 1;
         [objectValue addObject:[token representedObject]];
     }
 
-#if PLATFORM(DOM)
-
-    if ([self _editorValue])
+    if (CPDOMAvailable && [self _editorValue])
     {
         var token = [self _representedObjectForEditingString:[self _editorValue]];
         [objectValue insertObject:token atIndex:_selectedRange.location];
     }
-
-#endif
 
     return objectValue;
 }
@@ -755,9 +745,10 @@ CPTokenFieldDeleteButtonType     = 1;
 // =============
 // = TEXTFIELD =
 // =============
-#if PLATFORM(DOM)
 - (DOMElement)_inputElement
 {
+    if (!CPDOMAvailable) return nil;
+
     if (!CPTokenFieldDOMInputElement)
     {
         CPTokenFieldDOMInputElement = document.createElement("input");
@@ -798,7 +789,6 @@ CPTokenFieldDeleteButtonType     = 1;
 
     return CPTokenFieldDOMInputElement;
 }
-#endif
 
 - (CPString)_editorValue
 {
@@ -1036,9 +1026,10 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (void)keyDown:(CPEvent)anEvent
 {
-#if PLATFORM(DOM)
-    CPTokenFieldTextDidChangeValue = [self stringValue];
-#endif
+    if (CPDOMAvailable)
+    {
+        CPTokenFieldTextDidChangeValue = [self stringValue];
+    }
 
     // Has to be enabled, and it also has to be editable or selectable.
     if (![self isEnabled] || !([self isEditable] || [self isSelectable]))
@@ -1062,12 +1053,10 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (void)keyUp:(CPEvent)anEvent
 {
-#if PLATFORM(DOM)
-    if ([self stringValue] !== CPTokenFieldTextDidChangeValue)
+    if (CPDOMAvailable && [self stringValue] !== CPTokenFieldTextDidChangeValue)
     {
         [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
     }
-#endif
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }

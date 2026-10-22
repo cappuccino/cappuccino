@@ -33,7 +33,10 @@
 
 @global CPApp
 
-#define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
+function DRAGGING_WINDOW(anObject)
+{
+    return ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window]);
+}
 
 var CPDragServerPreviousEvent = nil,
     CPDragServerPeriodicUpdateInterval = 0.05;

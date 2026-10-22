@@ -34,6 +34,7 @@
 @class _CPDatePickerElementView
 
 @import "_CPDatePickerElementView.j"
+@import "CPCompatibility.j"
 
 @global CPSingleDateMode
 @global CPRangeDateMode
@@ -89,17 +90,18 @@
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 
-#if PLATFORM(DOM)
     if ([_datePicker currentValueForThemeAttribute:@"uses-focus-ring"])
     {
         // As with overflow:hidden, views are clipping their content, in order
         // to show a focus ring (which is external to a view), we need to let
         // content extend outside the view.
-        _datePicker._DOMElement.style.overflow            = "visible";
-        _DOMElement.style.overflow                        = "visible";
-        _datePickerElementView._DOMElement.style.overflow = "visible";
+        if (CPDOMAvailable)
+        {
+            _datePicker._DOMElement.style.overflow            = "visible";
+            _DOMElement.style.overflow                        = "visible";
+            _datePickerElementView._DOMElement.style.overflow = "visible";
+        }
     }
-#endif
 }
 
 

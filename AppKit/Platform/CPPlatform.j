@@ -70,11 +70,169 @@
 
 @end
 
-#if PLATFORM(DOM)
-#include "DOM/CPPlatform.j"
-#else
+// --- begin AppKit/Platform/DOM/CPPlatform.j (inlined; file removed to resolve capp-build basename clash) ---
+@global CPApp
+@global document
+
+if (typeof window["CPPlatformEnableHTMLDragAndDrop"] === "undefined")
+    CPPlatformEnableHTMLDragAndDrop = NO;
+
+CPPlatformDidClearBodyElementNotification   = @"CPPlatformDidClearBodyElementNotification";
+CPPlatformWillClearBodyElementNotification  = @"CPPlatformWillClearBodyElementNotification";
+
+var screenNeedsInitialization   = NO,
+    mainBodyElement = nil,
+    elementRemovalTest = new RegExp("\\bcpdontremove\\b", "g");
+
 @implementation CPPlatform : CPBasePlatform
 {
 }
+
++ (void)initialize
+{
+    if (self !== [CPPlatform class])
+        return;
+
+    screenNeedsInitialization = [CPPlatform isBrowser];
+
+    // We do this here because doing it later breaks IE.
+    if (typeof document !== 'undefined' && document.documentElement)
+        document.documentElement.style.overflow = "hidden";
+
+    if ([CPPlatform isBrowser])
+    {
+        // This differ from cocoa, where shouldTerminate is called in the method terminate of CPApp
+        // Cappuccino acts like this because we can not close a window openend by the user with a script (so not possible in terminate), and we can only prevent the action in the method onbeforeunload in js.
+        window.onbeforeunload = function()
+        {
+            if ([CPApp _sendDelegateApplicationShouldTerminate] != CPTerminateNow)
+                return [CPApp _sendDelegateApplicationShouldTerminateMessage];
+        };
+
+        var terminateApplication = function()
+        {
+            [self closeAllPlatformWindows];
+            [CPApp terminate:nil];
+        };
+
+        // "unload" is blocked by the permissions policy in current Chrome and prevents the
+        // back/forward cache. "pagehide" fires reliably instead. If event.persisted is true the
+        // page goes into the bfcache and may be restored, so the application must not terminate.
+        if ("onpagehide" in window)
+        {
+            window.addEventListener("pagehide", function(anEvent)
+            {
+                if (!anEvent.persisted)
+                    terminateApplication();
+            }, NO);
+        }
+        else
+            window.onunload = terminateApplication;
+    }
+}
+
++ (BOOL)isBrowser
+{
+    if (!CPDOMAvailable)
+        return NO;
+
+    return typeof window.cpIsDesktop === "undefined";
+}
+
++ (BOOL)supportsDragAndDrop
+{
+    if (!CPDOMAvailable)
+        return NO;
+
+    return CPFeatureIsCompatible(CPHTMLDragAndDropFeature) && (CPPlatformEnableHTMLDragAndDrop || ![self isBrowser]);
+}
+
++ (BOOL)supportsNativeMainMenu
+{
+    return (typeof window["cpSetMainMenu"] === "function");
+}
+
++ (void)terminateApplication
+{
+    if (typeof window["cpTerminate"] === "function")
+        window.cpTerminate();
+}
+
++ (void)activateIgnoringOtherApps:(BOOL)shouldIgnoreOtherApps
+{
+    if (typeof window["cpActivateIgnoringOtherApps"] === "function")
+        window.cpActivateIgnoringOtherApps(!!shouldIgnoreOtherApps);
+}
+
++ (void)deactivate
+{
+    if (typeof window["cpDeactivate"] === "function")
+        window.cpDeactivate();
+}
+
++ (void)hideOtherApplications:(id)aSender
+{
+    if (typeof window["cpHideOtherApplications"] === "function")
+        window.cpHideOtherApplications();
+}
+
++ (void)hide:(id)aSender
+{
+    if (typeof window["cpHide"] === "function")
+        window.cpHide();
+}
+
++ (DOMElement)mainBodyElement
+{
+    if (!mainBodyElement)
+        mainBodyElement = document.getElementById("cappuccino-body") || document.body;
+
+    return mainBodyElement;
+}
+
++ (void)initializeScreenIfNecessary
+{
+    if (!screenNeedsInitialization)
+        return;
+
+    screenNeedsInitialization = NO;
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPPlatformWillClearBodyElementNotification
+                      object:self];
+
+    var bodyElement = [self mainBodyElement];
+
+    // Get rid of any of the original contents of the page.
+    var children = bodyElement.childNodes,
+        length = children.length;
+
+    while (length--)
+    {
+        var element = children[length];
+        if (!element.className || element.className.match(elementRemovalTest) === null)
+            bodyElement.removeChild(element);
+    }
+
+    bodyElement.style.overflow = "hidden";
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPPlatformDidClearBodyElementNotification
+                      object:self];
+}
+
++ (void)closeAllPlatformWindows
+{
+    var platformWindows = [CPPlatformWindow visiblePlatformWindows],
+        primaryPlatformWindow = [CPPlatformWindow primaryPlatformWindow],
+        platformWindowEnumerator = [platformWindows objectEnumerator],
+        platformWindow = nil;
+
+    while ((platformWindow = [platformWindowEnumerator nextObject]) != nil)
+    {
+        if (platformWindow != primaryPlatformWindow)
+            [platformWindow orderOut:self];
+    }
+}
+
 @end
-#endif

@@ -839,7 +839,6 @@ var CPComboBoxTextSubview = @"text",
 
     if (!shouldResign)
     {
-#if PLATFORM(DOM)
         // In FireFox this needs to be done in setTimeout, otherwise there is no caret
         // We have to save the input element now, when we lose focus it will change.
         var element = [self _inputElement];
@@ -854,7 +853,6 @@ var CPComboBoxTextSubview = @"text",
             [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
 
         } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
-#endif
 
         return NO;
     }

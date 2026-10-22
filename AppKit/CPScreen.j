@@ -42,11 +42,10 @@
 */
 - (CGRect)visibleFrame
 {
-#if PLATFORM(DOM)
-    return CGRectMake(window.screen.availLeft, window.screen.availTop, window.screen.availWidth, window.screen.availHeight);
-#else
+    if (CPDOMAvailable)
+        return CGRectMake(window.screen.availLeft, window.screen.availTop, window.screen.availWidth, window.screen.availHeight);
+
     return CGRectMakeZero();
-#endif
 }
 
 @end
