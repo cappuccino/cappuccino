@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CPBundleIdentifier</key>
+	<string>com.280n.Cappuccino</string>
+	<key>CPBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CPBundleName</key>
+	<string>Cappuccino</string>
+	<key>CPBundlePackageType</key>
+	<string>CPKG</string>
+	<key>CPBundleVersion</key>
+	<string>1.3.1</string>
+	<key>CPBuildRuntime</key>
+	<string>Objective-J</string>
+	<key>CPBuildFrameworks</key>
+	<array>
+		<string>Foundation</string>
+		<string>AppKit</string>
+		<string>AppKit/Themes/BlendKit</string>
+	</array>
+	<key>CPBuildThemes</key>
+	<array>
+		<string>AppKit/Themes/Aristo</string>
+		<string>AppKit/Themes/Aristo2</string>
+	</array>
+</dict>
+</plist>
