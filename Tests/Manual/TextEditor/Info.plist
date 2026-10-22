@@ -6,6 +6,15 @@
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
 	<string>TextEditor</string>
+	<key>CPBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CPBundleTypeName</key>
+			<string>Document</string>
+			<key>CPDocumentClass</key>
+			<string>Document</string>
+		</dict>
+	</array>
     <key>CPBundleVersion</key>
     <string>1.0</string>
     <key>CPHumanReadableCopyright</key>

@@ -27,6 +27,7 @@
 @import <AppKit/AppKit.j>
 
 @import "AppController.j"
+@import "Document.j"
 
 
 function main(args, namedArgs)
