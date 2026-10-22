@@ -468,6 +468,12 @@
     d1 = CPDecimalMakeWithString(@"1e127");
     d2 = CPDecimalMakeWithString(@"99999999999999999999999999999999999999e127");
     [self assert:CPDecimalAdd(d1, d1, d2, CPRoundPlain) equals:CPCalculationOverflow message:"CPDecimalAdd() Tao1: addition loss of precision"];
+
+    // Overflow of two negative operands is reported as underflow
+    d1 = CPDecimalMakeWithString(@"-1e127");
+    d2 = CPDecimalMakeWithString(@"-99999999999999999999999999999999999999e127");
+    [self assert:CPCalculationUnderflow equals:CPDecimalAdd(d1, d1, d2, CPRoundPlain) message:"CPDecimalAdd() Tao2: negative overflow is reported as underflow"];
+    [self assert:YES equals:d1._isNegative message:"CPDecimalAdd() Tao2: sign"];
 }
 
 - (void)testSubtract
