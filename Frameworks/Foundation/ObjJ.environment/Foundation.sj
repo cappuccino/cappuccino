@@ -4787,7 +4787,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPTimeZone"])]);
 }
-p;11;CPDecimal.jt;28813;@STATIC;1.0;i;9;CPArray.ji;10;CPNumber.jt;28765;objj_executeFile("CPArray.j", YES);objj_executeFile("CPNumber.j", YES);{var the_typedef = objj_allocateTypeDef("CPDecimal");
+p;11;CPDecimal.jt;28812;@STATIC;1.0;i;9;CPArray.ji;10;CPNumber.jt;28764;objj_executeFile("CPArray.j", YES);objj_executeFile("CPNumber.j", YES);{var the_typedef = objj_allocateTypeDef("CPDecimal");
 objj_registerTypeDef(the_typedef);
 }CPDecimalMaxDigits = 38;
 CPDecimalMaxExponent = 127;
@@ -5142,7 +5142,7 @@ CPDecimalAdd = function(result, leftOperand, rightOperand, roundingMode, longMod
         result._isNegative = YES;
         if (CPCalculationUnderflow == adderror)
             adderror = CPCalculationOverflow;
-        else if (CPCalculationUnderflow == adderror)
+        else if (CPCalculationOverflow == adderror)
             adderror = CPCalculationUnderflow;
     }
     else

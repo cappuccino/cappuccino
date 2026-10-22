@@ -26376,7 +26376,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","float","float"])]);
 }
-p;14;CPScrollView.jt;98168;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.ji;7;CPBox.ji;12;CPClipView.ji;12;CPScroller.ji;8;CPView.ji;13;CPRulerView.jt;98035;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPBox.j", YES);objj_executeFile("CPClipView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPRulerView.j", YES);{var the_protocol = objj_allocateProtocol("CPScrollViewDelegate");
+p;14;CPScrollView.jt;98140;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.ji;7;CPBox.ji;12;CPClipView.ji;12;CPScroller.ji;8;CPView.ji;13;CPRulerView.jt;98007;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPBox.j", YES);objj_executeFile("CPClipView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPRulerView.j", YES);{var the_protocol = objj_allocateProtocol("CPScrollViewDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPScrollViewDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -27468,7 +27468,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
     if (horizontalScrollerClass)
         bounds.size.height -= (horizontalScrollerClass == null ? horizontalScrollerClass : (horizontalScrollerClass.isa.method_msgSend["scrollerWidthInStyle:"] || _objj_forward)(horizontalScrollerClass, "scrollerWidthInStyle:", scrollerStyle));
     if (verticalScrollerClass)
-        bounds.size.width -= (verticalScrollerClass == null ? verticalScrollerClass : (verticalScrollerClass.isa.method_msgSend["scrollerWidthForControlSize:"] || _objj_forward)(verticalScrollerClass, "scrollerWidthForControlSize:", scrollerStyle));
+        bounds.size.width -= (verticalScrollerClass == null ? verticalScrollerClass : (verticalScrollerClass.isa.method_msgSend["scrollerWidthInStyle:"] || _objj_forward)(verticalScrollerClass, "scrollerWidthInStyle:", scrollerStyle));
     return bounds.size;
 }
 
@@ -27486,7 +27486,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
     if (horizontalScrollerClass)
         frameSize.height += (horizontalScrollerClass == null ? horizontalScrollerClass : (horizontalScrollerClass.isa.method_msgSend["scrollerWidthInStyle:"] || _objj_forward)(horizontalScrollerClass, "scrollerWidthInStyle:", scrollerStyle));
     if (verticalScrollerClass)
-        frameSize.width += (verticalScrollerClass == null ? verticalScrollerClass : (verticalScrollerClass.isa.method_msgSend["scrollerWidthForControlSize:"] || _objj_forward)(verticalScrollerClass, "scrollerWidthForControlSize:", scrollerStyle));
+        frameSize.width += (verticalScrollerClass == null ? verticalScrollerClass : (verticalScrollerClass.isa.method_msgSend["scrollerWidthInStyle:"] || _objj_forward)(verticalScrollerClass, "scrollerWidthInStyle:", scrollerStyle));
     return frameSize;
 }
 
