@@ -26,6 +26,8 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
+@import "LoremIpsum.j"
+
 
 /*!
     Owns DocumentWindow.cib. The window's delegate outlet is connected to
@@ -34,6 +36,13 @@
     the connection is missing from the xib.
 */
 @implementation DocumentWindowController : CPWindowController <CPWindowDelegate>
+{
+    /*
+        The text view inside the window's scroll view. The outlet is connected
+        to the text view in DocumentWindow.xib.
+    */
+    @outlet CPTextView  textView;
+}
 
 - (id)init
 {
@@ -45,6 +54,27 @@
     [super windowDidLoad];
 
     [[self window] setDelegate:self];
+}
+
+/*!
+    Inserts the placeholder text from LoremIpsum at the text view's selection,
+    replacing any selected text.
+
+    The Edit menu item in MainMenu.xib sends this action to First Responder.
+    The menu does not know about any document. AppKit passes the action along
+    the responder chain of the key window, then of the main window: the text
+    view, its superviews, the window, and then this controller, which is the
+    window's next responder. So the text goes into the active document's
+    window, and AppKit disables the menu item when no document window is
+    active.
+
+    insertText: changes the text the same way typing does. It registers the
+    change with the document's undo manager, so Edit > Undo removes the
+    inserted text.
+*/
+- (@action)insertLoremIpsum:(id)aSender
+{
+    [textView insertText:[LoremIpsum text]];
 }
 
 @end
