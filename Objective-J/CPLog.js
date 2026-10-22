@@ -192,6 +192,7 @@ GLOBAL(CPLogColorize) = function(aString, aLevel)
 
 GLOBAL(CPLogPrint) = function(aString, aLevel, aTitle, aFormatter)
 {
+    if (CPLogDisable) return;
     if (stream === undefined) {
         try {
             stream = require("narwhal/term").stream;

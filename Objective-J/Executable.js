@@ -219,6 +219,8 @@ Executable.prototype.setCode = function(code, sourceMap)
 {
     this._code = code;
 
+    if (code == null) return;
+
     var parameters = this.functionParameters().join(",");
     var sourceMapBase64;
 

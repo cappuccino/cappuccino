@@ -70,6 +70,10 @@ if (typeof OBJJ_COMPILER_FLAGS !== 'undefined')
             case "SourceMap":
                 flags.sourceMap = true;
                 break;
+
+            case "SourceMapIncludeSource":
+                flags.sourceMapIncludeSource = true;
+                break;
         }
     }
     FileExecutable.setCurrentCompilerFlags(flags);
