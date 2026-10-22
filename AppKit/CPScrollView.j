@@ -207,7 +207,7 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         bounds.size.height -= [horizontalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
     if (verticalScrollerClass)
-        bounds.size.width -= [verticalScrollerClass scrollerWidthForControlSize:scrollerStyle];
+        bounds.size.width -= [verticalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
     return bounds.size;
 }
@@ -240,7 +240,7 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         frameSize.height += [horizontalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
     if (verticalScrollerClass)
-        frameSize.width += [verticalScrollerClass scrollerWidthForControlSize:scrollerStyle];
+        frameSize.width += [verticalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
     return frameSize;
 }
