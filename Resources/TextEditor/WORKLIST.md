@@ -9,7 +9,6 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - **The Window menu does not list document windows.** It has no items to show or change the active window. AppKit has no equivalent of the Cocoa windows menu support in `NSApplication`: `windowsMenu`, `addWindowsItem:title:filename:`, `changeWindowsItem:title:filename:`, `removeWindowsItem:` and `arrangeInFront:`. nib2cib marks the menu as `_CPWindowsMenu` (`Tools/nib2cib/NSMenu.j:31`), but nothing in AppKit reads that name.
 - **AppKit ignores `CPBundleDisplayName`.** Cocoa uses `CFBundleDisplayName` for the name that the user sees, and `CFBundleName` as the short name. AppKit reads only `CPBundleName`: for the About panel title (`CPApplication.j:389`) and for the browser tab title (`_CPMenuBarWindow.j:106`). Both should use `CPBundleDisplayName`, with `CPBundleName` as the fallback.
 - **The Show Toolbar menu item does not show the toolbar state.** `-[CPWindow toggleToolbarShown:]` works (`CPWindow.j:2758`), but `CPWindow` has no `validateMenuItem:`. In Cocoa, `NSWindow` validates this item: it changes the title between "Show Toolbar" and "Hide Toolbar", and disables the item when the window has no toolbar. `CPMenu` already asks the target through `validateMenuItem:` (`CPMenu.j:699`), so the fix is a `validateMenuItem:` in `CPWindow` that handles `toggleToolbarShown:` and returns `YES` for every other action.
-- **The window ignores the delegate's size for its own frame.** In `_setFrame:display:animate:constrainWidth:constrainHeight:`, `size` refers to `_frame.size`, which already holds the proposed size. The result of `windowWillResize:toSize:` replaces the local variable only, and goes to the window view (`CPWindow.j:799` to `811`). So when the delegate returns a different size, the window view takes that size, but `_frame` keeps the proposed size. The platform window chooses the window for a mouse event by testing `_frame` (`containsPoint:` and `_isValidMousePoint:`, `CPWindow.j:3832` to `3845`). So after the user shrinks a document window to its minimum, clicks on most of the visible window miss it, and the window can no longer be moved or resized. Resizing the browser window does not repair the frame. The fix: the size returned by the delegate must become `_frame.size`.
 - **The "save changes" alert is modal for the whole app.** `CPDocument` shows it with `runModal` (`CPDocument.j:903`). Cocoa attaches it as a sheet to the document window, so that only that document is blocked.
 - **Save cannot work without a server.** With no file URL, Save uses `CPSavePanel`, which falls back to `window.prompt` (`CPSavePanel.j:79`). `CPDocument` then sends an HTTP POST. A storage facade is needed, with local (IndexedDB) and remote (HTTP) implementations.
 
@@ -44,6 +43,10 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - **Images in text.** AppKit has no general `CPTextAttachment` class, only the table attachment `_CPTableTextAttachment`. The RTF parser and producer do not handle `\pict`.
 - **Lists.** There is no `CPTextList`, and `CPParagraphStyle` has no `textLists`.
 
+### nib2cib
+
+- **The content view's resizing setting does not reach the cib.** Making the document window's content view resize with the window in `DocumentWindow.xib` produces a byte-identical `DocumentWindow.cib`. CPView omits the autoresizing mask from the archive only when it is `CPViewNotSizable` (`CPView.j:4016`), so the content view is archived as not sizable. Not yet determined whether `ibtool` or nib2cib drops the setting. The app still behaves correctly, because the window resizes its content view itself.
+
 ### Platform
 
 - **Key equivalents on platforms other than macOS.** Filed as an issue.
@@ -67,5 +70,5 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - Text colour through `CPColorPanel`.
 - Paragraph indents through the ruler markers.
 - The "save changes" alert when a document closes.
-- A minimum size for document windows, through the window delegate.
+- A minimum size for document windows, through the window delegate. The window stops at the minimum while the pointer keeps moving, as in macOS, and it can still be moved and resized afterwards.
 - Builds with both the legacy toolchain and capp-build.

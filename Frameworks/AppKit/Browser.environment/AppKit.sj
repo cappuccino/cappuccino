@@ -78785,7 +78785,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("defaultThemeClass"), f
 
 ,["CGRect","CGRect"])]);
 }
-p;15;_CPWindowView.jt;57794;@STATIC;1.0;i;13;CPImageView.ji;8;CPView.ji;20;CPWindow_Constants.jt;57719;objj_executeFile("CPImageView.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);var _CPWindowViewCornerResizeRectWidth = 10,
+p;15;_CPWindowView.jt;58603;@STATIC;1.0;i;13;CPImageView.ji;8;CPView.ji;20;CPWindow_Constants.jt;58528;objj_executeFile("CPImageView.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);var _CPWindowViewCornerResizeRectWidth = 10,
     _CPWindowViewMinContentHeight = 2,
     _CPWindowViewResizeRegionNone = -1,
     _CPWindowViewResizeRegionTopLeft = 0,
@@ -79213,6 +79213,20 @@ default:
                 frame.size.width += dx;
                 frame.size.height += dy;
         }
+        var delegateSize = (theWindow == null ? theWindow : (theWindow.isa.method_msgSend["_sendDelegateWindowWillResizeToSize:"] || _objj_forward)(theWindow, "_sendDelegateWindowWillResizeToSize:", CGSizeMakeCopy(frame.size)));
+        switch(self._resizeRegion) {
+            case _CPWindowViewResizeRegionTopLeft:
+            case _CPWindowViewResizeRegionLeft:
+            case _CPWindowViewResizeRegionBottomLeft:
+                frame.origin.x -= delegateSize.width - frame.size.width;
+        }
+        switch(self._resizeRegion) {
+            case _CPWindowViewResizeRegionTopLeft:
+            case _CPWindowViewResizeRegionTop:
+            case _CPWindowViewResizeRegionTopRight:
+                frame.origin.y -= delegateSize.height - frame.size.height;
+        }
+        frame.size = delegateSize;
         (theWindow == null ? theWindow : (theWindow.isa.method_msgSend["_setFrame:display:animate:constrainWidth:constrainHeight:"] || _objj_forward)(theWindow, "_setFrame:display:animate:constrainWidth:constrainHeight:", frame, YES, NO, NO, NO));
         (self.isa.method_msgSend["setCursorForLocation:resizing:"] || _objj_forward)(self, "setCursorForLocation:resizing:", location, YES);
     }
@@ -79537,7 +79551,7 @@ var meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_window
 
 ,["void"])]);
 }
-p;10;CPWindow.jt;209128;@STATIC;1.0;I;25;Foundation/CPCountedSet.jI;33;Foundation/CPNotificationCenter.jI;26;Foundation/CPUndoManager.ji;12;CGGeometry.ji;13;CPAnimation.ji;10;CPCursor.ji;14;CPDragServer.ji;9;CPEvent.ji;18;CPPlatformWindow.ji;22;CPPlatformWindow+DOM.ji;13;CPResponder.ji;10;CPScreen.ji;8;CPText.ji;16;CPTrackingArea.ji;8;CPView.ji;20;CPWindow_Constants.ji;31;_CPBorderlessBridgeWindowView.ji;25;_CPBorderlessWindowView.ji;23;_CPDocModalWindowView.ji;18;_CPHUDWindowView.ji;20;_CPModalWindowView.ji;22;_CPPopoverWindowView.ji;21;_CPShadowWindowView.ji;23;_CPStandardWindowView.ji;22;_CPToolTipWindowView.jt;208523;objj_executeFile("Foundation/CPCountedSet.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPUndoManager.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDragServer.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPPlatformWindow+DOM.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPScreen.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPBorderlessBridgeWindowView.j", YES);objj_executeFile("_CPBorderlessWindowView.j", YES);objj_executeFile("_CPDocModalWindowView.j", YES);objj_executeFile("_CPHUDWindowView.j", YES);objj_executeFile("_CPModalWindowView.j", YES);objj_executeFile("_CPPopoverWindowView.j", YES);objj_executeFile("_CPShadowWindowView.j", YES);objj_executeFile("_CPStandardWindowView.j", YES);objj_executeFile("_CPToolTipWindowView.j", YES);{var the_typedef = objj_allocateTypeDef("_CPWindowFullPlatformWindowSession");
+p;10;CPWindow.jt;209179;@STATIC;1.0;I;25;Foundation/CPCountedSet.jI;33;Foundation/CPNotificationCenter.jI;26;Foundation/CPUndoManager.ji;12;CGGeometry.ji;13;CPAnimation.ji;10;CPCursor.ji;14;CPDragServer.ji;9;CPEvent.ji;18;CPPlatformWindow.ji;22;CPPlatformWindow+DOM.ji;13;CPResponder.ji;10;CPScreen.ji;8;CPText.ji;16;CPTrackingArea.ji;8;CPView.ji;20;CPWindow_Constants.ji;31;_CPBorderlessBridgeWindowView.ji;25;_CPBorderlessWindowView.ji;23;_CPDocModalWindowView.ji;18;_CPHUDWindowView.ji;20;_CPModalWindowView.ji;22;_CPPopoverWindowView.ji;21;_CPShadowWindowView.ji;23;_CPStandardWindowView.ji;22;_CPToolTipWindowView.jt;208574;objj_executeFile("Foundation/CPCountedSet.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPUndoManager.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDragServer.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPPlatformWindow+DOM.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPScreen.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPBorderlessBridgeWindowView.j", YES);objj_executeFile("_CPBorderlessWindowView.j", YES);objj_executeFile("_CPDocModalWindowView.j", YES);objj_executeFile("_CPHUDWindowView.j", YES);objj_executeFile("_CPModalWindowView.j", YES);objj_executeFile("_CPPopoverWindowView.j", YES);objj_executeFile("_CPShadowWindowView.j", YES);objj_executeFile("_CPStandardWindowView.j", YES);objj_executeFile("_CPToolTipWindowView.j", YES);{var the_typedef = objj_allocateTypeDef("_CPWindowFullPlatformWindowSession");
 objj_registerTypeDef(the_typedef);
 }{var the_protocol = objj_allocateProtocol("CPWindowDelegate");
 var aProtocol = objj_getProtocol("CPObject");
@@ -79926,12 +79940,12 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
         }
         var size = self._frame.size,
             newSize = frame.size;
+        if (!self._isAnimating && !CGSizeEqualToSize(size, newSize))
+            newSize = (self.isa.method_msgSend["_sendDelegateWindowWillResizeToSize:"] || _objj_forward)(self, "_sendDelegateWindowWillResizeToSize:", CGSizeMakeCopy(newSize));
         if (!CGSizeEqualToSize(size, newSize))
         {
             size.width = newSize.width;
             size.height = newSize.height;
-            if (!self._isAnimating)
-                size = (self.isa.method_msgSend["_sendDelegateWindowWillResizeToSize:"] || _objj_forward)(self, "_sendDelegateWindowWillResizeToSize:", size);
             ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrameSize:"] || _objj_forward)(___r1, "setFrameSize:", size));
             if (self._hasShadow)
                 ((___r1 = self._shadowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setNeedsLayout"] || _objj_forward)(___r1, "setNeedsLayout"));
