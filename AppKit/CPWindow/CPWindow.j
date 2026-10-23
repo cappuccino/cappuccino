@@ -177,6 +177,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isVisible;
     BOOL                                _hasBeenOrderedIn @accessors;
     BOOL                                _isMiniaturized;
+    BOOL                                _isExcludedFromWindowsMenu;
     BOOL                                _isAnimating @accessors(setter=_setAnimating:);
     BOOL                                _hasShadow;
     BOOL                                _isMovableByWindowBackground;
@@ -1129,6 +1130,8 @@ CPTexturedBackgroundWindowMask
         if (CPDOMAvailable)
             [_platformWindow order:orderingMode window:self relativeTo:CPApp._windows[otherWindowNumber]];
     }
+
+    [self _updateWindowsMenuItem];
 }
 
 /*!
@@ -1792,6 +1795,54 @@ CPTexturedBackgroundWindowMask
 
     [_windowView setTitle:aTitle];
     [_platformWindow _setTitle:_title window:self];
+
+    [self _updateWindowsMenuItem];
+}
+
+/*!
+    Returns \c YES if the window is never listed in the application's Windows menu.
+*/
+- (BOOL)isExcludedFromWindowsMenu
+{
+    return _isExcludedFromWindowsMenu;
+}
+
+/*!
+    Sets whether the window is excluded from the application's Windows menu. By default, a window
+    is listed while it is visible or miniaturized, has a title and can become the main window.
+    @param shouldBeExcluded \c YES to exclude the window from the Windows menu
+*/
+- (void)setExcludedFromWindowsMenu:(BOOL)shouldBeExcluded
+{
+    if (_isExcludedFromWindowsMenu === shouldBeExcluded)
+        return;
+
+    _isExcludedFromWindowsMenu = shouldBeExcluded;
+
+    [self _updateWindowsMenuItem];
+}
+
+/* @ignore */
+- (void)_updateWindowsMenuItem
+{
+    if (_isExcludedFromWindowsMenu || ![_title length])
+        [self _removeFromWindowsMenu];
+
+    else if ([self canBecomeMainWindow])
+        [CPApp changeWindowsItem:self title:_title filename:NO];
+
+    // A miniaturized window stays listed, so that the user can bring it back from the menu.
+    else if (_isMiniaturized)
+        [CPApp updateWindowsItem:self];
+
+    else
+        [self _removeFromWindowsMenu];
+}
+
+/* @ignore */
+- (void)_removeFromWindowsMenu
+{
+    [CPApp removeWindowsItem:self];
 }
 
 /*!
@@ -2437,6 +2488,8 @@ CPTexturedBackgroundWindowMask
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMiniaturizeNotification object:self];
 
     _isMiniaturized = YES;
+
+    [self _updateWindowsMenuItem];
 }
 
 /*!
@@ -2449,6 +2502,8 @@ CPTexturedBackgroundWindowMask
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidDeminiaturizeNotification object:self];
 
     _isMiniaturized = NO;
+
+    [self _updateWindowsMenuItem];
 }
 
 /*!
@@ -2549,6 +2604,9 @@ CPTexturedBackgroundWindowMask
     [self _orderOutRecursively:NO];
     [self _detachFromChildrenClosing:!_parentWindow];
 
+    // A closed window leaves the Windows menu, even if it was miniaturized.
+    [self _removeFromWindowsMenu];
+
     if (_releasedWhenClosed)
         [_contentView _releaseRecursively];
 }
@@ -2630,6 +2688,8 @@ CPTexturedBackgroundWindowMask
 
     [_windowView noteMainWindowStateChanged];
 
+    [CPApp updateWindowsItem:self];
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidBecomeMainNotification
                       object:self];
@@ -2649,6 +2709,8 @@ CPTexturedBackgroundWindowMask
 
     _platformWindow._currentMainWindow = nil;
     [_windowView noteMainWindowStateChanged];
+
+    [CPApp updateWindowsItem:self];
 }
 
 - (void)_updateMainAndKeyWindows
@@ -2761,6 +2823,28 @@ CPTexturedBackgroundWindowMask
     var toolbar = [self toolbar];
 
     [toolbar setVisible:![toolbar isVisible]];
+}
+
+/*!
+    Validates the user interface items whose actions the window handles.
+
+    For \c -toggleToolbarShown:, the item's title becomes "Hide Toolbar" or "Show Toolbar"
+    to reflect the toolbar's visibility, and the item is enabled only when the window has
+    a toolbar. Every other item is enabled.
+    @param anItem the item to validate
+    @return \c YES if the item should be enabled
+*/
+- (BOOL)validateUserInterfaceItem:(id /*<CPValidatedUserInterfaceItem>*/)anItem
+{
+    if ([anItem action] !== @selector(toggleToolbarShown:))
+        return YES;
+
+    var toolbar = [self toolbar];
+
+    if ([anItem respondsToSelector:@selector(setTitle:)])
+        [anItem setTitle:[toolbar isVisible] ? @"Hide Toolbar" : @"Show Toolbar"];
+
+    return !!toolbar;
 }
 
 - (void)_noteToolbarChanged

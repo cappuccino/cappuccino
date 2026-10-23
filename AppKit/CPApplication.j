@@ -123,6 +123,9 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 
     CPPanel                     _aboutPanel;
 
+    CPMenu                      _windowsMenu;
+    CPMenuItem                  _windowsMenuSeparator;
+
     CPThemeBlend                _themeBlend @accessors(property=themeBlend);
 }
 
@@ -771,9 +774,224 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 
         if ([CPPlatform supportsNativeMainMenu])
             window.cpSetMainMenu([self menu]);
+
+        // The new main menu may contain a different Windows menu, so find it again and list
+        // the windows that were ordered in before the main menu was set.
+        _windowsMenu = nil;
+        _windowsMenuSeparator = nil;
+
+        for (var i = 0, count = [_windows count]; i < count; i++)
+        {
+            var aWindow = _windows[i];
+
+            // _windows is indexed by window number and holds a placeholder at index 0.
+            if ([aWindow isKindOfClass:[CPWindow class]])
+                [aWindow _updateWindowsMenuItem];
+        }
     }
     else
         [aMenu _setMenuName:@"CPMainMenu"];
+}
+
+// MARK: Managing the Windows Menu
+
+/*!
+    Returns the application's Windows menu, which lists the application's windows.
+
+    Unless a menu has been set with \c -setWindowsMenu:, this is the submenu of the main menu
+    named \c _CPWindowsMenu. nib2cib gives that name to the menu marked as the Windows menu in
+    Interface Builder.
+    @return the Windows menu, or \c nil if the application has none
+*/
+- (CPMenu)windowsMenu
+{
+    if (!_windowsMenu)
+        _windowsMenu = [[self mainMenu] _menuWithName:@"_CPWindowsMenu"];
+
+    return _windowsMenu;
+}
+
+/*!
+    Makes \c aMenu the application's Windows menu, and moves the items for the listed windows
+    from the previous Windows menu to it.
+    @param aMenu the new Windows menu
+*/
+- (void)setWindowsMenu:(CPMenu)aMenu
+{
+    var previousMenu = [self windowsMenu];
+
+    if (previousMenu === aMenu)
+        return;
+
+    var listedWindows = [self _windowsInWindowsMenu];
+
+    [listedWindows makeObjectsPerformSelector:@selector(_removeFromWindowsMenu)];
+
+    _windowsMenu = aMenu;
+    _windowsMenuSeparator = nil;
+
+    [listedWindows makeObjectsPerformSelector:@selector(_updateWindowsMenuItem)];
+}
+
+/*!
+    Adds an item for \c aWindow to the Windows menu. The item makes the window key and orders it
+    front when chosen. Does nothing if the menu already has an item for \c aWindow.
+    @param aWindow the window to list
+    @param aString the item's title
+    @param isFilename if \c YES, \c aString is a file path, shown as the file name followed by its
+    directory
+*/
+- (void)addWindowsItem:(CPWindow)aWindow title:(CPString)aString filename:(BOOL)isFilename
+{
+    var menu = [self windowsMenu];
+
+    if (!menu || [self _windowsMenuItemForWindow:aWindow])
+        return;
+
+    // Separate the window list from the menu's own items.
+    if (!_windowsMenuSeparator && [menu numberOfItems] > 0)
+    {
+        _windowsMenuSeparator = [CPMenuItem separatorItem];
+        [menu addItem:_windowsMenuSeparator];
+    }
+
+    var item = [[CPMenuItem alloc] initWithTitle:[self _windowsMenuTitle:aString filename:isFilename]
+                                          action:@selector(makeKeyAndOrderFront:)
+                                   keyEquivalent:@""];
+
+    [item setTarget:aWindow];
+    [menu addItem:item];
+
+    [self updateWindowsItem:aWindow];
+}
+
+/*!
+    Changes the title of the Windows menu item for \c aWindow, adding the item if the menu has
+    none for it.
+    @param aWindow the listed window
+    @param aString the item's new title
+    @param isFilename if \c YES, \c aString is a file path, shown as the file name followed by its
+    directory
+*/
+- (void)changeWindowsItem:(CPWindow)aWindow title:(CPString)aString filename:(BOOL)isFilename
+{
+    var item = [self _windowsMenuItemForWindow:aWindow];
+
+    if (item)
+        [item setTitle:[self _windowsMenuTitle:aString filename:isFilename]];
+    else
+        [self addWindowsItem:aWindow title:aString filename:isFilename];
+}
+
+/*!
+    Removes the Windows menu item for \c aWindow, and removes the separator above the window
+    list when the last window item is removed.
+    @param aWindow the window to remove from the list
+*/
+- (void)removeWindowsItem:(CPWindow)aWindow
+{
+    var item = [self _windowsMenuItemForWindow:aWindow];
+
+    if (!item)
+        return;
+
+    var menu = [self windowsMenu];
+
+    [menu removeItem:item];
+
+    if (_windowsMenuSeparator && ![[self _windowsInWindowsMenu] count])
+    {
+        [menu removeItem:_windowsMenuSeparator];
+        _windowsMenuSeparator = nil;
+    }
+}
+
+/*!
+    Updates the state of the Windows menu item for \c aWindow: a check mark for the main window,
+    the mixed state for a miniaturized window, and no mark otherwise.
+    @param aWindow the listed window
+*/
+- (void)updateWindowsItem:(CPWindow)aWindow
+{
+    var item = [self _windowsMenuItemForWindow:aWindow];
+
+    if (!item)
+        return;
+
+    if ([aWindow isMiniaturized])
+        [item setState:CPMixedState];
+    else
+        [item setState:aWindow === [self mainWindow] ? CPOnState : CPOffState];
+}
+
+/*!
+    Orders front every window listed in the Windows menu that is not miniaturized, keeping their
+    order relative to each other.
+    @param aSender the object requesting this
+*/
+- (void)arrangeInFront:(id)aSender
+{
+    var listedWindows = [self _windowsInWindowsMenu],
+        orderedWindows = [self orderedWindows],
+        index = [orderedWindows count];
+
+    // orderedWindows lists front to back, so order front from the back.
+    while (index--)
+    {
+        var aWindow = orderedWindows[index];
+
+        if ([listedWindows containsObjectIdenticalTo:aWindow] && ![aWindow isMiniaturized])
+            [aWindow orderFront:aSender];
+    }
+}
+
+/* @ignore */
+- (CPMenuItem)_windowsMenuItemForWindow:(CPWindow)aWindow
+{
+    var items = [[self windowsMenu] itemArray],
+        count = [items count];
+
+    for (var i = 0; i < count; i++)
+    {
+        var item = items[i];
+
+        if ([item target] === aWindow && [item action] === @selector(makeKeyAndOrderFront:))
+            return item;
+    }
+
+    return nil;
+}
+
+/* @ignore */
+- (CPArray)_windowsInWindowsMenu
+{
+    var items = [[self windowsMenu] itemArray],
+        count = [items count],
+        listedWindows = [];
+
+    for (var i = 0; i < count; i++)
+    {
+        var item = items[i];
+
+        if ([item action] === @selector(makeKeyAndOrderFront:) && [[item target] isKindOfClass:[CPWindow class]])
+            listedWindows.push([item target]);
+    }
+
+    return listedWindows;
+}
+
+/* @ignore */
+- (CPString)_windowsMenuTitle:(CPString)aString filename:(BOOL)isFilename
+{
+    if (!isFilename)
+        return aString;
+
+    var directory = [aString stringByDeletingLastPathComponent];
+
+    if (![directory length])
+        return [aString lastPathComponent];
+
+    return [aString lastPathComponent] + @" — " + directory;
 }
 
 /*!
