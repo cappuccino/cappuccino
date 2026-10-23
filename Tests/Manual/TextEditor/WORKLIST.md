@@ -6,7 +6,6 @@ TextEditor is a document-based test application and a tutorial. When the app use
 
 ### Windows and documents
 
-- **AppKit ignores `CPBundleDisplayName`.** Cocoa uses `CFBundleDisplayName` for the name that the user sees, and `CFBundleName` as the short name. AppKit reads only `CPBundleName`: for the About panel title (`CPApplication.j:389`) and for the browser tab title (`_CPMenuBarWindow.j:106`). Both should use `CPBundleDisplayName`, with `CPBundleName` as the fallback.
 - **The "save changes" alert is modal for the whole app.** `CPDocument` shows it with `runModal` (`CPDocument.j:903`). Cocoa attaches it as a sheet to the document window, so that only that document is blocked.
 - **Save cannot work without a server.** With no file URL, Save uses `CPSavePanel`, which falls back to `window.prompt` (`CPSavePanel.j:79`). `CPDocument` then sends an HTTP POST. A storage facade is needed, with local (IndexedDB) and remote (HTTP) implementations.
 
@@ -70,4 +69,5 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - A minimum size for document windows, through the window delegate. The window stops at the minimum while the pointer keeps moving, as in macOS, and it can still be moved and resized afterwards.
 - View > Show Toolbar and Hide Toolbar: the item's title follows the toolbar's visibility.
 - The Window menu lists the open document windows, marks the main window with a check mark and brings a window to the front when chosen. Bring All to Front can be tested once documents open in separate browser windows.
+- The About panel shows the display name from `CPBundleDisplayName`.
 - Builds with both the legacy toolchain and capp-build.

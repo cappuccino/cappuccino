@@ -103,7 +103,7 @@
 {
     if (CPDOMAvailable)
     {
-        var bundleName = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"];
+        var bundleName = [CPApp _applicationName];
 
         if (![bundleName length])
             document.title = aTitle;

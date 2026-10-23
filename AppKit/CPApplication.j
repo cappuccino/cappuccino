@@ -375,7 +375,7 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     to the following respective keys in your info.plist file.
 
     <pre>
-    CPBundleName
+    CPBundleDisplayName, or CPBundleName when there is no display name
     CPApplicationIcon (through a call to -applicationIconImage, see documentation for that method for more details)
     CPBundleVersion
     CPBundleShortVersionString
@@ -389,7 +389,7 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     if (!_aboutPanel)
     {
         var mainInfo = [[CPBundle mainBundle] infoDictionary],
-            applicationTitle = [options objectForKey:"ApplicationName"] || [mainInfo objectForKey:@"CPBundleName"],
+            applicationTitle = [options objectForKey:"ApplicationName"] || [self _applicationName],
             applicationIcon = [options objectForKey:@"ApplicationIcon"] || [self applicationIconImage],
             version = [options objectForKey:@"Version"] || [mainInfo objectForKey:@"CPBundleVersion"],
             applicationVersion = [options objectForKey:@"ApplicationVersion"] || [mainInfo objectForKey:@"CPBundleShortVersionString"],
@@ -791,6 +791,18 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     }
     else
         [aMenu _setMenuName:@"CPMainMenu"];
+}
+
+/*
+    @ignore
+    Returns the application's name as users see it: CPBundleDisplayName from the main bundle's
+    Info.plist, or CPBundleName when there is no display name.
+*/
+- (CPString)_applicationName
+{
+    var mainBundle = [CPBundle mainBundle];
+
+    return [mainBundle objectForInfoDictionaryKey:@"CPBundleDisplayName"] || [mainBundle objectForInfoDictionaryKey:@"CPBundleName"];
 }
 
 // MARK: Managing the Windows Menu
