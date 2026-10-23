@@ -15474,7 +15474,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("initialize"), function
 
 ,["CPArray"])]);
 }
-p;15;CPUndoManager.jt;36121;@STATIC;1.0;i;9;CPArray.ji;13;CPException.ji;14;CPInvocation.ji;22;CPNotificationCenter.ji;10;CPObject.ji;9;CPProxy.ji;21;CPKeyValueObserving.ji;11;CPRunLoop.jt;35954;objj_executeFile("CPArray.j", YES);objj_executeFile("CPException.j", YES);objj_executeFile("CPInvocation.j", YES);objj_executeFile("CPNotificationCenter.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPProxy.j", YES);objj_executeFile("CPKeyValueObserving.j", YES);objj_executeFile("CPRunLoop.j", YES);var CPUndoManagerNormal = 0,
+p;15;CPUndoManager.jt;36243;@STATIC;1.0;i;9;CPArray.ji;13;CPException.ji;14;CPInvocation.ji;22;CPNotificationCenter.ji;10;CPObject.ji;9;CPProxy.ji;21;CPKeyValueObserving.ji;11;CPRunLoop.jt;36076;objj_executeFile("CPArray.j", YES);objj_executeFile("CPException.j", YES);objj_executeFile("CPInvocation.j", YES);objj_executeFile("CPNotificationCenter.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPProxy.j", YES);objj_executeFile("CPKeyValueObserving.j", YES);objj_executeFile("CPRunLoop.j", YES);var CPUndoManagerNormal = 0,
     CPUndoManagerUndoing = 1,
     CPUndoManagerRedoing = 2;
 CPUndoManagerCheckpointNotification = "CPUndoManagerCheckpointNotification";
@@ -15687,7 +15687,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPUnd
 ,["BOOL"]), new objj_method(sel_getUid("undo"), function $CPUndoManager__undo(self, _cmd)
 {
     if ((self.isa.method_msgSend["groupingLevel"] || _objj_forward)(self, "groupingLevel") === 1)
+    {
         (self.isa.method_msgSend["endUndoGrouping"] || _objj_forward)(self, "endUndoGrouping");
+        (self.isa.method_msgSend["_unregisterWithRunLoop"] || _objj_forward)(self, "_unregisterWithRunLoop");
+    }
     (self.isa.method_msgSend["undoNestedGroup"] || _objj_forward)(self, "undoNestedGroup");
 }
 
