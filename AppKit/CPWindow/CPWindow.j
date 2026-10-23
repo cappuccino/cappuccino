@@ -2763,6 +2763,28 @@ CPTexturedBackgroundWindowMask
     [toolbar setVisible:![toolbar isVisible]];
 }
 
+/*!
+    Validates the user interface items whose actions the window handles.
+
+    For \c -toggleToolbarShown:, the item's title becomes "Hide Toolbar" or "Show Toolbar"
+    to reflect the toolbar's visibility, and the item is enabled only when the window has
+    a toolbar. Every other item is enabled.
+    @param anItem the item to validate
+    @return \c YES if the item should be enabled
+*/
+- (BOOL)validateUserInterfaceItem:(id /*<CPValidatedUserInterfaceItem>*/)anItem
+{
+    if ([anItem action] !== @selector(toggleToolbarShown:))
+        return YES;
+
+    var toolbar = [self toolbar];
+
+    if ([anItem respondsToSelector:@selector(setTitle:)])
+        [anItem setTitle:[toolbar isVisible] ? @"Hide Toolbar" : @"Show Toolbar"];
+
+    return !!toolbar;
+}
+
 - (void)_noteToolbarChanged
 {
     var frame = CGRectMakeCopy([self frame]),
