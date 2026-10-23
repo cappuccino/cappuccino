@@ -25,7 +25,6 @@ TextEditor is a document-based test application and a tutorial. When the app use
 
 ### Undo and redo
 
-- **Redo is unreliable or does not work.** Not yet investigated.
 - **Undo stays enabled when `allowsUndo` is `NO`.** `-[CPTextView undo:]` then does nothing (`CPTextView.j:679`). The text view must disable the menu item in that case.
 
 ### Clipboard
@@ -66,7 +65,7 @@ TextEditor is a document-based test application and a tutorial. When the app use
 
 - One window for each document, each loaded from its own cib.
 - Insert Lorem Ipsum through the responder chain.
-- Undo over several levels, separate for each document.
+- Undo and redo over several levels, separate for each document.
 - Text colour through `CPColorPanel`.
 - Paragraph indents through the ruler markers.
 - The "save changes" alert when a document closes.

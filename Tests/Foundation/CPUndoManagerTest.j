@@ -57,6 +57,26 @@
     [[CPNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)testUndoInSameRunLoopCycleAsChange
+{
+    [self doIt];
+
+    // The change opened an event grouping that the run loop is scheduled to close. Undo closes it first.
+    [undoManager undo];
+
+    [self assertFalse:itIsDone message:@"undo should revert the change"];
+
+    // The scheduled close must not run against the grouping that undo already closed.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [self assert:0 equals:[undoManager groupingLevel]];
+    [self assertTrue:[undoManager canRedo] message:@"the undone change should be available to redo"];
+
+    [undoManager redo];
+
+    [self assertTrue:itIsDone message:@"redo should reapply the change"];
+}
+
 - (void)receiveNotification:(CPNotification)aNotification
 {
     [receivedNotifications addObject:aNotification];
@@ -74,7 +94,7 @@
 - (void)undoIt
 {
     [undoManager registerUndoWithTarget:self
-                               selector:@selector(doit)
+                               selector:@selector(doIt)
                                  object:nil];
 
     itIsDone = NO;
