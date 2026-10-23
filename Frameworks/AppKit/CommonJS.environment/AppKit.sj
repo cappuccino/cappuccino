@@ -4638,7 +4638,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("currentAppearance"), f
 
 ,["CPAppearance","CPString"])]);
 }
-p;15;CPApplication.jt;81566;@STATIC;1.0;I;21;Foundation/CPBundle.ji;25;CPApplication_Constants.ji;17;CPCompatibility.ji;14;CPColorPanel.ji;10;CPCursor.ji;22;CPDocumentController.ji;9;CPEvent.ji;8;CPMenu.ji;13;CPResponder.ji;14;CPThemeBlend.ji;14;CPCibLoading.ji;9;CPPanel.ji;12;CPPlatform.ji;20;CPWindowController.ji;18;_CPPopoverWindow.jt;81248;objj_executeFile("Foundation/CPBundle.j", NO);objj_executeFile("CPApplication_Constants.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDocumentController.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPThemeBlend.j", YES);objj_executeFile("CPCibLoading.j", YES);objj_executeFile("CPPanel.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPWindowController.j", YES);objj_executeFile("_CPPopoverWindow.j", YES);{var the_typedef = objj_allocateTypeDef("CPModalSession");
+p;15;CPApplication.jt;82118;@STATIC;1.0;I;21;Foundation/CPBundle.ji;25;CPApplication_Constants.ji;17;CPCompatibility.ji;14;CPColorPanel.ji;10;CPCursor.ji;22;CPDocumentController.ji;9;CPEvent.ji;8;CPMenu.ji;13;CPResponder.ji;14;CPThemeBlend.ji;14;CPCibLoading.ji;9;CPPanel.ji;12;CPPlatform.ji;20;CPWindowController.ji;18;_CPPopoverWindow.jt;81800;objj_executeFile("Foundation/CPBundle.j", NO);objj_executeFile("CPApplication_Constants.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDocumentController.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPThemeBlend.j", YES);objj_executeFile("CPCibLoading.j", YES);objj_executeFile("CPPanel.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPWindowController.j", YES);objj_executeFile("_CPPopoverWindow.j", YES);{var the_typedef = objj_allocateTypeDef("CPModalSession");
 objj_registerTypeDef(the_typedef);
 }var CPMainCibFile = "CPMainCibFile",
     CPMainCibFileHumanFriendly = "Main cib file base name",
@@ -4797,7 +4797,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeBlend"), function 
     if (!self._aboutPanel)
     {
         var mainInfo = ((___r1 = (CPBundle.isa.method_msgSend["mainBundle"] || _objj_forward)(CPBundle, "mainBundle")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["infoDictionary"] || _objj_forward)(___r1, "infoDictionary")),
-            applicationTitle = (options == null ? options : (options.isa.method_msgSend["objectForKey:"] || _objj_forward)(options, "objectForKey:", "ApplicationName")) || (mainInfo == null ? mainInfo : (mainInfo.isa.method_msgSend["objectForKey:"] || _objj_forward)(mainInfo, "objectForKey:", "CPBundleName")),
+            applicationTitle = (options == null ? options : (options.isa.method_msgSend["objectForKey:"] || _objj_forward)(options, "objectForKey:", "ApplicationName")) || (self.isa.method_msgSend["_applicationName"] || _objj_forward)(self, "_applicationName"),
             applicationIcon = (options == null ? options : (options.isa.method_msgSend["objectForKey:"] || _objj_forward)(options, "objectForKey:", "ApplicationIcon")) || (self.isa.method_msgSend["applicationIconImage"] || _objj_forward)(self, "applicationIconImage"),
             version = (options == null ? options : (options.isa.method_msgSend["objectForKey:"] || _objj_forward)(options, "objectForKey:", "Version")) || (mainInfo == null ? mainInfo : (mainInfo.isa.method_msgSend["objectForKey:"] || _objj_forward)(mainInfo, "objectForKey:", "CPBundleVersion")),
             applicationVersion = (options == null ? options : (options.isa.method_msgSend["objectForKey:"] || _objj_forward)(options, "objectForKey:", "ApplicationVersion")) || (mainInfo == null ? mainInfo : (mainInfo.isa.method_msgSend["objectForKey:"] || _objj_forward)(mainInfo, "objectForKey:", "CPBundleShortVersionString")),
@@ -5073,7 +5073,13 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeBlend"), function 
     var ___r1;
 }
 
-,["void","CPMenu"]), new objj_method(sel_getUid("windowsMenu"), function $CPApplication__windowsMenu(self, _cmd)
+,["void","CPMenu"]), new objj_method(sel_getUid("_applicationName"), function $CPApplication___applicationName(self, _cmd)
+{
+    var mainBundle = (CPBundle.isa.method_msgSend["mainBundle"] || _objj_forward)(CPBundle, "mainBundle");
+    return (mainBundle == null ? mainBundle : (mainBundle.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(mainBundle, "objectForInfoDictionaryKey:", "CPBundleDisplayName")) || (mainBundle == null ? mainBundle : (mainBundle.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(mainBundle, "objectForInfoDictionaryKey:", "CPBundleName"));
+}
+
+,["CPString"]), new objj_method(sel_getUid("windowsMenu"), function $CPApplication__windowsMenu(self, _cmd)
 {
     if (!self._windowsMenu)
         self._windowsMenu = ((___r1 = (self.isa.method_msgSend["mainMenu"] || _objj_forward)(self, "mainMenu")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_menuWithName:"] || _objj_forward)(___r1, "_menuWithName:", "_CPWindowsMenu"));
@@ -60782,7 +60788,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;18;_CPMenuBarWindow.jt;30987;@STATIC;1.0;i;9;CPPanel.ji;16;_CPMenuManager.ji;17;CPCompatibility.jt;30911;objj_executeFile("CPPanel.j", YES);objj_executeFile("_CPMenuManager.j", YES);objj_executeFile("CPCompatibility.j", YES);
+p;18;_CPMenuBarWindow.jt;30853;@STATIC;1.0;i;9;CPPanel.ji;16;_CPMenuManager.ji;17;CPCompatibility.jt;30777;objj_executeFile("CPPanel.j", YES);objj_executeFile("_CPMenuManager.j", YES);objj_executeFile("CPCompatibility.j", YES);
 {var the_class = objj_allocateClassPair(CPPanel, "_CPMenuBarWindow"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_highlightView", "CPView"), new objj_ivar("_menuItemViews", "CPArray"), new objj_ivar("_trackingMenuItem", "CPMenuItem"), new objj_ivar("_iconImageView", "CPImageView"), new objj_ivar("_titleField", "CPTextField"), new objj_ivar("_textColor", "CPColor"), new objj_ivar("_titleColor", "CPColor"), new objj_ivar("_textShadowColor", "CPColor"), new objj_ivar("_titleShadowColor", "CPColor"), new objj_ivar("_highlightColor", "CPColor"), new objj_ivar("_highlightTextColor", "CPColor"), new objj_ivar("_highlightTextShadowColor", "CPColor")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPMenuBarWindow__init(self, _cmd)
@@ -60814,7 +60820,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPMe
 {
     if (CPDOMAvailable)
     {
-        var bundleName = ((___r1 = (CPBundle.isa.method_msgSend["mainBundle"] || _objj_forward)(CPBundle, "mainBundle")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectForInfoDictionaryKey:"] || _objj_forward)(___r1, "objectForInfoDictionaryKey:", "CPBundleName"));
+        var bundleName = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["_applicationName"] || _objj_forward)(CPApp, "_applicationName"));
         if (!(bundleName == null ? bundleName : (bundleName.isa.method_msgSend["length"] || _objj_forward)(bundleName, "length")))
             document.title = aTitle;
         else if ((aTitle == null ? aTitle : (aTitle.isa.method_msgSend["length"] || _objj_forward)(aTitle, "length")))

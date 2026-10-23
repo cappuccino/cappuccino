@@ -23,7 +23,7 @@
 	<string>1.0</string>
 	<key>CPHumanReadableCopyright</key>
 	<string>Copyright © 2026, David Richardson, MIT Licensed</string>
-	<key>CFBundleDisplayName</key>
+	<key>CPBundleDisplayName</key>
 	<string>TextEdit by Cappuccino</string>
 </dict>
 </plist>
