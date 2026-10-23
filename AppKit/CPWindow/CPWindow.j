@@ -800,13 +800,14 @@ CPTexturedBackgroundWindowMask
         var size = _frame.size,
             newSize = frame.size;
 
+        // The delegate may change the proposed size, so ask it before the size is stored in _frame.
+        if (!_isAnimating && !CGSizeEqualToSize(size, newSize))
+            newSize = [self _sendDelegateWindowWillResizeToSize:CGSizeMakeCopy(newSize)];
+
         if (!CGSizeEqualToSize(size, newSize))
         {
             size.width = newSize.width;
             size.height = newSize.height;
-
-            if (!_isAnimating)
-                size = [self _sendDelegateWindowWillResizeToSize:size];
 
             [_windowView setFrameSize:size];
 
