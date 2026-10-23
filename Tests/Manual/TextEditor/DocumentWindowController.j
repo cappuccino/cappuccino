@@ -123,4 +123,51 @@ var DocumentWindowMinimumWidth  = 360.0,
                       Math.max(aSize.height, DocumentWindowMinimumHeight));
 }
 
+/*!
+    Turns undo on or off for this document's text view.
+
+    This is test scaffolding, not a Cocoa convention: Cocoa apps set
+    allowsUndo once, in Interface Builder or in code. The Edit > Allow Undo
+    menu item exists so that both settings can be tried while the app runs.
+    It will move to a Settings window.
+
+    Like Insert Lorem Ipsum, the menu item sends its action to First
+    Responder, and the responder chain delivers it to the controller of the
+    active document's window. Neither the text view nor the window responds
+    to toggleAllowsUndo:, so the action passes them by.
+*/
+- (@action)toggleAllowsUndo:(id)aSender
+{
+    var allowsUndo = ![textView allowsUndo];
+
+    [textView setAllowsUndo:allowsUndo];
+
+    /*
+        A text view that does not allow undo registers no changes, and does
+        not respond to undo: or redo:, so those actions go on to the window
+        and its undo manager. Remove the changes the text view registered
+        before undo was turned off, so that Edit > Undo cannot still undo
+        them through the window.
+    */
+    if (!allowsUndo)
+        [[[self window] undoManager] removeAllActionsWithTarget:textView];
+}
+
+/*!
+    Validates the menu items whose actions this controller handles.
+
+    AppKit calls this method before it shows a menu, for each item whose
+    action reaches this controller through the responder chain. For Allow
+    Undo, it sets the item's check mark from the active document's text
+    view, so the mark follows the document whose window is in front. Every
+    item is enabled.
+*/
+- (BOOL)validateMenuItem:(CPMenuItem)aMenuItem
+{
+    if ([aMenuItem action] === @selector(toggleAllowsUndo:))
+        [aMenuItem setState:[textView allowsUndo] ? CPOnState : CPOffState];
+
+    return YES;
+}
+
 @end

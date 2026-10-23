@@ -20,10 +20,6 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - **`CPTextView` has no ruler control API.** `usesRuler`, `setUsesRuler:`, `setRulerVisible:` and `toggleRuler:` do not exist. `isRulerVisible` always returns `NO` (`CPTextView.j:2088`).
 - **`CPRulerMarker` ignores `markerLocation`.** `initWithRulerView:markerLocation:imageValue:representedObject:` uses `imageValue` as the location.
 
-### Undo and redo
-
-- **Undo stays enabled when `allowsUndo` is `NO`.** `-[CPTextView undo:]` then does nothing (`CPTextView.j:679`). The text view must disable the menu item in that case.
-
 ### Clipboard
 
 - **Paste and Cut from the Edit menu do nothing.** `-[CPTextView paste:]` (`CPTextView.j:521`) and `cut:` (`:1754`) return unless the current event is `CPAppKitDefined`. Only the browser's native clipboard events, from the keyboard, create that event.
@@ -42,6 +38,10 @@ TextEditor is a document-based test application and a tutorial. When the app use
 ### nib2cib
 
 - **The content view's resizing setting does not reach the cib.** Making the document window's content view resize with the window in `DocumentWindow.xib` produces a byte-identical `DocumentWindow.cib`. CPView omits the autoresizing mask from the archive only when it is `CPViewNotSizable` (`CPView.j:4016`), so the content view is archived as not sizable. Not yet determined whether `ibtool` or nib2cib drops the setting. The app still behaves correctly, because the window resizes its content view itself.
+
+### Menus and key equivalents (needs discussion)
+
+- **The key equivalent of a disabled menu item reaches the browser.** `-[CPMenu performKeyEquivalent:]` (`CPMenu.j:1059`) stops the browser's default action only when the matching item is enabled. For a disabled item it reports the key as handled, but the browser still acts on it: with File > Close disabled, Cmd-W closes the browser tab. Cocoa consumes the key equivalent of a disabled item with a beep. Stopping the browser's default for disabled items as well would match Cocoa for most keys, but not all: some browsers do not let a page block certain shortcuts, such as Cmd-W, Cmd-N and Cmd-T in Chrome, and Copy, Cut and Paste must keep reaching the browser for its clipboard events. This needs careful thought, and perhaps discussion, before any change.
 
 ### Platform
 
@@ -70,4 +70,5 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - View > Show Toolbar and Hide Toolbar: the item's title follows the toolbar's visibility.
 - The Window menu lists the open document windows, marks the main window with a check mark and brings a window to the front when chosen. Bring All to Front can be tested once documents open in separate browser windows.
 - The About panel shows the display name from `CPBundleDisplayName`.
+- Edit > Allow Undo turns undo on and off for the active document. With undo off, Undo and Redo stay disabled, and the check mark follows the document in front.
 - Builds with both the legacy toolchain and capp-build.

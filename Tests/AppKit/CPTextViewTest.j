@@ -136,6 +136,56 @@
     [delegateSpy verifyThatAllExpectationsHaveBeenMet];
 }
 
+- (void)testTextViewRespondsToUndoOnlyWhenUndoIsAllowed
+{
+    [textView setAllowsUndo:YES];
+
+    [self assertTrue:[textView respondsToSelector:@selector(undo:)]];
+    [self assertTrue:[textView respondsToSelector:@selector(redo:)]];
+
+    [textView setAllowsUndo:NO];
+
+    [self assertFalse:[textView respondsToSelector:@selector(undo:)] message:@"undo: should continue to the window"];
+    [self assertFalse:[textView respondsToSelector:@selector(redo:)] message:@"redo: should continue to the window"];
+}
+
+- (void)testTextViewRegistersUndoOnlyWhenUndoIsAllowed
+{
+    var undoManager = [theWindow undoManager];
+
+    [self assertTrue:[theWindow makeFirstResponder:textView]];
+
+    [textView setAllowsUndo:NO];
+    [undoManager removeAllActions];
+    [textView insertText:@"Not recorded"];
+
+    [self assertFalse:[undoManager canUndo] message:@"a text view that does not allow undo should register nothing"];
+
+    [textView setAllowsUndo:YES];
+    [textView insertText:@"Recorded"];
+
+    [self assertTrue:[undoManager canUndo] message:@"a text view that allows undo should register its change"];
+}
+
+- (void)testUndoItemIsEnabledOnlyWhenThereIsAChangeToUndo
+{
+    var undoManager = [theWindow undoManager],
+        undoItem = [[CPMenuItem alloc] initWithTitle:@"Undo" action:@selector(undo:) keyEquivalent:@""],
+        redoItem = [[CPMenuItem alloc] initWithTitle:@"Redo" action:@selector(redo:) keyEquivalent:@""];
+
+    [self assertTrue:[theWindow makeFirstResponder:textView]];
+    [undoManager removeAllActions];
+
+    [self assertFalse:[textView validateUserInterfaceItem:undoItem]];
+    [self assertFalse:[theWindow validateUserInterfaceItem:undoItem]];
+    [self assertFalse:[textView validateUserInterfaceItem:redoItem]];
+
+    [textView insertText:@"Recorded"];
+
+    [self assertTrue:[textView validateUserInterfaceItem:undoItem]];
+    [self assertTrue:[theWindow validateUserInterfaceItem:undoItem]];
+}
+
 @end
 
 @implementation CPTextViewTest (CPTextViewTestDelegate)

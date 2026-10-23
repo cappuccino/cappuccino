@@ -2830,13 +2830,22 @@ CPTexturedBackgroundWindowMask
 
     For \c -toggleToolbarShown:, the item's title becomes "Hide Toolbar" or "Show Toolbar"
     to reflect the toolbar's visibility, and the item is enabled only when the window has
-    a toolbar. Every other item is enabled.
+    a toolbar. \c -undo: and \c -redo: are enabled only when the window's undo manager has a
+    change to undo or redo. Every other item is enabled.
     @param anItem the item to validate
     @return \c YES if the item should be enabled
 */
 - (BOOL)validateUserInterfaceItem:(id /*<CPValidatedUserInterfaceItem>*/)anItem
 {
-    if ([anItem action] !== @selector(toggleToolbarShown:))
+    var action = [anItem action];
+
+    if (action === @selector(undo:))
+        return [[self undoManager] canUndo];
+
+    if (action === @selector(redo:))
+        return [[self undoManager] canRedo];
+
+    if (action !== @selector(toggleToolbarShown:))
         return YES;
 
     var toolbar = [self toolbar];
