@@ -6,9 +6,7 @@ TextEditor is a document-based test application and a tutorial. When the app use
 
 ### Windows and documents
 
-- **The Window menu does not list document windows.** It has no items to show or change the active window. AppKit has no equivalent of the Cocoa windows menu support in `NSApplication`: `windowsMenu`, `addWindowsItem:title:filename:`, `changeWindowsItem:title:filename:`, `removeWindowsItem:` and `arrangeInFront:`. nib2cib marks the menu as `_CPWindowsMenu` (`Tools/nib2cib/NSMenu.j:31`), but nothing in AppKit reads that name.
 - **AppKit ignores `CPBundleDisplayName`.** Cocoa uses `CFBundleDisplayName` for the name that the user sees, and `CFBundleName` as the short name. AppKit reads only `CPBundleName`: for the About panel title (`CPApplication.j:389`) and for the browser tab title (`_CPMenuBarWindow.j:106`). Both should use `CPBundleDisplayName`, with `CPBundleName` as the fallback.
-- **The Show Toolbar menu item does not show the toolbar state.** `-[CPWindow toggleToolbarShown:]` works (`CPWindow.j:2758`), but `CPWindow` has no `validateMenuItem:`. In Cocoa, `NSWindow` validates this item: it changes the title between "Show Toolbar" and "Hide Toolbar", and disables the item when the window has no toolbar. `CPMenu` already asks the target through `validateMenuItem:` (`CPMenu.j:699`), so the fix is a `validateMenuItem:` in `CPWindow` that handles `toggleToolbarShown:` and returns `YES` for every other action.
 - **The "save changes" alert is modal for the whole app.** `CPDocument` shows it with `runModal` (`CPDocument.j:903`). Cocoa attaches it as a sheet to the document window, so that only that document is blocked.
 - **Save cannot work without a server.** With no file URL, Save uses `CPSavePanel`, which falls back to `window.prompt` (`CPSavePanel.j:79`). `CPDocument` then sends an HTTP POST. A storage facade is needed, with local (IndexedDB) and remote (HTTP) implementations.
 
@@ -70,4 +68,6 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - Paragraph indents through the ruler markers.
 - The "save changes" alert when a document closes.
 - A minimum size for document windows, through the window delegate. The window stops at the minimum while the pointer keeps moving, as in macOS, and it can still be moved and resized afterwards.
+- View > Show Toolbar and Hide Toolbar: the item's title follows the toolbar's visibility.
+- The Window menu lists the open document windows, marks the main window with a check mark and brings a window to the front when chosen. Bring All to Front can be tested once documents open in separate browser windows.
 - Builds with both the legacy toolchain and capp-build.

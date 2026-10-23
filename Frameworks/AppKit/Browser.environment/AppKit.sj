@@ -4638,7 +4638,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("currentAppearance"), f
 
 ,["CPAppearance","CPString"])]);
 }
-p;15;CPApplication.jt;71335;@STATIC;1.0;I;21;Foundation/CPBundle.ji;25;CPApplication_Constants.ji;17;CPCompatibility.ji;14;CPColorPanel.ji;10;CPCursor.ji;22;CPDocumentController.ji;9;CPEvent.ji;8;CPMenu.ji;13;CPResponder.ji;14;CPThemeBlend.ji;14;CPCibLoading.ji;9;CPPanel.ji;12;CPPlatform.ji;20;CPWindowController.ji;18;_CPPopoverWindow.jt;71017;objj_executeFile("Foundation/CPBundle.j", NO);objj_executeFile("CPApplication_Constants.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDocumentController.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPThemeBlend.j", YES);objj_executeFile("CPCibLoading.j", YES);objj_executeFile("CPPanel.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPWindowController.j", YES);objj_executeFile("_CPPopoverWindow.j", YES);{var the_typedef = objj_allocateTypeDef("CPModalSession");
+p;15;CPApplication.jt;81566;@STATIC;1.0;I;21;Foundation/CPBundle.ji;25;CPApplication_Constants.ji;17;CPCompatibility.ji;14;CPColorPanel.ji;10;CPCursor.ji;22;CPDocumentController.ji;9;CPEvent.ji;8;CPMenu.ji;13;CPResponder.ji;14;CPThemeBlend.ji;14;CPCibLoading.ji;9;CPPanel.ji;12;CPPlatform.ji;20;CPWindowController.ji;18;_CPPopoverWindow.jt;81248;objj_executeFile("Foundation/CPBundle.j", NO);objj_executeFile("CPApplication_Constants.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDocumentController.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPThemeBlend.j", YES);objj_executeFile("CPCibLoading.j", YES);objj_executeFile("CPPanel.j", YES);objj_executeFile("CPPlatform.j", YES);objj_executeFile("CPWindowController.j", YES);objj_executeFile("_CPPopoverWindow.j", YES);{var the_typedef = objj_allocateTypeDef("CPModalSession");
 objj_registerTypeDef(the_typedef);
 }var CPMainCibFile = "CPMainCibFile",
     CPMainCibFileHumanFriendly = "Main cib file base name",
@@ -4652,7 +4652,7 @@ objj_registerProtocol(the_protocol);
     CPApplicationDelegate_applicationShouldTerminateMessage_ = 1 << 1;
 
 {var the_class = objj_allocateClassPair(CPResponder, "CPApplication"),
-meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_eventListeners", "CPArray"), new objj_ivar("_eventListenerInsertionIndex", "int"), new objj_ivar("_currentEvent", "CPEvent"), new objj_ivar("_lastMouseMoveWindow", "CPWindow"), new objj_ivar("_windows", "CPArray"), new objj_ivar("_keyWindow", "CPWindow"), new objj_ivar("_mainWindow", "CPWindow"), new objj_ivar("_previousKeyWindow", "CPWindow"), new objj_ivar("_previousMainWindow", "CPWindow"), new objj_ivar("_documentController", "CPDocumentController"), new objj_ivar("_currentSession", "CPModalSession"), new objj_ivar("_delegate", "id"), new objj_ivar("_implementedDelegateMethods", "CPInteger"), new objj_ivar("_finishedLaunching", "BOOL"), new objj_ivar("_isActive", "BOOL"), new objj_ivar("_namedArgs", "CPDictionary"), new objj_ivar("_args", "CPArray"), new objj_ivar("_fullArgsString", "CPString"), new objj_ivar("_applicationIconImage", "CPImage"), new objj_ivar("_aboutPanel", "CPPanel"), new objj_ivar("_themeBlend", "CPThemeBlend")]);objj_registerClassPair(the_class);
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_eventListeners", "CPArray"), new objj_ivar("_eventListenerInsertionIndex", "int"), new objj_ivar("_currentEvent", "CPEvent"), new objj_ivar("_lastMouseMoveWindow", "CPWindow"), new objj_ivar("_windows", "CPArray"), new objj_ivar("_keyWindow", "CPWindow"), new objj_ivar("_mainWindow", "CPWindow"), new objj_ivar("_previousKeyWindow", "CPWindow"), new objj_ivar("_previousMainWindow", "CPWindow"), new objj_ivar("_documentController", "CPDocumentController"), new objj_ivar("_currentSession", "CPModalSession"), new objj_ivar("_delegate", "id"), new objj_ivar("_implementedDelegateMethods", "CPInteger"), new objj_ivar("_finishedLaunching", "BOOL"), new objj_ivar("_isActive", "BOOL"), new objj_ivar("_namedArgs", "CPDictionary"), new objj_ivar("_args", "CPArray"), new objj_ivar("_fullArgsString", "CPString"), new objj_ivar("_applicationIconImage", "CPImage"), new objj_ivar("_aboutPanel", "CPPanel"), new objj_ivar("_windowsMenu", "CPMenu"), new objj_ivar("_windowsMenuSeparator", "CPMenuItem"), new objj_ivar("_themeBlend", "CPThemeBlend")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("themeBlend"), function $CPApplication__themeBlend(self, _cmd)
 {
     return self._themeBlend;
@@ -5059,12 +5059,145 @@ class_addMethods(the_class, [new objj_method(sel_getUid("themeBlend"), function 
         (objj_getClass("CPApplication").super_class.method_dtable["setMenu:"] || _objj_forward)(self, "setMenu:", aMenu);
         if ((CPPlatform.isa.method_msgSend["supportsNativeMainMenu"] || _objj_forward)(CPPlatform, "supportsNativeMainMenu"))
             window.cpSetMainMenu((self.isa.method_msgSend["menu"] || _objj_forward)(self, "menu"));
+        self._windowsMenu = nil;
+        self._windowsMenuSeparator = nil;
+        for (var i = 0, count = ((___r1 = self._windows), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count")); i < count; i++)
+        {
+            var aWindow = self._windows[i];
+            if ((aWindow == null ? aWindow : (aWindow.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(aWindow, "isKindOfClass:", (CPWindow.isa.method_msgSend["class"] || _objj_forward)(CPWindow, "class"))))
+                (aWindow == null ? aWindow : (aWindow.isa.method_msgSend["_updateWindowsMenuItem"] || _objj_forward)(aWindow, "_updateWindowsMenuItem"));
+        }
     }
     else
         (aMenu == null ? aMenu : (aMenu.isa.method_msgSend["_setMenuName:"] || _objj_forward)(aMenu, "_setMenuName:", "CPMainMenu"));
+    var ___r1;
 }
 
-,["void","CPMenu"]), new objj_method(sel_getUid("orderFrontColorPanel:"), function $CPApplication__orderFrontColorPanel_(self, _cmd, aSender)
+,["void","CPMenu"]), new objj_method(sel_getUid("windowsMenu"), function $CPApplication__windowsMenu(self, _cmd)
+{
+    if (!self._windowsMenu)
+        self._windowsMenu = ((___r1 = (self.isa.method_msgSend["mainMenu"] || _objj_forward)(self, "mainMenu")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_menuWithName:"] || _objj_forward)(___r1, "_menuWithName:", "_CPWindowsMenu"));
+    return self._windowsMenu;
+    var ___r1;
+}
+
+,["CPMenu"]), new objj_method(sel_getUid("setWindowsMenu:"), function $CPApplication__setWindowsMenu_(self, _cmd, aMenu)
+{
+    var previousMenu = (self.isa.method_msgSend["windowsMenu"] || _objj_forward)(self, "windowsMenu");
+    if (previousMenu === aMenu)
+        return;
+    var listedWindows = (self.isa.method_msgSend["_windowsInWindowsMenu"] || _objj_forward)(self, "_windowsInWindowsMenu");
+    (listedWindows == null ? listedWindows : (listedWindows.isa.method_msgSend["makeObjectsPerformSelector:"] || _objj_forward)(listedWindows, "makeObjectsPerformSelector:", sel_getUid("_removeFromWindowsMenu")));
+    self._windowsMenu = aMenu;
+    self._windowsMenuSeparator = nil;
+    (listedWindows == null ? listedWindows : (listedWindows.isa.method_msgSend["makeObjectsPerformSelector:"] || _objj_forward)(listedWindows, "makeObjectsPerformSelector:", sel_getUid("_updateWindowsMenuItem")));
+}
+
+,["void","CPMenu"]), new objj_method(sel_getUid("addWindowsItem:title:filename:"), function $CPApplication__addWindowsItem_title_filename_(self, _cmd, aWindow, aString, isFilename)
+{
+    var menu = (self.isa.method_msgSend["windowsMenu"] || _objj_forward)(self, "windowsMenu");
+    if (!menu || (self.isa.method_msgSend["_windowsMenuItemForWindow:"] || _objj_forward)(self, "_windowsMenuItemForWindow:", aWindow))
+        return;
+    if (!self._windowsMenuSeparator && (menu == null ? menu : (menu.isa.method_msgSend["numberOfItems"] || _objj_forward)(menu, "numberOfItems")) > 0)
+    {
+        self._windowsMenuSeparator = (CPMenuItem.isa.method_msgSend["separatorItem"] || _objj_forward)(CPMenuItem, "separatorItem");
+        (menu == null ? menu : (menu.isa.method_msgSend["addItem:"] || _objj_forward)(menu, "addItem:", self._windowsMenuSeparator));
+    }
+    var item = ((___r1 = (CPMenuItem.isa.method_msgSend["alloc"] || _objj_forward)(CPMenuItem, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithTitle:action:keyEquivalent:"] || _objj_forward)(___r1, "initWithTitle:action:keyEquivalent:", (self.isa.method_msgSend["_windowsMenuTitle:filename:"] || _objj_forward)(self, "_windowsMenuTitle:filename:", aString, isFilename), sel_getUid("makeKeyAndOrderFront:"), ""));
+    (item == null ? item : (item.isa.method_msgSend["setTarget:"] || _objj_forward)(item, "setTarget:", aWindow));
+    (menu == null ? menu : (menu.isa.method_msgSend["addItem:"] || _objj_forward)(menu, "addItem:", item));
+    (self.isa.method_msgSend["updateWindowsItem:"] || _objj_forward)(self, "updateWindowsItem:", aWindow);
+    var ___r1;
+}
+
+,["void","CPWindow","CPString","BOOL"]), new objj_method(sel_getUid("changeWindowsItem:title:filename:"), function $CPApplication__changeWindowsItem_title_filename_(self, _cmd, aWindow, aString, isFilename)
+{
+    var item = (self.isa.method_msgSend["_windowsMenuItemForWindow:"] || _objj_forward)(self, "_windowsMenuItemForWindow:", aWindow);
+    if (item)
+        (item == null ? item : (item.isa.method_msgSend["setTitle:"] || _objj_forward)(item, "setTitle:", (self.isa.method_msgSend["_windowsMenuTitle:filename:"] || _objj_forward)(self, "_windowsMenuTitle:filename:", aString, isFilename)));
+    else
+        (self.isa.method_msgSend["addWindowsItem:title:filename:"] || _objj_forward)(self, "addWindowsItem:title:filename:", aWindow, aString, isFilename);
+}
+
+,["void","CPWindow","CPString","BOOL"]), new objj_method(sel_getUid("removeWindowsItem:"), function $CPApplication__removeWindowsItem_(self, _cmd, aWindow)
+{
+    var item = (self.isa.method_msgSend["_windowsMenuItemForWindow:"] || _objj_forward)(self, "_windowsMenuItemForWindow:", aWindow);
+    if (!item)
+        return;
+    var menu = (self.isa.method_msgSend["windowsMenu"] || _objj_forward)(self, "windowsMenu");
+    (menu == null ? menu : (menu.isa.method_msgSend["removeItem:"] || _objj_forward)(menu, "removeItem:", item));
+    if (self._windowsMenuSeparator && !((___r1 = (self.isa.method_msgSend["_windowsInWindowsMenu"] || _objj_forward)(self, "_windowsInWindowsMenu")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count")))
+    {
+        (menu == null ? menu : (menu.isa.method_msgSend["removeItem:"] || _objj_forward)(menu, "removeItem:", self._windowsMenuSeparator));
+        self._windowsMenuSeparator = nil;
+    }
+    var ___r1;
+}
+
+,["void","CPWindow"]), new objj_method(sel_getUid("updateWindowsItem:"), function $CPApplication__updateWindowsItem_(self, _cmd, aWindow)
+{
+    var item = (self.isa.method_msgSend["_windowsMenuItemForWindow:"] || _objj_forward)(self, "_windowsMenuItemForWindow:", aWindow);
+    if (!item)
+        return;
+    if ((aWindow == null ? aWindow : (aWindow.isa.method_msgSend["isMiniaturized"] || _objj_forward)(aWindow, "isMiniaturized")))
+        (item == null ? item : (item.isa.method_msgSend["setState:"] || _objj_forward)(item, "setState:", CPMixedState));
+    else
+        (item == null ? item : (item.isa.method_msgSend["setState:"] || _objj_forward)(item, "setState:", aWindow === (self.isa.method_msgSend["mainWindow"] || _objj_forward)(self, "mainWindow") ? CPOnState : CPOffState));
+}
+
+,["void","CPWindow"]), new objj_method(sel_getUid("arrangeInFront:"), function $CPApplication__arrangeInFront_(self, _cmd, aSender)
+{
+    var listedWindows = (self.isa.method_msgSend["_windowsInWindowsMenu"] || _objj_forward)(self, "_windowsInWindowsMenu"),
+        orderedWindows = (self.isa.method_msgSend["orderedWindows"] || _objj_forward)(self, "orderedWindows"),
+        index = (orderedWindows == null ? orderedWindows : (orderedWindows.isa.method_msgSend["count"] || _objj_forward)(orderedWindows, "count"));
+    while (index--)
+    {
+        var aWindow = orderedWindows[index];
+        if ((listedWindows == null ? listedWindows : (listedWindows.isa.method_msgSend["containsObjectIdenticalTo:"] || _objj_forward)(listedWindows, "containsObjectIdenticalTo:", aWindow)) && !(aWindow == null ? aWindow : (aWindow.isa.method_msgSend["isMiniaturized"] || _objj_forward)(aWindow, "isMiniaturized")))
+            (aWindow == null ? aWindow : (aWindow.isa.method_msgSend["orderFront:"] || _objj_forward)(aWindow, "orderFront:", aSender));
+    }
+}
+
+,["void","id"]), new objj_method(sel_getUid("_windowsMenuItemForWindow:"), function $CPApplication___windowsMenuItemForWindow_(self, _cmd, aWindow)
+{
+    var items = ((___r1 = (self.isa.method_msgSend["windowsMenu"] || _objj_forward)(self, "windowsMenu")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["itemArray"] || _objj_forward)(___r1, "itemArray")),
+        count = (items == null ? items : (items.isa.method_msgSend["count"] || _objj_forward)(items, "count"));
+    for (var i = 0; i < count; i++)
+    {
+        var item = items[i];
+        if ((item == null ? item : (item.isa.method_msgSend["target"] || _objj_forward)(item, "target")) === aWindow && (item == null ? item : (item.isa.method_msgSend["action"] || _objj_forward)(item, "action")) === sel_getUid("makeKeyAndOrderFront:"))
+            return item;
+    }
+    return nil;
+    var ___r1;
+}
+
+,["CPMenuItem","CPWindow"]), new objj_method(sel_getUid("_windowsInWindowsMenu"), function $CPApplication___windowsInWindowsMenu(self, _cmd)
+{
+    var items = ((___r1 = (self.isa.method_msgSend["windowsMenu"] || _objj_forward)(self, "windowsMenu")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["itemArray"] || _objj_forward)(___r1, "itemArray")),
+        count = (items == null ? items : (items.isa.method_msgSend["count"] || _objj_forward)(items, "count")),
+        listedWindows = [];
+    for (var i = 0; i < count; i++)
+    {
+        var item = items[i];
+        if ((item == null ? item : (item.isa.method_msgSend["action"] || _objj_forward)(item, "action")) === sel_getUid("makeKeyAndOrderFront:") && ((___r1 = (item == null ? item : (item.isa.method_msgSend["target"] || _objj_forward)(item, "target"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(___r1, "isKindOfClass:", (CPWindow.isa.method_msgSend["class"] || _objj_forward)(CPWindow, "class"))))
+            listedWindows.push((item == null ? item : (item.isa.method_msgSend["target"] || _objj_forward)(item, "target")));
+    }
+    return listedWindows;
+    var ___r1;
+}
+
+,["CPArray"]), new objj_method(sel_getUid("_windowsMenuTitle:filename:"), function $CPApplication___windowsMenuTitle_filename_(self, _cmd, aString, isFilename)
+{
+    if (!isFilename)
+        return aString;
+    var directory = (aString == null ? aString : (aString.isa.method_msgSend["stringByDeletingLastPathComponent"] || _objj_forward)(aString, "stringByDeletingLastPathComponent"));
+    if (!(directory == null ? directory : (directory.isa.method_msgSend["length"] || _objj_forward)(directory, "length")))
+        return (aString == null ? aString : (aString.isa.method_msgSend["lastPathComponent"] || _objj_forward)(aString, "lastPathComponent"));
+    return (aString == null ? aString : (aString.isa.method_msgSend["lastPathComponent"] || _objj_forward)(aString, "lastPathComponent")) + " — " + directory;
+}
+
+,["CPString","CPString","BOOL"]), new objj_method(sel_getUid("orderFrontColorPanel:"), function $CPApplication__orderFrontColorPanel_(self, _cmd, aSender)
 {
     ((___r1 = (CPColorPanel.isa.method_msgSend["sharedColorPanel"] || _objj_forward)(CPColorPanel, "sharedColorPanel")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["orderFront:"] || _objj_forward)(___r1, "orderFront:", self));
     var ___r1;
@@ -79551,7 +79684,7 @@ var meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_window
 
 ,["void"])]);
 }
-p;10;CPWindow.jt;209179;@STATIC;1.0;I;25;Foundation/CPCountedSet.jI;33;Foundation/CPNotificationCenter.jI;26;Foundation/CPUndoManager.ji;12;CGGeometry.ji;13;CPAnimation.ji;10;CPCursor.ji;14;CPDragServer.ji;9;CPEvent.ji;18;CPPlatformWindow.ji;22;CPPlatformWindow+DOM.ji;13;CPResponder.ji;10;CPScreen.ji;8;CPText.ji;16;CPTrackingArea.ji;8;CPView.ji;20;CPWindow_Constants.ji;31;_CPBorderlessBridgeWindowView.ji;25;_CPBorderlessWindowView.ji;23;_CPDocModalWindowView.ji;18;_CPHUDWindowView.ji;20;_CPModalWindowView.ji;22;_CPPopoverWindowView.ji;21;_CPShadowWindowView.ji;23;_CPStandardWindowView.ji;22;_CPToolTipWindowView.jt;208574;objj_executeFile("Foundation/CPCountedSet.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPUndoManager.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDragServer.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPPlatformWindow+DOM.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPScreen.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPBorderlessBridgeWindowView.j", YES);objj_executeFile("_CPBorderlessWindowView.j", YES);objj_executeFile("_CPDocModalWindowView.j", YES);objj_executeFile("_CPHUDWindowView.j", YES);objj_executeFile("_CPModalWindowView.j", YES);objj_executeFile("_CPPopoverWindowView.j", YES);objj_executeFile("_CPShadowWindowView.j", YES);objj_executeFile("_CPStandardWindowView.j", YES);objj_executeFile("_CPToolTipWindowView.j", YES);{var the_typedef = objj_allocateTypeDef("_CPWindowFullPlatformWindowSession");
+p;10;CPWindow.jt;212709;@STATIC;1.0;I;25;Foundation/CPCountedSet.jI;33;Foundation/CPNotificationCenter.jI;26;Foundation/CPUndoManager.ji;12;CGGeometry.ji;13;CPAnimation.ji;10;CPCursor.ji;14;CPDragServer.ji;9;CPEvent.ji;18;CPPlatformWindow.ji;22;CPPlatformWindow+DOM.ji;13;CPResponder.ji;10;CPScreen.ji;8;CPText.ji;16;CPTrackingArea.ji;8;CPView.ji;20;CPWindow_Constants.ji;31;_CPBorderlessBridgeWindowView.ji;25;_CPBorderlessWindowView.ji;23;_CPDocModalWindowView.ji;18;_CPHUDWindowView.ji;20;_CPModalWindowView.ji;22;_CPPopoverWindowView.ji;21;_CPShadowWindowView.ji;23;_CPStandardWindowView.ji;22;_CPToolTipWindowView.jt;212104;objj_executeFile("Foundation/CPCountedSet.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPUndoManager.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDragServer.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPPlatformWindow+DOM.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPScreen.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPBorderlessBridgeWindowView.j", YES);objj_executeFile("_CPBorderlessWindowView.j", YES);objj_executeFile("_CPDocModalWindowView.j", YES);objj_executeFile("_CPHUDWindowView.j", YES);objj_executeFile("_CPModalWindowView.j", YES);objj_executeFile("_CPPopoverWindowView.j", YES);objj_executeFile("_CPShadowWindowView.j", YES);objj_executeFile("_CPStandardWindowView.j", YES);objj_executeFile("_CPToolTipWindowView.j", YES);{var the_typedef = objj_allocateTypeDef("_CPWindowFullPlatformWindowSession");
 objj_registerTypeDef(the_typedef);
 }{var the_protocol = objj_allocateProtocol("CPWindowDelegate");
 var aProtocol = objj_getProtocol("CPObject");
@@ -79570,7 +79703,7 @@ var CPWindowSaveImage = nil,
 var CPWindowActionMessageKeys = [CPLeftArrowFunctionKey, CPRightArrowFunctionKey, CPUpArrowFunctionKey, CPDownArrowFunctionKey, CPPageUpFunctionKey, CPPageDownFunctionKey, CPHomeFunctionKey, CPEndFunctionKey, CPEscapeFunctionKey];
 
 {var the_class = objj_allocateClassPair(CPResponder, "CPWindow"),
-meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_platformWindow", "CPPlatformWindow"), new objj_ivar("_windowNumber", "int"), new objj_ivar("_styleMask", "unsigned"), new objj_ivar("_frame", "CGRect"), new objj_ivar("_level", "int"), new objj_ivar("_isVisible", "BOOL"), new objj_ivar("_hasBeenOrderedIn", "BOOL"), new objj_ivar("_isMiniaturized", "BOOL"), new objj_ivar("_isAnimating", "BOOL"), new objj_ivar("_hasShadow", "BOOL"), new objj_ivar("_isMovableByWindowBackground", "BOOL"), new objj_ivar("_isMovable", "BOOL"), new objj_ivar("_constrainsToUsableScreen", "BOOL"), new objj_ivar("_shadowStyle", "unsigned"), new objj_ivar("_showsResizeIndicator", "BOOL"), new objj_ivar("_releasedWhenClosed", "BOOL"), new objj_ivar("_positioningMask", "int"), new objj_ivar("_positioningScreenRect", "CGRect"), new objj_ivar("_isDocumentEdited", "BOOL"), new objj_ivar("_isDocumentSaving", "BOOL"), new objj_ivar("_shadowView", "_CPShadowWindowView"), new objj_ivar("_windowView", "CPView"), new objj_ivar("_contentView", "CPView"), new objj_ivar("_toolbarView", "CPView"), new objj_ivar("_handlingTrackingAreaEvent", "BOOL"), new objj_ivar("_restartHandlingTrackingAreaEvent", "BOOL"), new objj_ivar("_previousMouseEnteredStack", "CPArray"), new objj_ivar("_previousCursorUpdateStack", "CPArray"), new objj_ivar("_mouseEnteredStack", "CPArray"), new objj_ivar("_cursorUpdateStack", "CPArray"), new objj_ivar("_queuedEvents", "CPArray"), new objj_ivar("_trackingAreaViews", "CPArray"), new objj_ivar("_activeCursorTrackingArea", "id"), new objj_ivar("_queuedTrackingEvents", "CPArray"), new objj_ivar("_leftMouseDownView", "CPView"), new objj_ivar("_rightMouseDownView", "CPView"), new objj_ivar("_toolbar", "CPToolbar"), new objj_ivar("_firstResponder", "CPResponder"), new objj_ivar("_initialFirstResponder", "CPResponder"), new objj_ivar("_hasBecomeKeyWindow", "BOOL"), new objj_ivar("_delegate", "id"), new objj_ivar("_implementedDelegateMethods", "unsigned"), new objj_ivar("_title", "CPString"), new objj_ivar("_acceptsMouseMovedEvents", "BOOL"), new objj_ivar("_ignoresMouseEvents", "BOOL"), new objj_ivar("_windowController", "CPWindowController"), new objj_ivar("_minSize", "CGSize"), new objj_ivar("_maxSize", "CGSize"), new objj_ivar("_undoManager", "CPUndoManager"), new objj_ivar("_representedURL", "CPURL"), new objj_ivar("_registeredDraggedTypes", "CPSet"), new objj_ivar("_registeredDraggedTypesArray", "CPArray"), new objj_ivar("_inclusiveRegisteredDraggedTypes", "CPCountedSet"), new objj_ivar("_defaultButton", "CPButton"), new objj_ivar("_defaultButtonEnabled", "BOOL"), new objj_ivar("_defaultButtonDisabledTemporarily", "BOOL"), new objj_ivar("_autorecalculatesKeyViewLoop", "BOOL"), new objj_ivar("_keyViewLoopIsDirty", "BOOL"), new objj_ivar("_sharesChromeWithPlatformWindow", "BOOL"), new objj_ivar("_DOMElement", "DOMElement"), new objj_ivar("_autoresizingMask", "unsigned"), new objj_ivar("_isFullPlatformWindow", "BOOL"), new objj_ivar("_fullPlatformWindowSession", "_CPWindowFullPlatformWindowSession"), new objj_ivar("_parentWindow", "CPWindow"), new objj_ivar("_childWindows", "CPArray"), new objj_ivar("_childOrdering", "CPWindowOrderingMode"), new objj_ivar("_sheetContext", "CPDictionary"), new objj_ivar("_parentView", "CPWindow"), new objj_ivar("_isSheet", "BOOL"), new objj_ivar("_frameAnimation", "_CPWindowFrameAnimation"), new objj_ivar("_frameAnimationDelegate", "_CPWindowFrameAnimationDelegate"), new objj_ivar("_inhibitUpdateTrackingAreas", "BOOL")]);objj_registerClassPair(the_class);
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_platformWindow", "CPPlatformWindow"), new objj_ivar("_windowNumber", "int"), new objj_ivar("_styleMask", "unsigned"), new objj_ivar("_frame", "CGRect"), new objj_ivar("_level", "int"), new objj_ivar("_isVisible", "BOOL"), new objj_ivar("_hasBeenOrderedIn", "BOOL"), new objj_ivar("_isMiniaturized", "BOOL"), new objj_ivar("_isExcludedFromWindowsMenu", "BOOL"), new objj_ivar("_isAnimating", "BOOL"), new objj_ivar("_hasShadow", "BOOL"), new objj_ivar("_isMovableByWindowBackground", "BOOL"), new objj_ivar("_isMovable", "BOOL"), new objj_ivar("_constrainsToUsableScreen", "BOOL"), new objj_ivar("_shadowStyle", "unsigned"), new objj_ivar("_showsResizeIndicator", "BOOL"), new objj_ivar("_releasedWhenClosed", "BOOL"), new objj_ivar("_positioningMask", "int"), new objj_ivar("_positioningScreenRect", "CGRect"), new objj_ivar("_isDocumentEdited", "BOOL"), new objj_ivar("_isDocumentSaving", "BOOL"), new objj_ivar("_shadowView", "_CPShadowWindowView"), new objj_ivar("_windowView", "CPView"), new objj_ivar("_contentView", "CPView"), new objj_ivar("_toolbarView", "CPView"), new objj_ivar("_handlingTrackingAreaEvent", "BOOL"), new objj_ivar("_restartHandlingTrackingAreaEvent", "BOOL"), new objj_ivar("_previousMouseEnteredStack", "CPArray"), new objj_ivar("_previousCursorUpdateStack", "CPArray"), new objj_ivar("_mouseEnteredStack", "CPArray"), new objj_ivar("_cursorUpdateStack", "CPArray"), new objj_ivar("_queuedEvents", "CPArray"), new objj_ivar("_trackingAreaViews", "CPArray"), new objj_ivar("_activeCursorTrackingArea", "id"), new objj_ivar("_queuedTrackingEvents", "CPArray"), new objj_ivar("_leftMouseDownView", "CPView"), new objj_ivar("_rightMouseDownView", "CPView"), new objj_ivar("_toolbar", "CPToolbar"), new objj_ivar("_firstResponder", "CPResponder"), new objj_ivar("_initialFirstResponder", "CPResponder"), new objj_ivar("_hasBecomeKeyWindow", "BOOL"), new objj_ivar("_delegate", "id"), new objj_ivar("_implementedDelegateMethods", "unsigned"), new objj_ivar("_title", "CPString"), new objj_ivar("_acceptsMouseMovedEvents", "BOOL"), new objj_ivar("_ignoresMouseEvents", "BOOL"), new objj_ivar("_windowController", "CPWindowController"), new objj_ivar("_minSize", "CGSize"), new objj_ivar("_maxSize", "CGSize"), new objj_ivar("_undoManager", "CPUndoManager"), new objj_ivar("_representedURL", "CPURL"), new objj_ivar("_registeredDraggedTypes", "CPSet"), new objj_ivar("_registeredDraggedTypesArray", "CPArray"), new objj_ivar("_inclusiveRegisteredDraggedTypes", "CPCountedSet"), new objj_ivar("_defaultButton", "CPButton"), new objj_ivar("_defaultButtonEnabled", "BOOL"), new objj_ivar("_defaultButtonDisabledTemporarily", "BOOL"), new objj_ivar("_autorecalculatesKeyViewLoop", "BOOL"), new objj_ivar("_keyViewLoopIsDirty", "BOOL"), new objj_ivar("_sharesChromeWithPlatformWindow", "BOOL"), new objj_ivar("_DOMElement", "DOMElement"), new objj_ivar("_autoresizingMask", "unsigned"), new objj_ivar("_isFullPlatformWindow", "BOOL"), new objj_ivar("_fullPlatformWindowSession", "_CPWindowFullPlatformWindowSession"), new objj_ivar("_parentWindow", "CPWindow"), new objj_ivar("_childWindows", "CPArray"), new objj_ivar("_childOrdering", "CPWindowOrderingMode"), new objj_ivar("_sheetContext", "CPDictionary"), new objj_ivar("_parentView", "CPWindow"), new objj_ivar("_isSheet", "BOOL"), new objj_ivar("_frameAnimation", "_CPWindowFrameAnimation"), new objj_ivar("_frameAnimationDelegate", "_CPWindowFrameAnimationDelegate"), new objj_ivar("_inhibitUpdateTrackingAreas", "BOOL")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), function $CPWindow___hasBeenOrderedIn(self, _cmd)
 {
     return self._hasBeenOrderedIn;
@@ -80154,6 +80287,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
         if (CPDOMAvailable)
             ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["order:window:relativeTo:"] || _objj_forward)(___r1, "order:window:relativeTo:", orderingMode, self, CPApp._windows[otherWindowNumber]));
     }
+    (self.isa.method_msgSend["_updateWindowsMenuItem"] || _objj_forward)(self, "_updateWindowsMenuItem");
     var ___r1;
 }
 
@@ -80564,10 +80698,42 @@ class_addMethods(the_class, [new objj_method(sel_getUid("_hasBeenOrderedIn"), fu
     self._title = aTitle;
     ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setTitle:"] || _objj_forward)(___r1, "setTitle:", aTitle));
     ((___r1 = self._platformWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setTitle:window:"] || _objj_forward)(___r1, "_setTitle:window:", self._title, self));
+    (self.isa.method_msgSend["_updateWindowsMenuItem"] || _objj_forward)(self, "_updateWindowsMenuItem");
     var ___r1;
 }
 
-,["void","CPString"]), new objj_method(sel_getUid("setTitleWithRepresentedFilename:"), function $CPWindow__setTitleWithRepresentedFilename_(self, _cmd, aFilePath)
+,["void","CPString"]), new objj_method(sel_getUid("isExcludedFromWindowsMenu"), function $CPWindow__isExcludedFromWindowsMenu(self, _cmd)
+{
+    return self._isExcludedFromWindowsMenu;
+}
+
+,["BOOL"]), new objj_method(sel_getUid("setExcludedFromWindowsMenu:"), function $CPWindow__setExcludedFromWindowsMenu_(self, _cmd, shouldBeExcluded)
+{
+    if (self._isExcludedFromWindowsMenu === shouldBeExcluded)
+        return;
+    self._isExcludedFromWindowsMenu = shouldBeExcluded;
+    (self.isa.method_msgSend["_updateWindowsMenuItem"] || _objj_forward)(self, "_updateWindowsMenuItem");
+}
+
+,["void","BOOL"]), new objj_method(sel_getUid("_updateWindowsMenuItem"), function $CPWindow___updateWindowsMenuItem(self, _cmd)
+{
+    if (self._isExcludedFromWindowsMenu || !((___r1 = self._title), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["length"] || _objj_forward)(___r1, "length")))
+        (self.isa.method_msgSend["_removeFromWindowsMenu"] || _objj_forward)(self, "_removeFromWindowsMenu");
+    else if ((self.isa.method_msgSend["canBecomeMainWindow"] || _objj_forward)(self, "canBecomeMainWindow"))
+        (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["changeWindowsItem:title:filename:"] || _objj_forward)(CPApp, "changeWindowsItem:title:filename:", self, self._title, NO));
+    else if (self._isMiniaturized)
+        (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["updateWindowsItem:"] || _objj_forward)(CPApp, "updateWindowsItem:", self));
+    else
+        (self.isa.method_msgSend["_removeFromWindowsMenu"] || _objj_forward)(self, "_removeFromWindowsMenu");
+    var ___r1;
+}
+
+,["void"]), new objj_method(sel_getUid("_removeFromWindowsMenu"), function $CPWindow___removeFromWindowsMenu(self, _cmd)
+{
+    (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["removeWindowsItem:"] || _objj_forward)(CPApp, "removeWindowsItem:", self));
+}
+
+,["void"]), new objj_method(sel_getUid("setTitleWithRepresentedFilename:"), function $CPWindow__setTitleWithRepresentedFilename_(self, _cmd, aFilePath)
 {
     (self.isa.method_msgSend["setRepresentedFilename:"] || _objj_forward)(self, "setRepresentedFilename:", aFilePath);
     (self.isa.method_msgSend["setTitle:"] || _objj_forward)(self, "setTitle:", (aFilePath == null ? aFilePath : (aFilePath.isa.method_msgSend["lastPathComponent"] || _objj_forward)(aFilePath, "lastPathComponent")));
@@ -80978,6 +81144,7 @@ default:
     (self.isa.method_msgSend["_updateMainAndKeyWindows"] || _objj_forward)(self, "_updateMainAndKeyWindows");
     ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["postNotificationName:object:"] || _objj_forward)(___r1, "postNotificationName:object:", CPWindowDidMiniaturizeNotification, self));
     self._isMiniaturized = YES;
+    (self.isa.method_msgSend["_updateWindowsMenuItem"] || _objj_forward)(self, "_updateWindowsMenuItem");
     var ___r1;
 }
 
@@ -80986,6 +81153,7 @@ default:
     ((___r1 = (self.isa.method_msgSend["platformWindow"] || _objj_forward)(self, "platformWindow")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["deminiaturize:"] || _objj_forward)(___r1, "deminiaturize:", sender));
     ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["postNotificationName:object:"] || _objj_forward)(___r1, "postNotificationName:object:", CPWindowDidDeminiaturizeNotification, self));
     self._isMiniaturized = NO;
+    (self.isa.method_msgSend["_updateWindowsMenuItem"] || _objj_forward)(self, "_updateWindowsMenuItem");
     var ___r1;
 }
 
@@ -81056,6 +81224,7 @@ default:
     ((___r1 = self._parentWindow), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeChildWindow:"] || _objj_forward)(___r1, "removeChildWindow:", self));
     (self.isa.method_msgSend["_orderOutRecursively:"] || _objj_forward)(self, "_orderOutRecursively:", NO);
     (self.isa.method_msgSend["_detachFromChildrenClosing:"] || _objj_forward)(self, "_detachFromChildrenClosing:", !self._parentWindow);
+    (self.isa.method_msgSend["_removeFromWindowsMenu"] || _objj_forward)(self, "_removeFromWindowsMenu");
     if (self._releasedWhenClosed)
         ((___r1 = self._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_releaseRecursively"] || _objj_forward)(___r1, "_releaseRecursively"));
     var ___r1;
@@ -81109,6 +81278,7 @@ default:
     self._platformWindow._currentMainWindow = self;
     (self.isa.method_msgSend["_synchronizeSaveMenuWithDocumentSaving"] || _objj_forward)(self, "_synchronizeSaveMenuWithDocumentSaving");
     ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["noteMainWindowStateChanged"] || _objj_forward)(___r1, "noteMainWindowStateChanged"));
+    (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["updateWindowsItem:"] || _objj_forward)(CPApp, "updateWindowsItem:", self));
     ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["postNotificationName:object:"] || _objj_forward)(___r1, "postNotificationName:object:", CPWindowDidBecomeMainNotification, self));
     var ___r1;
 }
@@ -81120,6 +81290,7 @@ default:
         CPApp._mainWindow = nil;
     self._platformWindow._currentMainWindow = nil;
     ((___r1 = self._windowView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["noteMainWindowStateChanged"] || _objj_forward)(___r1, "noteMainWindowStateChanged"));
+    (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["updateWindowsItem:"] || _objj_forward)(CPApp, "updateWindowsItem:", self));
     var ___r1;
 }
 
@@ -81206,7 +81377,17 @@ default:
     (toolbar == null ? toolbar : (toolbar.isa.method_msgSend["setVisible:"] || _objj_forward)(toolbar, "setVisible:", !(toolbar == null ? toolbar : (toolbar.isa.method_msgSend["isVisible"] || _objj_forward)(toolbar, "isVisible"))));
 }
 
-,["void","id"]), new objj_method(sel_getUid("_noteToolbarChanged"), function $CPWindow___noteToolbarChanged(self, _cmd)
+,["void","id"]), new objj_method(sel_getUid("validateUserInterfaceItem:"), function $CPWindow__validateUserInterfaceItem_(self, _cmd, anItem)
+{
+    if ((anItem == null ? anItem : (anItem.isa.method_msgSend["action"] || _objj_forward)(anItem, "action")) !== sel_getUid("toggleToolbarShown:"))
+        return YES;
+    var toolbar = (self.isa.method_msgSend["toolbar"] || _objj_forward)(self, "toolbar");
+    if ((anItem == null ? anItem : (anItem.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(anItem, "respondsToSelector:", sel_getUid("setTitle:"))))
+        (anItem == null ? anItem : (anItem.isa.method_msgSend["setTitle:"] || _objj_forward)(anItem, "setTitle:", (toolbar == null ? toolbar : (toolbar.isa.method_msgSend["isVisible"] || _objj_forward)(toolbar, "isVisible")) ? "Hide Toolbar" : "Show Toolbar"));
+    return !!toolbar;
+}
+
+,["BOOL","id"]), new objj_method(sel_getUid("_noteToolbarChanged"), function $CPWindow___noteToolbarChanged(self, _cmd)
 {
     var frame = CGRectMakeCopy((self.isa.method_msgSend["frame"] || _objj_forward)(self, "frame")),
         newFrame;
