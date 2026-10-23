@@ -29,6 +29,18 @@
 @import "LoremIpsum.j"
 
 
+/*
+    The smallest size, in points, to which the user can resize a document
+    window. The size includes the title bar, the toolbar and the ruler, so
+    the values leave room for a few lines of text below them.
+
+    These values are provisional. Adjust them as the window gains more
+    content, such as an inspector pane.
+*/
+var DocumentWindowMinimumWidth  = 360.0,
+    DocumentWindowMinimumHeight = 240.0;
+
+
 /*!
     Owns DocumentWindow.cib. The window's delegate outlet is connected to
     File's Owner in DocumentWindow.xib, so this controller is the window's
@@ -91,6 +103,24 @@
 - (@action)insertLoremIpsum:(id)aSender
 {
     [textView insertText:[LoremIpsum text]];
+}
+
+/*!
+    Keeps the window at or above its minimum size while the user resizes it.
+
+    This is a CPWindowDelegate method. The window calls it with the size it
+    is about to take, and uses the size that this method returns. Returning
+    a larger size than the one proposed stops the window from shrinking past
+    the minimum, while it still follows the pointer in every other direction.
+
+    A fixed minimum could also be set on the window in Interface Builder.
+    The delegate method is used here because it can compute the minimum, for
+    example from the content of the window.
+*/
+- (CGSize)windowWillResize:(CPWindow)aWindow toSize:(CGSize)aSize
+{
+    return CGSizeMake(Math.max(aSize.width, DocumentWindowMinimumWidth),
+                      Math.max(aSize.height, DocumentWindowMinimumHeight));
 }
 
 @end
