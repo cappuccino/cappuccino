@@ -5,7 +5,7 @@
 	<key>CPBundlePackageType</key>
 	<string>APPL</string>
 	<key>CPBundleIdentifier</key>
-	<string>com.yourorganization.TextEditor</string>
+	<string>dev.cappuccino.TextEditor</string>
 	<key>Main cib file base name</key>
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
@@ -19,9 +19,11 @@
 			<string>Document</string>
 		</dict>
 	</array>
-    <key>CPBundleVersion</key>
-    <string>1.0</string>
-    <key>CPHumanReadableCopyright</key>
-    <string>Copyright © 2026, David Richardson All rights reserved.</string>
+	<key>CPBundleVersion</key>
+	<string>1.0</string>
+	<key>CPHumanReadableCopyright</key>
+	<string>Copyright © 2026, David Richardson, MIT Licensed</string>
+	<key>CFBundleDisplayName</key>
+	<string>TextEdit by Cappuccino</string>
 </dict>
 </plist>

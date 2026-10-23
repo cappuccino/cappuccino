@@ -47,10 +47,9 @@ app (projectName, function(task)
     task.setBuildPath(path.join(buildDir, configuration));
 
     task.setProductName("TextEditor");
-    task.setIdentifier("com.yourcompany.TextEditor");
+    task.setIdentifier("dev.cappuccino.TextEditor");
     task.setVersion("1.0");
     task.setAuthor("David Richardson");
-    task.setEmail("feedback @nospam@ yourcompany.com");
     task.setSummary("TextEditor");
     task.setSources(new FileList("**/*.j").exclude(path.join("Build", "**")).exclude(path.join("Frameworks", "Source", "**")));
     task.setResources(new FileList("Resources/**"));

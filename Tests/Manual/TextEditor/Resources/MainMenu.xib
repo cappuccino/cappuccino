@@ -14,10 +14,10 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <menu title="AMainMenu" systemMenu="main" id="29" userLabel="MainMenu">
             <items>
-                <menuItem title="Text Editor" id="56">
-                    <menu key="submenu" title="Text Editor" systemMenu="apple" id="57">
+                <menuItem title="TextEdit by Cappuccino" id="56">
+                    <menu key="submenu" title="TextEdit by Cappuccino" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About Text Editor" id="58">
+                            <menuItem title="About TextEdit by Cappuccino" id="58">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
@@ -265,7 +265,7 @@
                 <menuItem title="Help" id="103">
                     <menu key="submenu" title="Help" id="106">
                         <items>
-                            <menuItem title="Text Editor Help" keyEquivalent="?" id="111">
+                            <menuItem title="TextEdit by Cappuccino Help" keyEquivalent="?" id="111">
                                 <connections>
                                     <action selector="showHelp:" target="-1" id="360"/>
                                 </connections>
