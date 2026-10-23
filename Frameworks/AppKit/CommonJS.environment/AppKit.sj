@@ -74461,7 +74461,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTextView.jt;236961;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;17;CPTextContainer.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;236743;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
+p;12;CPTextView.jt;238200;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;17;CPTextContainer.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;237982;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
 ;
 ;
 ;
@@ -75087,7 +75087,31 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
     var ___r1, ___r2;
 }
 
-,["void","id"]), new objj_method(sel_getUid("stringValue"), function $CPTextView__stringValue(self, _cmd)
+,["void","id"]), new objj_method(sel_getUid("_registeringUndoManager"), function $CPTextView___registeringUndoManager(self, _cmd)
+{
+    return self._allowsUndo ? ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["undoManager"] || _objj_forward)(___r1, "undoManager")) : nil;
+    var ___r1;
+}
+
+,["CPUndoManager"]), new objj_method(sel_getUid("respondsToSelector:"), function $CPTextView__respondsToSelector_(self, _cmd, aSelector)
+{
+    if (!self._allowsUndo && (aSelector === sel_getUid("undo:") || aSelector === sel_getUid("redo:")))
+        return NO;
+    return (objj_getClass("CPTextView").super_class.method_dtable["respondsToSelector:"] || _objj_forward)(self, "respondsToSelector:", aSelector);
+}
+
+,["BOOL","SEL"]), new objj_method(sel_getUid("validateUserInterfaceItem:"), function $CPTextView__validateUserInterfaceItem_(self, _cmd, anItem)
+{
+    var action = (anItem == null ? anItem : (anItem.isa.method_msgSend["action"] || _objj_forward)(anItem, "action"));
+    if (action === sel_getUid("undo:"))
+        return ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["undoManager"] || _objj_forward)(___r2, "undoManager"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["canUndo"] || _objj_forward)(___r1, "canUndo"));
+    if (action === sel_getUid("redo:"))
+        return ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["undoManager"] || _objj_forward)(___r2, "undoManager"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["canRedo"] || _objj_forward)(___r1, "canRedo"));
+    return YES;
+    var ___r1, ___r2;
+}
+
+,["BOOL","id"]), new objj_method(sel_getUid("stringValue"), function $CPTextView__stringValue(self, _cmd)
 {
     return self._textStorage._string;
 }
@@ -75207,10 +75231,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
 
 ,["void","CPRange"]), new objj_method(sel_getUid("_replaceCharactersInRange:withAttributedString:selectionRange:"), function $CPTextView___replaceCharactersInRange_withAttributedString_selectionRange_(self, _cmd, aRange, aString, selectionRange)
 {
-    ((___r1 = ((___r2 = ((___r3 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r3 == null ? ___r3 : (___r3.isa.method_msgSend["undoManager"] || _objj_forward)(___r3, "undoManager"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(___r2, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_replaceCharactersInRange:withAttributedString:selectionRange:"] || _objj_forward)(___r1, "_replaceCharactersInRange:withAttributedString:selectionRange:", CPMakeRange(aRange.location, (aString == null ? aString : (aString.isa.method_msgSend["length"] || _objj_forward)(aString, "length"))), ((___r2 = self._textStorage), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["attributedSubstringFromRange:"] || _objj_forward)(___r2, "attributedSubstringFromRange:", CPMakeRangeCopy(aRange))), CPMakeRangeCopy(self._selectionRange)));
+    ((___r1 = ((___r2 = (self.isa.method_msgSend["_registeringUndoManager"] || _objj_forward)(self, "_registeringUndoManager")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(___r2, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_replaceCharactersInRange:withAttributedString:selectionRange:"] || _objj_forward)(___r1, "_replaceCharactersInRange:withAttributedString:selectionRange:", CPMakeRange(aRange.location, (aString == null ? aString : (aString.isa.method_msgSend["length"] || _objj_forward)(aString, "length"))), ((___r2 = self._textStorage), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["attributedSubstringFromRange:"] || _objj_forward)(___r2, "attributedSubstringFromRange:", CPMakeRangeCopy(aRange))), CPMakeRangeCopy(self._selectionRange)));
     ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["replaceCharactersInRange:withAttributedString:"] || _objj_forward)(___r1, "replaceCharactersInRange:withAttributedString:", aRange, aString));
     (self.isa.method_msgSend["_fixupReplaceForRange:"] || _objj_forward)(self, "_fixupReplaceForRange:", selectionRange);
-    var ___r1, ___r2, ___r3;
+    var ___r1, ___r2;
 }
 
 ,["void","CPRange","CPString","CPRange"]), new objj_method(sel_getUid("insertText:"), function $CPTextView__insertText_(self, _cmd, aString)
@@ -75223,7 +75247,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         aString = ((___r1 = (CPAttributedString.isa.method_msgSend["alloc"] || _objj_forward)(CPAttributedString, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithString:attributes:"] || _objj_forward)(___r1, "initWithString:attributes:", aString, self._typingAttributes));
     else if (!(self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText"))
         aString = ((___r1 = (CPAttributedString.isa.method_msgSend["alloc"] || _objj_forward)(CPAttributedString, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithString:attributes:"] || _objj_forward)(___r1, "initWithString:attributes:", string, self._typingAttributes));
-    var undoManager = ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["undoManager"] || _objj_forward)(___r1, "undoManager"));
+    var undoManager = (self.isa.method_msgSend["_registeringUndoManager"] || _objj_forward)(self, "_registeringUndoManager");
     (undoManager == null ? undoManager : (undoManager.isa.method_msgSend["setActionName:"] || _objj_forward)(undoManager, "setActionName:", "Replace/insert text"));
     ((___r1 = (undoManager == null ? undoManager : (undoManager.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(undoManager, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_replaceCharactersInRange:withAttributedString:selectionRange:"] || _objj_forward)(___r1, "_replaceCharactersInRange:withAttributedString:selectionRange:", CPMakeRange(self._selectionRange.location, (aString == null ? aString : (aString.isa.method_msgSend["length"] || _objj_forward)(aString, "length"))), ((___r2 = self._textStorage), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["attributedSubstringFromRange:"] || _objj_forward)(___r2, "attributedSubstringFromRange:", CPMakeRangeCopy(self._selectionRange))), CPMakeRangeCopy(self._selectionRange)));
     (self.isa.method_msgSend["willChangeValueForKey:"] || _objj_forward)(self, "willChangeValueForKey:", "objectValue");
@@ -75921,7 +75945,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
     if (!(self.isa.method_msgSend["_didBeginEditing"] || _objj_forward)(self, "_didBeginEditing") || !(self.isa.method_msgSend["shouldChangeTextInRange:replacementString:"] || _objj_forward)(self, "shouldChangeTextInRange:replacementString:", changedRange, ""))
         return;
     changedRange = CPIntersectionRange(CPMakeRange(0, ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["numberOfCharacters"] || _objj_forward)(___r1, "numberOfCharacters"))), changedRange);
-    ((___r1 = ((___r2 = ((___r3 = self._window), ___r3 == null ? ___r3 : (___r3.isa.method_msgSend["undoManager"] || _objj_forward)(___r3, "undoManager"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(___r2, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_replaceCharactersInRange:withAttributedString:selectionRange:"] || _objj_forward)(___r1, "_replaceCharactersInRange:withAttributedString:selectionRange:", CPMakeRange(changedRange.location, 0), ((___r2 = self._textStorage), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["attributedSubstringFromRange:"] || _objj_forward)(___r2, "attributedSubstringFromRange:", CPMakeRangeCopy(changedRange))), CPMakeRangeCopy(self._selectionRange)));
+    ((___r1 = ((___r2 = (self.isa.method_msgSend["_registeringUndoManager"] || _objj_forward)(self, "_registeringUndoManager")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(___r2, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_replaceCharactersInRange:withAttributedString:selectionRange:"] || _objj_forward)(___r1, "_replaceCharactersInRange:withAttributedString:selectionRange:", CPMakeRange(changedRange.location, 0), ((___r2 = self._textStorage), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["attributedSubstringFromRange:"] || _objj_forward)(___r2, "attributedSubstringFromRange:", CPMakeRangeCopy(changedRange))), CPMakeRangeCopy(self._selectionRange)));
     (self.isa.method_msgSend["willChangeValueForKey:"] || _objj_forward)(self, "willChangeValueForKey:", "objectValue");
     ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["deleteCharactersInRange:"] || _objj_forward)(___r1, "deleteCharactersInRange:", CPMakeRangeCopy(changedRange)));
     (self.isa.method_msgSend["didChangeValueForKey:"] || _objj_forward)(self, "didChangeValueForKey:", "objectValue");
@@ -75932,7 +75956,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
     (self.isa.method_msgSend["sizeToFit"] || _objj_forward)(self, "sizeToFit");
     (self.isa.method_msgSend["scrollRangeToVisible:"] || _objj_forward)(self, "scrollRangeToVisible:", CPMakeRange(changedRange.location, 0));
     self._stickyXLocation = self._caret._rect.origin.x;
-    var ___r1, ___r2, ___r3;
+    var ___r1, ___r2;
 }
 
 ,["void","CPRange"]), new objj_method(sel_getUid("cancelOperation:"), function $CPTextView__cancelOperation_(self, _cmd, sender)
@@ -76080,10 +76104,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFont:"] || _objj_forward)(___r1, "setFont:", self._font));
     }
     var currentAttributes = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attributesAtIndex:effectiveRange:"] || _objj_forward)(___r1, "attributesAtIndex:effectiveRange:", range.location, nil)) || self._typingAttributes;
-    ((___r1 = ((___r2 = ((___r3 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r3 == null ? ___r3 : (___r3.isa.method_msgSend["undoManager"] || _objj_forward)(___r3, "undoManager"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(___r2, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFont:range:"] || _objj_forward)(___r1, "setFont:range:", (currentAttributes == null ? currentAttributes : (currentAttributes.isa.method_msgSend["objectForKey:"] || _objj_forward)(currentAttributes, "objectForKey:", CPFontAttributeName)) || (self.isa.method_msgSend["font"] || _objj_forward)(self, "font"), CPMakeRangeCopy(range)));
+    ((___r1 = ((___r2 = (self.isa.method_msgSend["_registeringUndoManager"] || _objj_forward)(self, "_registeringUndoManager")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(___r2, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFont:range:"] || _objj_forward)(___r1, "setFont:range:", (currentAttributes == null ? currentAttributes : (currentAttributes.isa.method_msgSend["objectForKey:"] || _objj_forward)(currentAttributes, "objectForKey:", CPFontAttributeName)) || (self.isa.method_msgSend["font"] || _objj_forward)(self, "font"), CPMakeRangeCopy(range)));
     ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addAttribute:value:range:"] || _objj_forward)(___r1, "addAttribute:value:range:", CPFontAttributeName, font, CPMakeRangeCopy(range)));
     ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_validateLayoutAndGlyphs"] || _objj_forward)(___r1, "_validateLayoutAndGlyphs"));
-    var ___r1, ___r2, ___r3;
+    var ___r1, ___r2;
 }
 
 ,["void","CPFont","CPRange"]), new objj_method(sel_getUid("changeFont:"), function $CPTextView__changeFont_(self, _cmd, sender)
@@ -76092,7 +76116,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         oldFont,
         attributes,
         scrollRange = CPMakeRange(CPMaxRange(self._selectionRange), 0),
-        undoManager = ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["undoManager"] || _objj_forward)(___r1, "undoManager"));
+        undoManager = (self.isa.method_msgSend["_registeringUndoManager"] || _objj_forward)(self, "_registeringUndoManager");
     (undoManager == null ? undoManager : (undoManager.isa.method_msgSend["beginUndoGrouping"] || _objj_forward)(undoManager, "beginUndoGrouping"));
     if ((self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText"))
     {
@@ -76143,7 +76167,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
 ,["void","CPColor"]), new objj_method(sel_getUid("setTextColor:range:"), function $CPTextView__setTextColor_range_(self, _cmd, aColor, range)
 {
     var currentAttributes = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attributesAtIndex:effectiveRange:"] || _objj_forward)(___r1, "attributesAtIndex:effectiveRange:", range.location, nil)) || self._typingAttributes;
-    ((___r1 = ((___r2 = ((___r3 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r3 == null ? ___r3 : (___r3.isa.method_msgSend["undoManager"] || _objj_forward)(___r3, "undoManager"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(___r2, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setTextColor:range:"] || _objj_forward)(___r1, "setTextColor:range:", (currentAttributes == null ? currentAttributes : (currentAttributes.isa.method_msgSend["objectForKey:"] || _objj_forward)(currentAttributes, "objectForKey:", CPForegroundColorAttributeName)) || self._textColor, CPMakeRangeCopy(range)));
+    ((___r1 = ((___r2 = (self.isa.method_msgSend["_registeringUndoManager"] || _objj_forward)(self, "_registeringUndoManager")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(___r2, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setTextColor:range:"] || _objj_forward)(___r1, "setTextColor:range:", (currentAttributes == null ? currentAttributes : (currentAttributes.isa.method_msgSend["objectForKey:"] || _objj_forward)(currentAttributes, "objectForKey:", CPForegroundColorAttributeName)) || self._textColor, CPMakeRangeCopy(range)));
     if (!CPEmptyRange(range))
     {
         if (aColor)
@@ -76154,7 +76178,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
     else
         ((___r1 = self._typingAttributes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setObject:forKey:"] || _objj_forward)(___r1, "setObject:forKey:", aColor, CPForegroundColorAttributeName));
     ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["textStorage:edited:range:changeInLength:invalidatedRange:"] || _objj_forward)(___r1, "textStorage:edited:range:changeInLength:invalidatedRange:", self._textStorage, 0, CPMakeRangeCopy(range), 0, CPMakeRangeCopy(range)));
-    var ___r1, ___r2, ___r3;
+    var ___r1, ___r2;
 }
 
 ,["void","CPColor","CPRange"]), new objj_method(sel_getUid("bold:"), function $CPTextView__bold_(self, _cmd, sender)
@@ -76203,7 +76227,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
     (newStyle == null ? newStyle : (newStyle.isa.method_msgSend["setAlignment:"] || _objj_forward)(newStyle, "setAlignment:", anAlignment));
     if (self._selectionRange.length > 0)
     {
-        var undoManager = ((___r1 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["undoManager"] || _objj_forward)(___r1, "undoManager"));
+        var undoManager = (self.isa.method_msgSend["_registeringUndoManager"] || _objj_forward)(self, "_registeringUndoManager");
         if (undoManager)
         {
             ((___r1 = (undoManager == null ? undoManager : (undoManager.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(undoManager, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setAlignment:"] || _objj_forward)(___r1, "_setAlignment:", (style == null ? style : (style.isa.method_msgSend["alignment"] || _objj_forward)(style, "alignment"))));
@@ -79690,7 +79714,7 @@ var meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_window
 
 ,["void"])]);
 }
-p;10;CPWindow.jt;212709;@STATIC;1.0;I;25;Foundation/CPCountedSet.jI;33;Foundation/CPNotificationCenter.jI;26;Foundation/CPUndoManager.ji;12;CGGeometry.ji;13;CPAnimation.ji;10;CPCursor.ji;14;CPDragServer.ji;9;CPEvent.ji;18;CPPlatformWindow.ji;22;CPPlatformWindow+DOM.ji;13;CPResponder.ji;10;CPScreen.ji;8;CPText.ji;16;CPTrackingArea.ji;8;CPView.ji;20;CPWindow_Constants.ji;31;_CPBorderlessBridgeWindowView.ji;25;_CPBorderlessWindowView.ji;23;_CPDocModalWindowView.ji;18;_CPHUDWindowView.ji;20;_CPModalWindowView.ji;22;_CPPopoverWindowView.ji;21;_CPShadowWindowView.ji;23;_CPStandardWindowView.ji;22;_CPToolTipWindowView.jt;212104;objj_executeFile("Foundation/CPCountedSet.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPUndoManager.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDragServer.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPPlatformWindow+DOM.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPScreen.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPBorderlessBridgeWindowView.j", YES);objj_executeFile("_CPBorderlessWindowView.j", YES);objj_executeFile("_CPDocModalWindowView.j", YES);objj_executeFile("_CPHUDWindowView.j", YES);objj_executeFile("_CPModalWindowView.j", YES);objj_executeFile("_CPPopoverWindowView.j", YES);objj_executeFile("_CPShadowWindowView.j", YES);objj_executeFile("_CPStandardWindowView.j", YES);objj_executeFile("_CPToolTipWindowView.j", YES);{var the_typedef = objj_allocateTypeDef("_CPWindowFullPlatformWindowSession");
+p;10;CPWindow.jt;213239;@STATIC;1.0;I;25;Foundation/CPCountedSet.jI;33;Foundation/CPNotificationCenter.jI;26;Foundation/CPUndoManager.ji;12;CGGeometry.ji;13;CPAnimation.ji;10;CPCursor.ji;14;CPDragServer.ji;9;CPEvent.ji;18;CPPlatformWindow.ji;22;CPPlatformWindow+DOM.ji;13;CPResponder.ji;10;CPScreen.ji;8;CPText.ji;16;CPTrackingArea.ji;8;CPView.ji;20;CPWindow_Constants.ji;31;_CPBorderlessBridgeWindowView.ji;25;_CPBorderlessWindowView.ji;23;_CPDocModalWindowView.ji;18;_CPHUDWindowView.ji;20;_CPModalWindowView.ji;22;_CPPopoverWindowView.ji;21;_CPShadowWindowView.ji;23;_CPStandardWindowView.ji;22;_CPToolTipWindowView.jt;212634;objj_executeFile("Foundation/CPCountedSet.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPUndoManager.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDragServer.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPPlatformWindow+DOM.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPScreen.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPBorderlessBridgeWindowView.j", YES);objj_executeFile("_CPBorderlessWindowView.j", YES);objj_executeFile("_CPDocModalWindowView.j", YES);objj_executeFile("_CPHUDWindowView.j", YES);objj_executeFile("_CPModalWindowView.j", YES);objj_executeFile("_CPPopoverWindowView.j", YES);objj_executeFile("_CPShadowWindowView.j", YES);objj_executeFile("_CPStandardWindowView.j", YES);objj_executeFile("_CPToolTipWindowView.j", YES);{var the_typedef = objj_allocateTypeDef("_CPWindowFullPlatformWindowSession");
 objj_registerTypeDef(the_typedef);
 }{var the_protocol = objj_allocateProtocol("CPWindowDelegate");
 var aProtocol = objj_getProtocol("CPObject");
@@ -81385,12 +81409,18 @@ default:
 
 ,["void","id"]), new objj_method(sel_getUid("validateUserInterfaceItem:"), function $CPWindow__validateUserInterfaceItem_(self, _cmd, anItem)
 {
-    if ((anItem == null ? anItem : (anItem.isa.method_msgSend["action"] || _objj_forward)(anItem, "action")) !== sel_getUid("toggleToolbarShown:"))
+    var action = (anItem == null ? anItem : (anItem.isa.method_msgSend["action"] || _objj_forward)(anItem, "action"));
+    if (action === sel_getUid("undo:"))
+        return ((___r1 = (self.isa.method_msgSend["undoManager"] || _objj_forward)(self, "undoManager")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["canUndo"] || _objj_forward)(___r1, "canUndo"));
+    if (action === sel_getUid("redo:"))
+        return ((___r1 = (self.isa.method_msgSend["undoManager"] || _objj_forward)(self, "undoManager")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["canRedo"] || _objj_forward)(___r1, "canRedo"));
+    if (action !== sel_getUid("toggleToolbarShown:"))
         return YES;
     var toolbar = (self.isa.method_msgSend["toolbar"] || _objj_forward)(self, "toolbar");
     if ((anItem == null ? anItem : (anItem.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(anItem, "respondsToSelector:", sel_getUid("setTitle:"))))
         (anItem == null ? anItem : (anItem.isa.method_msgSend["setTitle:"] || _objj_forward)(anItem, "setTitle:", (toolbar == null ? toolbar : (toolbar.isa.method_msgSend["isVisible"] || _objj_forward)(toolbar, "isVisible")) ? "Hide Toolbar" : "Show Toolbar"));
     return !!toolbar;
+    var ___r1;
 }
 
 ,["BOOL","id"]), new objj_method(sel_getUid("_noteToolbarChanged"), function $CPWindow___noteToolbarChanged(self, _cmd)
