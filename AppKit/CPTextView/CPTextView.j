@@ -688,6 +688,47 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [[[self window] undoManager] redo];
 }
 
+/*
+    @ignore
+    Returns the undo manager that records the text view's changes, or nil when allowsUndo is NO,
+    so that a text view that does not allow undo registers nothing.
+*/
+- (CPUndoManager)_registeringUndoManager
+{
+    return _allowsUndo ? [[self window] undoManager] : nil;
+}
+
+/*!
+    A text view that does not allow undo does not respond to \c -undo: or \c -redo:, so those
+    actions continue along the responder chain to the window, as in Cocoa.
+*/
+- (BOOL)respondsToSelector:(SEL)aSelector
+{
+    if (!_allowsUndo && (aSelector === @selector(undo:) || aSelector === @selector(redo:)))
+        return NO;
+
+    return [super respondsToSelector:aSelector];
+}
+
+/*!
+    Enables the Undo and Redo items only when the undo manager has a change to undo or redo.
+    Every other item is enabled.
+    @param anItem the item to validate
+    @return \c YES if the item should be enabled
+*/
+- (BOOL)validateUserInterfaceItem:(id /*<CPValidatedUserInterfaceItem>*/)anItem
+{
+    var action = [anItem action];
+
+    if (action === @selector(undo:))
+        return [[[self window] undoManager] canUndo];
+
+    if (action === @selector(redo:))
+        return [[[self window] undoManager] canRedo];
+
+    return YES;
+}
+
 
 // MARK: -
 // MARK: Accessors
@@ -818,7 +859,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)_replaceCharactersInRange:(CPRange)aRange withAttributedString:(CPString)aString selectionRange:(CPRange)selectionRange
 {
-    [[[[self window] undoManager] prepareWithInvocationTarget:self]
+    [[[self _registeringUndoManager] prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
                      withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]
                            selectionRange:CPMakeRangeCopy(_selectionRange)];
@@ -840,7 +881,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else if (![self isRichText])
         aString = [[CPAttributedString alloc] initWithString:string attributes:_typingAttributes];
 
-    var undoManager = [[self window] undoManager];
+    var undoManager = [self _registeringUndoManager];
     [undoManager setActionName:@"Replace/insert text"];
 
     [[undoManager prepareWithInvocationTarget:self]
@@ -1692,7 +1733,7 @@ Sets the selection to a range of characters in response to user action.
 
     changedRange = CPIntersectionRange(CPMakeRange(0, [_layoutManager numberOfCharacters]), changedRange);
 
-    [[[_window undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(changedRange.location, 0)
+    [[[self _registeringUndoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(changedRange.location, 0)
                                                                    withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(changedRange)]
                                                                          selectionRange:CPMakeRangeCopy(_selectionRange)];
     [self willChangeValueForKey:@"objectValue"];
@@ -1879,7 +1920,7 @@ Sets the selection to a range of characters in response to user action.
 
     var currentAttributes = [_textStorage attributesAtIndex:range.location effectiveRange:nil] || _typingAttributes;
 
-    [[[[self window] undoManager] prepareWithInvocationTarget:self]
+    [[[self _registeringUndoManager] prepareWithInvocationTarget:self]
                                                       setFont:[currentAttributes objectForKey:CPFontAttributeName] || [self font]
                                                         range:CPMakeRangeCopy(range)];
 
@@ -1893,7 +1934,7 @@ Sets the selection to a range of characters in response to user action.
         oldFont,
         attributes,
         scrollRange = CPMakeRange(CPMaxRange(_selectionRange), 0),
-        undoManager = [[self window] undoManager];
+        undoManager = [self _registeringUndoManager];
 
     [undoManager beginUndoGrouping];
 
@@ -1957,7 +1998,7 @@ Sets the selection to a range of characters in response to user action.
 {
     var currentAttributes = [_textStorage attributesAtIndex:range.location effectiveRange:nil] || _typingAttributes;
 
-    [[[[self window] undoManager] prepareWithInvocationTarget:self]
+    [[[self _registeringUndoManager] prepareWithInvocationTarget:self]
                                                  setTextColor:[currentAttributes objectForKey:CPForegroundColorAttributeName] || _textColor
                                                         range:CPMakeRangeCopy(range)];
 
@@ -2031,7 +2072,7 @@ Sets the selection to a range of characters in response to user action.
     if (_selectionRange.length > 0)
     {
         // Add rudimentary undo support
-        var undoManager = [[self window] undoManager];
+        var undoManager = [self _registeringUndoManager];
         if (undoManager)
         {
              [[undoManager prepareWithInvocationTarget:self]
