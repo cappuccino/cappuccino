@@ -2658,6 +2658,10 @@ Sets the selection to a range of characters in response to user action.
             maxSize = [self maxSize],
             rect = CGRectUnion([_layoutManager boundingRectForGlyphRange:CPMakeRange(0, 1) inTextContainer:_textContainer],
                            [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, [_layoutManager numberOfCharacters] - 2), 1) inTextContainer:_textContainer]);
+
+        // The last character can be taller than its line's text, as an image attachment at the end
+        // of the text is, so the view also fits it.
+        rect = CGRectUnion(rect, [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, [_layoutManager numberOfCharacters] - 1), 1) inTextContainer:_textContainer]);
         if ([_layoutManager extraLineFragmentTextContainer] === _textContainer)
             rect = CGRectUnion(rect, [_layoutManager extraLineFragmentRect]);
 

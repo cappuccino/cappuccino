@@ -15,7 +15,7 @@ TextEditor is a document-based test application and a tutorial. When the app use
 
 ### Text features not yet supported
 
-- **Images in text are not fully tested or complete.** `CPTextAttachment` holds an image as one attachment character, and Edit > Insert Image… and Command-V with an image on the clipboard insert images. Not yet tested: several images inserted at once, fitting a wide image to the text width when the window is resized, copying, pasting and undoing an image within the document, and pasting a screenshot. Not yet implemented: dropping image files on the text view, which needs file access in the drag pasteboard (`_CPDOMDataTransferPasteboard`); pasting images with Edit > Paste from the menu, which reads plain text only; and RTF `\pict` and Markdown `![]()`, so an image is lost when text is copied to another application as RTF.
+- **Images in text are not fully tested or complete.** `CPTextAttachment` holds an image as one attachment character, and Edit > Insert Image… and Command-V with an image on the clipboard insert images. Not yet tested: several images inserted at once, copying, pasting and undoing an image within the document, and pasting a screenshot. Not yet implemented: dropping image files on the text view, which needs file access in the drag pasteboard (`_CPDOMDataTransferPasteboard`); pasting images with Edit > Paste from the menu, which reads plain text only; and RTF `\pict` and Markdown `![]()`, so an image is lost when text is copied to another application as RTF.
 - **Lists are not read from or written to RTF.** `CPTextList` and `textLists` in `CPParagraphStyle` now exist, but the RTF parser and producer do not handle `\listtable`, `\listoverridetable`, `\ls` and `\ilvl`. A list copied as RTF keeps its marker text and indents, but loses its list structure. CPMarkdownParser also writes "- item" as the literal text "  • item", with no list.
 
 ### Text view
@@ -84,4 +84,5 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 - Typing at the end of styled text, and the font panel, use the style of the character before the insertion point.
 - Edit > Copy, Cut and Paste from the menu: plain text moves to and from other applications through the system clipboard; text copied and pasted within the application keeps its style. Command-V pastes text copied in another application, not an earlier copy within the application.
 - Edit > Insert Image…: a JPEG or PNG image is inserted inside the text and at the end of the text.
+- A wide image fits the text width, and scales with the window without growing beyond its natural size. At the end of the text it is not clipped, and the scroll bars follow it.
 - Builds with both the legacy toolchain and capp-build.
