@@ -9,17 +9,6 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - **The "save changes" alert is modal for the whole app.** `CPDocument` shows it with `runModal` (`CPDocument.j:903`). Cocoa attaches it as a sheet to the document window, so that only that document is blocked.
 - **Save cannot work without a server.** With no file URL, Save uses `CPSavePanel`, which falls back to `window.prompt` (`CPSavePanel.j:79`). `CPDocument` then sends an HTTP POST. A storage facade is needed, with local (IndexedDB) and remote (HTTP) implementations.
 
-### Text view and ruler
-
-- **The ruler markers do not update at the right times.** `CPTextView` calls `updateRuler` only when it becomes first responder (`CPTextView.j:547`) and when its typing attributes change (`:1819`). It must also update the ruler when the selection changes and when the ruler is first shown.
-- **Indent markers at location 0 are half hidden.** `_positionMarker:` centres each marker on its location, so a marker at 0 starts at x = -6 (`CPRulerView.j`).
-- **The ruler scale is offset from the text.** The text starts at the text container inset (2 points). The ruler has no origin offset for it.
-- **Text runs past the right edge.** When the text view resizes, the text container takes the full width of the text view and ignores the inset (`CPTextContainer.j:199`).
-- **There is no right indent.** `CPParagraphStyle` stores `tailIndent`, and `CPTextView` handles a moved `CPTailIndent` marker (`CPTextView.j:2630`). But `updateRuler` never creates that marker, and the typesetter ignores `tailIndent`.
-- **nib2cib ignores the ruler settings.** The "Uses Ruler" setting in Interface Builder does not reach the cib.
-- **`CPTextView` has no ruler control API.** `usesRuler`, `setUsesRuler:`, `setRulerVisible:` and `toggleRuler:` do not exist. `isRulerVisible` always returns `NO` (`CPTextView.j:2088`).
-- **`CPRulerMarker` ignores `markerLocation`.** `initWithRulerView:markerLocation:imageValue:representedObject:` uses `imageValue` as the location.
-
 ### Clipboard
 
 - **Paste and Cut from the Edit menu do nothing.** `-[CPTextView paste:]` (`CPTextView.j:521`) and `cut:` (`:1754`) return unless the current event is `CPAppKitDefined`. Only the browser's native clipboard events, from the keyboard, create that event.
@@ -37,6 +26,7 @@ TextEditor is a document-based test application and a tutorial. When the app use
 
 ### nib2cib
 
+- **nib2cib ignores the ruler settings.** The "Uses Ruler" setting in Interface Builder does not reach the cib. `CPTextView` and `CPRulerView` also need to archive their ruler settings.
 - **The content view's resizing setting does not reach the cib.** Making the document window's content view resize with the window in `DocumentWindow.xib` produces a byte-identical `DocumentWindow.cib`. CPView omits the autoresizing mask from the archive only when it is `CPViewNotSizable` (`CPView.j:4016`), so the content view is archived as not sizable. Not yet determined whether `ibtool` or nib2cib drops the setting. The app still behaves correctly, because the window resizes its content view itself.
 
 ### Menus and key equivalents (needs discussion)
@@ -71,4 +61,6 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - The Window menu lists the open document windows, marks the main window with a check mark and brings a window to the front when chosen. Bring All to Front can be tested once documents open in separate browser windows.
 - The About panel shows the display name from `CPBundleDisplayName`.
 - Edit > Allow Undo turns undo on and off for the active document. With undo off, Undo and Redo stay disabled, and the check mark follows the document in front.
+- The ruler: markers follow the paragraph at the selection; first line, head and right indents change the layout as shown; clicking adds a tab stop, and dragging moves or removes one; the Control-click menu on a tab stop appears (its effect is not yet verified, for lack of tabbed text); the ruler's zero lines up with the start of the text, and markers at 0 are fully visible.
+- Text stays inside the visible width, with Cocoa's 5-point line fragment padding.
 - Builds with both the legacy toolchain and capp-build.

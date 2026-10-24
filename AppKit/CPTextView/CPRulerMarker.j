@@ -163,10 +163,11 @@ var CPRulerMarkerRemovalDistance = 16.0;
         point = [_ruler _rulerPointForLocation:_markerLocation],
         baseline = [_ruler baselineLocation];
 
+    // Whole-point positions keep every marker image sharp and identical, wherever it lies on the ruler.
     if ([_ruler orientation] === CPHorizontalRuler)
-        return CGRectMake(point - _imageOrigin.x, baseline - _imageOrigin.y, imageSize.width, imageSize.height);
+        return CGRectMake(ROUND(point - _imageOrigin.x), ROUND(baseline - _imageOrigin.y), imageSize.width, imageSize.height);
 
-    return CGRectMake(baseline - _imageOrigin.x, point - _imageOrigin.y, imageSize.width, imageSize.height);
+    return CGRectMake(ROUND(baseline - _imageOrigin.x), ROUND(point - _imageOrigin.y), imageSize.width, imageSize.height);
 }
 
 /*!

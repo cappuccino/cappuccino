@@ -2561,25 +2561,28 @@ var _CPTextViewRulerSVGImage = function(aWidth, aHeight, aBody)
 };
 
 /*
-    Returns the image and image origin for a marker. Tab stop images sit above the ruler's
-    baseline, with the stop's location at their vertical stroke. The first line indent
-    marker points down at the baseline from above, and the head and tail indent markers
-    point up at it from below.
+    Returns the image and image origin for a marker. Tab stop images are triangles above
+    the ruler's baseline: a left tab's flat side and a right tab's flat side lie at the
+    stop, and a centre or decimal tab points down at it. The first line indent marker
+    points down at the baseline from above, and the head and tail indent markers point up
+    at it from below.
 */
 var _CPTextViewRulerMarkerImage = function(aName)
 {
     if (!CPTextViewRulerMarkerImages)
     {
-        var stroke = 'fill="none" stroke="#505050" stroke-width="1.5"',
+        // Tab stops keep the triangles that the ruler has always shown: pointing right for a left tab, left for a
+        // right tab and down for a centre or decimal tab, with the flat side or the point at the stop.
+        var tab = 'fill="#505050" stroke="#303030" stroke-width="1" stroke-linejoin="round"',
             triangle = 'fill="#606060" stroke="#303030" stroke-width="1"';
 
         CPTextViewRulerMarkerImages = {
-            leftTab:    { image: _CPTextViewRulerSVGImage(9, 8, '<path d="M1.5 0.5 V7.5 H8.5" ' + stroke + '/>'), origin: CGPointMake(1.5, 8.0) },
-            rightTab:   { image: _CPTextViewRulerSVGImage(9, 8, '<path d="M7.5 0.5 V7.5 H0.5" ' + stroke + '/>'), origin: CGPointMake(7.5, 8.0) },
-            centerTab:  { image: _CPTextViewRulerSVGImage(9, 8, '<path d="M4.5 0.5 V7.5 M0.5 7.5 H8.5" ' + stroke + '/>'), origin: CGPointMake(4.5, 8.0) },
-            decimalTab: { image: _CPTextViewRulerSVGImage(9, 8, '<path d="M4.5 0.5 V7.5 M0.5 7.5 H8.5" ' + stroke + '/><circle cx="7" cy="3" r="1" fill="#505050"/>'), origin: CGPointMake(4.5, 8.0) },
-            downIndent: { image: _CPTextViewRulerSVGImage(9, 6, '<path d="M0.5 0.5 H8.5 L4.5 5.5 Z" ' + triangle + '/>'), origin: CGPointMake(4.5, 6.0) },
-            upIndent:   { image: _CPTextViewRulerSVGImage(9, 6, '<path d="M4.5 0.5 L8.5 5.5 H0.5 Z" ' + triangle + '/>'), origin: CGPointMake(4.5, 0.0) }
+            leftTab:    { image: _CPTextViewRulerSVGImage(8, 8, '<path d="M0.5 0.5 L7.5 4 L0.5 7.5 Z" ' + tab + '/>'), origin: CGPointMake(0.0, 8.0) },
+            rightTab:   { image: _CPTextViewRulerSVGImage(8, 8, '<path d="M7.5 0.5 L0.5 4 L7.5 7.5 Z" ' + tab + '/>'), origin: CGPointMake(8.0, 8.0) },
+            centerTab:  { image: _CPTextViewRulerSVGImage(9, 8, '<path d="M0.5 0.5 H8.5 L4.5 7.5 Z" ' + tab + '/>'), origin: CGPointMake(4.0, 8.0) },
+            decimalTab: { image: _CPTextViewRulerSVGImage(9, 8, '<path d="M0.5 0.5 H8.5 L4.5 7.5 Z" ' + tab + '/><circle cx="4.5" cy="3" r="1.2" fill="#f4f4f4"/>'), origin: CGPointMake(4.0, 8.0) },
+            downIndent: { image: _CPTextViewRulerSVGImage(9, 6, '<path d="M0.5 0.5 H8.5 L4.5 5.5 Z" ' + triangle + '/>'), origin: CGPointMake(4.0, 6.0) },
+            upIndent:   { image: _CPTextViewRulerSVGImage(9, 6, '<path d="M4.5 0.5 L8.5 5.5 H0.5 Z" ' + triangle + '/>'), origin: CGPointMake(4.0, 0.0) }
         };
     }
 
