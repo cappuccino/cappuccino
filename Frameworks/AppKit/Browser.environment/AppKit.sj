@@ -72070,7 +72070,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 ,["void","CPEvent"])]);
 }
 (CPFontManager == null ? CPFontManager : (CPFontManager.isa.method_msgSend["setFontPanelFactory:"] || _objj_forward)(CPFontManager, "setFontPanelFactory:", (CPFontPanel.isa.method_msgSend["class"] || _objj_forward)(CPFontPanel, "class")));
-p;17;CPLayoutManager.jt;68575;@STATIC;1.0;i;8;CPText.ji;11;CGContext.ji;14;CPTypesetter.ji;8;CPFont.ji;17;CPCompatibility.jt;68474;objj_executeFile("CPText.j", YES);objj_executeFile("CGContext.j", YES);objj_executeFile("CPTypesetter.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPCompatibility.j", YES);_isNewlineCharacter = function(chr)
+p;17;CPLayoutManager.jt;68995;@STATIC;1.0;i;8;CPText.ji;11;CGContext.ji;14;CPTypesetter.ji;8;CPFont.ji;17;CPCompatibility.jt;68894;objj_executeFile("CPText.j", YES);objj_executeFile("CGContext.j", YES);objj_executeFile("CPTypesetter.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPCompatibility.j", YES);_isNewlineCharacter = function(chr)
 {
     return chr === '\n' || chr === '\r';
 }
@@ -73314,9 +73314,12 @@ class_addMethods(the_class, [new objj_method(sel_getUid("glyphFrames"), function
         if (verticalOffset)
         {
             if (self._runs[i].view)
-                self._runs[i].view._frame.origin.y += verticalOffset;
-            if (self._runs[i].elem)
-                self._runs[i].elem.top = self._runs[i].elem.top + verticalOffset + 'px';
+            {
+                var viewOrigin = ((___r1 = self._runs[i].view), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["frameOrigin"] || _objj_forward)(___r1, "frameOrigin"));
+                ((___r1 = self._runs[i].view), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrameOrigin:"] || _objj_forward)(___r1, "setFrameOrigin:", CGPointMake(viewOrigin.x, viewOrigin.y + verticalOffset)));
+            }
+            if (self._runs[i].elem && self._runs[i].elem.style.top)
+                self._runs[i].elem.style.top = parseFloat(self._runs[i].elem.style.top) + verticalOffset + 'px';
             self._runs[i].DOMpatched = YES;
         }
     }
@@ -73329,6 +73332,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("glyphFrames"), function
     {
         self._glyphsFrames[i].origin.y += verticalOffset;
     }
+    var ___r1;
 }
 
 ,["void","double","unsigned"])]);
