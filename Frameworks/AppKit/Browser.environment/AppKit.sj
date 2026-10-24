@@ -3307,7 +3307,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("invalidateCurrentToolT
 
 ,["Class","unsigned"])]);
 }
-p;8;AppKit.jt;6006;@STATIC;1.0;i;17;_CPObject+Theme.ji;12;_CPToolTip.ji;9;CALayer.ji;12;CGGeometry.ji;17;CPAccordionView.ji;9;CPAlert.ji;13;CPAnimation.ji;20;CPAnimationContext.ji;14;CPAppearance.ji;15;CPApplication.ji;19;CPArrayController.ji;14;CPBezierPath.ji;7;CPBox.ji;11;CPBrowser.ji;10;CPButton.ji;13;CPButtonBar.ji;12;CPCheckBox.ji;7;CPCib.ji;23;CPCibBindingConnector.ji;16;CPCibConnector.ji;23;CPCibControlConnector.ji;20;CPCibHelpConnector.ji;14;CPCibLoading.ji;22;CPCibOutletConnector.ji;33;CPCibRuntimeAttributesConnector.ji;12;CPClipView.ji;18;CPCollectionView.ji;22;CPCollectionViewItem.ji;9;CPColor.ji;14;CPColorPanel.ji;14;CPColorSpace.ji;13;CPColorWell.ji;12;CPComboBox.ji;17;CPCompatibility.ji;11;CPControl.ji;14;CPController.ji;10;CPCookie.ji;10;CPCursor.ji;14;CPDatePicker.ji;12;CPDocument.ji;22;CPDocumentController.ji;9;CPEvent.ji;8;CPFont.ji;15;CPFontManager.ji;12;CPGradient.ji;12;CPGraphics.ji;9;CPImage.ji;13;CPImageView.ji;14;CPKeyBinding.ji;18;CPLevelIndicator.ji;8;CPMenu.ji;12;CPMenuItem.ji;13;CPOpenPanel.ji;15;CPOutlineView.ji;9;CPPanel.ji;14;CPPasteboard.ji;11;CPPopover.ji;15;CPPopUpButton.ji;19;CPPredicateEditor.ji;30;CPPredicateEditorRowTemplate.ji;21;CPProgressIndicator.ji;9;CPRadio.ji;13;CPResponder.ji;14;CPRuleEditor.ji;15;CPRulerMarker.ji;13;CPRulerView.ji;12;CPScroller.ji;14;CPScrollView.ji;15;CPSearchField.ji;19;CPSecureTextField.ji;20;CPSegmentedControl.ji;10;CPShadow.ji;10;CPSlider.ji;9;CPSound.ji;13;CPSplitView.ji;13;CPStackView.ji;11;CPStepper.ji;15;CPTableColumn.ji;13;CPTableView.ji;11;CPTabView.ji;8;CPText.ji;13;CPTextField.ji;12;CPTextList.ji;12;CPTextView.ji;14;CPTokenField.ji;11;CPToolbar.ji;15;CPToolbarItem.ji;16;CPTrackingArea.ji;12;CPTreeNode.ji;26;CPUserDefaultsController.ji;8;CPView.ji;16;CPViewAnimator.ji;17;CPViewAnimation.ji;18;CPViewController.ji;20;CPVisualEffectView.ji;11;CPWebView.ji;10;CPWindow.ji;20;CPWindowController.ji;13;CPWorkspace.ji;13;CPFontPanel.ji;18;CPTreeController.jt;4061;objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("_CPToolTip.j", YES);objj_executeFile("CALayer.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAccordionView.j", YES);objj_executeFile("CPAlert.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPAnimationContext.j", YES);objj_executeFile("CPAppearance.j", YES);objj_executeFile("CPApplication.j", YES);objj_executeFile("CPArrayController.j", YES);objj_executeFile("CPBezierPath.j", YES);objj_executeFile("CPBox.j", YES);objj_executeFile("CPBrowser.j", YES);objj_executeFile("CPButton.j", YES);objj_executeFile("CPButtonBar.j", YES);objj_executeFile("CPCheckBox.j", YES);objj_executeFile("CPCib.j", YES);objj_executeFile("CPCibBindingConnector.j", YES);objj_executeFile("CPCibConnector.j", YES);objj_executeFile("CPCibControlConnector.j", YES);objj_executeFile("CPCibHelpConnector.j", YES);objj_executeFile("CPCibLoading.j", YES);objj_executeFile("CPCibOutletConnector.j", YES);objj_executeFile("CPCibRuntimeAttributesConnector.j", YES);objj_executeFile("CPClipView.j", YES);objj_executeFile("CPCollectionView.j", YES);objj_executeFile("CPCollectionViewItem.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPColorSpace.j", YES);objj_executeFile("CPColorWell.j", YES);objj_executeFile("CPComboBox.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPControl.j", YES);objj_executeFile("CPController.j", YES);objj_executeFile("CPCookie.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDatePicker.j", YES);objj_executeFile("CPDocument.j", YES);objj_executeFile("CPDocumentController.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPGradient.j", YES);objj_executeFile("CPGraphics.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPImageView.j", YES);objj_executeFile("CPKeyBinding.j", YES);objj_executeFile("CPLevelIndicator.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPMenuItem.j", YES);objj_executeFile("CPOpenPanel.j", YES);objj_executeFile("CPOutlineView.j", YES);objj_executeFile("CPPanel.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPPopover.j", YES);objj_executeFile("CPPopUpButton.j", YES);objj_executeFile("CPPredicateEditor.j", YES);objj_executeFile("CPPredicateEditorRowTemplate.j", YES);objj_executeFile("CPProgressIndicator.j", YES);objj_executeFile("CPRadio.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPRuleEditor.j", YES);objj_executeFile("CPRulerMarker.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPScrollView.j", YES);objj_executeFile("CPSearchField.j", YES);objj_executeFile("CPSecureTextField.j", YES);objj_executeFile("CPSegmentedControl.j", YES);objj_executeFile("CPShadow.j", YES);objj_executeFile("CPSlider.j", YES);objj_executeFile("CPSound.j", YES);objj_executeFile("CPSplitView.j", YES);objj_executeFile("CPStackView.j", YES);objj_executeFile("CPStepper.j", YES);objj_executeFile("CPTableColumn.j", YES);objj_executeFile("CPTableView.j", YES);objj_executeFile("CPTabView.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPTextList.j", YES);objj_executeFile("CPTextView.j", YES);objj_executeFile("CPTokenField.j", YES);objj_executeFile("CPToolbar.j", YES);objj_executeFile("CPToolbarItem.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPTreeNode.j", YES);objj_executeFile("CPUserDefaultsController.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPViewAnimator.j", YES);objj_executeFile("CPViewAnimation.j", YES);objj_executeFile("CPViewController.j", YES);objj_executeFile("CPVisualEffectView.j", YES);objj_executeFile("CPWebView.j", YES);objj_executeFile("CPWindow.j", YES);objj_executeFile("CPWindowController.j", YES);objj_executeFile("CPWorkspace.j", YES);objj_executeFile("CPFontPanel.j", YES);objj_executeFile("CPTreeController.j", YES);p;17;CPAccordionView.jt;22553;@STATIC;1.0;I;20;Foundation/CPArray.jI;21;Foundation/CPObject.jI;32;Foundation/CPKeyValueObserving.jI;23;Foundation/CPIndexSet.jI;21;Foundation/CPString.ji;8;CPView.ji;10;CPButton.jt;22364;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPKeyValueObserving.j", NO);objj_executeFile("Foundation/CPIndexSet.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPButton.j", YES);
+p;8;AppKit.jt;6073;@STATIC;1.0;i;17;_CPObject+Theme.ji;12;_CPToolTip.ji;9;CALayer.ji;12;CGGeometry.ji;17;CPAccordionView.ji;9;CPAlert.ji;13;CPAnimation.ji;20;CPAnimationContext.ji;14;CPAppearance.ji;15;CPApplication.ji;19;CPArrayController.ji;14;CPBezierPath.ji;7;CPBox.ji;11;CPBrowser.ji;10;CPButton.ji;13;CPButtonBar.ji;12;CPCheckBox.ji;7;CPCib.ji;23;CPCibBindingConnector.ji;16;CPCibConnector.ji;23;CPCibControlConnector.ji;20;CPCibHelpConnector.ji;14;CPCibLoading.ji;22;CPCibOutletConnector.ji;33;CPCibRuntimeAttributesConnector.ji;12;CPClipView.ji;18;CPCollectionView.ji;22;CPCollectionViewItem.ji;9;CPColor.ji;14;CPColorPanel.ji;14;CPColorSpace.ji;13;CPColorWell.ji;12;CPComboBox.ji;17;CPCompatibility.ji;11;CPControl.ji;14;CPController.ji;10;CPCookie.ji;10;CPCursor.ji;14;CPDatePicker.ji;12;CPDocument.ji;22;CPDocumentController.ji;9;CPEvent.ji;8;CPFont.ji;15;CPFontManager.ji;12;CPGradient.ji;12;CPGraphics.ji;9;CPImage.ji;13;CPImageView.ji;14;CPKeyBinding.ji;18;CPLevelIndicator.ji;8;CPMenu.ji;12;CPMenuItem.ji;13;CPOpenPanel.ji;15;CPOutlineView.ji;9;CPPanel.ji;14;CPPasteboard.ji;11;CPPopover.ji;15;CPPopUpButton.ji;19;CPPredicateEditor.ji;30;CPPredicateEditorRowTemplate.ji;21;CPProgressIndicator.ji;9;CPRadio.ji;13;CPResponder.ji;14;CPRuleEditor.ji;15;CPRulerMarker.ji;13;CPRulerView.ji;12;CPScroller.ji;14;CPScrollView.ji;15;CPSearchField.ji;19;CPSecureTextField.ji;20;CPSegmentedControl.ji;10;CPShadow.ji;10;CPSlider.ji;9;CPSound.ji;13;CPSplitView.ji;13;CPStackView.ji;11;CPStepper.ji;15;CPTableColumn.ji;13;CPTableView.ji;11;CPTabView.ji;8;CPText.ji;18;CPTextAttachment.ji;13;CPTextField.ji;12;CPTextList.ji;12;CPTextView.ji;14;CPTokenField.ji;11;CPToolbar.ji;15;CPToolbarItem.ji;16;CPTrackingArea.ji;12;CPTreeNode.ji;26;CPUserDefaultsController.ji;8;CPView.ji;16;CPViewAnimator.ji;17;CPViewAnimation.ji;18;CPViewController.ji;20;CPVisualEffectView.ji;11;CPWebView.ji;10;CPWindow.ji;20;CPWindowController.ji;13;CPWorkspace.ji;13;CPFontPanel.ji;18;CPTreeController.jt;4105;objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("_CPToolTip.j", YES);objj_executeFile("CALayer.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAccordionView.j", YES);objj_executeFile("CPAlert.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPAnimationContext.j", YES);objj_executeFile("CPAppearance.j", YES);objj_executeFile("CPApplication.j", YES);objj_executeFile("CPArrayController.j", YES);objj_executeFile("CPBezierPath.j", YES);objj_executeFile("CPBox.j", YES);objj_executeFile("CPBrowser.j", YES);objj_executeFile("CPButton.j", YES);objj_executeFile("CPButtonBar.j", YES);objj_executeFile("CPCheckBox.j", YES);objj_executeFile("CPCib.j", YES);objj_executeFile("CPCibBindingConnector.j", YES);objj_executeFile("CPCibConnector.j", YES);objj_executeFile("CPCibControlConnector.j", YES);objj_executeFile("CPCibHelpConnector.j", YES);objj_executeFile("CPCibLoading.j", YES);objj_executeFile("CPCibOutletConnector.j", YES);objj_executeFile("CPCibRuntimeAttributesConnector.j", YES);objj_executeFile("CPClipView.j", YES);objj_executeFile("CPCollectionView.j", YES);objj_executeFile("CPCollectionViewItem.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPColorSpace.j", YES);objj_executeFile("CPColorWell.j", YES);objj_executeFile("CPComboBox.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPControl.j", YES);objj_executeFile("CPController.j", YES);objj_executeFile("CPCookie.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDatePicker.j", YES);objj_executeFile("CPDocument.j", YES);objj_executeFile("CPDocumentController.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPGradient.j", YES);objj_executeFile("CPGraphics.j", YES);objj_executeFile("CPImage.j", YES);objj_executeFile("CPImageView.j", YES);objj_executeFile("CPKeyBinding.j", YES);objj_executeFile("CPLevelIndicator.j", YES);objj_executeFile("CPMenu.j", YES);objj_executeFile("CPMenuItem.j", YES);objj_executeFile("CPOpenPanel.j", YES);objj_executeFile("CPOutlineView.j", YES);objj_executeFile("CPPanel.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPPopover.j", YES);objj_executeFile("CPPopUpButton.j", YES);objj_executeFile("CPPredicateEditor.j", YES);objj_executeFile("CPPredicateEditorRowTemplate.j", YES);objj_executeFile("CPProgressIndicator.j", YES);objj_executeFile("CPRadio.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPRuleEditor.j", YES);objj_executeFile("CPRulerMarker.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPScrollView.j", YES);objj_executeFile("CPSearchField.j", YES);objj_executeFile("CPSecureTextField.j", YES);objj_executeFile("CPSegmentedControl.j", YES);objj_executeFile("CPShadow.j", YES);objj_executeFile("CPSlider.j", YES);objj_executeFile("CPSound.j", YES);objj_executeFile("CPSplitView.j", YES);objj_executeFile("CPStackView.j", YES);objj_executeFile("CPStepper.j", YES);objj_executeFile("CPTableColumn.j", YES);objj_executeFile("CPTableView.j", YES);objj_executeFile("CPTabView.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTextAttachment.j", YES);objj_executeFile("CPTextField.j", YES);objj_executeFile("CPTextList.j", YES);objj_executeFile("CPTextView.j", YES);objj_executeFile("CPTokenField.j", YES);objj_executeFile("CPToolbar.j", YES);objj_executeFile("CPToolbarItem.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPTreeNode.j", YES);objj_executeFile("CPUserDefaultsController.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPViewAnimator.j", YES);objj_executeFile("CPViewAnimation.j", YES);objj_executeFile("CPViewController.j", YES);objj_executeFile("CPVisualEffectView.j", YES);objj_executeFile("CPWebView.j", YES);objj_executeFile("CPWindow.j", YES);objj_executeFile("CPWindowController.j", YES);objj_executeFile("CPWorkspace.j", YES);objj_executeFile("CPFontPanel.j", YES);objj_executeFile("CPTreeController.j", YES);p;17;CPAccordionView.jt;22553;@STATIC;1.0;I;20;Foundation/CPArray.jI;21;Foundation/CPObject.jI;32;Foundation/CPKeyValueObserving.jI;23;Foundation/CPIndexSet.jI;21;Foundation/CPString.ji;8;CPView.ji;10;CPButton.jt;22364;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPKeyValueObserving.j", NO);objj_executeFile("Foundation/CPIndexSet.j", NO);objj_executeFile("Foundation/CPString.j", NO);objj_executeFile("CPView.j", YES);objj_executeFile("CPButton.j", YES);
 {var the_class = objj_allocateClassPair(CPObject, "CPAccordionViewItem"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_identifier", "CPString"), new objj_ivar("_view", "CPView"), new objj_ivar("_label", "CPString")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function $CPAccordionViewItem__identifier(self, _cmd)
@@ -74261,7 +74261,219 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPCoder"])]);
 }
-p;17;CPTextContainer.jt;13910;@STATIC;1.0;I;23;Foundation/CPGeometry.ji;17;CPLayoutManager.jt;13840;objj_executeFile("Foundation/CPGeometry.j", NO);objj_executeFile("CPLayoutManager.j", YES);CPLineSweepLeft = 0;
+p;18;CPTextAttachment.jt;13164;@STATIC;1.0;I;21;Foundation/CPObject.jI;19;Foundation/CPData.jI;33;Foundation/CPNotificationCenter.ji;9;CPImage.ji;13;CPImageView.jt;13025;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("Foundation/CPData.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPImage.j", YES);objj_executeFile("CPImageView.j", YES);_CPTextAttachmentDidChangeSizeNotification = "_CPTextAttachmentDidChangeSizeNotification";
+
+{var the_class = objj_allocateClassPair(CPObject, "CPTextAttachment"),
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_contents", "CPData"), new objj_ivar("_fileType", "CPString"), new objj_ivar("_image", "CPImage"), new objj_ivar("_bounds", "CGRect"), new objj_ivar("_imageView", "CPImageView"), new objj_ivar("_maximumWidth", "float")]);objj_registerClassPair(the_class);
+class_addMethods(the_class, [new objj_method(sel_getUid("initWithData:ofType:"), function $CPTextAttachment__initWithData_ofType_(self, _cmd, contentData, aType)
+{
+    if (self = (objj_getClass("CPTextAttachment").super_class.method_dtable["init"] || _objj_forward)(self, "init"))
+    {
+        self._contents = contentData;
+        self._fileType = aType;
+        self._bounds = CGRectMakeZero();
+        self._maximumWidth = 0.0;
+    }
+    return self;
+}
+
+,["id","CPData","CPString"]), new objj_method(sel_getUid("init"), function $CPTextAttachment__init(self, _cmd)
+{
+    return (self.isa.method_msgSend["initWithData:ofType:"] || _objj_forward)(self, "initWithData:ofType:", nil, nil);
+}
+
+,["id"]), new objj_method(sel_getUid("contents"), function $CPTextAttachment__contents(self, _cmd)
+{
+    return self._contents;
+}
+
+,["CPData"]), new objj_method(sel_getUid("setContents:"), function $CPTextAttachment__setContents_(self, _cmd, contentData)
+{
+    self._contents = contentData;
+    (self.isa.method_msgSend["_setImage:"] || _objj_forward)(self, "_setImage:", nil);
+}
+
+,["void","CPData"]), new objj_method(sel_getUid("fileType"), function $CPTextAttachment__fileType(self, _cmd)
+{
+    return self._fileType;
+}
+
+,["CPString"]), new objj_method(sel_getUid("setFileType:"), function $CPTextAttachment__setFileType_(self, _cmd, aType)
+{
+    self._fileType = aType;
+}
+
+,["void","CPString"]), new objj_method(sel_getUid("image"), function $CPTextAttachment__image(self, _cmd)
+{
+    if (!self._image && self._contents)
+        (self.isa.method_msgSend["_setImage:"] || _objj_forward)(self, "_setImage:", ((___r1 = (CPImage.isa.method_msgSend["alloc"] || _objj_forward)(CPImage, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithContentsOfFile:"] || _objj_forward)(___r1, "initWithContentsOfFile:", (self.isa.method_msgSend["_dataURL"] || _objj_forward)(self, "_dataURL"))));
+    return self._image;
+    var ___r1;
+}
+
+,["CPImage"]), new objj_method(sel_getUid("setImage:"), function $CPTextAttachment__setImage_(self, _cmd, anImage)
+{
+    (self.isa.method_msgSend["_setImage:"] || _objj_forward)(self, "_setImage:", anImage);
+}
+
+,["void","CPImage"]), new objj_method(sel_getUid("bounds"), function $CPTextAttachment__bounds(self, _cmd)
+{
+    return CGRectMakeCopy(self._bounds);
+}
+
+,["CGRect"]), new objj_method(sel_getUid("setBounds:"), function $CPTextAttachment__setBounds_(self, _cmd, aRect)
+{
+    self._bounds = CGRectMakeCopy(aRect);
+    (self.isa.method_msgSend["_updateViewSize"] || _objj_forward)(self, "_updateViewSize");
+}
+
+,["void","CGRect"]), new objj_method(sel_getUid("_attachmentView"), function $CPTextAttachment___attachmentView(self, _cmd)
+{
+    if (!self._imageView)
+    {
+        self._imageView = ((___r1 = (CPImageView.isa.method_msgSend["alloc"] || _objj_forward)(CPImageView, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithFrame:"] || _objj_forward)(___r1, "initWithFrame:", CGRectMakeZero()));
+        ((___r1 = self._imageView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setImageScaling:"] || _objj_forward)(___r1, "setImageScaling:", CPImageScaleAxesIndependently));
+        ((___r1 = self._imageView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setImage:"] || _objj_forward)(___r1, "setImage:", (self.isa.method_msgSend["image"] || _objj_forward)(self, "image")));
+        (self.isa.method_msgSend["_updateViewSize"] || _objj_forward)(self, "_updateViewSize");
+    }
+    return self._imageView;
+    var ___r1;
+}
+
+,["CPView"]), new objj_method(sel_getUid("_setMaximumWidth:"), function $CPTextAttachment___setMaximumWidth_(self, _cmd, aWidth)
+{
+    if (self._maximumWidth === aWidth)
+        return NO;
+    self._maximumWidth = aWidth;
+    return (self.isa.method_msgSend["_updateViewSize"] || _objj_forward)(self, "_updateViewSize");
+}
+
+,["BOOL","float"]), new objj_method(sel_getUid("_displaySize"), function $CPTextAttachment___displaySize(self, _cmd)
+{
+    var size = CGSizeMakeCopy(self._bounds.size);
+    if (!size.width || !size.height)
+    {
+        var image = (self.isa.method_msgSend["image"] || _objj_forward)(self, "image");
+        if (!image || (image == null ? image : (image.isa.method_msgSend["loadStatus"] || _objj_forward)(image, "loadStatus")) !== CPImageLoadStatusCompleted)
+            return CGSizeMakeZero();
+        size = CGSizeMakeCopy((image == null ? image : (image.isa.method_msgSend["size"] || _objj_forward)(image, "size")));
+    }
+    if (self._maximumWidth > 0.0 && size.width > self._maximumWidth)
+    {
+        size.height = ROUND(size.height * self._maximumWidth / size.width);
+        size.width = self._maximumWidth;
+    }
+    return size;
+}
+
+,["CGSize"]), new objj_method(sel_getUid("_updateViewSize"), function $CPTextAttachment___updateViewSize(self, _cmd)
+{
+    if (!self._imageView)
+        return NO;
+    var size = (self.isa.method_msgSend["_displaySize"] || _objj_forward)(self, "_displaySize");
+    if (CGSizeEqualToSize(size, ((___r1 = self._imageView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["frameSize"] || _objj_forward)(___r1, "frameSize"))))
+        return NO;
+    ((___r1 = self._imageView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFrameSize:"] || _objj_forward)(___r1, "setFrameSize:", size));
+    return YES;
+    var ___r1;
+}
+
+,["BOOL"]), new objj_method(sel_getUid("_setImage:"), function $CPTextAttachment___setImage_(self, _cmd, anImage)
+{
+    if (self._image)
+        ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObserver:name:object:"] || _objj_forward)(___r1, "removeObserver:name:object:", self, CPImageDidLoadNotification, self._image));
+    self._image = anImage;
+    if (self._image && ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["loadStatus"] || _objj_forward)(___r1, "loadStatus")) !== CPImageLoadStatusCompleted)
+    {
+        ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addObserver:selector:name:object:"] || _objj_forward)(___r1, "addObserver:selector:name:object:", self, sel_getUid("_imageDidLoad:"), CPImageDidLoadNotification, self._image));
+        ((___r1 = self._image), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["load"] || _objj_forward)(___r1, "load"));
+    }
+    if (self._imageView)
+    {
+        ((___r1 = self._imageView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setImage:"] || _objj_forward)(___r1, "setImage:", self._image));
+        if ((self.isa.method_msgSend["_updateViewSize"] || _objj_forward)(self, "_updateViewSize"))
+            ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["postNotificationName:object:"] || _objj_forward)(___r1, "postNotificationName:object:", _CPTextAttachmentDidChangeSizeNotification, self));
+    }
+    var ___r1;
+}
+
+,["void","CPImage"]), new objj_method(sel_getUid("_imageDidLoad:"), function $CPTextAttachment___imageDidLoad_(self, _cmd, aNotification)
+{
+    ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObserver:name:object:"] || _objj_forward)(___r1, "removeObserver:name:object:", self, CPImageDidLoadNotification, self._image));
+    if (self._imageView)
+        ((___r1 = self._imageView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setImage:"] || _objj_forward)(___r1, "setImage:", self._image));
+    if ((self.isa.method_msgSend["_updateViewSize"] || _objj_forward)(self, "_updateViewSize"))
+        ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["postNotificationName:object:"] || _objj_forward)(___r1, "postNotificationName:object:", _CPTextAttachmentDidChangeSizeNotification, self));
+    var ___r1;
+}
+
+,["void","CPNotification"]), new objj_method(sel_getUid("_dataURL"), function $CPTextAttachment___dataURL(self, _cmd)
+{
+    return "data:" + (self.isa.method_msgSend["_MIMEType"] || _objj_forward)(self, "_MIMEType") + ";base64," + ((___r1 = self._contents), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["base64"] || _objj_forward)(___r1, "base64"));
+    var ___r1;
+}
+
+,["CPString"]), new objj_method(sel_getUid("_MIMEType"), function $CPTextAttachment___MIMEType(self, _cmd)
+{
+    var type = self._fileType || "image/png";
+    if (type.indexOf("/") !== -1)
+        return type;
+    switch(type) {
+        case "public.jpeg":
+            return "image/jpeg";
+        case "com.compuserve.gif":
+            return "image/gif";
+        case "public.svg-image":
+            return "image/svg+xml";
+        case "org.webmproject.webp":
+            return "image/webp";
+default:
+            return "image/png";
+    }
+}
+
+,["CPString"])]);
+class_addMethods(meta_class, [new objj_method(sel_getUid("_attachmentWithDataURL:"), function $CPTextAttachment___attachmentWithDataURL_(self, _cmd, aDataURL)
+{
+    var match = /^data:([^;,]+)(;base64)?,(.*)$/.exec(aDataURL || "");
+    if (!match)
+        return nil;
+    var data = match[2] ? (CPData.isa.method_msgSend["dataWithBase64:"] || _objj_forward)(CPData, "dataWithBase64:", match[3]) : (CPData.isa.method_msgSend["dataWithRawString:"] || _objj_forward)(CPData, "dataWithRawString:", decodeURIComponent(match[3]));
+    return ((___r1 = (self.isa.method_msgSend["alloc"] || _objj_forward)(self, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithData:ofType:"] || _objj_forward)(___r1, "initWithData:ofType:", data, match[1]));
+    var ___r1;
+}
+
+,["CPTextAttachment","CPString"])]);
+}
+var CPTextAttachmentContentsKey = "CPTextAttachmentContents",
+    CPTextAttachmentFileTypeKey = "CPTextAttachmentFileType",
+    CPTextAttachmentBoundsKey = "CPTextAttachmentBounds";
+{
+var the_class = objj_getClass("CPTextAttachment")
+if(!the_class) throw new SyntaxError("*** Could not find definition for class \"CPTextAttachment\"");
+var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_getUid("initWithCoder:"), function $CPTextAttachment__initWithCoder_(self, _cmd, aCoder)
+{
+    var contentsString = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPTextAttachmentContentsKey));
+    self = (self == null ? self : (self.isa.method_msgSend["initWithData:ofType:"] || _objj_forward)(self, "initWithData:ofType:", contentsString ? (CPData.isa.method_msgSend["dataWithBase64:"] || _objj_forward)(CPData, "dataWithBase64:", contentsString) : nil, (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPTextAttachmentFileTypeKey))));
+    if (self && (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["containsValueForKey:"] || _objj_forward)(aCoder, "containsValueForKey:", CPTextAttachmentBoundsKey)))
+        self._bounds = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeRectForKey:"] || _objj_forward)(aCoder, "decodeRectForKey:", CPTextAttachmentBoundsKey));
+    return self;
+}
+
+,["id","CPCoder"]), new objj_method(sel_getUid("encodeWithCoder:"), function $CPTextAttachment__encodeWithCoder_(self, _cmd, aCoder)
+{
+    if (self._contents)
+        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", ((___r1 = self._contents), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["base64"] || _objj_forward)(___r1, "base64")), CPTextAttachmentContentsKey));
+    if (self._fileType)
+        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", self._fileType, CPTextAttachmentFileTypeKey));
+    if (!CGRectIsEmpty(self._bounds))
+        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeRect:forKey:"] || _objj_forward)(aCoder, "encodeRect:forKey:", self._bounds, CPTextAttachmentBoundsKey));
+    var ___r1;
+}
+
+,["void","CPCoder"])]);
+}
+p;17;CPTextContainer.jt;14156;@STATIC;1.0;I;23;Foundation/CPGeometry.ji;17;CPLayoutManager.jt;14086;objj_executeFile("Foundation/CPGeometry.j", NO);objj_executeFile("CPLayoutManager.j", YES);CPLineSweepLeft = 0;
 CPLineSweepRight = 1;
 CPLineSweepDown = 2;
 CPLineSweepUp = 3;
@@ -74343,6 +74555,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("lineFragmentPadding"), 
     self._size = CGSizeMakeCopy(someSize);
     if (oldSize.width != self._size.width)
     {
+        ((___r1 = self._textView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_setTextAttachmentsMaximumWidth:"] || _objj_forward)(___r1, "_setTextAttachmentsMaximumWidth:", MAX(0.0, self._size.width - 2.0 * self._lineFragmentPadding)));
         self._inResizing = YES;
         ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:"] || _objj_forward)(___r1, "invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:", CPMakeRange(0, ((___r2 = ((___r3 = self._layoutManager), ___r3 == null ? ___r3 : (___r3.isa.method_msgSend["textStorage"] || _objj_forward)(___r3, "textStorage"))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["length"] || _objj_forward)(___r2, "length"))), NO, NULL));
         ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_validateLayoutAndGlyphs"] || _objj_forward)(___r1, "_validateLayoutAndGlyphs"));
@@ -74739,7 +74952,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["int","CPTextList","unsigned"])]);
 }
-p;15;CPTextStorage.jt;18030;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.jI;31;Foundation/CPAttributedString.ji;8;CPText.ji;8;CPFont.jt;17912;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPAttributedString.j", NO);objj_executeFile("CPText.j", YES);objj_executeFile("CPFont.j", YES);;
+p;15;CPTextStorage.jt;18947;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.jI;31;Foundation/CPAttributedString.ji;8;CPText.ji;8;CPFont.ji;18;CPTextAttachment.jt;18806;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPAttributedString.j", NO);objj_executeFile("CPText.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPTextAttachment.j", YES);;
 CPTextStorageEditedAttributes = 1;
 CPTextStorageEditedCharacters = 2;
 CPTextStorageWillProcessEditingNotification = "CPTextStorageWillProcessEditingNotification";
@@ -74994,15 +75207,18 @@ class_addMethods(the_class, [new objj_method(sel_getUid("foregroundColor"), func
 }
 
 ,["CPAttributedString","CPRange"])]);
-class_addMethods(meta_class, [new objj_method(sel_getUid("attributedStringWithAttachment:"), function $CPTextStorage__attributedStringWithAttachment_(self, _cmd, someView)
+class_addMethods(meta_class, [new objj_method(sel_getUid("attributedStringWithAttachment:"), function $CPTextStorage__attributedStringWithAttachment_(self, _cmd, anAttachment)
 {
     var result = ((___r1 = (self.isa.method_msgSend["alloc"] || _objj_forward)(self, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithString:"] || _objj_forward)(___r1, "initWithString:", _CPAttachmentCharacterAsString));
-    (result == null ? result : (result.isa.method_msgSend["setAttributes:range:"] || _objj_forward)(result, "setAttributes:range:", (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", [someView], [_CPAttachmentView])), CPMakeRange(0, 1)));
+    if ((anAttachment == null ? anAttachment : (anAttachment.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(anAttachment, "isKindOfClass:", (CPTextAttachment.isa.method_msgSend["class"] || _objj_forward)(CPTextAttachment, "class"))))
+        (result == null ? result : (result.isa.method_msgSend["setAttributes:range:"] || _objj_forward)(result, "setAttributes:range:", (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", [anAttachment, (anAttachment == null ? anAttachment : (anAttachment.isa.method_msgSend["_attachmentView"] || _objj_forward)(anAttachment, "_attachmentView"))], [CPAttachmentAttributeName, _CPAttachmentView])), CPMakeRange(0, 1)));
+    else
+        (result == null ? result : (result.isa.method_msgSend["setAttributes:range:"] || _objj_forward)(result, "setAttributes:range:", (___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc"), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithObjects:forKeys:"] || _objj_forward)(___r1, "initWithObjects:forKeys:", [anAttachment], [_CPAttachmentView])), CPMakeRange(0, 1)));
     return result;
     var ___r1;
 }
 
-,["id","CPView"])]);
+,["id","id"])]);
 }
 {
 var the_class = objj_getClass("CPTextStorage")
@@ -75025,7 +75241,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTextView.jt;318372;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;12;CPTextList.ji;17;CPTextContainer.ji;13;CPRulerView.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;318119;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextList.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
+p;12;CPTextView.jt;332544;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;12;CPTextList.ji;17;CPTextContainer.ji;13;CPRulerView.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;332291;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextList.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
 ;
 ;
 ;
@@ -75348,7 +75564,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         return;
     (objj_getClass("CPTextView").super_class.method_dtable["_removeObservers"] || _objj_forward)(self, "_removeObservers");
     (self.isa.method_msgSend["_setObserveWindowKeyNotifications:"] || _objj_forward)(self, "_setObserveWindowKeyNotifications:", NO);
+    ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObserver:name:object:"] || _objj_forward)(___r1, "removeObserver:name:object:", self, _CPTextAttachmentDidChangeSizeNotification, nil));
     (self.isa.method_msgSend["_removeDelegateObservers"] || _objj_forward)(self, "_removeDelegateObservers");
+    var ___r1;
 }
 
 ,["void"]), new objj_method(sel_getUid("_addObservers"), function $CPTextView___addObservers(self, _cmd)
@@ -75357,8 +75575,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         return;
     (objj_getClass("CPTextView").super_class.method_dtable["_addObservers"] || _objj_forward)(self, "_addObservers");
     (self.isa.method_msgSend["_setObserveWindowKeyNotifications:"] || _objj_forward)(self, "_setObserveWindowKeyNotifications:", YES);
+    ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addObserver:selector:name:object:"] || _objj_forward)(___r1, "addObserver:selector:name:object:", self, sel_getUid("_textAttachmentDidChangeSize:"), _CPTextAttachmentDidChangeSizeNotification, nil));
     (self.isa.method_msgSend["_startObservingClipView"] || _objj_forward)(self, "_startObservingClipView");
     (self.isa.method_msgSend["_addDelegateObservers"] || _objj_forward)(self, "_addDelegateObservers");
+    var ___r1;
 }
 
 ,["void"]), new objj_method(sel_getUid("_addDelegateObservers"), function $CPTextView___addDelegateObservers(self, _cmd)
@@ -75483,7 +75703,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setString:forType:"] || _objj_forward)(pasteboard, "setString:forType:", ((___r1 = stringForPasting._string), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["stringByReplacingOccurrencesOfString:withString:"] || _objj_forward)(___r1, "stringByReplacingOccurrencesOfString:withString:", _CPAttachmentCharacterAsString, '')), CPStringPboardType));
         (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setString:forType:"] || _objj_forward)(pasteboard, "setString:forType:", richData, CPRTFPboardType));
         (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setString:forType:"] || _objj_forward)(pasteboard, "setString:forType:", self._previousSelectionGranularity + '', _CPSmartPboardType));
-        (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setString:forType:"] || _objj_forward)(pasteboard, "setString:forType:", ((___r1 = (CPKeyedArchiver.isa.method_msgSend["archivedDataWithRootObject:"] || _objj_forward)(CPKeyedArchiver, "archivedDataWithRootObject:", stringForPasting)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["rawString"] || _objj_forward)(___r1, "rawString")), _CPASPboardType));
+        (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setString:forType:"] || _objj_forward)(pasteboard, "setString:forType:", ((___r1 = (CPKeyedArchiver.isa.method_msgSend["archivedDataWithRootObject:"] || _objj_forward)(CPKeyedArchiver, "archivedDataWithRootObject:", (self.isa.method_msgSend["_attributedStringForArchiving:"] || _objj_forward)(self, "_attributedStringForArchiving:", stringForPasting))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["rawString"] || _objj_forward)(___r1, "rawString")), _CPASPboardType));
     }
     else
     {
@@ -75732,6 +75952,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         return (self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText");
     if (action === sel_getUid("pasteRuler:"))
         return (self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText") && (self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable") && !!((___r1 = (CPPasteboard.isa.method_msgSend["pasteboardWithName:"] || _objj_forward)(CPPasteboard, "pasteboardWithName:", CPRulerPboard)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["availableTypeFromArray:"] || _objj_forward)(___r1, "availableTypeFromArray:", [CPRulerPboardType]));
+    if (action === sel_getUid("insertImage:"))
+        return (self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable") && (self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText");
     if (action === sel_getUid("changeTextList:"))
     {
         if ((anItem == null ? anItem : (anItem.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(anItem, "respondsToSelector:", sel_getUid("setState:"))))
@@ -75892,6 +76114,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         aString = ((___r1 = (CPAttributedString.isa.method_msgSend["alloc"] || _objj_forward)(CPAttributedString, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithString:attributes:"] || _objj_forward)(___r1, "initWithString:attributes:", aString, self._typingAttributes));
     else if (!(self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText"))
         aString = ((___r1 = (CPAttributedString.isa.method_msgSend["alloc"] || _objj_forward)(CPAttributedString, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithString:attributes:"] || _objj_forward)(___r1, "initWithString:attributes:", string, self._typingAttributes));
+    else
+        (self.isa.method_msgSend["_prepareTextAttachmentsInAttributedString:"] || _objj_forward)(self, "_prepareTextAttachmentsInAttributedString:", aString);
     var undoManager = (self.isa.method_msgSend["_registeringUndoManager"] || _objj_forward)(self, "_registeringUndoManager");
     (undoManager == null ? undoManager : (undoManager.isa.method_msgSend["setActionName:"] || _objj_forward)(undoManager, "setActionName:", "Replace/insert text"));
     ((___r1 = (undoManager == null ? undoManager : (undoManager.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(undoManager, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_replaceCharactersInRange:withAttributedString:selectionRange:"] || _objj_forward)(___r1, "_replaceCharactersInRange:withAttributedString:selectionRange:", CPMakeRange(self._selectionRange.location, (aString == null ? aString : (aString.isa.method_msgSend["length"] || _objj_forward)(aString, "length"))), ((___r2 = self._textStorage), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["attributedSubstringFromRange:"] || _objj_forward)(___r2, "attributedSubstringFromRange:", CPMakeRangeCopy(self._selectionRange))), CPMakeRangeCopy(self._selectionRange)));
@@ -77150,6 +77374,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         var minSize = (self.isa.method_msgSend["minSize"] || _objj_forward)(self, "minSize"),
             maxSize = (self.isa.method_msgSend["maxSize"] || _objj_forward)(self, "maxSize"),
             rect = CGRectUnion(((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["boundingRectForGlyphRange:inTextContainer:"] || _objj_forward)(___r1, "boundingRectForGlyphRange:inTextContainer:", CPMakeRange(0, 1), self._textContainer)), ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["boundingRectForGlyphRange:inTextContainer:"] || _objj_forward)(___r1, "boundingRectForGlyphRange:inTextContainer:", CPMakeRange(MAX(0, ((___r2 = self._layoutManager), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["numberOfCharacters"] || _objj_forward)(___r2, "numberOfCharacters")) - 2), 1), self._textContainer)));
+        rect = CGRectUnion(rect, ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["boundingRectForGlyphRange:inTextContainer:"] || _objj_forward)(___r1, "boundingRectForGlyphRange:inTextContainer:", CPMakeRange(MAX(0, ((___r2 = self._layoutManager), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["numberOfCharacters"] || _objj_forward)(___r2, "numberOfCharacters")) - 1), 1), self._textContainer)));
         if (((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["extraLineFragmentTextContainer"] || _objj_forward)(___r1, "extraLineFragmentTextContainer")) === self._textContainer)
             rect = CGRectUnion(rect, ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["extraLineFragmentRect"] || _objj_forward)(___r1, "extraLineFragmentRect")));
         if (self._isHorizontallyResizable)
@@ -78347,6 +78572,159 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 {
 var the_class = objj_getClass("CPTextView")
 if(!the_class) throw new SyntaxError("*** Could not find definition for class \"CPTextView\"");
+var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_getUid("insertImage:"), function $CPTextView__insertImage_(self, _cmd, aSender)
+{
+    if (!CPDOMAvailable || !(self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText") || !(self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable"))
+        return;
+    var textView = self,
+        input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.multiple = YES;
+    input.onchange =     function()
+    {
+        (textView == null ? textView : (textView.isa.method_msgSend["_insertImageFiles:"] || _objj_forward)(textView, "_insertImageFiles:", input.files));
+    };
+    input.click();
+}
+
+,["void","id"]), new objj_method(sel_getUid("_insertImageFiles:"), function $CPTextView___insertImageFiles_(self, _cmd, someFiles)
+{
+    var files = [];
+    for (var i = 0; i < someFiles.length; i++)
+        if (someFiles[i].type.indexOf("image/") === 0)
+            files.push(someFiles[i]);
+    if (!files.length)
+        return;
+    var attachments = new Array(files.length);
+    for (var i = 0; i < files.length; i++)
+        (self.isa.method_msgSend["_readImageFile:intoAttachments:atIndex:"] || _objj_forward)(self, "_readImageFile:intoAttachments:atIndex:", files[i], attachments, i);
+}
+
+,["void","FileList"]), new objj_method(sel_getUid("_readImageFile:intoAttachments:atIndex:"), function $CPTextView___readImageFile_intoAttachments_atIndex_(self, _cmd, aFile, someAttachments, anIndex)
+{
+    var textView = self,
+        reader = new FileReader();
+    reader.onload =     function()
+    {
+        someAttachments[anIndex] = (CPTextAttachment.isa.method_msgSend["_attachmentWithDataURL:"] || _objj_forward)(CPTextAttachment, "_attachmentWithDataURL:", reader.result) || (CPNull.isa.method_msgSend["null"] || _objj_forward)(CPNull, "null");
+        (textView == null ? textView : (textView.isa.method_msgSend["_insertAttachmentsIfComplete:"] || _objj_forward)(textView, "_insertAttachmentsIfComplete:", someAttachments));
+    };
+    reader.onerror =     function()
+    {
+        CPLog.warn("CPTextView: the image file " + aFile.name + " could not be read.");
+        someAttachments[anIndex] = (CPNull.isa.method_msgSend["null"] || _objj_forward)(CPNull, "null");
+        (textView == null ? textView : (textView.isa.method_msgSend["_insertAttachmentsIfComplete:"] || _objj_forward)(textView, "_insertAttachmentsIfComplete:", someAttachments));
+    };
+    reader.readAsDataURL(aFile);
+}
+
+,["void","File","CPArray","unsigned"]), new objj_method(sel_getUid("_insertAttachmentsIfComplete:"), function $CPTextView___insertAttachmentsIfComplete_(self, _cmd, someAttachments)
+{
+    for (var i = 0; i < someAttachments.length; i++)
+        if (!someAttachments[i])
+            return;
+    var result = ((___r1 = (CPAttributedString.isa.method_msgSend["alloc"] || _objj_forward)(CPAttributedString, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithString:"] || _objj_forward)(___r1, "initWithString:", ""));
+    for (var i = 0; i < someAttachments.length; i++)
+    {
+        var attachment = someAttachments[i];
+        if (attachment === (CPNull.isa.method_msgSend["null"] || _objj_forward)(CPNull, "null"))
+            continue;
+        var attachmentString = (CPTextStorage.isa.method_msgSend["attributedStringWithAttachment:"] || _objj_forward)(CPTextStorage, "attributedStringWithAttachment:", attachment),
+            attributes = ((___r1 = self._typingAttributes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["mutableCopy"] || _objj_forward)(___r1, "mutableCopy"));
+        (attributes == null ? attributes : (attributes.isa.method_msgSend["addEntriesFromDictionary:"] || _objj_forward)(attributes, "addEntriesFromDictionary:", (attachmentString == null ? attachmentString : (attachmentString.isa.method_msgSend["attributesAtIndex:effectiveRange:"] || _objj_forward)(attachmentString, "attributesAtIndex:effectiveRange:", 0, nil))));
+        (attachmentString == null ? attachmentString : (attachmentString.isa.method_msgSend["setAttributes:range:"] || _objj_forward)(attachmentString, "setAttributes:range:", attributes, CPMakeRange(0, 1)));
+        (result == null ? result : (result.isa.method_msgSend["appendAttributedString:"] || _objj_forward)(result, "appendAttributedString:", attachmentString));
+    }
+    if ((result == null ? result : (result.isa.method_msgSend["length"] || _objj_forward)(result, "length")))
+        (self.isa.method_msgSend["insertText:"] || _objj_forward)(self, "insertText:", result);
+    ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+    var ___r1;
+}
+
+,["void","CPArray"]), new objj_method(sel_getUid("_textAttachmentMaximumWidth"), function $CPTextView___textAttachmentMaximumWidth(self, _cmd)
+{
+    return MAX(0.0, ((___r1 = self._textContainer), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["containerSize"] || _objj_forward)(___r1, "containerSize")).width - 2.0 * ((___r1 = self._textContainer), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["lineFragmentPadding"] || _objj_forward)(___r1, "lineFragmentPadding")));
+    var ___r1;
+}
+
+,["float"]), new objj_method(sel_getUid("_prepareTextAttachmentsInAttributedString:"), function $CPTextView___prepareTextAttachmentsInAttributedString_(self, _cmd, anAttributedString)
+{
+    var string = (anAttributedString == null ? anAttributedString : (anAttributedString.isa.method_msgSend["string"] || _objj_forward)(anAttributedString, "string")),
+        maximumWidth = (self.isa.method_msgSend["_textAttachmentMaximumWidth"] || _objj_forward)(self, "_textAttachmentMaximumWidth"),
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+    while (index !== -1)
+    {
+        var attachment = (anAttributedString == null ? anAttributedString : (anAttributedString.isa.method_msgSend["attribute:atIndex:effectiveRange:"] || _objj_forward)(anAttributedString, "attribute:atIndex:effectiveRange:", CPAttachmentAttributeName, index, nil));
+        if ((attachment == null ? attachment : (attachment.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(attachment, "isKindOfClass:", (CPTextAttachment.isa.method_msgSend["class"] || _objj_forward)(CPTextAttachment, "class"))))
+        {
+            (attachment == null ? attachment : (attachment.isa.method_msgSend["_setMaximumWidth:"] || _objj_forward)(attachment, "_setMaximumWidth:", maximumWidth));
+            (anAttributedString == null ? anAttributedString : (anAttributedString.isa.method_msgSend["addAttribute:value:range:"] || _objj_forward)(anAttributedString, "addAttribute:value:range:", _CPAttachmentView, (attachment == null ? attachment : (attachment.isa.method_msgSend["_attachmentView"] || _objj_forward)(attachment, "_attachmentView")), CPMakeRange(index, 1)));
+        }
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+}
+
+,["void","CPAttributedString"]), new objj_method(sel_getUid("_setTextAttachmentsMaximumWidth:"), function $CPTextView___setTextAttachmentsMaximumWidth_(self, _cmd, aWidth)
+{
+    var string = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["string"] || _objj_forward)(___r1, "string")),
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+    while (index !== -1)
+    {
+        var attachment = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attribute:atIndex:effectiveRange:"] || _objj_forward)(___r1, "attribute:atIndex:effectiveRange:", CPAttachmentAttributeName, index, nil));
+        if ((attachment == null ? attachment : (attachment.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(attachment, "isKindOfClass:", (CPTextAttachment.isa.method_msgSend["class"] || _objj_forward)(CPTextAttachment, "class"))))
+            (attachment == null ? attachment : (attachment.isa.method_msgSend["_setMaximumWidth:"] || _objj_forward)(attachment, "_setMaximumWidth:", aWidth));
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+    var ___r1;
+}
+
+,["void","float"]), new objj_method(sel_getUid("_indexOfTextAttachment:"), function $CPTextView___indexOfTextAttachment_(self, _cmd, anAttachment)
+{
+    var string = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["string"] || _objj_forward)(___r1, "string")),
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+    while (index !== -1)
+    {
+        if (((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attribute:atIndex:effectiveRange:"] || _objj_forward)(___r1, "attribute:atIndex:effectiveRange:", CPAttachmentAttributeName, index, nil)) === anAttachment)
+            return index;
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+    return CPNotFound;
+    var ___r1;
+}
+
+,["unsigned","CPTextAttachment"]), new objj_method(sel_getUid("_textAttachmentDidChangeSize:"), function $CPTextView___textAttachmentDidChangeSize_(self, _cmd, aNotification)
+{
+    var index = (self.isa.method_msgSend["_indexOfTextAttachment:"] || _objj_forward)(self, "_indexOfTextAttachment:", (aNotification == null ? aNotification : (aNotification.isa.method_msgSend["object"] || _objj_forward)(aNotification, "object")));
+    if (index === CPNotFound)
+        return;
+    ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:"] || _objj_forward)(___r1, "invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:", CPMakeRange(index, 1), NO, nil));
+    ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_validateLayoutAndGlyphs"] || _objj_forward)(___r1, "_validateLayoutAndGlyphs"));
+    (self.isa.method_msgSend["sizeToFit"] || _objj_forward)(self, "sizeToFit");
+    (self.isa.method_msgSend["setNeedsDisplay:"] || _objj_forward)(self, "setNeedsDisplay:", YES);
+    var ___r1;
+}
+
+,["void","CPNotification"]), new objj_method(sel_getUid("_attributedStringForArchiving:"), function $CPTextView___attributedStringForArchiving_(self, _cmd, anAttributedString)
+{
+    var result = ((___r1 = (CPAttributedString.isa.method_msgSend["alloc"] || _objj_forward)(CPAttributedString, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithAttributedString:"] || _objj_forward)(___r1, "initWithAttributedString:", anAttributedString)),
+        string = (result == null ? result : (result.isa.method_msgSend["string"] || _objj_forward)(result, "string")),
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+    while (index !== -1)
+    {
+        if (((___r1 = (result == null ? result : (result.isa.method_msgSend["attribute:atIndex:effectiveRange:"] || _objj_forward)(result, "attribute:atIndex:effectiveRange:", CPAttachmentAttributeName, index, nil))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(___r1, "isKindOfClass:", (CPTextAttachment.isa.method_msgSend["class"] || _objj_forward)(CPTextAttachment, "class"))))
+            (result == null ? result : (result.isa.method_msgSend["removeAttribute:range:"] || _objj_forward)(result, "removeAttribute:range:", _CPAttachmentView, CPMakeRange(index, 1)));
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+    return result;
+    var ___r1;
+}
+
+,["CPAttributedString","CPAttributedString"])]);
+}
+{
+var the_class = objj_getClass("CPTextView")
+if(!the_class) throw new SyntaxError("*** Could not find definition for class \"CPTextView\"");
 var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_getUid("_delegateRespondsToShouldChangeTypingAttributesToAttributes"), function $CPTextView___delegateRespondsToShouldChangeTypingAttributesToAttributes(self, _cmd)
 {
     return self._delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes;
@@ -78722,6 +79100,11 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("isDeadKey:"), function
         var currentFirstResponder = ((___r1 = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["keyWindow"] || _objj_forward)(CPApp, "keyWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["firstResponder"] || _objj_forward)(___r1, "firstResponder"));
         var pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard");
         var nativePlainText = nativeClipboard.getData('text/plain');
+        if (!nativePlainText && nativeClipboard.files && nativeClipboard.files.length && (currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(currentFirstResponder, "respondsToSelector:", sel_getUid("_insertImageFiles:"))) && (currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["isRichText"] || _objj_forward)(currentFirstResponder, "isRichText")))
+        {
+            (currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["_insertImageFiles:"] || _objj_forward)(currentFirstResponder, "_insertImageFiles:", nativeClipboard.files));
+            return;
+        }
         if (nativePlainText && !_CPTextViewClipboardStringsMatch(nativePlainText, (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", CPStringPboardType))))
         {
             (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["declareTypes:owner:"] || _objj_forward)(pasteboard, "declareTypes:owner:", [CPStringPboardType], nil));
