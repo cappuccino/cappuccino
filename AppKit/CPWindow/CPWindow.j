@@ -2007,8 +2007,14 @@ CPTexturedBackgroundWindowMask
             return [[self firstResponder] keyUp:anEvent];
 
         case CPKeyDown:
+            // Tab moves to the next key view, unless the first responder takes plain Tab itself, as an
+            // editable text view does to insert a tab character. Control-Tab always moves on, as in Cocoa.
+            var modifierFlags = [anEvent modifierFlags],
+                firstResponderTakesTab = !(modifierFlags & (CPShiftKeyMask | CPControlKeyMask)) && [[self firstResponder] _wantsTabKey];
+
             if ([anEvent charactersIgnoringModifiers] === CPTabCharacter &&
-                !([anEvent modifierFlags] & (CPAlternateKeyMask | CPCommandKeyMask)))
+                !(modifierFlags & (CPAlternateKeyMask | CPCommandKeyMask)) &&
+                !firstResponderTakesTab)
             {
                 if ([anEvent modifierFlags] & CPShiftKeyMask)
                     [self selectPreviousKeyView:self];
@@ -2043,6 +2049,10 @@ CPTexturedBackgroundWindowMask
             {
                 return;
             }
+
+            // A first responder that takes Tab gets the key, and the browser must not also move its own focus.
+            if (firstResponderTakesTab && [anEvent charactersIgnoringModifiers] === CPTabCharacter && CPDOMAvailable)
+                [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
 
             [[self firstResponder] keyDown:anEvent];
 

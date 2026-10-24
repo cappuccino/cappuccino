@@ -290,6 +290,16 @@ CPDeleteForwardKeyCode  = 46;
 {
 }
 
+/*
+    @ignore
+    Returns YES if the receiver handles the Tab key itself, as an editable text view does by
+    inserting a tab character. Otherwise the window uses Tab to move to the next key view.
+*/
+- (BOOL)_wantsTabKey
+{
+    return NO;
+}
+
 - (void)insertBackTab:(id)sender
 {
 }

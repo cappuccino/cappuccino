@@ -1839,6 +1839,16 @@ Sets the selection to a range of characters in response to user action.
     [self insertText:@"\t"];
 }
 
+/*
+    @ignore
+    As in Cocoa, an editable text view takes the Tab key and inserts a tab character.
+    Control-Tab still moves to the next key view.
+*/
+- (BOOL)_wantsTabKey
+{
+    return [self isEditable];
+}
+
 - (void)insertTabIgnoringFieldEditor:(id)sender
 {
     [self insertTab:sender];
