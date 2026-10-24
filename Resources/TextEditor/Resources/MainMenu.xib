@@ -139,6 +139,12 @@
                                     <action selector="insertLoremIpsum:" target="-1" id="KPb-XT-4QY"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Insert Table Example" id="z4w-XM-UpE">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="insertTableExample:" target="-1" id="Zlf-O9-Ry2"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Insert Image…" id="Ew2-J6-C29">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
