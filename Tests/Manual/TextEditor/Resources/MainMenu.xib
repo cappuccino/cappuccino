@@ -597,6 +597,80 @@
                                     <action selector="runToolbarCustomizationPalette:" target="-1" id="365"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="1rm-Jd-YMr"/>
+                            <menuItem title="Actual Size" keyEquivalent="0" id="jhH-NV-2Ab">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="zoomToActualSize:" target="-1" id="VO9-re-O0i"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Zoom In" keyEquivalent="." id="Soa-tt-vUl">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="zoomIn:" target="-1" id="cyL-Ic-hJD"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Zoom Out" keyEquivalent="," id="nOn-Xu-5A8">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="zoomOut:" target="-1" id="V1I-2e-rSt"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Zoom Level" id="nmn-2j-0ly">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Zoom Level" id="Rh2-Z6-s8v">
+                                    <items>
+                                        <menuItem title="25%" tag="25" id="Qbl-nV-eU5">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="zoomToLevel:" target="-1" id="ylk-WR-FwV"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="50%" tag="50" id="QD5-wT-lnV">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="zoomToLevel:" target="-1" id="lgW-iJ-Xxg"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="75%" tag="75" id="nWv-Bb-jZ9">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="zoomToLevel:" target="-1" id="RPR-B7-7W1"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="100%" tag="100" id="KwK-D7-kuE">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="zoomToLevel:" target="-1" id="H7q-qa-UGn"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="125%" tag="125" id="qR5-be-XPV">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="zoomToLevel:" target="-1" id="eFM-ep-yYw"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="150%" tag="150" id="t4r-9t-fgU">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="zoomToLevel:" target="-1" id="raR-xi-9bV"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="175%" tag="175" id="v2C-Sa-xkV">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="zoomToLevel:" target="-1" id="vJp-E3-hdZ"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="200%" tag="200" id="tB2-Nv-dii">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="zoomToLevel:" target="-1" id="cra-IB-AC3"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>
