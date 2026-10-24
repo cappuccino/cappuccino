@@ -90,4 +90,5 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 - Edit > Insert Table Example: the sample table appears between the surrounding sentences, with its header row and its bold and italic cells.
 - Copy and paste within TextEditor with Command-C and Command-V, in one document and between documents: images, tables, including text edited in their cells, and lists are kept.
 - Table cells can be edited, as a first pass.
+- Pasting text with several images and a table: the table appears in place at once, and tables, images and text below a change move with their lines.
 - Builds with both the legacy toolchain and capp-build.
