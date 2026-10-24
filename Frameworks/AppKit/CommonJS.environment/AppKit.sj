@@ -68886,11 +68886,141 @@ CPRuleEditorNestingModeSimple = 3;
 objj_registerTypeDef(the_typedef);
 }CPRuleEditorRowTypeSimple = 0;
 CPRuleEditorRowTypeCompound = 1;
-p;14;_CPRTFParser.jt;63365;@STATIC;1.0;I;31;Foundation/CPAttributedString.jI;23;Foundation/CPGeometry.ji;15;CPTextStorage.ji;15;CPFontManager.ji;18;CPParagraphStyle.ji;24;_CPTableTextAttachment.jt;63189;objj_executeFile("Foundation/CPAttributedString.j", NO);objj_executeFile("Foundation/CPGeometry.j", NO);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("_CPTableTextAttachment.j", YES);var hexTable = [];
+p;14;_CPRTFParser.jt;73237;@STATIC;1.0;I;31;Foundation/CPAttributedString.jI;23;Foundation/CPGeometry.ji;15;CPTextStorage.ji;15;CPFontManager.ji;18;CPParagraphStyle.ji;24;_CPTableTextAttachment.ji;12;CPTextList.jt;73044;objj_executeFile("Foundation/CPAttributedString.j", NO);objj_executeFile("Foundation/CPGeometry.j", NO);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("_CPTableTextAttachment.j", YES);objj_executeFile("CPTextList.j", YES);var hexTable = [];
 var cp1252Map = {0x80: 0x20AC, 0x82: 0x201A, 0x83: 0x0192, 0x84: 0x201E, 0x85: 0x2026, 0x86: 0x2020, 0x87: 0x2021, 0x88: 0x02C6, 0x89: 0x2030, 0x8A: 0x0160, 0x8B: 0x2039, 0x8C: 0x0152, 0x8E: 0x017D, 0x91: 0x2018, 0x92: 0x2019, 0x93: 0x201C, 0x94: 0x201D, 0x95: 0x2022, 0x96: 0x2013, 0x97: 0x2014, 0x98: 0x02DC, 0x99: 0x2122, 0x9A: 0x0161, 0x9B: 0x203A, 0x9C: 0x0153, 0x9E: 0x017E, 0x9F: 0x0178};
+var _CPRTFNumberFormatNames = {0: "decimal", 1: "upper-roman", 2: "lower-roman", 3: "upper-alpha", 4: "lower-alpha"},
+    _CPRTFBulletFormats = {"\u2022": "{disc}", "\u25E6": "{circle}", "\u25AA": "{square}", "\u2043": "{hyphen}", "\u25C6": "{diamond}", "\u2713": "{check}", "\u25A1": "{box}"};
+var _CPRTFGroupEnd = function(rtf, anOpenIndex)
+{
+    var depth = 0;
+    for (var i = anOpenIndex; i < rtf.length; i++)
+    {
+        var character = rtf.charAt(i);
+        if (character === "\\")
+            i++;
+        else if (character === "{")
+            depth++;
+        else if (character === "}" && --depth === 0)
+            return i + 1;
+    }
+    return rtf.length;
+};
+var _CPRTFGroups = function(rtf, aPattern)
+{
+    var groups = [],
+        match;
+    aPattern.lastIndex = 0;
+    while (match = aPattern.exec(rtf))
+    {
+        var end = _CPRTFGroupEnd(rtf, match.index);
+        groups.push(rtf.substring(match.index, end));
+        aPattern.lastIndex = end;
+    }
+    return groups;
+};
+var _CPRTFLevelTextParts = function(aLevelText)
+{
+    var parts = [],
+        literal = "",
+        i = 0;
+    while (i < aLevelText.length)
+    {
+        var character = aLevelText.charAt(i);
+        if (character === ";")
+            break;
+        if (character !== "\\")
+        {
+            literal += character;
+            i++;
+            continue;
+        }
+        var hexMatch = /^\\'([0-9a-fA-F]{2})/.exec(aLevelText.substring(i)),
+            unicodeMatch = /^\\u(-?\d+) ?\??/.exec(aLevelText.substring(i)),
+            wordMatch = /^\\[a-z]+-?\d* ?/.exec(aLevelText.substring(i));
+        if (hexMatch)
+        {
+            var value = parseInt(hexMatch[1], 16);
+            if (value < 9)
+            {
+                if (literal)
+                    parts.push(literal);
+                literal = "";
+                parts.push(value);
+            }
+            else
+                literal += String.fromCharCode(value);
+            i += hexMatch[0].length;
+        }
+        else if (unicodeMatch)
+        {
+            var code = parseInt(unicodeMatch[1], 10);
+            literal += String.fromCharCode(code < 0 ? code + 65536 : code);
+            i += unicodeMatch[0].length;
+        }
+        else if (wordMatch)
+            i += wordMatch[0].length;
+        else
+        {
+            literal += aLevelText.charAt(i + 1);
+            i += 2;
+        }
+    }
+    if (literal)
+        parts.push(literal);
+    return parts;
+};
+var _CPRTFListLevelDefinition = function(aLevelGroup, aLevel)
+{
+    var markerMatch = /\{\\\*\\levelmarker ?((?:\\.|[^\\}])*)\}/.exec(aLevelGroup),
+        startMatch = /\\levelstartat(-?\d+)/.exec(aLevelGroup),
+        numberFormatMatch = /\\levelnfc(\d+)/.exec(aLevelGroup),
+        levelTextMatch = /\{\\leveltext(?:\\leveltemplateid-?\d+)? ?\\'[0-9a-fA-F]{2}((?:\\.|[^\\}])*)\}/.exec(aLevelGroup),
+        parts = levelTextMatch ? _CPRTFLevelTextParts(levelTextMatch[1]) : [],
+        prepends = /\\levelprepend(?![a-z])/.test(aLevelGroup),
+        format = nil;
+    for (var i = 0; i < parts.length; i++)
+        if (typeof parts[i] === "number" && parts[i] < aLevel)
+            prepends = YES;
+    if (markerMatch)
+        format = markerMatch[1].replace(/\\([\\{}])/g, "$1");
+    else
+    {
+        var numberFormat = numberFormatMatch ? parseInt(numberFormatMatch[1], 10) : 0;
+        if (numberFormat === 23)
+        {
+            var bullet = parts.join("");
+            format = _CPRTFBulletFormats[bullet] || bullet || CPTextListMarkerDisc;
+        }
+        else
+        {
+            var name = "{" + (_CPRTFNumberFormatNames[numberFormat] || "decimal") + "}",
+                prefix = "",
+                suffix = "",
+                found = NO,
+                seenEnclosingNumber = NO;
+            for (var i = 0; i < parts.length; i++)
+            {
+                if (parts[i] === aLevel)
+                    found = YES;
+                else if (typeof parts[i] === "number")
+                {
+                    if (found)
+                        break;
+                    seenEnclosingNumber = YES;
+                }
+                else if (found)
+                    suffix += parts[i];
+                else if (!seenEnclosingNumber)
+                    prefix += parts[i];
+            }
+            format = prefix + name + suffix;
+        }
+    }
+    return {format: format, options: prepends ? CPTextListPrependEnclosingMarker : 0, start: startMatch ? parseInt(startMatch[1], 10) : 1};
+};
 
 {var the_class = objj_allocateClassPair(CPObject, "_RTFAttribute"),
-meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_range", "CPRange"), new objj_ivar("paragraph", "CPParagraphStyle"), new objj_ivar("fgColour", "CPColor"), new objj_ivar("bgColour", "CPColor"), new objj_ivar("ulColour", "CPColor"), new objj_ivar("fontName", "CPString"), new objj_ivar("fontSize", "unsigned"), new objj_ivar("bold", "BOOL"), new objj_ivar("italic", "BOOL"), new objj_ivar("underline", "BOOL"), new objj_ivar("strikethrough", "BOOL"), new objj_ivar("script", "BOOL"), new objj_ivar("_tabChanged", "BOOL"), new objj_ivar("_nextTabType", "CPTabStopType"), new objj_ivar("superscript", "int"), new objj_ivar("baselineOffset", "float")]);objj_registerClassPair(the_class);
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_range", "CPRange"), new objj_ivar("paragraph", "CPParagraphStyle"), new objj_ivar("fgColour", "CPColor"), new objj_ivar("bgColour", "CPColor"), new objj_ivar("ulColour", "CPColor"), new objj_ivar("fontName", "CPString"), new objj_ivar("fontSize", "unsigned"), new objj_ivar("bold", "BOOL"), new objj_ivar("italic", "BOOL"), new objj_ivar("underline", "BOOL"), new objj_ivar("strikethrough", "BOOL"), new objj_ivar("script", "BOOL"), new objj_ivar("_tabChanged", "BOOL"), new objj_ivar("_nextTabType", "CPTabStopType"), new objj_ivar("superscript", "int"), new objj_ivar("baselineOffset", "float"), new objj_ivar("_firstLineOffset", "float"), new objj_ivar("_listNumber", "int"), new objj_ivar("_listLevel", "int")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_RTFAttribute__init(self, _cmd)
 {
     if (self = (objj_getClass("_RTFAttribute").super_class.method_dtable["init"] || _objj_forward)(self, "init"))
@@ -68921,6 +69051,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_RTFA
     mynew._nextTabType = self._nextTabType;
     mynew.superscript = self.superscript;
     mynew.baselineOffset = self.baselineOffset;
+    mynew._firstLineOffset = self._firstLineOffset;
+    mynew._listNumber = self._listNumber;
+    mynew._listLevel = self._listLevel;
     return mynew;
     var ___r1;
 }
@@ -68968,6 +69101,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_RTFA
     self.paragraph = ((___r1 = (CPParagraphStyle.isa.method_msgSend["defaultParagraphStyle"] || _objj_forward)(CPParagraphStyle, "defaultParagraphStyle")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["mutableCopy"] || _objj_forward)(___r1, "mutableCopy"));
     self._tabChanged = NO;
     self._nextTabType = CPLeftTabStopType;
+    self._firstLineOffset = 0.0;
+    self._listNumber = 0;
+    self._listLevel = 0;
     var ___r1;
 }
 
@@ -69036,7 +69172,7 @@ var kRTFParserType_char = 0,
 var kRgsymRtf = {"b": ["b", 1, false, kRTFParserType_prop, "propBold"], "ul": ["ul", 1, false, kRTFParserType_prop, "propUnderline"], "i": ["i", 1, false, kRTFParserType_prop, "propItalic"], "super": ["super", 1, true, kRTFParserType_prop, "propSuper"], "sub": ["sub", 1, true, kRTFParserType_prop, "propSub"], "nosupersub": ["nosupersub", 1, true, kRTFParserType_prop, "propNoSuperSub"], "up": ["up", 6, false, kRTFParserType_prop, "propUp"], "dn": ["dn", 6, false, kRTFParserType_prop, "propDn"], "plain": ["plain", 0, false, kRTFParserType_prop, "propPlain"], "pgnucltr": ["pgnucltr", "pgULtr", true, kRTFParserType_prop, "propPgnFormat"], "pgnlcltr": ["pgnlcltr", "pgLLtr", true, kRTFParserType_prop, "propPgnFormat"], "qc": ["qc", "justC", true, kRTFParserType_prop, "propJust"], "ql": ["ql", "justL", true, kRTFParserType_prop, "propJust"], "qr": ["qr", "justR", true, kRTFParserType_prop, "propJust"], "qj": ["qj", "justF", true, kRTFParserType_prop, "propJust"], "paperw": ["paperw", 12240, false, kRTFParserType_prop, "propXaPage"], "paperh": ["paperh", 15480, false, kRTFParserType_prop, "propYaPage"], "margl": ["margl", 1800, false, kRTFParserType_prop, "propXaLeft"], "margr": ["margr", 1800, false, kRTFParserType_prop, "propXaRight"], "margt": ["margt", 1440, false, kRTFParserType_prop, "propYaTop"], "margb": ["margb", 1440, false, kRTFParserType_prop, "propYaBottom"], "pgnstart": ["pgnstart", 1, true, kRTFParserType_prop, "propPgnStart"], "facingp": ["facingp", 1, true, kRTFParserType_prop, "propFacingp"], "landscape": ["landscape", 1, true, kRTFParserType_prop, "propLandscape"], "par": ["par", 0, false, kRTFParserType_char, "\n"], "pard": ["pard", 0, false, kRTFParserType_prop, "propDefaultPara"], "\0x0a": ["\0x0a", 0, false, kRTFParserType_char, "\n"], "\0x0d": ["\0x0d", 0, false, kRTFParserType_char, ""], "tab": ["tab", 0, false, kRTFParserType_char, "\t"], "ldblquote": ["ldblquote", 0, false, kRTFParserType_char, '"'], "rdblquote": ["rdblquote", 0, false, kRTFParserType_char, '"'], "bin": ["bin", 0, false, kRTFParserType_spec, "ipfnBin"], "*": ["*", 0, false, kRTFParserType_spec, "ipfnDestSkip"], "'": ["'", 0, false, kRTFParserType_spec, "ipfnHex"], "author": ["author", 0, false, kRTFParserType_dest, "destSkip"], "buptim": ["buptim", 0, false, kRTFParserType_dest, "destSkip"], "colortbl": ["colortbl", 0, false, kRTFParserType_dest, "destSkip"], "comment": ["comment", 0, false, kRTFParserType_dest, "destSkip"], "creatim": ["creatim", 0, false, kRTFParserType_dest, "destSkip"], "doccomm": ["doccomm", 0, false, kRTFParserType_dest, "destSkip"], "fonttbl": ["fonttbl", 0, false, kRTFParserType_dest, "destSkip"], "footer": ["footer", 0, false, kRTFParserType_dest, "destSkip"], "footerf": ["footerf", 0, false, kRTFParserType_dest, "destSkip"], "footerl": ["footerl", 0, false, kRTFParserType_dest, "destSkip"], "footerr": ["footerr", 0, false, kRTFParserType_dest, "destSkip"], "footnote": ["footnote", 0, false, kRTFParserType_dest, "destSkip"], "ftncn": ["ftncn", 0, false, kRTFParserType_dest, "destSkip"], "ftnsep": ["ftnsep", 0, false, kRTFParserType_dest, "destSkip"], "ftnsepc": ["ftnsepc", 0, false, kRTFParserType_dest, "destSkip"], "fprq": ["fprq", 0, false, kRTFParserType_dest, "destSkip"], "rquote": ["rquote", 0, false, kRTFParserType_char, "'"], "header": ["header", 0, false, kRTFParserType_dest, "destSkip"], "headerf": ["headerf", 0, false, kRTFParserType_dest, "destSkip"], "headerl": ["headerl", 0, false, kRTFParserType_dest, "destSkip"], "headerr": ["headerr", 0, false, kRTFParserType_dest, "destSkip"], "info": ["info", 0, false, kRTFParserType_dest, "destSkip"], "keywords": ["keywords", 0, false, kRTFParserType_dest, "destSkip"], "operator": ["operator", 0, false, kRTFParserType_dest, "destSkip"], "pict": ["pict", 0, false, kRTFParserType_dest, "destSkip"], "printim": ["printim", 0, false, kRTFParserType_dest, "destSkip"], "private1": ["private1", 0, false, kRTFParserType_dest, "destSkip"], "revtim": ["revtim", 0, false, kRTFParserType_dest, "destSkip"], "rxe": ["rxe", 0, false, kRTFParserType_dest, "destSkip"], "stylesheet": ["stylesheet", 0, false, kRTFParserType_dest, "destSkip"], "subject": ["subject", 0, false, kRTFParserType_dest, "destSkip"], "tc": ["tc", 0, false, kRTFParserType_dest, "destSkip"], "title": ["title", 0, false, kRTFParserType_dest, "destSkip"], "txe": ["txe", 0, false, kRTFParserType_dest, "destSkip"], "xe": ["xe", 0, false, kRTFParserType_dest, "destSkip"], "[": ["[", 0, false, kRTFParserType_char, '['], " ": [" ", 0, false, kRTFParserType_char, ' '], "]": ["]", 0, false, kRTFParserType_char, ']'], "{": ["{", 0, false, kRTFParserType_char, '{'], "}": ["}", 0, false, kRTFParserType_char, '}'], "\\": ["\\", 0, false, kRTFParserType_char, '\\'], "trowd": ["trowd", 0, false, kRTFParserType_spec, "ipfnTrowd"], "cell": ["cell", 0, false, kRTFParserType_spec, "ipfnCell"], "row": ["row", 0, false, kRTFParserType_spec, "ipfnRow"], "cellx": ["cellx", 0, false, kRTFParserType_spec, "ipfnCellx"], "intbl": ["intbl", 0, false, kRTFParserType_spec, "ipfnIntbl"]};
 
 {var the_class = objj_allocateClassPair(CPObject, "_CPRTFParser"),
-meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_codePage", "CPString"), new objj_ivar("_paper", "CGSize"), new objj_ivar("_rtf", "CPString"), new objj_ivar("_curState", "unsigned"), new objj_ivar("_states", "CPArray"), new objj_ivar("_currentParseIndex", "unsigned"), new objj_ivar("_hexreturn", "BOOL"), new objj_ivar("_currentRun", "_RTFAttribute"), new objj_ivar("_result", "CPAttributedString"), new objj_ivar("_colorArray", "CPArray"), new objj_ivar("_fontArray", "CPArray"), new objj_ivar("_freename", "CPString"), new objj_ivar("_parsingFontTable", "BOOL"), new objj_ivar("_keywordIsControlWord", "BOOL"), new objj_ivar("_inTableActive", "BOOL"), new objj_ivar("_waitingForNextRow", "BOOL"), new objj_ivar("_tableRows", "CPMutableArray"), new objj_ivar("_currentRow", "CPMutableArray"), new objj_ivar("_currentCellText", "CPString")]);objj_registerClassPair(the_class);
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_codePage", "CPString"), new objj_ivar("_paper", "CGSize"), new objj_ivar("_rtf", "CPString"), new objj_ivar("_curState", "unsigned"), new objj_ivar("_states", "CPArray"), new objj_ivar("_currentParseIndex", "unsigned"), new objj_ivar("_hexreturn", "BOOL"), new objj_ivar("_currentRun", "_RTFAttribute"), new objj_ivar("_result", "CPAttributedString"), new objj_ivar("_colorArray", "CPArray"), new objj_ivar("_fontArray", "CPArray"), new objj_ivar("_freename", "CPString"), new objj_ivar("_parsingFontTable", "BOOL"), new objj_ivar("_keywordIsControlWord", "BOOL"), new objj_ivar("_inTableActive", "BOOL"), new objj_ivar("_waitingForNextRow", "BOOL"), new objj_ivar("_tableRows", "CPMutableArray"), new objj_ivar("_currentRow", "CPMutableArray"), new objj_ivar("_currentCellText", "CPString"), new objj_ivar("_listDefinitions", "Object"), new objj_ivar("_listOverrides", "Object"), new objj_ivar("_textListsByOverride", "Object"), new objj_ivar("_unicodeFallbackCount", "int"), new objj_ivar("_fallbackCharactersToSkip", "int")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPRTFParser__init(self, _cmd)
 {
     if (self = (objj_getClass("_CPRTFParser").super_class.method_dtable["init"] || _objj_forward)(self, "init"))
@@ -69058,6 +69194,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPRT
         self._tableRows = nil;
         self._currentRow = nil;
         self._currentCellText = "";
+        self._listDefinitions = {};
+        self._listOverrides = {};
+        self._textListsByOverride = {};
+        self._unicodeFallbackCount = 1;
+        self._fallbackCharactersToSkip = 0;
         self._currentRun = (_RTFAttribute.isa.method_msgSend["new"] || _objj_forward)(_RTFAttribute, "new");
     }
     return self;
@@ -69439,12 +69580,40 @@ default:
                 break;
             case "fi":
                 if (self._currentRun)
-                    ((___r1 = self._currentRun.paragraph), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFirstLineHeadIndent:"] || _objj_forward)(___r1, "setFirstLineHeadIndent:", parseInt(param) / 20.0));
+                {
+                    self._currentRun._firstLineOffset = parseInt(param) / 20.0;
+                    ((___r1 = self._currentRun.paragraph), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFirstLineHeadIndent:"] || _objj_forward)(___r1, "setFirstLineHeadIndent:", ((___r2 = self._currentRun.paragraph), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["headIndent"] || _objj_forward)(___r2, "headIndent")) + self._currentRun._firstLineOffset));
+                }
                 break;
             case "li":
                 if (self._currentRun)
+                {
                     ((___r1 = self._currentRun.paragraph), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setHeadIndent:"] || _objj_forward)(___r1, "setHeadIndent:", parseInt(param) / 20.0));
+                    ((___r1 = self._currentRun.paragraph), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setFirstLineHeadIndent:"] || _objj_forward)(___r1, "setFirstLineHeadIndent:", ((___r2 = self._currentRun.paragraph), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["headIndent"] || _objj_forward)(___r2, "headIndent")) + self._currentRun._firstLineOffset));
+                }
                 break;
+            case "ls":
+                if (self._currentRun)
+                {
+                    self._currentRun._listNumber = parseInt(param);
+                    (self.isa.method_msgSend["_applyTextListsToCurrentRun"] || _objj_forward)(self, "_applyTextListsToCurrentRun");
+                }
+                break;
+            case "ilvl":
+                if (self._currentRun)
+                {
+                    self._currentRun._listLevel = parseInt(param);
+                    (self.isa.method_msgSend["_applyTextListsToCurrentRun"] || _objj_forward)(self, "_applyTextListsToCurrentRun");
+                }
+                break;
+            case "uc":
+                self._unicodeFallbackCount = parseInt(param) || 0;
+                break;
+            case "u":
+                var code = parseInt(param);
+                if (self._curState === 0)
+                    self._fallbackCharactersToSkip = self._unicodeFallbackCount;
+                return String.fromCharCode(code < 0 ? code + 65536 : code);
             case "ri":
                 if (self._currentRun)
                     ((___r1 = self._currentRun.paragraph), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setTailIndent:"] || _objj_forward)(___r1, "setTailIndent:", parseInt(param) / 20.0));
@@ -69471,7 +69640,7 @@ default:
         }
         return '';
     }
-    var ___r1;
+    var ___r1, ___r2;
 }
 
 ,["CPString","CPString","CPString","BOOL"]), new objj_method(sel_getUid("_parseKeyword:length:"), function $_CPRTFParser___parseKeyword_length_(self, _cmd, rtf, len)
@@ -69514,7 +69683,55 @@ default:
     return (self.isa.method_msgSend["_translateKeyword:parameter:fParameter:"] || _objj_forward)(self, "_translateKeyword:parameter:fParameter:", keyword, param, fParam);
 }
 
-,["CPString","CPString","unsigned"]), new objj_method(sel_getUid("_appendPlainString:"), function $_CPRTFParser___appendPlainString_(self, _cmd, aString)
+,["CPString","CPString","unsigned"]), new objj_method(sel_getUid("_parseListTables:"), function $_CPRTFParser___parseListTables_(self, _cmd, rtf)
+{
+    var lists = _CPRTFGroups(rtf, /\{\\list(?![a-z])/g);
+    for (var i = 0; i < lists.length; i++)
+    {
+        var idMatch = /\\listid(-?\d+)/.exec(lists[i]),
+            levels = _CPRTFGroups(lists[i], /\{\\listlevel(?![a-z])/g),
+            definitions = [];
+        if (!idMatch)
+            continue;
+        for (var level = 0; level < levels.length; level++)
+            definitions.push(_CPRTFListLevelDefinition(levels[level], level));
+        self._listDefinitions[idMatch[1]] = definitions;
+    }
+    var overrides = _CPRTFGroups(rtf, /\{\\listoverride(?![a-z])/g);
+    for (var i = 0; i < overrides.length; i++)
+    {
+        var idMatch = /\\listid(-?\d+)/.exec(overrides[i]),
+            numberMatch = /\\ls(\d+)/.exec(overrides[i]);
+        if (idMatch && numberMatch)
+            self._listOverrides[numberMatch[1]] = idMatch[1];
+    }
+}
+
+,["void","CPString"]), new objj_method(sel_getUid("_applyTextListsToCurrentRun"), function $_CPRTFParser___applyTextListsToCurrentRun(self, _cmd)
+{
+    var listNumber = self._currentRun._listNumber;
+    if (!listNumber)
+    {
+        ((___r1 = self._currentRun.paragraph), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setTextLists:"] || _objj_forward)(___r1, "setTextLists:", []));
+        return;
+    }
+    var definitions = self._listDefinitions[self._listOverrides[listNumber]] || [],
+        textLists = self._textListsByOverride[listNumber];
+    if (!textLists)
+        textLists = self._textListsByOverride[listNumber] = [];
+    for (var level = 0; level <= self._currentRun._listLevel; level++)
+    {
+        if (!textLists[level])
+        {
+            var definition = definitions[level] || {format: CPTextListMarkerDisc, options: 0, start: 1};
+            textLists[level] = ((___r1 = (CPTextList.isa.method_msgSend["alloc"] || _objj_forward)(CPTextList, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithMarkerFormat:options:startingItemNumber:"] || _objj_forward)(___r1, "initWithMarkerFormat:options:startingItemNumber:", definition.format, definition.options, definition.start));
+        }
+    }
+    ((___r1 = self._currentRun.paragraph), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setTextLists:"] || _objj_forward)(___r1, "setTextLists:", textLists.slice(0, self._currentRun._listLevel + 1)));
+    var ___r1;
+}
+
+,["void"]), new objj_method(sel_getUid("_appendPlainString:"), function $_CPRTFParser___appendPlainString_(self, _cmd, aString)
 {
     if (self._inTableActive)
     {
@@ -69533,6 +69750,7 @@ default:
     if (rtf.length == 0)
         return '';
     self._currentParseIndex = -1;
+    (self.isa.method_msgSend["_parseListTables:"] || _objj_forward)(self, "_parseListTables:", rtf);
     var len = rtf.length,
         tmp = '',
         ch = '',
@@ -69596,7 +69814,9 @@ default:
                     lastchar = 0;
                 if (self._hexreturn)
                 {
-                    if (ch.length > 0 && self._curState === 0)
+                    if (ch.length > 0 && self._curState === 0 && self._fallbackCharactersToSkip > 0)
+                        self._fallbackCharactersToSkip--;
+                    else if (ch.length > 0 && self._curState === 0)
                     {
                         var byteVal = parseInt(ch, 16);
                         var unicodeVal = byteVal;
@@ -69621,7 +69841,11 @@ default:
                 break;
 default:
                 lastchar = 0;
-                if (self._curState == 0)
+                if (self._curState == 0 && self._fallbackCharactersToSkip > 0)
+                {
+                    self._fallbackCharactersToSkip--;
+                }
+                else if (self._curState == 0)
                 {
                     (self.isa.method_msgSend["_appendPlainString:"] || _objj_forward)(self, "_appendPlainString:", tmp);
                 }
@@ -69944,7 +70168,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("attributedStringFromMa
 
 ,["CPAttributedString","CPString","CPFont","BOOL","BOOL","BOOL"])]);
 }
-p;16;_CPRTFProducer.jt;39616;@STATIC;1.0;I;31;Foundation/CPAttributedString.ji;18;CPParagraphStyle.ji;9;CPColor.ji;12;CPGraphics.ji;15;CPFontManager.ji;24;_CPTableTextAttachment.jt;39458;objj_executeFile("Foundation/CPAttributedString.j", NO);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPGraphics.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("_CPTableTextAttachment.j", YES);var PAPERSIZE = "PaperSize",
+p;16;_CPRTFProducer.jt;48450;@STATIC;1.0;I;31;Foundation/CPAttributedString.ji;18;CPParagraphStyle.ji;9;CPColor.ji;12;CPGraphics.ji;15;CPFontManager.ji;24;_CPTableTextAttachment.ji;12;CPTextList.jt;48275;objj_executeFile("Foundation/CPAttributedString.j", NO);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPGraphics.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("_CPTableTextAttachment.j", YES);objj_executeFile("CPTextList.j", YES);var PAPERSIZE = "PaperSize",
     LEFTMARGIN = "LeftMargin",
     RIGHTMARGIN = "RightMargin",
     TOPMARGIN = "TopMargin",
@@ -69953,9 +70177,22 @@ _points2twips = function(a)
 {
     return a * 20.0;
 }
+var _CPRTFEscapeUnicode = function(aString)
+{
+    return aString.replace(/[^\x00-\x7f]/g,     function(aCharacter)
+    {
+        var code = aCharacter.charCodeAt(0);
+        return "\\uc0\\u" + (code > 32767 ? code - 65536 : code) + " ";
+    });
+};
+var _CPRTFHexByte = function(aNumber)
+{
+    return ("0" + (aNumber & 0xff).toString(16)).slice(-2);
+};
+var _CPRTFLevelNumberFormats = {"decimal": 0, "upper-roman": 1, "lower-roman": 2, "upper-alpha": 3, "upper-latin": 3, "lower-alpha": 4, "lower-latin": 4};
 
 {var the_class = objj_allocateClassPair(CPObject, "_CPRTFProducer"),
-meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("text", "CPAttributedString"), new objj_ivar("fontDict", "CPMutableDictionary"), new objj_ivar("colorDict", "CPMutableDictionary"), new objj_ivar("docDict", "CPDictionary"), new objj_ivar("attachments", "CPMutableArray"), new objj_ivar("currentFont", "CPFont"), new objj_ivar("fgColor", "CPColor"), new objj_ivar("bgColor", "CPColor"), new objj_ivar("ulColor", "CPColor")]);objj_registerClassPair(the_class);
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("text", "CPAttributedString"), new objj_ivar("fontDict", "CPMutableDictionary"), new objj_ivar("colorDict", "CPMutableDictionary"), new objj_ivar("docDict", "CPDictionary"), new objj_ivar("attachments", "CPMutableArray"), new objj_ivar("currentFont", "CPFont"), new objj_ivar("fgColor", "CPColor"), new objj_ivar("bgColor", "CPColor"), new objj_ivar("ulColor", "CPColor"), new objj_ivar("textLists", "CPArray"), new objj_ivar("textListLevels", "CPArray")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPRTFProducer__init(self, _cmd)
 {
     if (self = (objj_getClass("_CPRTFProducer").super_class.method_dtable["init"] || _objj_forward)(self, "init"))
@@ -69964,6 +70201,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPRT
         self.fontDict = (CPMutableDictionary.isa.method_msgSend["new"] || _objj_forward)(CPMutableDictionary, "new");
         self.fgColor = (CPColor.isa.method_msgSend["blackColor"] || _objj_forward)(CPColor, "blackColor");
         self.bgColor = (CPColor.isa.method_msgSend["whiteColor"] || _objj_forward)(CPColor, "whiteColor");
+        self.textLists = [];
+        self.textListLevels = [];
     }
     return self;
 }
@@ -70081,6 +70320,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $_CPRT
     result = (CPString.isa.method_msgSend["stringWithString:"] || _objj_forward)(CPString, "stringWithString:", "{\\rtf1\\ansi");
     result += (self.isa.method_msgSend["fontTable"] || _objj_forward)(self, "fontTable");
     result += (self.isa.method_msgSend["colorTable"] || _objj_forward)(self, "colorTable");
+    result += (self.isa.method_msgSend["listTables"] || _objj_forward)(self, "listTables");
     result += (self.isa.method_msgSend["documentAttributes"] || _objj_forward)(self, "documentAttributes");
     return result;
 }
@@ -70135,7 +70375,7 @@ default:
             headerString += "\\ql";
             break;
     }
-    var twips = _points2twips((paraStyle == null ? paraStyle : (paraStyle.isa.method_msgSend["firstLineHeadIndent"] || _objj_forward)(paraStyle, "firstLineHeadIndent")));
+    var twips = _points2twips((paraStyle == null ? paraStyle : (paraStyle.isa.method_msgSend["firstLineHeadIndent"] || _objj_forward)(paraStyle, "firstLineHeadIndent")) - (paraStyle == null ? paraStyle : (paraStyle.isa.method_msgSend["headIndent"] || _objj_forward)(paraStyle, "headIndent")));
     if (twips != 0.0)
         headerString += (CPString.isa.method_msgSend["stringWithFormat:"] || _objj_forward)(CPString, "stringWithFormat:", "\\fi%d", twips);
     twips = _points2twips((paraStyle == null ? paraStyle : (paraStyle.isa.method_msgSend["headIndent"] || _objj_forward)(paraStyle, "headIndent")));
@@ -70179,11 +70419,106 @@ default:
         }
         headerString += (CPString.isa.method_msgSend["stringWithFormat:"] || _objj_forward)(CPString, "stringWithFormat:", "\\tx%d", _points2twips((tab == null ? tab : (tab.isa.method_msgSend["location"] || _objj_forward)(tab, "location"))));
     }
+    var lists = (paraStyle == null ? paraStyle : (paraStyle.isa.method_msgSend["textLists"] || _objj_forward)(paraStyle, "textLists"));
+    if ((lists == null ? lists : (lists.isa.method_msgSend["count"] || _objj_forward)(lists, "count")))
+        headerString += (CPString.isa.method_msgSend["stringWithFormat:"] || _objj_forward)(CPString, "stringWithFormat:", "\\ls%d\\ilvl%d", (self.isa.method_msgSend["listNumberForTextLists:"] || _objj_forward)(self, "listNumberForTextLists:", lists), (lists == null ? lists : (lists.isa.method_msgSend["count"] || _objj_forward)(lists, "count")) - 1);
     return headerString;
     var ___r1;
 }
 
-,["CPString","CPParagraphStyle"]), new objj_method(sel_getUid("runStringForString:attributes:paragraphStart:"), function $_CPRTFProducer__runStringForString_attributes_paragraphStart_(self, _cmd, substring, attributes, first)
+,["CPString","CPParagraphStyle"]), new objj_method(sel_getUid("listNumberForTextLists:"), function $_CPRTFProducer__listNumberForTextLists_(self, _cmd, someLists)
+{
+    var index = ((___r1 = self.textLists), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["indexOfObjectIdenticalTo:"] || _objj_forward)(___r1, "indexOfObjectIdenticalTo:", someLists[0]));
+    if (index === CPNotFound)
+    {
+        index = self.textLists.length;
+        self.textLists.push(someLists[0]);
+        self.textListLevels.push([]);
+    }
+    var levels = self.textListLevels[index];
+    for (var level = 0; level < someLists.length; level++)
+        if (!levels[level])
+            levels[level] = someLists[level];
+    return index + 1;
+    var ___r1;
+}
+
+,["int","CPArray"]), new objj_method(sel_getUid("listTables"), function $_CPRTFProducer__listTables(self, _cmd)
+{
+    if (!self.textLists.length)
+        return "";
+    var listTable = "{\\*\\listtable",
+        overrideTable = "{\\*\\listoverridetable";
+    for (var i = 0; i < self.textLists.length; i++)
+    {
+        var listNumber = i + 1,
+            levels = self.textListLevels[i];
+        listTable += "{\\list\\listtemplateid" + listNumber + "\\listhybrid";
+        for (var level = 0; level < levels.length; level++)
+            listTable += (self.isa.method_msgSend["listLevelString:atLevel:templateID:"] || _objj_forward)(self, "listLevelString:atLevel:templateID:", levels, level, listNumber * 100 + level + 1);
+        listTable += "{\\listname ;}\\listid" + listNumber + "}";
+        overrideTable += "{\\listoverride\\listid" + listNumber + "\\listoverridecount0\\ls" + listNumber + "}";
+    }
+    return listTable + "}\n" + overrideTable + "}\n";
+}
+
+,["CPString"]), new objj_method(sel_getUid("listLevelString:atLevel:templateID:"), function $_CPRTFProducer__listLevelString_atLevel_templateID_(self, _cmd, someLevels, aLevel, aTemplateID)
+{
+    var list = someLevels[aLevel],
+        format = (list == null ? list : (list.isa.method_msgSend["markerFormat"] || _objj_forward)(list, "markerFormat")),
+        match = format.match(/\{([a-z-]+)\}/),
+        name = match ? match[1] : "",
+        numberFormat = (list == null ? list : (list.isa.method_msgSend["isOrdered"] || _objj_forward)(list, "isOrdered")) ? _CPRTFLevelNumberFormats[name] || 0 : 23,
+        parts = (self.isa.method_msgSend["levelTextParts:atLevel:"] || _objj_forward)(self, "levelTextParts:atLevel:", someLevels, aLevel),
+        levelText = "",
+        levelNumbers = "",
+        length = 0,
+        indent = 720 * (aLevel + 1);
+    for (var i = 0; i < parts.length; i++)
+    {
+        var part = parts[i];
+        if (typeof part === "number")
+        {
+            length++;
+            levelText += "\\'" + _CPRTFHexByte(part);
+            levelNumbers += "\\'" + _CPRTFHexByte(length);
+        }
+        else
+        {
+            length += part.length;
+            levelText += _CPRTFEscapeUnicode(part.replace(/[\\{};]/g,             function(aCharacter)
+            {
+                return "\\'" + _CPRTFHexByte(aCharacter.charCodeAt(0));
+            }));
+        }
+    }
+    return "{\\listlevel\\levelnfc" + numberFormat + "\\levelnfcn" + numberFormat + "\\leveljc0\\leveljcn0\\levelfollow0\\levelstartat" + (list == null ? list : (list.isa.method_msgSend["startingItemNumber"] || _objj_forward)(list, "startingItemNumber")) + "\\levelspace360\\levelindent0{\\*\\levelmarker " + _CPRTFEscapeUnicode(format.replace(/([\\{}])/g, "\\$1")) + "}" + ((list == null ? list : (list.isa.method_msgSend["listOptions"] || _objj_forward)(list, "listOptions")) & CPTextListPrependEnclosingMarker ? "\\levelprepend" : "") + "{\\leveltext\\leveltemplateid" + aTemplateID + "\\'" + _CPRTFHexByte(length) + levelText + ";}" + "{\\levelnumbers" + levelNumbers + ";}\\fi-720\\li" + indent + "\\lin" + indent + " }";
+}
+
+,["CPString","CPArray","int","int"]), new objj_method(sel_getUid("levelTextParts:atLevel:"), function $_CPRTFProducer__levelTextParts_atLevel_(self, _cmd, someLevels, aLevel)
+{
+    var list = someLevels[aLevel],
+        format = (list == null ? list : (list.isa.method_msgSend["markerFormat"] || _objj_forward)(list, "markerFormat"));
+    if (!(list == null ? list : (list.isa.method_msgSend["isOrdered"] || _objj_forward)(list, "isOrdered")))
+        return [(list == null ? list : (list.isa.method_msgSend["markerForItemNumber:"] || _objj_forward)(list, "markerForItemNumber:", 1))];
+    var match = format.match(/\{[a-z-]+\}/),
+        parts = [];
+    if (aLevel > 0 && (list == null ? list : (list.isa.method_msgSend["listOptions"] || _objj_forward)(list, "listOptions")) & CPTextListPrependEnclosingMarker)
+        parts = (self.isa.method_msgSend["levelTextParts:atLevel:"] || _objj_forward)(self, "levelTextParts:atLevel:", someLevels, aLevel - 1);
+    if (match.index > 0)
+        parts.push(format.substring(0, match.index));
+    parts.push(aLevel);
+    if (match.index + match[0].length < format.length)
+        parts.push(format.substring(match.index + match[0].length));
+    return parts;
+}
+
+,["CPArray","CPArray","int"]), new objj_method(sel_getUid("runStringForString:attributes:paragraphStart:"), function $_CPRTFProducer__runStringForString_attributes_paragraphStart_(self, _cmd, substring, attributes, first)
+{
+    return (self.isa.method_msgSend["runStringForString:attributes:paragraphStart:listMarker:"] || _objj_forward)(self, "runStringForString:attributes:paragraphStart:listMarker:", substring, attributes, first, NO);
+}
+
+,["CPString","CPString","CPDictionary","BOOL"]), new objj_method(sel_getUid("runStringForString:attributes:paragraphStart:listMarker:"), function $_CPRTFProducer__runStringForString_attributes_paragraphStart_listMarker_(self, _cmd, substring, attributes, first, isListMarker)
 {
     var unwrap =     function(obj)
     {
@@ -70512,11 +70847,15 @@ default:
         {
         }
     }
+    substring = substring.replace(/\uFFFC/g, '');
     substring = substring.replace(/\\/g, '\\\\');
     substring = substring.replace(/\n/g, '\\par\n');
     substring = substring.replace(/\t/g, '\\tab ');
     substring = substring.replace(/{/g, '\\{');
     substring = substring.replace(/}/g, '\\}');
+    substring = _CPRTFEscapeUnicode(substring);
+    if (isListMarker)
+        substring = "{\\listtext " + substring + "}";
     if (!first)
     {
         var braces;
@@ -70539,7 +70878,7 @@ default:
     var ___r1;
 }
 
-,["CPString","CPString","CPDictionary","BOOL"]), new objj_method(sel_getUid("bodyString"), function $_CPRTFProducer__bodyString(self, _cmd)
+,["CPString","CPString","CPDictionary","BOOL","BOOL"]), new objj_method(sel_getUid("bodyString"), function $_CPRTFProducer__bodyString(self, _cmd)
 {
     var string = ((___r1 = self.text), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["string"] || _objj_forward)(___r1, "string")),
         result = "",
@@ -70553,9 +70892,16 @@ default:
         var attributes,
             substring,
             runString;
-        attributes = ((___r1 = self.text), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attributesAtIndex:longestEffectiveRange:inRange:"] || _objj_forward)(___r1, "attributesAtIndex:longestEffectiveRange:inRange:", CPMaxRange(currRange), currRange, completeRange));
+        var runStart = CPMaxRange(currRange);
+        attributes = ((___r1 = self.text), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attributesAtIndex:longestEffectiveRange:inRange:"] || _objj_forward)(___r1, "attributesAtIndex:longestEffectiveRange:inRange:", runStart, currRange, completeRange));
+        if (currRange.location < runStart)
+            currRange = CPMakeRange(runStart, CPMaxRange(currRange) - runStart);
+        var markerLength = paragraphStart ? (self.isa.method_msgSend["listMarkerLengthAtIndex:attributes:"] || _objj_forward)(self, "listMarkerLengthAtIndex:attributes:", currRange.location, attributes) : 0,
+            isListMarker = markerLength > 0 && markerLength <= currRange.length;
+        if (isListMarker)
+            currRange.length = markerLength;
         substring = (string == null ? string : (string.isa.method_msgSend["substringWithRange:"] || _objj_forward)(string, "substringWithRange:", currRange));
-        runString = (self.isa.method_msgSend["runStringForString:attributes:paragraphStart:"] || _objj_forward)(self, "runStringForString:attributes:paragraphStart:", substring, attributes, paragraphStart);
+        runString = (self.isa.method_msgSend["runStringForString:attributes:paragraphStart:listMarker:"] || _objj_forward)(self, "runStringForString:attributes:paragraphStart:listMarker:", substring, attributes, paragraphStart, isListMarker);
         result += runString;
         if (substring.length > 0 && substring.charAt(substring.length - 1) === '\n')
             paragraphStart = YES;
@@ -70566,7 +70912,24 @@ default:
     var ___r1;
 }
 
-,["CPString"]), new objj_method(sel_getUid("RTFDStringFromAttributedString:documentAttributes:"), function $_CPRTFProducer__RTFDStringFromAttributedString_documentAttributes_(self, _cmd, aText, dict)
+,["CPString"]), new objj_method(sel_getUid("listMarkerLengthAtIndex:attributes:"), function $_CPRTFProducer__listMarkerLengthAtIndex_attributes_(self, _cmd, anIndex, attributes)
+{
+    var string = ((___r1 = self.text), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["string"] || _objj_forward)(___r1, "string"));
+    if (!((___r1 = ((___r2 = (attributes == null ? attributes : (attributes.isa.method_msgSend["objectForKey:"] || _objj_forward)(attributes, "objectForKey:", CPParagraphStyleAttributeName))), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["textLists"] || _objj_forward)(___r2, "textLists"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["count"] || _objj_forward)(___r1, "count")) || string.charAt(anIndex) !== "\t")
+        return 0;
+    for (var i = anIndex + 1; i < string.length; i++)
+    {
+        var character = string.charAt(i);
+        if (character === "\t")
+            return i - anIndex + 1;
+        if (character === "\n")
+            break;
+    }
+    return 0;
+    var ___r1, ___r2;
+}
+
+,["unsigned","unsigned","CPDictionary"]), new objj_method(sel_getUid("RTFDStringFromAttributedString:documentAttributes:"), function $_CPRTFProducer__RTFDStringFromAttributedString_documentAttributes_(self, _cmd, aText, dict)
 {
     var output = (CPString.isa.method_msgSend["string"] || _objj_forward)(CPString, "string"),
         headerString,
@@ -70592,7 +70955,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("produceRTF:documentAtt
 
 ,["CPString","CPAttributedString","CPDictionary"])]);
 }
-p;24;_CPTableTextAttachment.jt;32130;@STATIC;1.0;i;8;CPView.ji;13;CPTextField.jI;31;Foundation/CPAttributedString.jt;32044;objj_executeFile("CPView.j", YES);;
+p;24;_CPTableTextAttachment.jt;35109;@STATIC;1.0;i;8;CPView.ji;13;CPTextField.jI;31;Foundation/CPAttributedString.jt;35023;objj_executeFile("CPView.j", YES);;
 ;
 objj_executeFile("CPTextField.j", YES);objj_executeFile("Foundation/CPAttributedString.j", NO);
 {var the_class = objj_allocateClassPair(CPView, "_CPTableTextAttachment"),
@@ -71051,6 +71414,30 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithHeaders:rows:")
 }
 
 ,["void","float"])]);
+}
+var _CPTableTextAttachmentHeadersKey = "_CPTableTextAttachmentHeaders",
+    _CPTableTextAttachmentRowsKey = "_CPTableTextAttachmentRows",
+    _CPTableTextAttachmentWidthKey = "_CPTableTextAttachmentWidth",
+    _CPTableTextAttachmentIsEditableKey = "_CPTableTextAttachmentIsEditable",
+    _CPTableTextAttachmentAcceptsRichTextKey = "_CPTableTextAttachmentAcceptsRichText";
+{
+var the_class = objj_getClass("_CPTableTextAttachment")
+if(!the_class) throw new SyntaxError("*** Could not find definition for class \"_CPTableTextAttachment\"");
+var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_getUid("initWithCoder:"), function $_CPTableTextAttachment__initWithCoder_(self, _cmd, aCoder)
+{
+    return (self.isa.method_msgSend["initWithHeaders:rows:width:isEditable:acceptsRichText:"] || _objj_forward)(self, "initWithHeaders:rows:width:isEditable:acceptsRichText:", (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", _CPTableTextAttachmentHeadersKey)), (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", _CPTableTextAttachmentRowsKey)), (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeFloatForKey:"] || _objj_forward)(aCoder, "decodeFloatForKey:", _CPTableTextAttachmentWidthKey)) || 500.0, (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeBoolForKey:"] || _objj_forward)(aCoder, "decodeBoolForKey:", _CPTableTextAttachmentIsEditableKey)), (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeBoolForKey:"] || _objj_forward)(aCoder, "decodeBoolForKey:", _CPTableTextAttachmentAcceptsRichTextKey)));
+}
+
+,["id","CPCoder"]), new objj_method(sel_getUid("encodeWithCoder:"), function $_CPTableTextAttachment__encodeWithCoder_(self, _cmd, aCoder)
+{
+    (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", (self.isa.method_msgSend["headers"] || _objj_forward)(self, "headers"), _CPTableTextAttachmentHeadersKey));
+    (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", (self.isa.method_msgSend["rows"] || _objj_forward)(self, "rows"), _CPTableTextAttachmentRowsKey));
+    (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeFloat:forKey:"] || _objj_forward)(aCoder, "encodeFloat:forKey:", CGRectGetWidth((self.isa.method_msgSend["frame"] || _objj_forward)(self, "frame")), _CPTableTextAttachmentWidthKey));
+    (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeBool:forKey:"] || _objj_forward)(aCoder, "encodeBool:forKey:", self._isEditable, _CPTableTextAttachmentIsEditableKey));
+    (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeBool:forKey:"] || _objj_forward)(aCoder, "encodeBool:forKey:", self._acceptsRichText, _CPTableTextAttachmentAcceptsRichTextKey));
+}
+
+,["void","CPCoder"])]);
 }
 p;18;CPFontDescriptor.jt;13127;@STATIC;1.0;I;21;Foundation/CPObject.jt;13081;objj_executeFile("Foundation/CPObject.j", NO);CPFontNameAttribute = "CPFontNameAttribute";
 CPFontSizeAttribute = "CPFontSizeAttribute";
@@ -75241,7 +75628,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTextView.jt;332582;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;12;CPTextList.ji;17;CPTextContainer.ji;13;CPRulerView.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;332329;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextList.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
+p;12;CPTextView.jt;333054;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;12;CPTextList.ji;17;CPTextContainer.ji;13;CPRulerView.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;332801;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextList.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
 ;
 ;
 ;
@@ -79112,12 +79499,14 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("isDeadKey:"), function
         }
         if ((currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(currentFirstResponder, "respondsToSelector:", sel_getUid("isRichText"))) && (currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["isRichText"] || _objj_forward)(currentFirstResponder, "isRichText")))
         {
-            var richtext = nativeClipboard.getData('text/rtf');
-            if (richtext)
+            var richtext = nativeClipboard.getData('text/rtf'),
+                richData = (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", _CPASPboardType));
+            if (richtext && richData && richtext === (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", CPRTFPboardType)))
+                richtext = (CPKeyedUnarchiver.isa.method_msgSend["unarchiveObjectWithData:"] || _objj_forward)(CPKeyedUnarchiver, "unarchiveObjectWithData:", (CPData.isa.method_msgSend["dataWithRawString:"] || _objj_forward)(CPData, "dataWithRawString:", richData));
+            else if (richtext)
                 richtext = ((___r1 = (_CPRTFParser.isa.method_msgSend["new"] || _objj_forward)(_CPRTFParser, "new")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["parseRTF:"] || _objj_forward)(___r1, "parseRTF:", richtext));
             else
             {
-                var richData = (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", _CPASPboardType));
                 if (richData)
                     richtext = (CPKeyedUnarchiver.isa.method_msgSend["unarchiveObjectWithData:"] || _objj_forward)(CPKeyedUnarchiver, "unarchiveObjectWithData:", (CPData.isa.method_msgSend["dataWithRawString:"] || _objj_forward)(CPData, "dataWithRawString:", richData));
             }
