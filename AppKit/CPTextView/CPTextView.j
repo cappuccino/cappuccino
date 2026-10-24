@@ -721,8 +721,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     For \c -toggleRuler:, the item's title becomes "Hide Ruler" or "Show Ruler" to reflect the
     ruler's visibility, and the item is enabled only when the text view uses a ruler and lies
     in a scroll view. \c -copyRuler: is enabled in rich text, and \c -pasteRuler: in editable
-    rich text when the ruler pasteboard holds a ruler. The superscript, subscript and baseline
-    actions are enabled in editable rich text. Every other item is enabled.
+    rich text when the ruler pasteboard holds a ruler. \c -copyFont: is enabled in rich text, and
+    \c -pasteFont: in editable rich text when the font pasteboard holds a style. The superscript,
+    subscript and baseline actions are enabled in editable rich text. Every other item is enabled.
     @param anItem the item to validate
     @return \c YES if the item should be enabled
 */
@@ -747,6 +748,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (action === @selector(pasteRuler:))
         return [self isRichText] && [self isEditable] && !![[CPPasteboard pasteboardWithName:CPRulerPboard] availableTypeFromArray:[CPRulerPboardType]];
+
+    // As in Cocoa, styles can be copied and pasted only in rich text.
+    if (action === @selector(copyFont:))
+        return [self isRichText];
+
+    if (action === @selector(pasteFont:))
+        return [self isRichText] && [self isEditable] && !![[CPPasteboard pasteboardWithName:CPFontPboard] availableTypeFromArray:[CPFontPboardType]];
 
     if (action === @selector(toggleRuler:))
     {
@@ -2078,6 +2086,104 @@ Sets the selection to a range of characters in response to user action.
 {
     // This will trigger changeFont: via the FontManager
     [[CPFontManager sharedFontManager] addFontTrait:CPItalicFontMask];
+}
+
+// MARK: -
+// MARK: Style methods
+
+/*!
+    Copies the character attributes at the start of the selection, or the typing attributes
+    when nothing is selected, to the font pasteboard, so that Paste Style can apply them to
+    other text. The attributes include the font, colours, underline and baseline. As in Cocoa,
+    the paragraph style is not included: Copy Ruler copies it.
+    @param aSender the object requesting this
+*/
+- (@action)copyFont:(id)aSender
+{
+    var attributes = _selectionRange.length ? [_textStorage attributesAtIndex:_selectionRange.location effectiveRange:nil] : _typingAttributes,
+        pasteboard = [CPPasteboard pasteboardWithName:CPFontPboard];
+
+    [pasteboard declareTypes:[CPFontPboardType] owner:nil];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self _characterStyleFromAttributes:attributes]] forType:CPFontPboardType];
+}
+
+/*!
+    Applies the character attributes on the font pasteboard to the selected text, or to the
+    text typed next when nothing is selected. They replace the text's own character
+    attributes. Each paragraph keeps its paragraph style.
+    @param aSender the object requesting this
+*/
+- (@action)pasteFont:(id)aSender
+{
+    var data = [[CPPasteboard pasteboardWithName:CPFontPboard] dataForType:CPFontPboardType];
+
+    if (!data)
+        return;
+
+    var characterStyle = [CPKeyedUnarchiver unarchiveObjectWithData:data],
+        range = CPMakeRangeCopy(_selectionRange);
+
+    if (!range.length)
+    {
+        var typingAttributes = [characterStyle mutableCopy],
+            paragraphStyle = [_typingAttributes objectForKey:CPParagraphStyleAttributeName];
+
+        if (paragraphStyle)
+            [typingAttributes setObject:paragraphStyle forKey:CPParagraphStyleAttributeName];
+
+        [self setTypingAttributes:typingAttributes];
+        return;
+    }
+
+    if (![self _beginCharacterAttributeChangeInRange:range])
+        return;
+
+    // Each run keeps the attributes that are not part of a style: its paragraph style and, for an
+    // attachment character, the attachment.
+    var location = range.location,
+        end = CPMaxRange(range);
+
+    while (location < end)
+    {
+        var effectiveRange = CPMakeRange(0, 0),
+            runAttributes = [_textStorage attributesAtIndex:location effectiveRange:effectiveRange],
+            runRange = CPIntersectionRange(effectiveRange, range),
+            newAttributes = [characterStyle mutableCopy],
+            keptKeys = [CPParagraphStyleAttributeName, CPAttachmentAttributeName, _CPAttachmentView, _CPAttachmentInvisible];
+
+        if (!runRange.length)
+            runRange = CPMakeRange(location, end - location);
+
+        for (var i = 0; i < keptKeys.length; i++)
+        {
+            var value = [runAttributes objectForKey:keptKeys[i]];
+
+            if (value)
+                [newAttributes setObject:value forKey:keptKeys[i]];
+        }
+
+        [_textStorage setAttributes:newAttributes range:runRange];
+
+        location = CPMaxRange(runRange);
+    }
+
+    [self _endCharacterAttributeChangeInRange:range];
+}
+
+/* @ignore
+    Returns a copy of someAttributes without the attributes that are not part of a character
+    style: the paragraph style and the attachment.
+*/
+- (CPDictionary)_characterStyleFromAttributes:(CPDictionary)someAttributes
+{
+    var characterStyle = [someAttributes mutableCopy] || [CPDictionary dictionary];
+
+    [characterStyle removeObjectForKey:CPParagraphStyleAttributeName];
+    [characterStyle removeObjectForKey:CPAttachmentAttributeName];
+    [characterStyle removeObjectForKey:_CPAttachmentView];
+    [characterStyle removeObjectForKey:_CPAttachmentInvisible];
+
+    return characterStyle;
 }
 
 // MARK: -

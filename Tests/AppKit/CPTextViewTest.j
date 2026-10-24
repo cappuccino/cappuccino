@@ -208,6 +208,68 @@
     [self assertTrue:([[textView typingAttributes] objectForKey:CPSuperscriptAttributeName] == nil)];
 }
 
+- (void)testCopyAndPasteStyle
+{
+    var font = [CPFont boldSystemFontOfSize:20.0],
+        color = [CPColor redColor],
+        paragraphStyle = [[CPParagraphStyle defaultParagraphStyle] mutableCopy];
+
+    [paragraphStyle setAlignment:CPCenterTextAlignment];
+
+    [textView setRichText:YES];
+    [self assertTrue:[theWindow makeFirstResponder:textView]];
+    [[textView textStorage] addAttributes:@{CPFontAttributeName: font, CPForegroundColorAttributeName: color} range:CPMakeRange(0, 2)];
+    [[textView textStorage] addAttribute:CPParagraphStyleAttributeName value:paragraphStyle range:CPMakeRange(3, 6)];
+
+    [textView setSelectedRange:CPMakeRange(0, 2)];
+    [textView copyFont:nil];
+
+    [textView setSelectedRange:CPMakeRange(3, 6)];
+    [textView pasteFont:nil];
+
+    var storage = [textView textStorage];
+
+    [self assert:[font cssString] equals:[[storage attribute:CPFontAttributeName atIndex:5 effectiveRange:nil] cssString]];
+    [self assert:[color cssString] equals:[[storage attribute:CPForegroundColorAttributeName atIndex:5 effectiveRange:nil] cssString]];
+    [self assert:CPCenterTextAlignment equals:[[storage attribute:CPParagraphStyleAttributeName atIndex:5 effectiveRange:nil] alignment] message:@"Paste Style keeps the paragraph style"];
+    [self assertTrue:([storage attribute:CPForegroundColorAttributeName atIndex:9 effectiveRange:nil] == nil) message:@"Paste Style changes only the selection"];
+}
+
+- (void)testPasteStyleWithoutSelectionChangesTypingAttributes
+{
+    var font = [CPFont boldSystemFontOfSize:20.0];
+
+    [textView setRichText:YES];
+    [self assertTrue:[theWindow makeFirstResponder:textView]];
+    [[textView textStorage] addAttribute:CPFontAttributeName value:font range:CPMakeRange(0, 2)];
+
+    [textView setSelectedRange:CPMakeRange(0, 2)];
+    [textView copyFont:nil];
+
+    [textView setSelectedRange:CPMakeRange(5, 0)];
+    [textView pasteFont:nil];
+
+    [self assert:[font cssString] equals:[[[textView typingAttributes] objectForKey:CPFontAttributeName] cssString]];
+}
+
+- (void)testStyleActionsAreEnabledOnlyInRichText
+{
+    var copyItem = [[CPMenuItem alloc] initWithTitle:@"Copy Style" action:@selector(copyFont:) keyEquivalent:@""],
+        pasteItem = [[CPMenuItem alloc] initWithTitle:@"Paste Style" action:@selector(pasteFont:) keyEquivalent:@""];
+
+    [textView setRichText:NO];
+    [self assertFalse:[textView validateUserInterfaceItem:copyItem]];
+    [self assertFalse:[textView validateUserInterfaceItem:pasteItem]];
+
+    [textView setRichText:YES];
+    [textView copyFont:nil];
+    [self assertTrue:[textView validateUserInterfaceItem:copyItem]];
+    [self assertTrue:[textView validateUserInterfaceItem:pasteItem]];
+
+    [textView setEditable:NO];
+    [self assertFalse:[textView validateUserInterfaceItem:pasteItem]];
+}
+
 - (void)testBaselineActionsAreEnabledOnlyInEditableRichText
 {
     var item = [[CPMenuItem alloc] initWithTitle:@"Superscript" action:@selector(superscript:) keyEquivalent:@""];
