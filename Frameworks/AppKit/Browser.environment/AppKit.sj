@@ -75025,7 +75025,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTextView.jt;313891;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;12;CPTextList.ji;17;CPTextContainer.ji;13;CPRulerView.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;313638;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextList.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
+p;12;CPTextView.jt;318372;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;12;CPTextList.ji;17;CPTextContainer.ji;13;CPRulerView.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;318119;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextList.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
 ;
 ;
 ;
@@ -75035,7 +75035,17 @@ var aProtocol = objj_getProtocol("CPTextDelegate");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPTextViewDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
 objj_registerProtocol(the_protocol);
-}_MakeRangeFromAbs = function(a1, a2)
+}var _CPTextViewClipboardStringsMatch = function(aString, anotherString)
+{
+    if (!aString || !anotherString)
+        return NO;
+    return aString.replace(/\r\n?/g, "\n") === anotherString.replace(/\r\n?/g, "\n");
+};
+var _CPTextViewHasAsyncClipboard = function()
+{
+    return CPDOMAvailable && typeof navigator !== "undefined" && !!navigator.clipboard && !!navigator.clipboard.readText && !!navigator.clipboard.writeText;
+};
+_MakeRangeFromAbs = function(a1, a2)
 {
     return a1 < a2 ? CPMakeRange(a1, a2 - a1) : CPMakeRange(a2, a1 - a2);
 };
@@ -75454,7 +75464,13 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         (self.isa.method_msgSend["_becomeFirstResponder"] || _objj_forward)(self, "_becomeFirstResponder");
 }
 
-,["void","CPNotification"]), new objj_method(sel_getUid("copy:"), function $CPTextView__copy_(self, _cmd, sender)
+,["void","CPNotification"]), new objj_method(sel_getUid("_isKeyboardClipboardAction:"), function $CPTextView___isKeyboardClipboardAction_(self, _cmd, sender)
+{
+    return sender === _CPNativeInputManager || (sender == null ? sender : (sender.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(sender, "isKindOfClass:", _CPNativeInputManager)) || ((___r1 = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["currentEvent"] || _objj_forward)(CPApp, "currentEvent"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["type"] || _objj_forward)(___r1, "type")) === CPKeyDown;
+    var ___r1;
+}
+
+,["BOOL","id"]), new objj_method(sel_getUid("copy:"), function $CPTextView__copy_(self, _cmd, sender)
 {
     (objj_getClass("CPTextView").super_class.method_dtable["copy:"] || _objj_forward)(self, "copy:", sender);
     var selectedRange = (self.isa.method_msgSend["selectedRange"] || _objj_forward)(self, "selectedRange"),
@@ -75474,6 +75490,13 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["declareTypes:owner:"] || _objj_forward)(pasteboard, "declareTypes:owner:", [CPStringPboardType, _CPSmartPboardType], nil));
         (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setString:forType:"] || _objj_forward)(pasteboard, "setString:forType:", stringForPasting._string, CPStringPboardType));
         (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setString:forType:"] || _objj_forward)(pasteboard, "setString:forType:", self._previousSelectionGranularity + '', _CPSmartPboardType));
+    }
+    if (selectedRange.length && !(self.isa.method_msgSend["_isKeyboardClipboardAction:"] || _objj_forward)(self, "_isKeyboardClipboardAction:", sender) && _CPTextViewHasAsyncClipboard())
+    {
+        navigator.clipboard.writeText((pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", CPStringPboardType)) || "").then(nil,         function(anError)
+        {
+            CPLog.warn("CPTextView: the browser refused to write to the clipboard: " + anError);
+        });
     }
     var ___r1;
 }
@@ -75511,21 +75534,51 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
 
 ,["void","id"]), new objj_method(sel_getUid("pasteAsPlainText:"), function $CPTextView__pasteAsPlainText_(self, _cmd, sender)
 {
-    if (!(sender == null ? sender : (sender.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(sender, "isKindOfClass:", _CPNativeInputManager)) && ((___r1 = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["currentEvent"] || _objj_forward)(CPApp, "currentEvent"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["type"] || _objj_forward)(___r1, "type")) != CPAppKitDefined)
-        return;
-    (self.isa.method_msgSend["_pasteString:"] || _objj_forward)(self, "_pasteString:", (self.isa.method_msgSend["_plainStringForPasting"] || _objj_forward)(self, "_plainStringForPasting"));
-    var ___r1;
+    if (sender === _CPNativeInputManager || (sender == null ? sender : (sender.isa.method_msgSend["isKindOfClass:"] || _objj_forward)(sender, "isKindOfClass:", _CPNativeInputManager)))
+        (self.isa.method_msgSend["_pasteString:"] || _objj_forward)(self, "_pasteString:", (self.isa.method_msgSend["_plainStringForPasting"] || _objj_forward)(self, "_plainStringForPasting"));
+    else if (!(self.isa.method_msgSend["_isKeyboardClipboardAction:"] || _objj_forward)(self, "_isKeyboardClipboardAction:", sender))
+        (self.isa.method_msgSend["_pasteFromSystemClipboardAsPlainText:"] || _objj_forward)(self, "_pasteFromSystemClipboardAsPlainText:", YES);
 }
 
 ,["void","id"]), new objj_method(sel_getUid("paste:"), function $CPTextView__paste_(self, _cmd, sender)
 {
-    if (((___r1 = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["currentEvent"] || _objj_forward)(CPApp, "currentEvent"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["type"] || _objj_forward)(___r1, "type")) != CPAppKitDefined)
-        return;
-    (self.isa.method_msgSend["_pasteString:"] || _objj_forward)(self, "_pasteString:", (self.isa.method_msgSend["_stringForPasting"] || _objj_forward)(self, "_stringForPasting"));
-    var ___r1;
+    if (!(self.isa.method_msgSend["_isKeyboardClipboardAction:"] || _objj_forward)(self, "_isKeyboardClipboardAction:", sender))
+        (self.isa.method_msgSend["_pasteFromSystemClipboardAsPlainText:"] || _objj_forward)(self, "_pasteFromSystemClipboardAsPlainText:", NO);
 }
 
-,["void","id"]), new objj_method(sel_getUid("acceptsFirstResponder"), function $CPTextView__acceptsFirstResponder(self, _cmd)
+,["void","id"]), new objj_method(sel_getUid("_pasteFromSystemClipboardAsPlainText:"), function $CPTextView___pasteFromSystemClipboardAsPlainText_(self, _cmd, asPlainText)
+{
+    if (!_CPTextViewHasAsyncClipboard())
+    {
+        (self.isa.method_msgSend["_pasteString:"] || _objj_forward)(self, "_pasteString:", asPlainText ? (self.isa.method_msgSend["_plainStringForPasting"] || _objj_forward)(self, "_plainStringForPasting") : (self.isa.method_msgSend["_stringForPasting"] || _objj_forward)(self, "_stringForPasting"));
+        return;
+    }
+    var textView = self;
+    navigator.clipboard.readText().then(    function(aString)
+    {
+        (textView == null ? textView : (textView.isa.method_msgSend["_pasteSystemClipboardString:asPlainText:"] || _objj_forward)(textView, "_pasteSystemClipboardString:asPlainText:", aString, asPlainText));
+        ((___r1 = (CPRunLoop.isa.method_msgSend["currentRunLoop"] || _objj_forward)(CPRunLoop, "currentRunLoop")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["limitDateForMode:"] || _objj_forward)(___r1, "limitDateForMode:", CPDefaultRunLoopMode));
+        var ___r1;
+    },     function(anError)
+    {
+        CPLog.warn("CPTextView: the browser refused to read the clipboard: " + anError);
+    });
+}
+
+,["void","BOOL"]), new objj_method(sel_getUid("_pasteSystemClipboardString:asPlainText:"), function $CPTextView___pasteSystemClipboardString_asPlainText_(self, _cmd, aString, asPlainText)
+{
+    var pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard");
+    if (!_CPTextViewClipboardStringsMatch(aString, (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", CPStringPboardType))))
+    {
+        if (!aString)
+            return;
+        (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["declareTypes:owner:"] || _objj_forward)(pasteboard, "declareTypes:owner:", [CPStringPboardType], nil));
+        (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setString:forType:"] || _objj_forward)(pasteboard, "setString:forType:", aString, CPStringPboardType));
+    }
+    (self.isa.method_msgSend["_pasteString:"] || _objj_forward)(self, "_pasteString:", asPlainText ? (self.isa.method_msgSend["_plainStringForPasting"] || _objj_forward)(self, "_plainStringForPasting") : (self.isa.method_msgSend["_stringForPasting"] || _objj_forward)(self, "_stringForPasting"));
+}
+
+,["void","CPString","BOOL"]), new objj_method(sel_getUid("acceptsFirstResponder"), function $CPTextView__acceptsFirstResponder(self, _cmd)
 {
     return (self.isa.method_msgSend["isSelectable"] || _objj_forward)(self, "isSelectable");
 }
@@ -76613,14 +76666,13 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
 
 ,["void","id"]), new objj_method(sel_getUid("cut:"), function $CPTextView__cut_(self, _cmd, sender)
 {
-    if (((___r1 = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["currentEvent"] || _objj_forward)(CPApp, "currentEvent"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["type"] || _objj_forward)(___r1, "type")) != CPAppKitDefined)
+    if ((self.isa.method_msgSend["_isKeyboardClipboardAction:"] || _objj_forward)(self, "_isKeyboardClipboardAction:", sender))
         return;
     var selectedRange = (self.isa.method_msgSend["selectedRange"] || _objj_forward)(self, "selectedRange");
     if (selectedRange.length < 1)
         return;
     (self.isa.method_msgSend["copy:"] || _objj_forward)(self, "copy:", sender);
     (self.isa.method_msgSend["deleteBackward:handleSmart:"] || _objj_forward)(self, "deleteBackward:handleSmart:", sender, self._previousSelectionGranularity);
-    var ___r1;
 }
 
 ,["void","id"]), new objj_method(sel_getUid("insertLineBreak:"), function $CPTextView__insertLineBreak_(self, _cmd, sender)
@@ -78668,6 +78720,13 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("isDeadKey:"), function
         e.preventDefault();
         var nativeClipboard = (e.originalEvent || e).clipboardData;
         var currentFirstResponder = ((___r1 = (CPApp == null ? CPApp : (CPApp.isa.method_msgSend["keyWindow"] || _objj_forward)(CPApp, "keyWindow"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["firstResponder"] || _objj_forward)(___r1, "firstResponder"));
+        var pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard");
+        var nativePlainText = nativeClipboard.getData('text/plain');
+        if (nativePlainText && !_CPTextViewClipboardStringsMatch(nativePlainText, (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", CPStringPboardType))))
+        {
+            (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["declareTypes:owner:"] || _objj_forward)(pasteboard, "declareTypes:owner:", [CPStringPboardType], nil));
+            (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setString:forType:"] || _objj_forward)(pasteboard, "setString:forType:", nativePlainText, CPStringPboardType));
+        }
         if ((currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(currentFirstResponder, "respondsToSelector:", sel_getUid("isRichText"))) && (currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["isRichText"] || _objj_forward)(currentFirstResponder, "isRichText")))
         {
             var richtext = nativeClipboard.getData('text/rtf');
@@ -78675,7 +78734,6 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("isDeadKey:"), function
                 richtext = ((___r1 = (_CPRTFParser.isa.method_msgSend["new"] || _objj_forward)(_CPRTFParser, "new")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["parseRTF:"] || _objj_forward)(___r1, "parseRTF:", richtext));
             else
             {
-                var pasteboard = (CPPasteboard.isa.method_msgSend["generalPasteboard"] || _objj_forward)(CPPasteboard, "generalPasteboard");
                 var richData = (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", _CPASPboardType));
                 if (richData)
                     richtext = (CPKeyedUnarchiver.isa.method_msgSend["unarchiveObjectWithData:"] || _objj_forward)(CPKeyedUnarchiver, "unarchiveObjectWithData:", (CPData.isa.method_msgSend["dataWithRawString:"] || _objj_forward)(CPData, "dataWithRawString:", richData));
@@ -78689,7 +78747,7 @@ class_addMethods(meta_class, [new objj_method(sel_getUid("isDeadKey:"), function
                 return;
             }
         }
-        var nativeString = nativeClipboard.getData('text/plain');
+        var nativeString = nativePlainText;
         setTimeout(        function()
         {
             (currentFirstResponder == null ? currentFirstResponder : (currentFirstResponder.isa.method_msgSend["_pasteString:"] || _objj_forward)(currentFirstResponder, "_pasteString:", nativeString || (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["stringForType:"] || _objj_forward)(pasteboard, "stringForType:", CPStringPboardType)) || ''));
