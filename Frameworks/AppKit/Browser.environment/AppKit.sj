@@ -79621,7 +79621,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("setPlaceholderValue:wit
 
 ,["void","id","CPString"])]);
 }
-p;14;CPTypesetter.jt;32394;@STATIC;1.0;I;21;Foundation/CPObject.ji;18;CPParagraphStyle.ji;15;CPTextStorage.ji;8;CPFont.jt;32293;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPFont.j", YES);CPTypesetterZeroAdvancementAction = 1 << 0;
+p;14;CPTypesetter.jt;32611;@STATIC;1.0;I;21;Foundation/CPObject.ji;18;CPParagraphStyle.ji;15;CPTextStorage.ji;8;CPFont.jt;32510;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPFont.j", YES);CPTypesetterZeroAdvancementAction = 1 << 0;
 CPTypesetterWhitespaceAction = 1 << 1;
 CPSTypesetterHorizontalTabAction = 1 << 2;
 CPTypesetterLineBreakAction = 1 << 3;
@@ -79967,6 +79967,11 @@ class_addMethods(the_class, [new objj_method(sel_getUid("layoutManager"), functi
                     self._lineBase = viewSize.height;
                 if (viewSize.height > self._lineHeight)
                     self._lineHeight = viewSize.height - descent + leading;
+                if (CPMaxRange(wrapRange) === CPMaxRange(lineRange))
+                {
+                    wrapRange._height = self._lineHeight;
+                    wrapRange._base = self._lineBase;
+                }
                 ascent = viewSize.height;
                 break;
             }
