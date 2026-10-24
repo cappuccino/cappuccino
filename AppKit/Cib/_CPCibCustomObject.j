@@ -81,9 +81,7 @@ var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
 
     if (!theClass)
     {
-#if DEBUG
         CPLog("Unknown class \"" + _className + "\" in cib file");
-#endif
         theClass = [CPObject class];
     }
 

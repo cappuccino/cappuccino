@@ -11,8 +11,6 @@
 @import <AppKit/CAKeyframeAnimation.j>
 @import <AppKit/CAAnimationGroup.j>
 
-#define UIAssert(a) [self markTest:_cmd didPass:a];
-
 // A new custom view class to draw the animation path.
 @implementation PathView : CPView
 {
@@ -300,7 +298,7 @@
     [context setCompletionHandler:function()
      {
         [completions addObject:@"done"];
-        UIAssert([completions isEqualToArray:@["done"]]);
+        [self markTest:_cmd didPass:[completions isEqualToArray:@["done"]]];
     }];
     [CPAnimationContext endGrouping];
 }
@@ -315,7 +313,7 @@
     [context setCompletionHandler:function()
      {
         [completions addObject:@"done"];
-        UIAssert([completions isEqualToArray:@["done"]]);
+        [self markTest:_cmd didPass:[completions isEqualToArray:@["done"]]];
     }];
     [CPAnimationContext endGrouping];
 }
@@ -336,7 +334,7 @@
     [outerContext setCompletionHandler:function()
      {
         [completions addObject:@"done"];
-        UIAssert([completions isEqualToArray:@["done"]]);
+        [self markTest:_cmd didPass:[completions isEqualToArray:@["done"]]];
     }];
 
     // Inner group
@@ -356,7 +354,7 @@
     [context setCompletionHandler:function()
      {
         [completions addObject:@"done"];
-        UIAssert([completions isEqualToArray:@["done"]]);
+        [self markTest:_cmd didPass:[completions isEqualToArray:@["done"]]];
     }];
 
     [[sender animator] setObjectValue:[sender objectValue]];
@@ -373,7 +371,7 @@
     [context setCompletionHandler:function()
      {
         [completions addObject:@"done"];
-        UIAssert([completions isEqualToArray:@["done"]]);
+        [self markTest:_cmd didPass:[completions isEqualToArray:@["done"]]];
     }];
 
     [[sender animator] setFrame:[sender frame]];
@@ -390,14 +388,14 @@
     [context setCompletionHandler:function()
      {
         // This handler should be replaced and never called.
-        UIAssert(NO);
+        [self markTest:_cmd didPass:NO];
     }];
 
     // Set the handler again, which should replace the first one.
     [context setCompletionHandler:function()
      {
         [completions addObject:@"done"];
-        UIAssert([completions isEqualToArray:@["done"]]);
+        [self markTest:_cmd didPass:[completions isEqualToArray:@["done"]]];
     }];
 
     [[sender animator] setFrame:[sender frame]];

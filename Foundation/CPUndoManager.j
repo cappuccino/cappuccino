@@ -347,8 +347,12 @@ if (_currentGroup == nil)
 */
 - (void)undo
 {
+    // Closing the grouping here also cancels the run loop's scheduled close of the event grouping.
     if ([self groupingLevel] === 1)
+    {
         [self endUndoGrouping];
+        [self _unregisterWithRunLoop];
+    }
 
     [self undoNestedGroup];
 }

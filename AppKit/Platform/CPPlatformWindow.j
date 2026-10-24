@@ -24,6 +24,7 @@
 @import <Foundation/CPObject.j>
 @import "CPKeyBinding.j"
 @import "CPPlatform.j"
+@import "CPCompatibility.j"
 
 @class CPMenu
 @class CPPlatformPasteboard
@@ -46,7 +47,6 @@ var PrimaryPlatformWindow   = NULL;
     BOOL                    _shouldUpdateContentRect;
     BOOL                    _hasInitializeInstanceWithWindow;
 
-#if PLATFORM(DOM)
     DOMWindow               _DOMWindow;
 
     DOMElement              _DOMBodyElement;
@@ -90,8 +90,6 @@ var PrimaryPlatformWindow   = NULL;
     float       _lastTouchMoveTimestamp;
     float       _lastMomentumTimestamp;
     BOOL        _isTwoFingerScrolling;
-
-#endif
 }
 
 + (CPSet)visiblePlatformWindows
@@ -101,11 +99,10 @@ var PrimaryPlatformWindow   = NULL;
 
 + (BOOL)supportsMultipleInstances
 {
-#if PLATFORM(DOM)
-    return !CPBrowserIsEngine(CPInternetExplorerBrowserEngine);
-#else
+    if (CPDOMAvailable)
+        return !CPBrowserIsEngine(CPInternetExplorerBrowserEngine);
+
     return NO;
-#endif
 }
 
 + (CPPlatformWindow)primaryPlatformWindow
@@ -126,14 +123,15 @@ var PrimaryPlatformWindow   = NULL;
     {
         _contentRect = CGRectMakeCopy(aRect);
 
-#if PLATFORM(DOM)
-        _windowLevels = [];
-        _windowLayers = @{};
+        if (CPDOMAvailable)
+        {
+            _windowLevels = [];
+            _windowLayers = @{};
 
-        _charCodes = {};
+            _charCodes = {};
 
-        _platformPasteboard = [CPPlatformPasteboard new];
-#endif
+            _platformPasteboard = [CPPlatformPasteboard new];
+        }
     }
 
     return self;
@@ -198,9 +196,10 @@ var PrimaryPlatformWindow   = NULL;
 
     _contentRect = CGRectMakeCopy(aRect);
 
-#if PLATFORM(DOM)
-     [self updateNativeContentRect];
-#endif
+    if (CPDOMAvailable)
+    {
+        [self updateNativeContentRect];
+    }
 }
 
 - (void)updateFromNativeContentRect
@@ -224,11 +223,10 @@ var PrimaryPlatformWindow   = NULL;
 
 - (BOOL)isVisible
 {
-#if PLATFORM(DOM)
-    return _DOMWindow !== NULL && _DOMWindow !== undefined;
-#else
+    if (CPDOMAvailable)
+        return _DOMWindow !== NULL && _DOMWindow !== undefined;
+
     return NO;
-#endif
 }
 
 - (void)deminiaturize:(id)sender
@@ -241,7 +239,8 @@ var PrimaryPlatformWindow   = NULL;
 
 - (void)moveWindow:(CPWindow)aWindow fromLevel:(int)fromLevel toLevel:(int)toLevel
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return;
+
     if (!aWindow._isVisible)
         return;
 
@@ -250,7 +249,6 @@ var PrimaryPlatformWindow   = NULL;
 
     [fromLayer removeWindow:aWindow];
     [toLayer insertWindow:aWindow atIndex:CPNotFound];
-#endif
 }
 
 - (void)setLevel:(CPInteger)aLevel
@@ -277,14 +275,10 @@ var PrimaryPlatformWindow   = NULL;
 {
     _title = aTitle;
 
-#if PLATFORM(DOM)
-    if (_DOMWindow &&
-        _DOMWindow.document &&
-        ([aWindow isFullPlatformWindow]))
+    if (CPDOMAvailable && _DOMWindow && _DOMWindow.document && ([aWindow isFullPlatformWindow]))
     {
         _DOMWindow.document.title = _title;
     }
-#endif
 }
 
 - (CPString)title
@@ -310,6 +304,4 @@ var PrimaryPlatformWindow   = NULL;
 
 @end
 
-#if PLATFORM(BROWSER)
 //@import "CPPlatformWindow+DOM.j"
-#endif

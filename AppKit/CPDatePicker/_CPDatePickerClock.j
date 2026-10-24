@@ -24,11 +24,15 @@
 @import <Foundation/CPKeyedUnarchiver.j>
 @import "CPView.j"
 @import "CPTextField.j"
-@import "CPImageView.j"
 @import "CPImage.j"
+@import "CALayer.j"
+@import "CPCompatibility.j"
 
 @class _CPCibCustomResource
 @class CPDatePicker
+@class HandImageLayer
+@class HoursLayer
+@class HandLayer
 
 @global CPHourMinuteSecondDatePickerElementFlag
 @global CPTextFieldAndStepperDatePickerStyle
@@ -44,19 +48,15 @@ _CPDatePickerClockSeconds = 3;
 @implementation _CPDatePickerClock : CPControl
 {
     BOOL                    _isEnabled;
-    
-    // Pure DOM Views
-    CPImageView             _hourHandView;
-    CPImageView             _minuteHandView;
-    CPImageView             _secondHandView;
-    CPImageView             _middleHandView;
-    
-    CPArray                 _hourLabels;
+    HoursLayer              _rootLayer;
+    HandLayer               _hourHandLayer;
+    HandLayer               _minuteHandLayer;
+    HandLayer               _secondHandLayer;
+    CALayer                 _middleHandLayer;
+    CPDatePicker            _datePicker;
     CPTextField             _PMAMTextField;
 
-    CPDatePicker            _datePicker;
-
-    CPView                  _currentHandView;
+    CALayer                 _currentHandLayer;
     _CPDatePickerClockHand  _currentHand;
     CPInteger               _currentRepresentedValue;
     float                   _currentValueShift;
@@ -68,13 +68,9 @@ _CPDatePickerClockSeconds = 3;
     CPInteger               _representedSeconds;
     BOOL                    _representedHourIsPM;
 
-    // Angles for Hit-Testing
-    float                   _hourAngle;
-    float                   _minuteAngle;
-    float                   _secondAngle;
-
-    CPInteger               _datePickerElements @accessors(getter=datePickerElements);
+    CPInteger                _datePickerElements         @accessors(getter=datePickerElements);
 }
+
 
 // MARK: -
 // MARK: Init methods
@@ -86,53 +82,69 @@ _CPDatePickerClockSeconds = 3;
         _datePicker         = aDatePicker;
         _datePickerElements = [_datePicker datePickerElements];
         _trackingHand       = NO;
-        _isEnabled          = YES;
 
-        // 1. Initialize AM/PM Label
         _PMAMTextField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-        [_PMAMTextField setAlignment:CPCenterTextAlignment];
-        [_PMAMTextField setVerticalAlignment:CPCenterVerticalTextAlignment];
+
+        [_PMAMTextField setValue:[_datePicker valueForThemeAttribute:@"clock-font" inState:CPThemeStateNormal] forThemeAttribute:@"font" inState:CPThemeStateNormal];
+        [_PMAMTextField setValue:[_datePicker valueForThemeAttribute:@"clock-text-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+        [_PMAMTextField setValue:[_datePicker valueForThemeAttribute:@"clock-text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+        [_PMAMTextField setValue:[_datePicker valueForThemeAttribute:@"clock-text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+
+        [_PMAMTextField setValue:[_datePicker valueForThemeAttribute:@"clock-font" inState:CPThemeStateDisabled] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+        [_PMAMTextField setValue:[_datePicker valueForThemeAttribute:@"clock-text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+        [_PMAMTextField setValue:[_datePicker valueForThemeAttribute:@"clock-text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+        [_PMAMTextField setValue:[_datePicker valueForThemeAttribute:@"clock-text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+
         [self addSubview:_PMAMTextField];
 
-        // 2. Initialize Number Labels (1 to 12)
-        _hourLabels = [CPArray array];
+        var middleHandSize = [_datePicker valueForThemeAttribute:@"middle-hand-size"],
+            minuteHandSize = [_datePicker valueForThemeAttribute:@"minute-hand-size"],
+            hourHandSize   = [_datePicker valueForThemeAttribute:@"hour-hand-size"],
+            secondHandSize = [_datePicker valueForThemeAttribute:@"second-hand-size"];
 
-        for (var i = 1; i <= 12; i++)
-        {
-            var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-            [label setStringValue:String(i)];
-            [label setAlignment:CPCenterTextAlignment];
-            [label setVerticalAlignment:CPCenterVerticalTextAlignment];
-            [self addSubview:label];
-            [_hourLabels addObject:label];
-        }
+        // We use layer to make the rotation possible
+        _hourHandLayer = [[HandLayer alloc] initWithSize:hourHandSize];
+        [_hourHandLayer setBounds:CGRectMake(0, 0, aFrame.size.width, aFrame.size.height)];
+        [_hourHandLayer setAnchorPoint:CGPointMakeZero()];
+        [_hourHandLayer setPosition:CGPointMake(0.0, 0.0)];
 
-        // 3. Initialize Hand Views
-        _hourHandView   = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-        _minuteHandView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-        _secondHandView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-        _middleHandView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
+        _minuteHandLayer = [[HandLayer alloc] initWithSize:minuteHandSize];
+        [_minuteHandLayer setBounds:CGRectMake(0, 0, aFrame.size.width, aFrame.size.height)];
+        [_minuteHandLayer setAnchorPoint:CGPointMakeZero()];
+        [_minuteHandLayer setPosition:CGPointMake(0.0, 0.0)];
 
-        // Ensure images stretch accurately across the bounds of the image view
-        [_hourHandView setImageScaling:CPImageScaleAxesIndependently];
-        [_minuteHandView setImageScaling:CPImageScaleAxesIndependently];
-        [_secondHandView setImageScaling:CPImageScaleAxesIndependently];
-        [_middleHandView setImageScaling:CPImageScaleAxesIndependently];
+        _secondHandLayer = [[HandLayer alloc] initWithSize:secondHandSize];
+        [_secondHandLayer setBounds:CGRectMake(0, 0, aFrame.size.width, aFrame.size.height)];
+        [_secondHandLayer setAnchorPoint:CGPointMakeZero()];
+        [_secondHandLayer setPosition:CGPointMake(0.0, 0.0)];
 
-        // 4. Add subviews in correct Z-Order
-        [self addSubview:_hourHandView];
-        [self addSubview:_minuteHandView];
+        _middleHandLayer = [[HandLayer alloc] initWithSize:middleHandSize];
+        [_middleHandLayer setBounds:CGRectMake(0, 0, aFrame.size.width, aFrame.size.height)];
+        [_middleHandLayer setAnchorPoint:CGPointMakeZero()];
+        [_middleHandLayer setPosition:CGPointMake(0.0, 0.0)];
+
+        _rootLayer = [[HoursLayer alloc] init];
+        [self setWantsLayer:YES];
+        [self setLayer:_rootLayer];
+
+        [self _initHands];
+
+        [_rootLayer addSublayer:_hourHandLayer];
+        [_rootLayer addSublayer:_minuteHandLayer];
 
         if ([_datePicker valueForThemeAttribute:@"clock-second-hand-over"])
         {
-            [self addSubview:_middleHandView];
-            [self addSubview:_secondHandView];
+            [_rootLayer addSublayer:_middleHandLayer];
+            [_rootLayer addSublayer:_secondHandLayer];
         }
         else
         {
-            [self addSubview:_secondHandView];
-            [self addSubview:_middleHandView];
+            [_rootLayer addSublayer:_secondHandLayer];
+            [_rootLayer addSublayer:_middleHandLayer];
         }
+
+        [_rootLayer setDrawsHours:[_datePicker valueForThemeAttribute:@"clock-draws-hours"]];
+        [_rootLayer setNeedsDisplay];
     }
 
     return self;
@@ -140,58 +152,60 @@ _CPDatePickerClockSeconds = 3;
 
 - (void)_initHands
 {
-    // FIX: Using 'duplicate' prevents CPImageViews from stealing the DOM element from each other!
-    [_middleHandView setImage:[[_datePicker currentValueForThemeAttribute:@"middle-hand-image"] duplicate]];
-    [_hourHandView   setImage:[[_datePicker currentValueForThemeAttribute:@"hour-hand-image"] duplicate]];
-    [_minuteHandView setImage:[[_datePicker currentValueForThemeAttribute:@"minute-hand-image"] duplicate]];
-    [_secondHandView setImage:[[_datePicker currentValueForThemeAttribute:@"second-hand-image"] duplicate]];
+    var middleHandImage = [_datePicker currentValueForThemeAttribute:@"middle-hand-image"],
+        hourHandImage   = [_datePicker currentValueForThemeAttribute:@"hour-hand-image"],
+        minuteHandImage = [_datePicker currentValueForThemeAttribute:@"minute-hand-image"],
+        secondHandImage = [_datePicker currentValueForThemeAttribute:@"second-hand-image"];
 
-    var font       = [_datePicker currentValueForThemeAttribute:@"clock-font"],
-        textColor  = [_datePicker currentValueForThemeAttribute:@"clock-text-color"],
-        shadowCol  = [_datePicker currentValueForThemeAttribute:@"clock-text-shadow-color"],
-        shadowOff  = [_datePicker currentValueForThemeAttribute:@"clock-text-shadow-offset"];
+    // If hand images are true CPImage, we have to duplicate them to avoid
+    // the multiple delegates bug when multiple clocks are displayed
 
-    if (font)
-        [_PMAMTextField setFont:font];
+    if ([middleHandImage isKindOfClass:[CPImage class]])
+        middleHandImage = [middleHandImage duplicate];
 
-    if (textColor)
-        [_PMAMTextField setTextColor:textColor];
+    if ([hourHandImage isKindOfClass:[CPImage class]])
+        hourHandImage = [hourHandImage duplicate];
 
-    if (shadowCol)
-        [_PMAMTextField setTextShadowColor:shadowCol];
+    if ([minuteHandImage isKindOfClass:[CPImage class]])
+        minuteHandImage = [minuteHandImage duplicate];
 
-    if (shadowOff)
-        [_PMAMTextField setTextShadowOffset:shadowOff];
+    if ([secondHandImage isKindOfClass:[CPImage class]])
+        secondHandImage = [secondHandImage duplicate];
 
-    var hoursFont  = [_datePicker currentValueForThemeAttribute:@"clock-hours-font"],
-        hoursColor = [_datePicker currentValueForThemeAttribute:@"clock-hours-text-color"],
-        drawsHours = [_datePicker currentValueForThemeAttribute:@"clock-draws-hours"];
+    [_middleHandLayer setImage:middleHandImage];
+    [_hourHandLayer   setImage:hourHandImage];
+    [_minuteHandLayer setImage:minuteHandImage];
+    [_secondHandLayer setImage:secondHandImage];
 
-    for (var i = 0; i < 12; i++)
-    {
-        var label = _hourLabels[i];
-        [label setHidden:!drawsHours];
-        if (drawsHours) {
-            if (hoursFont)  [label setFont:hoursFont];
-            if (hoursColor) [label setTextColor:hoursColor];
-            [label sizeToFit];
-        }
-    }
+    [_hourHandLayer   setNeedsDisplay];
+    [_middleHandLayer setNeedsDisplay];
+    [_secondHandLayer setNeedsDisplay];
+    [_minuteHandLayer setNeedsDisplay];
+
+    [_rootLayer setFont:[_datePicker currentValueForThemeAttribute:@"clock-hours-font"]];
+    [_rootLayer setTextColor:[_datePicker currentValueForThemeAttribute:@"clock-hours-text-color"]];
+    [_rootLayer setRadius:[_datePicker currentValueForThemeAttribute:@"clock-hours-radius"]];
+
+    [_rootLayer setNeedsDisplay];
 }
 
 - (void)setDatePickerElements:(CPInteger)aDatePickerElements
 {
     _datePickerElements = aDatePickerElements;
 
-    [_secondHandView setHidden:!((_datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)];
+    // Check if we have to display the hand second
+    // FIXME: Don't know why but next line will cause theme compilation to fail...
+    // Workaround: guarded with CPDOMAvailable (was: "if PLATFORM(DOM)")
+    if (!CPDOMAvailable) return;
+
+    [_secondHandLayer setHidden:!((_datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)];
 }
 
 // MARK: Layout methods
 
 - (void)layoutSubviews
 {
-    [self _initHands];
-
+    // While tracking a hand, we don't want the whole thing to be relayouted at each mouse movement
     if (_trackingHand)
         return;
 
@@ -206,65 +220,31 @@ _CPDatePickerClockSeconds = 3;
     _representedSeconds  = dateValue.getSeconds();
     _representedHourIsPM = (_representedHours > 11);
 
+    // Hours are expressed in 24 hours format, we need 12 hours format
     _representedHours -= (_representedHourIsPM ? 12 : 0);
 
-    var bounds  = [self bounds],
-        centerX = bounds.size.width / 2.0,
-        centerY = bounds.size.height / 2.0;
-
-    [_PMAMTextField setStringValue:_representedHourIsPM ? @"PM" : @"AM"];
-    [_PMAMTextField sizeToFit];
-    [_PMAMTextField setFrameOrigin:CGPointMake(centerX - [_PMAMTextField frameSize].width / 2.0, centerY + 15.0)];
-
-    if ([_datePicker currentValueForThemeAttribute:@"clock-draws-hours"])
-    {
-        var radius = [_datePicker currentValueForThemeAttribute:@"clock-hours-radius"] || 50.0;
-        for (var i = 0, angle = 60.0; i < 12; i++, angle -= 30.0)
-        {
-            var label = _hourLabels[i],
-                size  = [label frameSize],
-                x     = centerX + radius * COS(angle * RADIANS) - size.width / 2.0,
-                y     = centerY - radius * SIN(angle * RADIANS) - size.height / 2.0;
-
-            [label setFrameOrigin:CGPointMake(x, y)];
-        }
-    }
-
-    var centerView = function(view, size) {[view setFrame:CGRectMake(centerX - size.width / 2.0, centerY - size.height / 2.0, size.width, size.height)];
-    };
-
-    var hSize   = [_datePicker currentValueForThemeAttribute:@"hour-hand-size"]   || CGSizeMake(4, 64),
-        mSize   = [_datePicker currentValueForThemeAttribute:@"minute-hand-size"] || CGSizeMake(4, 96),
-        sSize   = [_datePicker currentValueForThemeAttribute:@"second-hand-size"] || CGSizeMake(4, 96),
-        midSize = [_datePicker currentValueForThemeAttribute:@"middle-hand-size"] || CGSizeMake(8, 8);
-
-    centerView(_hourHandView, hSize);
-    centerView(_minuteHandView, mSize);
-    centerView(_secondHandView, sSize);
-    centerView(_middleHandView, midSize);
-
     [self _updateHands];
-}
 
-// Applies Pure CSS Transforms to rotate the elements natively in the browser
-- (void)_rotateView:(CPView)view byAngle:(float)radians
-{
-#if PLATFORM(DOM)
-    var style = view._DOMElement.style;
-    style[CPBrowserStyleProperty("transformOrigin")] = "50% 50%";
-    style[CPBrowserStyleProperty("transform")] = "rotate(" + radians + "rad)";
-#endif
+    // FIXME: Workaround. Seems that CALayer doesn't redraw without an event
+    [CALayer runLoopUpdateLayers];
 }
 
 - (void)_updateHands
 {
-    _hourAngle   = (360.0 * (_representedHours   + _representedMinutes / 60.0) / 12.0) * RADIANS;
-    _minuteAngle = (360.0 * (_representedMinutes + _representedSeconds / 60.0) / 60.0) * RADIANS;
-    _secondAngle = (360.0 * _representedSeconds / 60.0) * RADIANS;
+    var bounds = [self bounds];
 
-    [self _rotateView:_hourHandView byAngle:_hourAngle];
-    [self _rotateView:_minuteHandView byAngle:_minuteAngle];
-    [self _rotateView:_secondHandView byAngle:_secondAngle];
+    [_PMAMTextField setStringValue:_representedHourIsPM ? @"PM" : @"AM"];
+    [_PMAMTextField sizeToFit];
+    [_PMAMTextField setFrameOrigin:CGPointMake(bounds.size.width / 2 - [_PMAMTextField frameSize].width / 2, bounds.size.height / 2 + 15)];
+
+    [_hourHandLayer   setRotationRadians:(360 * (_representedHours   + _representedMinutes / 60) / 12) * RADIANS];
+    [_minuteHandLayer setRotationRadians:(360 * (_representedMinutes + _representedSeconds / 60) / 60) * RADIANS];
+    [_secondHandLayer setRotationRadians:(360 * _representedSeconds / 60) * RADIANS];
+
+    [_hourHandLayer   setNeedsDisplay];
+    [_minuteHandLayer setNeedsDisplay];
+    [_secondHandLayer setNeedsDisplay];
+//    [_middleHandLayer setNeedsDisplay];
 }
 
 // MARK: Accessors
@@ -278,39 +258,11 @@ _CPDatePickerClockSeconds = 3;
 
     _isEnabled = shouldEnable;
 
+    [self _initHands];
     [self setNeedsLayout];
 }
 
 // MARK: Mouse actions
-
-// Since we rotate using Pure CSS, Cappuccino's `convertPoint:` doesn't know about it.
-// So we use standard Trigonometry to perfectly hit-test the rotated hands!
-- (BOOL)_hitTestHandWithSize:(CGSize)size angle:(float)radians atPoint:(CGPoint)aPoint
-{
-    var bounds  = [self bounds],
-        centerX = bounds.size.width / 2.0,
-        centerY = bounds.size.height / 2.0;
-
-    // 1. Move point to center
-    var tx = aPoint.x - centerX,
-        ty = aPoint.y - centerY;
-
-    // 2. Rotate point backwards by the angle of the hand
-    var cosA = COS(-radians),
-        sinA = SIN(-radians),
-        rx   = tx * cosA - ty * sinA,
-        ry   = tx * sinA + ty * cosA;
-
-    // 3. Test if point is within the unrotated hand's rectangle
-    // The visual needle is in the top half of the hand's box (y from -h/2 to 0)
-    var w2 = size.width / 2.0,
-        h2 = size.height / 2.0;
-
-    if (rx >= -w2 && rx <= w2 && ry >= -h2 && ry <= 0)
-        return YES;
-
-    return NO;
-}
 
 - (void)mouseDown:(CPEvent)anEvent
 {
@@ -319,29 +271,25 @@ _CPDatePickerClockSeconds = 3;
 
     var currentLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
-    var sSize = [_datePicker currentValueForThemeAttribute:@"second-hand-size"] || CGSizeMake(4, 96),
-        mSize = [_datePicker currentValueForThemeAttribute:@"minute-hand-size"] || CGSizeMake(4, 96),
-        hSize = [_datePicker currentValueForThemeAttribute:@"hour-hand-size"]   || CGSizeMake(4, 64);
-
-    if (![_secondHandView isHidden] && [self _hitTestHandWithSize:sSize angle:_secondAngle atPoint:currentLocation])
+    if ([_secondHandLayer handIsHitAtPoint:currentLocation])
     {
-        _currentHandView         = _secondHandView;
+        _currentHandLayer        = _secondHandLayer;
         _currentHand             = _CPDatePickerClockSeconds;
         _currentRepresentedValue = _representedSeconds;
         _currentValueShift       = 0;
         _numberOfUnits           = 60;
     }
-    else if (![_minuteHandView isHidden] && [self _hitTestHandWithSize:mSize angle:_minuteAngle atPoint:currentLocation])
+    else if ([_minuteHandLayer handIsHitAtPoint:currentLocation])
     {
-        _currentHandView         = _minuteHandView;
+        _currentHandLayer        = _minuteHandLayer;
         _currentHand             = _CPDatePickerClockMinutes;
         _currentRepresentedValue = _representedMinutes;
         _currentValueShift       = _representedSeconds / 60;
         _numberOfUnits           = 60;
     }
-    else if (![_hourHandView isHidden] && [self _hitTestHandWithSize:hSize angle:_hourAngle atPoint:currentLocation])
+    else if ([_hourHandLayer handIsHitAtPoint:currentLocation])
     {
-        _currentHandView         = _hourHandView;
+        _currentHandLayer        = _hourHandLayer;
         _currentHand             = _CPDatePickerClockHours;
         _currentRepresentedValue = _representedHours;
         _currentValueShift       = _representedMinutes / 60;
@@ -349,14 +297,14 @@ _CPDatePickerClockSeconds = 3;
     }
     else
     {
-        _currentHandView         = nil;
+        _currentHandLayer        = nil;
         _currentHand             = CPNotFound;
         _currentRepresentedValue = CPNotFound;
         _currentValueShift       = CPNotFound;
         _numberOfUnits           = CPNotFound;
     }
 
-    if (_currentHandView)
+    if (_currentHandLayer)
         [self trackMouse:anEvent];
 }
 
@@ -368,12 +316,13 @@ _CPDatePickerClockSeconds = 3;
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
     _trackingHand = YES;
+
     return YES;
 }
 
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
-    var dx    = aPoint.x - _bounds.size.width / 2,
+    var dx    = aPoint.x -_bounds.size.width / 2,
         dy    = _bounds.size.height / 2 - aPoint.y,
         angle = (PI_2 - ATAN2(dy,dx) + PI2) % PI2,
         value = ROUND(angle * _numberOfUnits / PI2 - _currentValueShift) % _numberOfUnits;
@@ -395,10 +344,14 @@ _CPDatePickerClockSeconds = 3;
                     _representedHourIsPM = !_representedHourIsPM;
 
                     if (movedForward && !_representedHourIsPM)
+                        // Day++
                         dateValue.setDate(dateValue.getDate() + 1);
+
                     else if (movedBackward && _representedHourIsPM)
+                        // Day--
                         dateValue.setDate(dateValue.getDate() - 1);
                 }
+
                 dateValue.setHours(value + (_representedHourIsPM ? 12 : 0));
                 break;
 
@@ -429,29 +382,34 @@ _CPDatePickerClockSeconds = 3;
                 break;
         }
 
-#if PLATFORM(DOM)
-        _datePicker._invokedByUserEvent = YES;
-#endif
+        if (CPDOMAvailable)
+        {
+            _datePicker._invokedByUserEvent = YES;
+        }
+        [_datePicker _setDateValue:dateValue timeInterval:[_datePicker timeInterval]];
+        if (CPDOMAvailable)
+        {
+            _datePicker._invokedByUserEvent = NO;
+        }
 
-    [_datePicker _setDateValue:dateValue timeInterval:[_datePicker timeInterval]];
-
-#if PLATFORM(DOM)
-        _datePicker._invokedByUserEvent = NO;
-#endif
-
+        // We have to adapt represented values
         _representedHours    = dateValue.getHours();
         _representedMinutes  = dateValue.getMinutes();
         _representedSeconds  = dateValue.getSeconds();
         _representedHourIsPM = (_representedHours > 11);
+
+        // Hours are expressed in 24 hours format, we need 12 hours format
         _representedHours -= (_representedHourIsPM ? 12 : 0);
 
         switch (_currentHand) {
             case _CPDatePickerClockHours:
                 _currentRepresentedValue = _representedHours;
                 break;
+
             case _CPDatePickerClockMinutes:
                 _currentRepresentedValue = _representedMinutes;
                 break;
+
             case _CPDatePickerClockSeconds:
                 _currentRepresentedValue = _representedSeconds;
                 break;
@@ -466,6 +424,191 @@ _CPDatePickerClockSeconds = 3;
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
     _trackingHand = NO;
+}
+
+@end
+
+// MARK: -
+
+@implementation HandLayer : CALayer
+{
+    CPImage         _image;
+    HandImageLayer  _imageLayer;
+    float           _rotationRadians;
+}
+
+// MARK: Init methods
+
+- (id)initWithSize:(CGSize)aSize
+{
+    if (self = [super init])
+    {
+        _imageLayer = [HandImageLayer layer];
+        _rotationRadians = 0;
+
+        [_imageLayer setDelegate:self];
+        [_imageLayer setBounds:CGRectMake(0.0, 0.0, aSize.width, aSize.height)];
+
+        [self addSublayer:_imageLayer];
+    }
+
+    return self;
+}
+
+
+// MARK: Setter Getter methods
+
+/*!
+    Set the bounds of the layer. The imageLayer will be at the center of this bounds.
+*/
+- (void)setBounds:(CGRect)aRect
+{
+    [super setBounds:aRect];
+
+    [_imageLayer setPosition:CGPointMake(CGRectGetMidX(aRect), CGRectGetMidY(aRect))];
+}
+
+- (void)setImage:(CPImage)anImage
+{
+    if (_image === anImage)
+        return;
+
+    if ([anImage isKindOfClass:[_CPCibCustomResource class]])
+        _image = [anImage imageFromCoder:nil];
+    else
+        _image = anImage;
+
+    [_imageLayer setNeedsDisplay];
+}
+
+- (void)setRotationRadians:(float)radians
+{
+    if (_rotationRadians === radians)
+        return;
+
+    _rotationRadians = radians;
+
+    [_imageLayer setAffineTransform:CGAffineTransformScale(
+        CGAffineTransformMakeRotation(_rotationRadians),
+        1.0, 1.0)];
+}
+
+- (void)imageDidLoad:(CPImage)anImage
+{
+    [_imageLayer setNeedsDisplay];
+}
+
+- (void)drawLayer:(CALayer)aLayer inContext:(CGContext)aContext
+{
+    if ([_image loadStatus] != CPImageLoadStatusCompleted)
+        [_image setDelegate:self];
+    else
+        CGContextDrawImage(aContext, [aLayer bounds], _image);
+}
+
+- (BOOL)handIsHitAtPoint:(CGPoint)aPoint
+{
+    return (!_isHidden && [_imageLayer hitTest:aPoint] === _imageLayer);
+}
+
+- (void)setNeedsDisplay
+{
+    [super       setNeedsDisplay];
+    [_imageLayer setNeedsDisplay];
+}
+
+@end
+
+// MARK: -
+
+@implementation HandImageLayer : CALayer
+{
+    CGRect  _handBounds;
+}
+
+// We have to adapt hitTest so it only takes the hand into account (that's the top half of the image layer)
+// We are also sure there's no sublayers
+- (CALayer)hitTest:(CGPoint)aPoint
+{
+    if (_isHidden)
+        return nil;
+
+    var point = CGPointApplyAffineTransform(aPoint, _transformToLayer);
+
+    return CGRectContainsPoint(_handBounds, point) ? self : nil;
+}
+
+- (void)setBounds:(CGRect)aBounds
+{
+    if (CGRectEqualToRect(_bounds, aBounds))
+        return;
+
+    _handBounds = CGRectMakeCopy(aBounds);
+
+    _handBounds.size.height = _handBounds.size.height / 2;
+
+    [super setBounds:aBounds];
+}
+
+
+@end
+
+// MARK: -
+
+@implementation HoursLayer : CALayer
+{
+    BOOL    _drawsHours;
+
+    CPFont  _font           @accessors(property=font);
+    CPColor _textColor      @accessors(property=textColor);
+    float   _radius         @accessors(property=radius);
+}
+
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        _drawsHours = NO;
+    }
+
+    return self;
+}
+
+- (void)setDrawsHours:(BOOL)shouldDrawHours
+{
+    shouldDrawHours = !!shouldDrawHours;
+
+    if (_drawsHours === shouldDrawHours)
+        return;
+
+    _drawsHours = shouldDrawHours;
+    [self setNeedsDisplay];
+}
+
+- (void)drawInContext:(CGContext)aContext
+{
+    [super drawInContext:aContext];
+
+    if (_drawsHours)
+    {
+        var bounds = [self bounds],
+            centerX = bounds.size.width / 2,
+            centerY = bounds.size.height / 2;
+
+        CGContextSelectFont(aContext, _font);
+        CGContextSetFillColor(aContext, _textColor);
+        aContext.textBaseline = @"middle";
+        aContext.textAlign = @"center";
+
+        for (var i = 1, angle = 60.0, x, y; i < 13; i++, angle -= 30.0)
+        {
+            x = centerX + _radius * COS(angle * RADIANS);
+            y = centerY - _radius * SIN(angle * RADIANS);
+
+            aContext.fillText(i, x, y);
+        }
+    }
 }
 
 @end

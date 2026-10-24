@@ -33,6 +33,7 @@
     BOOL                _richText               @accessors(getter=isRichText);
     BOOL                _selectable             @accessors(getter=isSelectable);
     BOOL                _usesFontPanel          @accessors(getter=usesFontPanel);
+    BOOL                _usesRuler              @accessors(getter=usesRuler);
     CPColor             _backgroundColor        @accessors(getter=backgroundColor);
     CPColor             _insertionColor         @accessors(getter=insertionColor);
     CPDictionary        _selectedTextAttributes @accessors(getter=selectedTextAttributes);
@@ -64,6 +65,7 @@
         _richText = (flags & 0x00000004) ? YES : NO;
         _selectable = (flags & 0x00000001) ? YES : NO;
         _usesFontPanel = (flags & 0x00000020) ? YES : NO;
+        _usesRuler = (flags & 0x00000040) ? YES : NO;
 
         _backgroundColor = [aCoder decodeObjectForKey:@"NSBackgroundColor"];
         _insertionColor = [aCoder decodeObjectForKey:@"NSInsertionColor"];

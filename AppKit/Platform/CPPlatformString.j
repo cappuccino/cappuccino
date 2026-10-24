@@ -38,24 +38,203 @@
 
 @end
 
-#if PLATFORM(DOM)
-#include "DOM/CPPlatformString.j"
-#else
+// --- begin AppKit/Platform/DOM/CPPlatformString.j (inlined; file removed to resolve capp-build basename clash) ---
+@global document
+
+var DOMFixedWidthSpanElement    = nil,
+    DOMFlexibleWidthSpanElement = nil,
+    DOMMetricsDivElement        = nil,
+    DOMMetricsImgElement        = nil,
+    DefaultFont                 = nil;
+
 @implementation CPPlatformString : CPBasePlatformString
+{
+}
+
++ (void)initialize
+{
+    if (self !== [CPPlatformString class])
+        return;
+
+    DefaultFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize];
+}
+
++ (void)bootstrap
+{
+    [self createDOMElements];
+}
+
++ (void)createDOMElements
+{
+    if (!CPDOMAvailable) return;
+
+    var style,
+        bodyElement = [CPPlatform mainBodyElement];
+
+    DOMFlexibleWidthSpanElement = document.createElement("span");
+    DOMFlexibleWidthSpanElement.className = "cpdontremove";
+    style = DOMFlexibleWidthSpanElement.style;
+    style.position = "absolute";
+    style.left = "-100000px";
+    style.zIndex = -10000;
+    style.visibility = "visible";
+    style.padding = "0px";
+    style.margin = "0px";
+    style.whiteSpace = "pre";
+
+    DOMFixedWidthSpanElement = document.createElement("span");
+    DOMFixedWidthSpanElement.className = "cpdontremove";
+    style = DOMFixedWidthSpanElement.style;
+    style.display = "block";
+    style.position = "absolute";
+    style.left = "-100000px";
+    style.zIndex = -10000;
+    style.visibility = "visible";
+    style.padding = "0px";
+    style.margin = "0px";
+    style.width = "1px";
+    style.wordWrap = "break-word";
+
+    try
+    {
+        style.whiteSpace = "pre";
+        style.whiteSpace = "-o-pre-wrap";
+        style.whiteSpace = "-pre-wrap";
+        style.whiteSpace = "-moz-pre-wrap";
+        style.whiteSpace = "pre-wrap";
+    }
+    catch(e)
+    {
+        //some versions of IE throw exceptions for unsupported properties.
+        style.whiteSpace = "pre";
+    }
+
+    bodyElement.appendChild(DOMFlexibleWidthSpanElement);
+    bodyElement.appendChild(DOMFixedWidthSpanElement);
+}
+
++ (void)createDOMMetricsElements
+{
+    if (!CPDOMAvailable) return;
+
+    var style,
+        bodyElement = [CPPlatform mainBodyElement];
+
+    DOMMetricsDivElement = document.createElement("div");
+    DOMMetricsDivElement.className = "cpdontremove";
+    style = DOMMetricsDivElement.style;
+    style.position = "absolute";
+    style.left = "-100000px";
+    style.zIndex = -10000;
+    style.width = "100000px";
+    style.whiteSpace = "nowrap";
+    style.lineHeight = "1em";
+    style.padding = "0px";
+    style.margin = "0px";
+    DOMMetricsDivElement.innerHTML = "x";
+
+    bodyElement.appendChild(DOMMetricsDivElement);
+
+    var imgPath = [[CPBundle bundleForClass:[CPView class]] pathForResource:@"empty.png"];
+
+    DOMMetricsImgElement = document.createElement("img");
+    DOMMetricsImgElement.className = "cpdontremove";
+    DOMMetricsImgElement.setAttribute("src", imgPath);
+    DOMMetricsImgElement.setAttribute("width", "1");
+    DOMMetricsImgElement.setAttribute("height", "1");
+    DOMMetricsImgElement.setAttribute("alt", "");
+    style = DOMMetricsImgElement.style;
+    style.zIndex = -10000;
+    style.visibility = "visible";
+    style.padding = "0px";
+    style.margin = "0px";
+    style.border = "none";
+    style.verticalAlign = "baseline";
+
+    DOMMetricsDivElement.appendChild(DOMMetricsImgElement);
+}
+
++ (int)charPositionOfString:(CPString)aString withFont:(CPFont)aFont forPoint:(CGPoint)aPoint
+{
+    if (!CPDOMAvailable) return 0;
+
+    if (!aString)
+        return 0;
+
+    var position = 0,
+        stringLength = aString.length,
+        currentString = "";
+
+    for (var i = 0; i < stringLength; i++)
+    {
+        var lastChar = aString[i];
+
+        currentString += lastChar;
+
+        var sizeOfString = [self sizeOfString:currentString withFont:aFont forWidth:nil].width,
+            sizeLastChar = [self sizeOfString:lastChar withFont:aFont forWidth:nil].width;
+
+        if (sizeOfString - sizeLastChar / 2 < aPoint.x)
+            position++;
+        else
+            break;
+    }
+
+    return position;
+}
 
 + (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth
 {
-    return CGSizeMakeZero();
+    if (!CPDOMAvailable) return CGSizeMakeZero();
+
+    if (!DOMFixedWidthSpanElement)
+        [self createDOMElements];
+
+    var span;
+
+    if (!aWidth)
+        span = DOMFlexibleWidthSpanElement;
+    else
+    {
+        span = DOMFixedWidthSpanElement;
+        span.style.width = ROUND(aWidth) + "px";
+    }
+
+    var effectiveFontCSSString = [(aFont || DefaultFont) cssString];
+    if (span.style.font !== effectiveFontCSSString)
+        span.style.font = effectiveFontCSSString;
+
+    if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
+        span.innerText = aString;
+    else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
+        span.textContent = aString;
+
+    return CGSizeMake(span.clientWidth, span.clientHeight);
 }
 
 + (CPDictionary)metricsOfFont:(CPFont)aFont
 {
-    return @{
+    if (!CPDOMAvailable)
+        return @{
             @"ascender": 0,
             @"descender": 0,
             @"lineHeight": 0,
         };
+
+    if (!DOMMetricsDivElement)
+        [self createDOMMetricsElements];
+
+    DOMMetricsDivElement.style.font = [(aFont || DefaultFont) cssString];
+
+    var lineHeight = DOMMetricsDivElement.offsetHeight,
+        baseline = DOMMetricsImgElement.offsetTop + DOMMetricsImgElement.offsetHeight,
+        descender = baseline - lineHeight;
+
+    return @{
+            @"ascender": baseline,
+            @"descender": descender,
+            @"lineHeight": lineHeight,
+        };
 }
 
 @end
-#endif

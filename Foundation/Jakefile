@@ -53,8 +53,6 @@ foundationTask = framework ("Foundation", function(foundationTask)
         return "--include \"" + aFilename + "\"";
     }).join(" ");
 
-    INCLUDES = "--include \"../AppKit/Platform/Platform.h\" " + INCLUDES;
-
     if ($CONFIGURATION === "Release")
         foundationTask.setCompilerFlags("-O2 -Wno-unused-but-set-variable " + INCLUDES);
     else

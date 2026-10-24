@@ -76,12 +76,8 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 
 - (BOOL)hasThemeState:(ThemeState)aState
 {
-#if DEBUG
-// TODO: To allow aState to be an array is now deprecated. An exception is thrown only in Debug version as
-// the preformance cost for this check is to high. We should remove this check in a future release.
     if (aState && aState.isa && [aState isKindOfClass:CPArray])
         [CPException raise:CPInvalidArgumentException reason:@"aState can't be an array. Please use 'hasThemeStates: instead: " + aState];
-#endif
 
     return _themeState.hasThemeState(aState);
 }
@@ -99,12 +95,8 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
-#if DEBUG
-// TODO: To allow aState to be an array is now deprecated. An exception is thrown only in Debug version as
-// the preformance cost for this check is to high. We should remove this check in a future release.
     if (aState && aState.isa && [aState isKindOfClass:CPArray])
         [CPException raise:CPInvalidArgumentException reason:@"aState can't be an array. Please use 'setThemeStates: instead: " + aState];
-#endif
 
     if (_themeState.hasThemeState(aState))
         return NO;
@@ -116,12 +108,8 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-#if DEBUG
-// TODO: To allow aState to be an array is now deprecated. An exception is thrown only in Debug version as
-// the preformance cost for this check is to high. We should remove this check in a future release.
     if (aState && aState.isa && [aState isKindOfClass:CPArray])
         [CPException raise:CPInvalidArgumentException reason:@"aState can't be an array. Please use 'unsetThemeStates: instead: " + aState];
-#endif
 
     var oldThemeState = _themeState;
 
@@ -318,12 +306,8 @@ var NULL_THEME = {};
 
 - (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
-#if DEBUG
-// TODO: To allow aState to be an array is now deprecated. An exception is thrown only in Debug version as
-// the preformance cost for this check is to high. We should remove this check in a future release.
     if (aState.isa && [aState isKindOfClass:CPArray])
         [CPException raise:CPInvalidArgumentException reason:self + @": aState can't be an array. Please use 'setValue:forThemeAttribute:inStates:' instead: " + aState];
-#endif
 
     var themeAttr = _themeAttributes && _themeAttributes[aName];
 
@@ -361,10 +345,8 @@ var NULL_THEME = {};
 
 - (id)valueForThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
-#if DEBUG
    if (aState.isa && [aState isKindOfClass:CPArray])
         [CPException raise:CPInvalidArgumentException reason:@"aState can't be an array. Please use 'valueForThemeAttribute:inStates:' instead: " + aState];
-#endif
 
     var themeAttr = _themeAttributes && _themeAttributes[aName];
 

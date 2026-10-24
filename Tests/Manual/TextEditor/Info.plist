@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CPBundlePackageType</key>
+	<string>APPL</string>
+	<key>CPBundleIdentifier</key>
+	<string>dev.cappuccino.TextEditor</string>
+	<key>Main cib file base name</key>
+	<string>MainMenu.cib</string>
+	<key>CPBundleName</key>
+	<string>TextEditor</string>
+	<key>CPBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CPBundleTypeName</key>
+			<string>Document</string>
+			<key>CPDocumentClass</key>
+			<string>Document</string>
+		</dict>
+	</array>
+	<key>CPBundleVersion</key>
+	<string>1.0</string>
+	<key>CPHumanReadableCopyright</key>
+	<string>Copyright © 2026, David Richardson, MIT Licensed</string>
+	<key>CPBundleDisplayName</key>
+	<string>TextEdit by Cappuccino</string>
+</dict>
+</plist>

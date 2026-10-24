@@ -28,6 +28,7 @@
 @import "CPView.j"
 @import "CPControl.j"
 @import "CPPlatform.j"
+@import "CPCompatibility.j"
 
 
 var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
@@ -71,11 +72,9 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     unsigned                _flags;
 
-#if PLATFORM(DOM)
     DOMElement              _DOMImageElement;
     DOMElement              _DOMTextElement;
     DOMElement              _DOMTextShadowElement;
-#endif
 }
 
 @global document
@@ -132,7 +131,8 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     _alignment = anAlignment;
 
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return;
+
     switch (_alignment)
     {
         case CPLeftTextAlignment:
@@ -155,7 +155,6 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             _DOMElement.style.textAlign = "";
             break;
     }
-#endif
 }
 
 - (CPTextAlignment)alignment
@@ -250,9 +249,10 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     _textColor = aTextColor;
 
-#if PLATFORM(DOM)
-    _DOMElement.style.color = [_textColor cssString];
-#endif
+    if (CPDOMAvailable)
+    {
+        _DOMElement.style.color = [_textColor cssString];
+    }
 }
 
 - (CPColor)textColor
@@ -330,8 +330,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     var textFrame = CGRectMakeZero();
 
-#if PLATFORM(DOM)
-    if (_DOMTextElement)
+    if (CPDOMAvailable && _DOMTextElement)
     {
         var textStyle = _DOMTextElement.style;
 
@@ -343,7 +342,6 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         textFrame.size.width += _textShadowOffset.width;
         textFrame.size.height += _textShadowOffset.height;
     }
-#endif
 
     return textFrame;
 }
@@ -422,427 +420,428 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
 - (void)layoutSubviews
 {
-#if PLATFORM(DOM)
-    var needsDOMTextElement = _imagePosition !== CPImageOnly && ([_text length] > 0),
-        hasDOMTextElement = !!_DOMTextElement;
-
-    // Create or destroy the DOM Text Element as necessary
-    if (needsDOMTextElement !== hasDOMTextElement)
+    if (CPDOMAvailable)
     {
-        if (hasDOMTextElement)
+        var needsDOMTextElement = _imagePosition !== CPImageOnly && ([_text length] > 0),
+            hasDOMTextElement = !!_DOMTextElement;
+
+        // Create or destroy the DOM Text Element as necessary
+        if (needsDOMTextElement !== hasDOMTextElement)
         {
-            _DOMElement.removeChild(_DOMTextElement);
-            _DOMTextElement = nil;
-            hasDOMTextElement = NO;
-        }
-        else
-        {
-            _DOMTextElement = document.createElement("div");
-
-            var textStyle = _DOMTextElement.style;
-            textStyle.position = "absolute";
-            textStyle.whiteSpace = "pre";
-            textStyle.zIndex = 200;
-            textStyle.overflow = "hidden";
-
-            _DOMElement.appendChild(_DOMTextElement);
-            hasDOMTextElement = YES;
-
-            // We have to set all these values now.
-            _flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag | _CPImageAndTextViewTextUnderlineChangedFlag;
-        }
-    }
-
-    var textStyle = hasDOMTextElement ? _DOMTextElement.style : nil;
-
-    // If theme is CSS based and if shadow color is a CSS dictionary, we don't need a separate DOM element,
-    // we simply put shadow styling on the regular text element
-    if (hasDOMTextElement && [[self actualTheme] isCSSBased] && [_textShadowColor cssDictionary])
-    {
-        [[_textShadowColor cssDictionary] enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
-         {
-             _DOMTextElement.style[aKey] = anObject;
-         }];
-    }
-    else
-    {
-        // Create or destroy the DOM Text Shadow element as necessary.
-        // If _textShadowColor's alphaComponent is 0, don't bother drawing anything (issue #1412).
-        // This improves performance as we get rid of an invisible element, and makes IE <9.0 capable
-        // of correctly 'rendering' shadows with [CPColor clearColor].
-        var needsDOMTextShadowElement = hasDOMTextElement && [_textShadowColor alphaComponent] > 0.0,
-            hasDOMTextShadowElement = !!_DOMTextShadowElement;
-
-        if (needsDOMTextShadowElement !== hasDOMTextShadowElement)
-        {
-            if (hasDOMTextShadowElement)
+            if (hasDOMTextElement)
             {
-                _DOMElement.removeChild(_DOMTextShadowElement);
-
-                _DOMTextShadowElement = nil;
-
-                hasDOMTextShadowElement = NO;
+                _DOMElement.removeChild(_DOMTextElement);
+                _DOMTextElement = nil;
+                hasDOMTextElement = NO;
             }
             else
             {
-                _DOMTextShadowElement = document.createElement("div");
+                _DOMTextElement = document.createElement("div");
 
-                var shadowStyle = _DOMTextShadowElement.style,
-                    font = (_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]);
+                var textStyle = _DOMTextElement.style;
+                textStyle.position = "absolute";
+                textStyle.whiteSpace = "pre";
+                textStyle.zIndex = 200;
+                textStyle.overflow = "hidden";
 
-                shadowStyle.font = [font cssString];
-                shadowStyle.position = "absolute";
-                shadowStyle.whiteSpace = textStyle.whiteSpace;
-                shadowStyle.wordWrap = textStyle.wordWrap;
-                shadowStyle.color = [_textShadowColor cssString];
-                shadowStyle.lineHeight = [font defaultLineHeightForFont] + "px";
+                _DOMElement.appendChild(_DOMTextElement);
+                hasDOMTextElement = YES;
 
-                shadowStyle.zIndex = 150;
-                shadowStyle.textOverflow = textStyle.textOverflow;
-
-                if (document.attachEvent)
-                {
-                    shadowStyle.overflow = textStyle.overflow;
-                }
-                else
-                {
-                    shadowStyle.overflowX = textStyle.overflowX;
-                    shadowStyle.overflowY = textStyle.overflowY;
-                }
-
-                _DOMElement.appendChild(_DOMTextShadowElement);
-
-                hasDOMTextShadowElement = YES;
-
-                _flags |= _CPImageAndTextViewTextChangedFlag; //sigh...
-            }
-        }
-    }
-
-    var shadowStyle = hasDOMTextShadowElement ? _DOMTextShadowElement.style : nil;
-
-    if (hasDOMTextElement)
-    {
-        // Update the text contents if necessary.
-        if (_flags & _CPImageAndTextViewTextChangedFlag)
-            if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
-            {
-                _DOMTextElement.innerText = _text;
-
-                if (_DOMTextShadowElement)
-                    _DOMTextShadowElement.innerText = _text;
-            }
-            else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
-            {
-                _DOMTextElement.textContent = _text;
-
-                if (_DOMTextShadowElement)
-                    _DOMTextShadowElement.textContent = _text;
-            }
-
-        if (_flags & _CPImageAndTextViewFontChangedFlag)
-        {
-            var font = (_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]),
-                fontStyle = [font cssString];
-            textStyle.font = fontStyle;
-            textStyle.lineHeight = [font defaultLineHeightForFont] + "px";
-
-            if (shadowStyle)
-            {
-                shadowStyle.font = fontStyle;
-                shadowStyle.lineHeight = [font defaultLineHeightForFont] + "px";
+                // We have to set all these values now.
+                _flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag | _CPImageAndTextViewTextUnderlineChangedFlag;
             }
         }
 
-        if (_flags & _CPImageAndTextViewTextUnderlineChangedFlag)
+        var textStyle = hasDOMTextElement ? _DOMTextElement.style : nil;
+
+        // If theme is CSS based and if shadow color is a CSS dictionary, we don't need a separate DOM element,
+        // we simply put shadow styling on the regular text element
+        if (hasDOMTextElement && [[self actualTheme] isCSSBased] && [_textShadowColor cssDictionary])
         {
-            textStyle.textDecoration = _textUnderline ? "underline" : "";
-        }
-
-        // Update the line break mode if necessary.
-        if (_flags & _CPImageAndTextViewLineBreakModeChangedFlag)
-        {
-            switch (_lineBreakMode)
-            {
-                case CPLineBreakByClipping:
-                    textStyle.overflow = "hidden";
-                    textStyle.textOverflow = "clip";
-                    textStyle.whiteSpace = "pre";
-                    textStyle.wordWrap = "normal";
-                    break;
-
-                case CPLineBreakByTruncatingHead:
-                case CPLineBreakByTruncatingMiddle: // Don't have support for these (yet?), so just degrade to truncating tail.
-                case CPLineBreakByTruncatingTail:
-                    textStyle.textOverflow = "ellipsis";
-                    textStyle.whiteSpace = "pre";
-                    textStyle.overflow = "hidden";
-                    textStyle.wordWrap = "normal";
-                    break;
-
-                case CPLineBreakByCharWrapping:
-                case CPLineBreakByWordWrapping:
-                    textStyle.wordWrap = "break-word";
-                    try
-                    {
-                        textStyle.whiteSpace = "pre";
-                        textStyle.whiteSpace = "-o-pre-wrap";
-                        textStyle.whiteSpace = "-pre-wrap";
-                        textStyle.whiteSpace = "-moz-pre-wrap";
-                        textStyle.whiteSpace = "pre-wrap";
-                    }
-                    catch (e)
-                    {
-                        //internet explorer doesn't like these properties
-                        textStyle.whiteSpace = "pre";
-                    }
-                    textStyle.overflow = "hidden";
-                    textStyle.textOverflow = "clip";
-                    break;
-            }
-
-            if (shadowStyle)
-            {
-                if (document.attachEvent)
-                {
-                    shadowStyle.overflow = textStyle.overflow;
-                }
-                else
-                {
-                    shadowStyle.overflowX = textStyle.overflowX;
-                    shadowStyle.overflowY = textStyle.overflowY;
-                }
-
-                shadowStyle.wordWrap = textStyle.wordWrap;
-                shadowStyle.whiteSpace = textStyle.whiteSpace;
-                shadowStyle.textOverflow = textStyle.textOverflow;
-            }
-        }
-    }
-
-    var needsDOMImageElement = _image != nil && _imagePosition !== CPNoImage,
-        hasDOMImageElement = !!_DOMImageElement,
-        // For CSS theming
-        isCSSBasedImage = [_image isCSSBased],
-        isIMGImageElement = hasDOMImageElement && (_DOMImageElement.nodeName == "IMG");
-
-    // First, check if we need to destroy a current DOM image element. This is the case if :
-    // - we have one but don't need it anymore
-    // - we have one but not the right one (that is a DIV but needing an IMG, and vice versa)
-
-    if (hasDOMImageElement)
-    {
-        if (!needsDOMImageElement || (isIMGImageElement && isCSSBasedImage) || (!isIMGImageElement && !isCSSBasedImage))
-        {
-            // OK, destroy it
-
-            _DOMElement.removeChild(_DOMImageElement);
-
-            _DOMImageElement = nil;
-
-            hasDOMImageElement = NO;
-
-            // CSS styling cleaning
-            _cssStylePreviousState = @[];
-            _cssStyleNode = nil;
-        }
-    }
-
-    // Now, if we need a DOM image element and if we don't have one, create a new one
-
-    if (needsDOMImageElement && !hasDOMImageElement)
-    {
-        _DOMImageElement = document.createElement(isCSSBasedImage ? "div" : "img");
-
-        if ([CPPlatform supportsDragAndDrop])
-        {
-            _DOMImageElement.setAttribute("draggable", "true");
-            _DOMImageElement.style["-khtml-user-drag"] = "element";
-        }
-
-        var imageStyle = _DOMImageElement.style;
-
-        imageStyle.top = "0px";
-        imageStyle.left = "0px";
-        imageStyle.position = "absolute";
-        imageStyle.zIndex = 100;
-
-        _DOMElement.appendChild(_DOMImageElement);
-
-        hasDOMImageElement = YES;
-    }
-
-    var size = [self bounds].size,
-        textRect = CGRectMake(0.0, 0.0, size.width, size.height);
-
-    if (hasDOMImageElement)
-    {
-        if (!imageStyle)
-            var imageStyle = _DOMImageElement.style;
-
-        var centerX = size.width / 2.0,
-            centerY = size.height / 2.0,
-            imageSize = [_image size],
-            imageWidth = imageSize.width,
-            imageHeight = imageSize.height;
-
-        if (_imageScaling === CPImageScaleAxesIndependently)
-        {
-            imageWidth = size.width;
-            imageHeight = size.height;
-        }
-        else if (_imageScaling === CPImageScaleProportionallyDown)
-        {
-            var scale = MIN(MIN(size.width, imageWidth) / imageWidth, MIN(size.height, imageHeight) / imageHeight);
-
-            imageWidth *= scale;
-            imageHeight *= scale;
-        }
-        else if (_imageScaling === CPImageScaleProportionallyUpOrDown)
-        {
-            var scale = MIN(size.width / imageWidth, size.height / imageHeight);
-
-            imageWidth *= scale;
-            imageHeight *= scale;
-        }
-
-        if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
-            imageStyle.filter = @"alpha(opacity=" + _shouldDimImage ? 50 : 100 + ")";
-        else
-            imageStyle.opacity = _shouldDimImage ? 0.5 : 1.0;
-
-        _DOMImageElement.width = imageWidth;
-        _DOMImageElement.height = imageHeight;
-        imageStyle.width = MAX(imageWidth, 0) + "px";
-        imageStyle.height = MAX(imageHeight, 0) + "px";
-
-        if (_imagePosition === CPImageBelow)
-        {
-            imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
-            imageStyle.top = FLOOR(size.height - imageHeight) + "px";
-
-            textRect.size.height = size.height - imageHeight - _imageOffset;
-        }
-        else if (_imagePosition === CPImageAbove)
-        {
-            imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
-            imageStyle.top = 0 + "px";
-
-            textRect.origin.y += imageHeight + _imageOffset;
-            textRect.size.height = size.height - imageHeight - _imageOffset;
-        }
-        else if (_imagePosition === CPImageLeft)
-        {
-            imageStyle.top = _imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
-            imageStyle.left = "0px";
-
-            textRect.origin.x = imageWidth + _imageOffset;
-            textRect.size.width -= imageWidth + _imageOffset;
-        }
-        else if (_imagePosition === CPImageRight)
-        {
-            imageStyle.top = _imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
-            imageStyle.left = FLOOR(size.width - imageWidth) + "px";
-
-            textRect.size.width -= imageWidth + _imageOffset;
-        }
-        else if (_imagePosition === CPImageOnly || _imagePosition == CPImageOverlaps)
-        {
-            imageStyle.top = _imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
-            imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
-        }
-
-        if (_flags & _CPImageAndTextViewImageChangedFlag)
-        {
-            if (isCSSBasedImage)
-            {
-                // For material icons images & co.
-                if ([_image _shouldBeResized])
-                    [_image _setDisplaySize:CGSizeMake(imageWidth, imageHeight)];
-
-                _cssStyleNode = [_image applyCSSImageForView:self
-                                                onDOMElement:_DOMImageElement
-                                                   styleNode:_cssStyleNode
-                                               previousState:@ref(_cssStylePreviousState)];
-            }
-            else
-                _DOMImageElement.src = [_image filename];
-        }
-
-    }
-
-    if (hasDOMTextElement)
-    {
-        var textRectX = CGRectGetMinX(textRect),
-            textRectY = CGRectGetMinY(textRect),
-            textRectWidth = CGRectGetWidth(textRect),
-            textRectHeight = CGRectGetHeight(textRect);
-
-        if (textRectWidth <= 0 || textRectHeight <= 0)
-        {
-            // Don't bother trying to position the text in an empty rect.
-            textRectWidth = 0;
-            textRectHeight = 0;
+            [[_textShadowColor cssDictionary] enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+             {
+                 _DOMTextElement.style[aKey] = anObject;
+             }];
         }
         else
         {
-            if (_verticalAlignment !== CPTopVerticalTextAlignment)
-            {
-                if (!_textSize)
-                {
-                    if (_lineBreakMode === CPLineBreakByCharWrapping ||
-                        _lineBreakMode === CPLineBreakByWordWrapping)
-                    {
-                        _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];
+            // Create or destroy the DOM Text Shadow element as necessary.
+            // If _textShadowColor's alphaComponent is 0, don't bother drawing anything (issue #1412).
+            // This improves performance as we get rid of an invisible element, and makes IE <9.0 capable
+            // of correctly 'rendering' shadows with [CPColor clearColor].
+            var needsDOMTextShadowElement = hasDOMTextElement && [_textShadowColor alphaComponent] > 0.0,
+                hasDOMTextShadowElement = !!_DOMTextShadowElement;
 
-                        if (_usesSingleLineMode)
-                            _textSize.height = [_font defaultLineHeightForFont];
+            if (needsDOMTextShadowElement !== hasDOMTextShadowElement)
+            {
+                if (hasDOMTextShadowElement)
+                {
+                    _DOMElement.removeChild(_DOMTextShadowElement);
+
+                    _DOMTextShadowElement = nil;
+
+                    hasDOMTextShadowElement = NO;
+                }
+                else
+                {
+                    _DOMTextShadowElement = document.createElement("div");
+
+                    var shadowStyle = _DOMTextShadowElement.style,
+                        font = (_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]);
+
+                    shadowStyle.font = [font cssString];
+                    shadowStyle.position = "absolute";
+                    shadowStyle.whiteSpace = textStyle.whiteSpace;
+                    shadowStyle.wordWrap = textStyle.wordWrap;
+                    shadowStyle.color = [_textShadowColor cssString];
+                    shadowStyle.lineHeight = [font defaultLineHeightForFont] + "px";
+
+                    shadowStyle.zIndex = 150;
+                    shadowStyle.textOverflow = textStyle.textOverflow;
+
+                    if (document.attachEvent)
+                    {
+                        shadowStyle.overflow = textStyle.overflow;
                     }
                     else
                     {
-                        _textSize = [_text sizeWithFont:_font];
-
-                        // Account for possible fractional pixels at right edge
-                        _textSize.width += 1;
+                        shadowStyle.overflowX = textStyle.overflowX;
+                        shadowStyle.overflowY = textStyle.overflowY;
                     }
 
-                    // Account for possible fractional pixels at bottom edge
-                    _textSize.height += 1;
-                }
+                    _DOMElement.appendChild(_DOMTextShadowElement);
 
-                if (_verticalAlignment === CPCenterVerticalTextAlignment)
-                {
-                    // Since we added +1 px height above to show fractional pixels on the bottom, we have to remove that when calculating vertical centre.
-                    textRectY = textRectY + (textRectHeight - _textSize.height + 1.0) / 2.0;
-                    textRectHeight = _textSize.height;
-                }
+                    hasDOMTextShadowElement = YES;
 
-                else // if (_verticalAlignment === CPBottomVerticalTextAlignment)
-                {
-                    textRectY = textRectY + textRectHeight - _textSize.height;
-                    textRectHeight = _textSize.height;
+                    _flags |= _CPImageAndTextViewTextChangedFlag; //sigh...
                 }
             }
         }
 
-        textStyle.top = ROUND(textRectY) + "px";
-        textStyle.left = ROUND(textRectX) + "px";
-        textStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
-        textStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
-        textStyle.verticalAlign = @"top";
+        var shadowStyle = hasDOMTextShadowElement ? _DOMTextShadowElement.style : nil;
 
-        if (shadowStyle)
+        if (hasDOMTextElement)
         {
-            if (_flags & _CPImageAndTextViewTextShadowColorChangedFlag)
-                shadowStyle.color = [_textShadowColor cssString];
+            // Update the text contents if necessary.
+            if (_flags & _CPImageAndTextViewTextChangedFlag)
+                if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
+                {
+                    _DOMTextElement.innerText = _text;
 
-            shadowStyle.top = ROUND(textRectY + _textShadowOffset.height) + "px";
-            shadowStyle.left = ROUND(textRectX + _textShadowOffset.width) + "px";
-            shadowStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
-            shadowStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
+                    if (_DOMTextShadowElement)
+                        _DOMTextShadowElement.innerText = _text;
+                }
+                else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
+                {
+                    _DOMTextElement.textContent = _text;
+
+                    if (_DOMTextShadowElement)
+                        _DOMTextShadowElement.textContent = _text;
+                }
+
+            if (_flags & _CPImageAndTextViewFontChangedFlag)
+            {
+                var font = (_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]),
+                    fontStyle = [font cssString];
+                textStyle.font = fontStyle;
+                textStyle.lineHeight = [font defaultLineHeightForFont] + "px";
+
+                if (shadowStyle)
+                {
+                    shadowStyle.font = fontStyle;
+                    shadowStyle.lineHeight = [font defaultLineHeightForFont] + "px";
+                }
+            }
+
+            if (_flags & _CPImageAndTextViewTextUnderlineChangedFlag)
+            {
+                textStyle.textDecoration = _textUnderline ? "underline" : "";
+            }
+
+            // Update the line break mode if necessary.
+            if (_flags & _CPImageAndTextViewLineBreakModeChangedFlag)
+            {
+                switch (_lineBreakMode)
+                {
+                    case CPLineBreakByClipping:
+                        textStyle.overflow = "hidden";
+                        textStyle.textOverflow = "clip";
+                        textStyle.whiteSpace = "pre";
+                        textStyle.wordWrap = "normal";
+                        break;
+
+                    case CPLineBreakByTruncatingHead:
+                    case CPLineBreakByTruncatingMiddle: // Don't have support for these (yet?), so just degrade to truncating tail.
+                    case CPLineBreakByTruncatingTail:
+                        textStyle.textOverflow = "ellipsis";
+                        textStyle.whiteSpace = "pre";
+                        textStyle.overflow = "hidden";
+                        textStyle.wordWrap = "normal";
+                        break;
+
+                    case CPLineBreakByCharWrapping:
+                    case CPLineBreakByWordWrapping:
+                        textStyle.wordWrap = "break-word";
+                        try
+                        {
+                            textStyle.whiteSpace = "pre";
+                            textStyle.whiteSpace = "-o-pre-wrap";
+                            textStyle.whiteSpace = "-pre-wrap";
+                            textStyle.whiteSpace = "-moz-pre-wrap";
+                            textStyle.whiteSpace = "pre-wrap";
+                        }
+                        catch (e)
+                        {
+                            //internet explorer doesn't like these properties
+                            textStyle.whiteSpace = "pre";
+                        }
+                        textStyle.overflow = "hidden";
+                        textStyle.textOverflow = "clip";
+                        break;
+                }
+
+                if (shadowStyle)
+                {
+                    if (document.attachEvent)
+                    {
+                        shadowStyle.overflow = textStyle.overflow;
+                    }
+                    else
+                    {
+                        shadowStyle.overflowX = textStyle.overflowX;
+                        shadowStyle.overflowY = textStyle.overflowY;
+                    }
+
+                    shadowStyle.wordWrap = textStyle.wordWrap;
+                    shadowStyle.whiteSpace = textStyle.whiteSpace;
+                    shadowStyle.textOverflow = textStyle.textOverflow;
+                }
+            }
+        }
+
+        var needsDOMImageElement = _image != nil && _imagePosition !== CPNoImage,
+            hasDOMImageElement = !!_DOMImageElement,
+            // For CSS theming
+            isCSSBasedImage = [_image isCSSBased],
+            isIMGImageElement = hasDOMImageElement && (_DOMImageElement.nodeName == "IMG");
+
+        // First, check if we need to destroy a current DOM image element. This is the case if :
+        // - we have one but don't need it anymore
+        // - we have one but not the right one (that is a DIV but needing an IMG, and vice versa)
+
+        if (hasDOMImageElement)
+        {
+            if (!needsDOMImageElement || (isIMGImageElement && isCSSBasedImage) || (!isIMGImageElement && !isCSSBasedImage))
+            {
+                // OK, destroy it
+
+                _DOMElement.removeChild(_DOMImageElement);
+
+                _DOMImageElement = nil;
+
+                hasDOMImageElement = NO;
+
+                // CSS styling cleaning
+                _cssStylePreviousState = @[];
+                _cssStyleNode = nil;
+            }
+        }
+
+        // Now, if we need a DOM image element and if we don't have one, create a new one
+
+        if (needsDOMImageElement && !hasDOMImageElement)
+        {
+            _DOMImageElement = document.createElement(isCSSBasedImage ? "div" : "img");
+
+            if ([CPPlatform supportsDragAndDrop])
+            {
+                _DOMImageElement.setAttribute("draggable", "true");
+                _DOMImageElement.style["-khtml-user-drag"] = "element";
+            }
+
+            var imageStyle = _DOMImageElement.style;
+
+            imageStyle.top = "0px";
+            imageStyle.left = "0px";
+            imageStyle.position = "absolute";
+            imageStyle.zIndex = 100;
+
+            _DOMElement.appendChild(_DOMImageElement);
+
+            hasDOMImageElement = YES;
+        }
+
+        var size = [self bounds].size,
+            textRect = CGRectMake(0.0, 0.0, size.width, size.height);
+
+        if (hasDOMImageElement)
+        {
+            if (!imageStyle)
+                var imageStyle = _DOMImageElement.style;
+
+            var centerX = size.width / 2.0,
+                centerY = size.height / 2.0,
+                imageSize = [_image size],
+                imageWidth = imageSize.width,
+                imageHeight = imageSize.height;
+
+            if (_imageScaling === CPImageScaleAxesIndependently)
+            {
+                imageWidth = size.width;
+                imageHeight = size.height;
+            }
+            else if (_imageScaling === CPImageScaleProportionallyDown)
+            {
+                var scale = MIN(MIN(size.width, imageWidth) / imageWidth, MIN(size.height, imageHeight) / imageHeight);
+
+                imageWidth *= scale;
+                imageHeight *= scale;
+            }
+            else if (_imageScaling === CPImageScaleProportionallyUpOrDown)
+            {
+                var scale = MIN(size.width / imageWidth, size.height / imageHeight);
+
+                imageWidth *= scale;
+                imageHeight *= scale;
+            }
+
+            if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
+                imageStyle.filter = @"alpha(opacity=" + _shouldDimImage ? 50 : 100 + ")";
+            else
+                imageStyle.opacity = _shouldDimImage ? 0.5 : 1.0;
+
+            _DOMImageElement.width = imageWidth;
+            _DOMImageElement.height = imageHeight;
+            imageStyle.width = MAX(imageWidth, 0) + "px";
+            imageStyle.height = MAX(imageHeight, 0) + "px";
+
+            if (_imagePosition === CPImageBelow)
+            {
+                imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
+                imageStyle.top = FLOOR(size.height - imageHeight) + "px";
+
+                textRect.size.height = size.height - imageHeight - _imageOffset;
+            }
+            else if (_imagePosition === CPImageAbove)
+            {
+                imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
+                imageStyle.top = 0 + "px";
+
+                textRect.origin.y += imageHeight + _imageOffset;
+                textRect.size.height = size.height - imageHeight - _imageOffset;
+            }
+            else if (_imagePosition === CPImageLeft)
+            {
+                imageStyle.top = _imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
+                imageStyle.left = "0px";
+
+                textRect.origin.x = imageWidth + _imageOffset;
+                textRect.size.width -= imageWidth + _imageOffset;
+            }
+            else if (_imagePosition === CPImageRight)
+            {
+                imageStyle.top = _imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
+                imageStyle.left = FLOOR(size.width - imageWidth) + "px";
+
+                textRect.size.width -= imageWidth + _imageOffset;
+            }
+            else if (_imagePosition === CPImageOnly || _imagePosition == CPImageOverlaps)
+            {
+                imageStyle.top = _imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
+                imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
+            }
+
+            if (_flags & _CPImageAndTextViewImageChangedFlag)
+            {
+                if (isCSSBasedImage)
+                {
+                    // For material icons images & co.
+                    if ([_image _shouldBeResized])
+                        [_image _setDisplaySize:CGSizeMake(imageWidth, imageHeight)];
+
+                    _cssStyleNode = [_image applyCSSImageForView:self
+                                                    onDOMElement:_DOMImageElement
+                                                       styleNode:_cssStyleNode
+                                                   previousState:@ref(_cssStylePreviousState)];
+                }
+                else
+                    _DOMImageElement.src = [_image filename];
+            }
+
+        }
+
+        if (hasDOMTextElement)
+        {
+            var textRectX = CGRectGetMinX(textRect),
+                textRectY = CGRectGetMinY(textRect),
+                textRectWidth = CGRectGetWidth(textRect),
+                textRectHeight = CGRectGetHeight(textRect);
+
+            if (textRectWidth <= 0 || textRectHeight <= 0)
+            {
+                // Don't bother trying to position the text in an empty rect.
+                textRectWidth = 0;
+                textRectHeight = 0;
+            }
+            else
+            {
+                if (_verticalAlignment !== CPTopVerticalTextAlignment)
+                {
+                    if (!_textSize)
+                    {
+                        if (_lineBreakMode === CPLineBreakByCharWrapping ||
+                            _lineBreakMode === CPLineBreakByWordWrapping)
+                        {
+                            _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];
+
+                            if (_usesSingleLineMode)
+                                _textSize.height = [_font defaultLineHeightForFont];
+                        }
+                        else
+                        {
+                            _textSize = [_text sizeWithFont:_font];
+
+                            // Account for possible fractional pixels at right edge
+                            _textSize.width += 1;
+                        }
+
+                        // Account for possible fractional pixels at bottom edge
+                        _textSize.height += 1;
+                    }
+
+                    if (_verticalAlignment === CPCenterVerticalTextAlignment)
+                    {
+                        // Since we added +1 px height above to show fractional pixels on the bottom, we have to remove that when calculating vertical centre.
+                        textRectY = textRectY + (textRectHeight - _textSize.height + 1.0) / 2.0;
+                        textRectHeight = _textSize.height;
+                    }
+
+                    else // if (_verticalAlignment === CPBottomVerticalTextAlignment)
+                    {
+                        textRectY = textRectY + textRectHeight - _textSize.height;
+                        textRectHeight = _textSize.height;
+                    }
+                }
+            }
+
+            textStyle.top = ROUND(textRectY) + "px";
+            textStyle.left = ROUND(textRectX) + "px";
+            textStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
+            textStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
+            textStyle.verticalAlign = @"top";
+
+            if (shadowStyle)
+            {
+                if (_flags & _CPImageAndTextViewTextShadowColorChangedFlag)
+                    shadowStyle.color = [_textShadowColor cssString];
+
+                shadowStyle.top = ROUND(textRectY + _textShadowOffset.height) + "px";
+                shadowStyle.left = ROUND(textRectX + _textShadowOffset.width) + "px";
+                shadowStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
+                shadowStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
+            }
         }
     }
-#endif
 
     _flags = 0;
 }
@@ -901,10 +900,10 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
 - (void)setSelectedRange:(CPRange)aRange
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return;
+
     if (_DOMTextElement)
         [[[self window] platformWindow] setSelectedRange:aRange inElement:_DOMTextElement];
-#endif
 }
 
 @end

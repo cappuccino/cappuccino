@@ -577,7 +577,8 @@ function CPDecimalAdd(result, leftOperand, rightOperand, roundingMode, longMode)
     // below is equiv. of simple compare
     var comp = 0,
         ll = n1._mantissa.length,
-        lr = n2._mantissa.length;
+        lr = n2._mantissa.length,
+        adderror;
 
     if (ll == lr)
         comp = CPOrderedSame;
@@ -607,7 +608,7 @@ function CPDecimalAdd(result, leftOperand, rightOperand, roundingMode, longMode)
         // swap sign over over/underflow exception
         if (CPCalculationUnderflow == adderror)
             adderror = CPCalculationOverflow;
-        else if (CPCalculationUnderflow == adderror)
+        else if (CPCalculationOverflow == adderror)
             adderror = CPCalculationUnderflow;
     }
     else
@@ -790,6 +791,7 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
         k = 0,
         firsttime = YES,
         stopk = CPDecimalMaxDigits + 1,
+        error1,
         used = 0; // How many digits of l have been used?
 
     _CPDecimalSetZero(result);
@@ -957,7 +959,8 @@ function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerM
     var error = CPCalculationNoError,
         carry = 0,
         exp = 0,
-        n = CPDecimalMakeZero();
+        n = CPDecimalMakeZero(),
+        error1;
 
     _CPDecimalSetZero(result);
 

@@ -563,9 +563,10 @@ var cachedBlackColor,
 {
     // Fix to avoid a problem when compiling a theme (missing the alpha component as theme compiler doesn't have CSS rgba capability)
     var hasAlpha = YES;
-#if PLATFORM(DOM)
-    hasAlpha = CPFeatureIsCompatible(CPCSSRGBAFeature) && _components[3] != 1.0;
-#endif
+    if (CPDOMAvailable)
+    {
+        hasAlpha = CPFeatureIsCompatible(CPCSSRGBAFeature) && _components[3] != 1.0;
+    }
 
     _cssString = (hasAlpha ? "rgba(" : "rgb(") +
         parseInt(_components[0] * 255.0) + ", " +
@@ -1001,19 +1002,16 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
 + (void)restorePreviousCSSState:(CPArrayRef)aPreviousStateRef forDOMElement:(DOMElement)aDOMElement
 {
-#if PLATFORM(DOM)
     var aPreviousState = @deref(aPreviousStateRef);
 
     for (var i = 0, count = aPreviousState.length; i < count; i++)
         aDOMElement.style[aPreviousState[i][0]] = aPreviousState[i][1];
 
     @deref(aPreviousStateRef) = @[];
-#endif
 }
 
 - (DOMElement)applyCSSColorForView:(CPView)aView onDOMElement:(DOMElement)aDOMElement styleNode:(DOMElement)aStyleNode previousState:(CPArrayRef)aPreviousStateRef
 {
-#if PLATFORM(DOM)
     var aPreviousState = @deref(aPreviousStateRef);
 
     [_cssDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
@@ -1086,7 +1084,6 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     @deref(aPreviousStateRef) = aPreviousState;
 
     return aStyleNode;
-#endif
 }
 
 @end
@@ -1494,7 +1491,7 @@ var patternColorsFromPattern = function(pattern, attributes, imageFactory)
         else
         {
             numParts = 3;
-            isVertical = orientation === PatternIsVertical;
+            isVertical = orientation === CPColorPatternIsVertical;
 
             if (isVertical)
             {

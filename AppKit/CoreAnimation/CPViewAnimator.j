@@ -394,11 +394,10 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
 
 - (Object)_DOMElement
 {
-#if PLATFORM(DOM)
-    return _DOMElement;
-#else
+    if (CPDOMAvailable)
+        return _DOMElement;
+
     return nil;
-#endif
 }
 
 - (CPString)debug_description

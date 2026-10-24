@@ -49,7 +49,23 @@ CPTypesetterParagraphBreakAction  = 1 << 4;
 CPTypesetterContainerBreakAction  = 1 << 5;
 
 var CPSystemTypesetterFactory,
-    _sharedSimpleTypesetter;
+    _sharedSimpleTypesetter,
+    _CPTypesetterCachedDecimalSeparator = nil;
+
+/*
+    Returns the decimal separator of the user's locale, which a decimal tab stop aligns on.
+*/
+var _CPTypesetterDecimalSeparator = function()
+{
+    if (!_CPTypesetterCachedDecimalSeparator)
+    {
+        var formatted = (1.5).toLocaleString();
+
+        _CPTypesetterCachedDecimalSeparator = formatted.length === 3 ? formatted.charAt(1) : @".";
+    }
+
+    return _CPTypesetterCachedDecimalSeparator;
+};
 
 @implementation CPTypesetter : CPObject
 
@@ -170,10 +186,32 @@ var CPSystemTypesetterFactory,
        advancements:(CPArray)advancements
           lineCount:(unsigned)lineCount
            sameLine:(BOOL)sameLine
+        wordWrapped:(BOOL)wordWrapped
+        rightMargin:(float)rightMargin
 {
-    var myX = 0,
-        rect = CGRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight),
-        containerSize = aContainer._size;
+    // Line positions are computed inside the line fragment padding. The padding is added here, where
+    // the line fragment rectangle is stored, and alignment uses the width inside the padding.
+    var padding = [aContainer lineFragmentPadding],
+        myX = 0,
+        rect = CGRectMake(lineOrigin.x + padding, lineOrigin.y, _lineWidth, _lineHeight);
+
+    // As in Cocoa, text is aligned between the indents, and whitespace at the end of the line hangs
+    // outside the alignment: it does not count in the line's visible width.
+    var theString = [_textStorage string],
+        availableWidth = rightMargin - lineOrigin.x,
+        visibleLength = lineRange.length,
+        visibleWidth = _lineWidth;
+
+    while (visibleLength > 0)
+    {
+        var trailingCharCode = theString.charCodeAt(lineRange.location + visibleLength - 1);
+
+        if (trailingCharCode !== 32 && trailingCharCode !== 10 && trailingCharCode !== 13)
+            break;
+
+        visibleLength--;
+        visibleWidth -= advancements[visibleLength].width;
+    }
 
     [_layoutManager _appendNewLineFragmentInTextContainer:_currentTextContainer forGlyphRange:lineRange];
 
@@ -190,11 +228,41 @@ var CPSystemTypesetterFactory,
             break;
 
         case CPCenterTextAlignment:
-            myX = (containerSize.width - _lineWidth) / 2;
+            myX = (availableWidth - visibleWidth) / 2;
             break;
 
         case CPRightTextAlignment:
-            myX = containerSize.width - _lineWidth;
+            myX = availableWidth - visibleWidth;
+            break;
+
+        case CPJustifiedTextAlignment:
+            // Only a line that wraps is justified. The last line of a paragraph, and the text
+            // before a tab on the same line, stay left aligned, as in Cocoa. The spare width is
+            // spread evenly over the spaces inside the visible part of the line. The line fragment
+            // draws its spans with the same extra word spacing.
+            if (wordWrapped && !sameLine)
+            {
+                var spaceIndexes = [];
+
+                for (var i = 0; i < visibleLength; i++)
+                {
+                    var charCode = theString.charCodeAt(lineRange.location + i);
+
+                    if (charCode === 32 || charCode === 160)
+                        spaceIndexes.push(i);
+                }
+
+                var spaceCount = spaceIndexes.length,
+                    extraWidth = spaceCount ? (availableWidth - visibleWidth) / spaceCount : 0.0;
+
+                if (extraWidth > 0.0)
+                {
+                    for (var i = 0; i < spaceCount; i++)
+                        advancements[spaceIndexes[i]].width += extraWidth;
+
+                    fragment._wordSpacing = extraWidth;
+                }
+            }
             break;
     }
 
@@ -237,8 +305,10 @@ var CPSystemTypesetterFactory,
     _lineBase = 0;
     _lineWidth = 0;
 
+    // containerSizeWidth is the width inside the line fragment padding at both ends.
     var containerSize = [_currentTextContainer containerSize],
-        containerSizeWidth = containerSize.width,
+        lineFragmentPadding = [_currentTextContainer lineFragmentPadding],
+        containerSizeWidth = containerSize.width - 2.0 * lineFragmentPadding,
         containerSizeHeight = containerSize.height,
         lineRange = CPMakeRange(glyphIndex, 0),
         wrapRange = CPMakeRange(0, 0),
@@ -274,7 +344,11 @@ var CPSystemTypesetterFactory,
         rightMargin = containerSizeWidth;
 
     if (glyphIndex > 0)
+    {
+        // Stored line fragment rectangles include the padding, which the layout below does not.
         lineOrigin = CGPointCreateCopy([_layoutManager lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:nil].origin);
+        lineOrigin.x -= lineFragmentPadding;
+    }
     else if ([_layoutManager extraLineFragmentTextContainer])
         lineOrigin = CGPointMake(0, [_layoutManager extraLineFragmentUsedRect].origin.y);
     else
@@ -469,7 +543,16 @@ var CPSystemTypesetterFactory,
                         tabAlignment = [nextTab alignment];
 
                     // Mathematically offset the tab character's right boundary
-                    if (tabAlignment === CPCenterTextAlignment)
+                    if ([nextTab tabStopType] === CPDecimalTabStopType)
+                    {
+                        // As in Cocoa, the first decimal separator of the user's locale starts at the stop.
+                        // A segment without one ends at the stop, like a right tab.
+                        var separatorIndex = segmentString.indexOf(_CPTypesetterDecimalSeparator()),
+                            widthBeforeSeparator = separatorIndex === -1 ? nextSegmentWidth : [segmentString.substring(0, separatorIndex) sizeWithFont:currentFont inWidth:NULL].width;
+
+                        rangeWidth = (tabLocation - widthBeforeSeparator) - lineOrigin.x;
+                    }
+                    else if (tabAlignment === CPCenterTextAlignment)
                     {
                         rangeWidth = (tabLocation - nextSegmentWidth / 2.0) - lineOrigin.x;
                     }
@@ -533,7 +616,7 @@ var CPSystemTypesetterFactory,
 
         if (isNewline || isTabStop || isAttachment)
         {
-            if ([self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:!isNewline])
+            if ([self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:!isNewline wordWrapped:isWordWrapped rightMargin:rightMargin])
                 return;
 
             if (isTabStop || isAttachment)
@@ -556,7 +639,8 @@ var CPSystemTypesetterFactory,
                 {
                     _currentTextContainer = textContainers[++_indexOfCurrentContainer];
                     containerSize = [_currentTextContainer containerSize];
-                    containerSizeWidth = containerSize.width;
+                    lineFragmentPadding = [_currentTextContainer lineFragmentPadding];
+                    containerSizeWidth = containerSize.width - 2.0 * lineFragmentPadding;
                     containerSizeHeight = containerSize.height;
                 }
 
@@ -587,9 +671,10 @@ var CPSystemTypesetterFactory,
 
     // Flush remaining characters
     if (lineRange.length)
-        [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:NO];
+        [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:NO wordWrapped:NO rightMargin:rightMargin];
 
-    var rect = CGRectMake(1, lineOrigin.y - descent, containerSizeWidth, currentFontLineHeight);
+    // The empty line after the text starts inside the padding, and at least 1 point in, so the insertion point stays visible.
+    var rect = CGRectMake(MAX(1.0, lineFragmentPadding), lineOrigin.y - descent, containerSizeWidth, currentFontLineHeight);
     [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
 
     var fragment = [_layoutManager._lineFragments lastObject];

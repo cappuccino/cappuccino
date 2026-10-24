@@ -62,7 +62,8 @@ CPCanvasStringSizingIsFunctional = NO;
     if ([self class] != [CPString class])
         return;
 
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return;
+
     if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     {
         if (!CPStringSizeMeasuringContext)
@@ -73,46 +74,47 @@ CPCanvasStringSizingIsFunctional = NO;
 
         CPCanvasStringSizingIsFunctional = NO;
     }
-#endif
 }
 
 - (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
     var size;
 
-#if PLATFORM(DOM)
-    var sizeCacheForFont = CPStringSizeWithFontInWidthCache[self];
-
-    if (sizeCacheForFont === undefined)
-        sizeCacheForFont = CPStringSizeWithFontInWidthCache[self] = [];
-
-    var cssString = [aFont cssString],
-        cacheKey = cssString + '_' + (aWidth ? aWidth : '0');
-
-    size = sizeCacheForFont[cacheKey];
-
-    if (size !== undefined && sizeCacheForFont.hasOwnProperty(cacheKey))
-        return CGSizeMakeCopy(size);
-
-    if (!CPCanvasStringSizingIsFunctional || aWidth)
-        size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
-    else
+    if (CPDOMAvailable)
     {
-        if (CPPlatformHasBug(CPTextSizingAlwaysNeedsSetFontBug) || CPStringSizeMeasuringContext.font !== cssString)
-            CPStringSizeMeasuringContext.font = cssString;
+        var sizeCacheForFont = CPStringSizeWithFontInWidthCache[self];
 
-        var fontHeight = CPStringSizeWithFontHeightCache[cssString];
+        if (sizeCacheForFont === undefined)
+            sizeCacheForFont = CPStringSizeWithFontInWidthCache[self] = [];
 
-        if (fontHeight === undefined)
-            fontHeight = CPStringSizeWithFontHeightCache[cssString] = [aFont defaultLineHeightForFont];
+        var cssString = [aFont cssString],
+            cacheKey = cssString + '_' + (aWidth ? aWidth : '0');
 
-        size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
+        size = sizeCacheForFont[cacheKey];
+
+        if (size !== undefined && sizeCacheForFont.hasOwnProperty(cacheKey))
+            return CGSizeMakeCopy(size);
+
+        if (!CPCanvasStringSizingIsFunctional || aWidth)
+            size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
+        else
+        {
+            if (CPPlatformHasBug(CPTextSizingAlwaysNeedsSetFontBug) || CPStringSizeMeasuringContext.font !== cssString)
+                CPStringSizeMeasuringContext.font = cssString;
+
+            var fontHeight = CPStringSizeWithFontHeightCache[cssString];
+
+            if (fontHeight === undefined)
+                fontHeight = CPStringSizeWithFontHeightCache[cssString] = [aFont defaultLineHeightForFont];
+
+            size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
+        }
+
+        sizeCacheForFont[cacheKey] = size;
     }
+    else
+        size = CGSizeMake(0, 0);
 
-    sizeCacheForFont[cacheKey] = size;
-#else
-    size = CGSizeMake(0, 0);
-#endif
     return CGSizeMakeCopy(size);
 }
 

@@ -137,7 +137,8 @@ var bottomHeight = 71;
     @delegate -(void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode;
     Called when the user dismisses the alert by clicking one of the buttons.
     @param theAlert the alert panel that the user dismissed
-    @param returnCode the index of the button that the user clicked (starting from 0,
+    @param returnCode the tag of the button that the user clicked. Unless a button's
+           tag has been changed, it is the button's index (starting from 0,
            representing the first button added to the alert which appears on the
            right, 1 representing the next button to the left and so on)
 */

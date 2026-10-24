@@ -25,10 +25,10 @@
  */
 
 @import "CPText.j"
-@import "CPTextContainer.j"
 @import "CGContext.j"
 @import "CPTypesetter.j"
 @import "CPFont.j"
+@import "CPCompatibility.j"
 
 @global _MakeRangeFromAbs
 @global document
@@ -298,9 +298,10 @@ _oncontextmenuhandler = function () { return false; };
 
     [_typesetter layoutGlyphsInLayoutManager:self startingAtGlyphIndex:startIndex maxNumberOfLineFragments:-1 nextGlyphIndex:nil];
 
-#if PLATFORM(DOM)
-    [self _cleanUpDOM];
-#endif
+    if (CPDOMAvailable)
+    {
+        [self _cleanUpDOM];
+    }
 
     _isValidatingLayoutAndGlyphs = NO;
 }
@@ -1124,6 +1125,7 @@ var _objectsInRange = function(aList, aRange)
 
     BOOL            _isInvalid;
     BOOL            _isLast;
+    float           _wordSpacing;
     CGRect          _fragmentRect;
     CGRect          _usedRect;
     CGPoint         _location;
@@ -1146,7 +1148,8 @@ var _objectsInRange = function(aList, aRange)
     if (!aString || aString.length === 0)
         return nil;
 
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return nil;
+
     var style,
         span = document.createElement("span");
 
@@ -1160,6 +1163,10 @@ var _objectsInRange = function(aList, aRange)
     style.whiteSpace = "pre";
     style.backgroundColor = "transparent";
     style.font = [aFont cssString];
+
+    // A justified line widens its spaces; the typesetter has added the same width to their advancements.
+    if (_wordSpacing)
+        style.wordSpacing = _wordSpacing + "px";
     
     if (aUnderline)
     {
@@ -1197,9 +1204,6 @@ var _objectsInRange = function(aList, aRange)
         span.textContent = aString;
 
     return span;
-#else
-    return nil;
-#endif
 }
 
 - (id)initWithRange:(CPRange)aRange textContainer:(CPTextContainer)aContainer textStorage:(CPTextStorage)textStorage
@@ -1215,6 +1219,7 @@ var _objectsInRange = function(aList, aRange)
         _range = CPMakeRangeCopy(aRange);
         _textContainer = aContainer;
         _isInvalid = NO;
+        _wordSpacing = 0.0;
         _runs = [];
         _glyphsFrames = [];
         _glyphsOffsets = [];
@@ -1493,6 +1498,9 @@ var _objectsInRange = function(aList, aRange)
         oldFragmentRuns= _runs;
 
     if (!oldFragmentRuns || !newFragmentRuns || oldFragmentRuns.length !== newFragmentRuns.length)
+        return NO;
+
+    if (newLineFragment._wordSpacing !== _wordSpacing)
         return NO;
 
     var l = oldFragmentRuns.length;

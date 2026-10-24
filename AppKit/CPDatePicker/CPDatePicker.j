@@ -30,6 +30,7 @@
 @import <Foundation/CPDate.j>
 @import <Foundation/CPLocale.j>
 @import <Foundation/CPTimeZone.j>
+@import "CPCompatibility.j"
 
 @class CPStepper
 @class CPApp
@@ -258,10 +259,11 @@ CPEraDatePickerElementFlag              = 0x0100;
     [_datePickerComponent setDatePickerElements:_datePickerElements];
 
     // FIXME: Don't know why but next line will cause theme compilation to fail...
-    // Workaround: added "if PLATFORM(DOM)"
-#if PLATFORM(DOM)
-    [_datePickerComponent setEnabled:[self isEnabled]];
-#endif
+    // Workaround: guarded with CPDOMAvailable (was: "if PLATFORM(DOM)")
+    if (CPDOMAvailable)
+    {
+        [_datePickerComponent setEnabled:[self isEnabled]];
+    }
 
     if (_isTextual)
         // We need to transmit text color to the text field version (Cocoa doesn't permit adapting the calendar view text color)

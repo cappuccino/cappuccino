@@ -69,8 +69,10 @@ kCGColorSpaceSRGB               = "CGColorSpaceSRGB";
 
 var _CGNamedColorSpaces         = {};
 
-#define _CGColorSpaceCreateWithModel(aModel, aComponentCount, aBaseColorSpace) \
-    { model:aModel, count:aComponentCount, base:aBaseColorSpace }
+function _CGColorSpaceCreateWithModel(aModel, aComponentCount, aBaseColorSpace)
+{
+    return { model:aModel, count:aComponentCount, base:aBaseColorSpace };
+}
 
 function CGColorSpaceCreateCalibratedGray(aWhitePoint, aBlackPoint, gamma)
 {
@@ -208,24 +210,6 @@ function CGColorSpaceRetain(aColorSpace)
 }
 
 // FIXME: We should refer to some default values.
-#define STANDARDIZE(components, index, minimum, maximum, multiplier) \
-{ \
-    if (index > components.length) \
-    { \
-        components[index] = maximum; \
-        return; \
-    } \
-\
-    var component = components[index]; \
-    \
-    if (component < minimum) \
-        components[index] = minimum; \
-    else if (component > maximum) \
-        components[index] = maximum; \
-    else \
-        components[index] = ROUND(component * multiplier) / multiplier; \
-}
-
 function CGColorSpaceStandardizeComponents(aColorSpace, components)
 {
     var count = aColorSpace.count;
@@ -233,7 +217,20 @@ function CGColorSpaceStandardizeComponents(aColorSpace, components)
     // Standardize the alpha value.  We allow the alpha value to have a
     // higher precision than other components since it is not ultimately
     // bound to 256 bits like RGB.
-    STANDARDIZE(components, count, 0, 1, 1000);
+    if (count > components.length)
+    {
+        components[count] = 1;
+        return;
+    }
+
+    var component = components[count];
+
+    if (component < 0)
+        components[count] = 0;
+    else if (component > 1)
+        components[count] = 1;
+    else
+        components[count] = ROUND(component * 1000) / 1000;
 
     if (aColorSpace.base)
         aColorSpace = aColorSpace.base;
@@ -245,7 +242,16 @@ function CGColorSpaceStandardizeComponents(aColorSpace, components)
         case kCGColorSpaceModelCMYK:
         case kCGColorSpaceModelDeviceN:
             while (count--)
-                STANDARDIZE(components, count, 0, 1, 255);
+            {
+                var standardizingComponent = components[count];
+
+                if (standardizingComponent < 0)
+                    components[count] = 0;
+                else if (standardizingComponent > 1)
+                    components[count] = 1;
+                else
+                    components[count] = ROUND(standardizingComponent * 255) / 255;
+            }
             break;
 
         // We don't currently support these color spaces.

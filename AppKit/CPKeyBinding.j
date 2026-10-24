@@ -88,6 +88,7 @@ CPStandardKeyBindings[@"~" + CPDeleteFunctionKey] = @"deleteWordForward:";
 CPStandardKeyBindings[CPTabCharacter] = @"insertTab:";
 CPStandardKeyBindings[@"~" + CPTabCharacter] = @"insertTabIgnoringFieldEditor:";
 CPStandardKeyBindings[@"^" + CPTabCharacter] = @"selectNextKeyView:";
+CPStandardKeyBindings[@"$" + CPTabCharacter] = @"insertBacktab:";
 CPStandardKeyBindings[CPBackTabCharacter] = @"insertBacktab:";
 CPStandardKeyBindings[@"^" + CPBackTabCharacter] = @"selectPreviousKeyView:";
 

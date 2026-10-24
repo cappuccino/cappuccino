@@ -45,6 +45,7 @@ CPURLPboardType         = @"CPURLPboardType";
 CPImagesPboardType      = @"CPImagesPboardType";
 CPVideosPboardType      = @"CPVideosPboardType";
 CPRTFPboardType         = @"CPRTFPboardType";
+CPRulerPboardType       = @"CPRulerPboardType";
 _CPSmartPboardType      = @"_CPSmartPboardType";
 _CPASPboardType         = @"_CPASPboardType";
 
@@ -323,8 +324,6 @@ var CPPasteboards = nil;
 
 @end
 
-#if PLATFORM(DOM)
-
 var DOMDataTransferPasteboard = nil;
 
 @implementation _CPDOMDataTransferPasteboard : CPPasteboard
@@ -388,4 +387,3 @@ var DOMDataTransferPasteboard = nil;
 
 @end
 
-#endif

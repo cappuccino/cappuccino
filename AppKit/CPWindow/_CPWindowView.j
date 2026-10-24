@@ -715,6 +715,28 @@ _CPWindowViewResizeSlop = 3;
                 frame.size.height += dy;
         }
 
+        // Let the delegate adjust the size. When resizing from the left or top, move the origin
+        // by the adjustment so that the edge opposite the one being dragged stays in place.
+        var delegateSize = [theWindow _sendDelegateWindowWillResizeToSize:CGSizeMakeCopy(frame.size)];
+
+        switch (_resizeRegion)
+        {
+            case _CPWindowViewResizeRegionTopLeft:
+            case _CPWindowViewResizeRegionLeft:
+            case _CPWindowViewResizeRegionBottomLeft:
+                frame.origin.x -= delegateSize.width - frame.size.width;
+        }
+
+        switch (_resizeRegion)
+        {
+            case _CPWindowViewResizeRegionTopLeft:
+            case _CPWindowViewResizeRegionTop:
+            case _CPWindowViewResizeRegionTopRight:
+                frame.origin.y -= delegateSize.height - frame.size.height;
+        }
+
+        frame.size = delegateSize;
+
         [theWindow _setFrame:frame display:YES animate:NO constrainWidth:NO constrainHeight:NO];
         [self setCursorForLocation:location resizing:YES];
     }

@@ -22,6 +22,7 @@
 
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
+@import "CPCompatibility.j"
 
 
 /*!
@@ -95,32 +96,37 @@
     else
         domain = "";
 
-#if PLATFORM(DOM)
-    document.cookie = _cookieName + "=" + value + expires + "; path=/" + domain;
-#else
-    _cookieValue = value;
-    _expires = expires;
-#endif
+    if (CPDOMAvailable)
+    {
+        document.cookie = _cookieName + "=" + value + expires + "; path=/" + domain;
+    }
+    else
+    {
+        _cookieValue = value;
+        _expires = expires;
+    }
 }
 
 /* @ignore */
 - (CPString)_readCookieValue
 {
-#if PLATFORM(DOM)
-    var nameEQ = _cookieName + "=",
-        ca = document.cookie.split(';');
-
-    for (var i = 0; i < ca.length; i++)
+    if (CPDOMAvailable)
     {
-        var c = ca[i];
+        var nameEQ = _cookieName + "=",
+            ca = document.cookie.split(';');
 
-        while (c.charAt(0) == ' ')
-            c = c.substring(1, c.length);
+        for (var i = 0; i < ca.length; i++)
+        {
+            var c = ca[i];
 
-        if (c.indexOf(nameEQ) == 0)
-            return c.substring(nameEQ.length, c.length);
+            while (c.charAt(0) == ' ')
+                c = c.substring(1, c.length);
+
+            if (c.indexOf(nameEQ) == 0)
+                return c.substring(nameEQ.length, c.length);
+        }
     }
-#endif
+
     return "";
 }
 

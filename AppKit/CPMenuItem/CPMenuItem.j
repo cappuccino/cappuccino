@@ -895,6 +895,17 @@ CPControlKeyMask
     return [super description] + @" target: " + [self target] + @" action: " + CPStringFromSelector([self action]);
 }
 
+- (id)_decodeValueForKey:(CPString)aKey defaultValue:(id)aDefaultValue coder:(CPCoder)aCoder
+{
+    return [aCoder containsValueForKey:aKey] ? [aCoder decodeObjectForKey:aKey] : aDefaultValue;
+}
+
+- (void)_encodeValue:(id)aValue forKey:(CPString)aKey ifNotEqualTo:(id)aDefaultValue coder:(CPCoder)aCoder
+{
+    if (aValue !== aDefaultValue)
+        [aCoder encodeObject:aValue forKey:aKey];
+}
+
 @end
 
 // MARK: -
@@ -940,9 +951,6 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
     CPMenuItemRepresentedObjectKey          = @"CPMenuItemRepresentedObjectKey",
     CPMenuItemViewKey                       = @"CPMenuItemViewKey";
 
-#define DEFAULT_VALUE(aKey, aDefaultValue) [aCoder containsValueForKey:(aKey)] ? [aCoder decodeObjectForKey:(aKey)] : (aDefaultValue)
-#define ENCODE_IFNOT(aKey, aValue, aDefaultValue) if ((aValue) !== (aDefaultValue)) [aCoder encodeObject:(aValue) forKey:(aKey)];
-
 @implementation CPMenuItem (CPCoding)
 /*!
     Initializes the menu item from a coder.
@@ -965,7 +973,7 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
         _target = [aCoder decodeObjectForKey:CPMenuItemTargetKey];
         _action = [aCoder decodeObjectForKey:CPMenuItemActionKey];
 
-        _isEnabled = DEFAULT_VALUE(CPMenuItemIsEnabledKey, YES);
+        _isEnabled = [self _decodeValueForKey:CPMenuItemIsEnabledKey defaultValue:YES coder:aCoder];
         _isHidden = [aCoder decodeBoolForKey:CPMenuItemIsHiddenKey];
         _tag = [aCoder decodeIntForKey:CPMenuItemTagKey];
         _state = [aCoder decodeIntForKey:CPMenuItemStateKey];
@@ -1012,20 +1020,20 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
     [aCoder encodeObject:_target forKey:CPMenuItemTargetKey];
     [aCoder encodeObject:_action forKey:CPMenuItemActionKey];
 
-    ENCODE_IFNOT(CPMenuItemIsEnabledKey, _isEnabled, YES);
-    ENCODE_IFNOT(CPMenuItemIsHiddenKey, _isHidden, NO);
+    [self _encodeValue:_isEnabled forKey:CPMenuItemIsEnabledKey ifNotEqualTo:YES coder:aCoder]
+    [self _encodeValue:_isHidden forKey:CPMenuItemIsHiddenKey ifNotEqualTo:NO coder:aCoder]
 
-    ENCODE_IFNOT(CPMenuItemTagKey, _tag, 0);
-    ENCODE_IFNOT(CPMenuItemStateKey, _state, CPOffState);
+    [self _encodeValue:_tag forKey:CPMenuItemTagKey ifNotEqualTo:0 coder:aCoder]
+    [self _encodeValue:_state forKey:CPMenuItemStateKey ifNotEqualTo:CPOffState coder:aCoder]
 
-    ENCODE_IFNOT(CPMenuItemImageKey, _image, nil);
-    ENCODE_IFNOT(CPMenuItemAlternateImageKey, _alternateImage, nil);
-    ENCODE_IFNOT(CPMenuItemOnStateImageKey, _onStateImage, nil);
-    ENCODE_IFNOT(CPMenuItemOffStateImageKey, _offStateImage, nil);
-    ENCODE_IFNOT(CPMenuItemMixedStateImageKey, _mixedStateImage, nil);
+    [self _encodeValue:_image forKey:CPMenuItemImageKey ifNotEqualTo:nil coder:aCoder]
+    [self _encodeValue:_alternateImage forKey:CPMenuItemAlternateImageKey ifNotEqualTo:nil coder:aCoder]
+    [self _encodeValue:_onStateImage forKey:CPMenuItemOnStateImageKey ifNotEqualTo:nil coder:aCoder]
+    [self _encodeValue:_offStateImage forKey:CPMenuItemOffStateImageKey ifNotEqualTo:nil coder:aCoder]
+    [self _encodeValue:_mixedStateImage forKey:CPMenuItemMixedStateImageKey ifNotEqualTo:nil coder:aCoder]
 
-    ENCODE_IFNOT(CPMenuItemSubmenuKey, _submenu, nil);
-    ENCODE_IFNOT(CPMenuItemMenuKey, _menu, nil);
+    [self _encodeValue:_submenu forKey:CPMenuItemSubmenuKey ifNotEqualTo:nil coder:aCoder]
+    [self _encodeValue:_menu forKey:CPMenuItemMenuKey ifNotEqualTo:nil coder:aCoder]
 
     if (_keyEquivalent && _keyEquivalent.length)
         [aCoder encodeObject:_keyEquivalent forKey:CPMenuItemKeyEquivalentKey];
@@ -1036,8 +1044,9 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
     if (_indentationLevel > 0)
         [aCoder encodeInt:_indentationLevel forKey:CPMenuItemIndentationLevelKey];
 
-    ENCODE_IFNOT(CPMenuItemRepresentedObjectKey, _representedObject, nil);
-    ENCODE_IFNOT(CPMenuItemViewKey, _view, nil);
+    [self _encodeValue:_representedObject forKey:CPMenuItemRepresentedObjectKey ifNotEqualTo:nil coder:aCoder]
+    [self _encodeValue:_view forKey:CPMenuItemViewKey ifNotEqualTo:nil coder:aCoder]
 }
+
 
 @end

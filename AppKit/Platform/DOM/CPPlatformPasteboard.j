@@ -35,11 +35,6 @@
 // From CPPlatformWindow+DOM.j
 @global _CPDOMEventStop
 
-#if PLATFORM(DOM)
-
-#define SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent) anEvent._suppressCappuccinoCut = YES
-#define SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT(anEvent) anEvent._suppressCappuccinoPaste = YES
-
 var hasEditableTarget = function(aDOMEvent)
 {
     var target = aDOMEvent.target || aDOMEvent.srcElement;
@@ -278,9 +273,9 @@ var hasEditableTarget = function(aDOMEvent)
     if (!currentEventShouldBeSuppressed)
     {
         if (characters === "v")
-            SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT(anEvent);
+            anEvent._suppressCappuccinoPaste = YES;
         else if (characters === "x")
-            SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent);
+            anEvent._suppressCappuccinoCut = YES;
     }
 }
 
@@ -479,7 +474,7 @@ Return true if the event may be a copy and paste event, but the target is not an
     var anEvent = [self _fakeClipboardEvent:aDOMEvent type:"v"],
         platformWindow = [[anEvent window] platformWindow];
 
-    SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT(anEvent);
+    anEvent._suppressCappuccinoPaste = YES;
 
     // By default we'll stop the native handling of the event since we're handling it ourselves. However, we need to
     // stop it before we send the event so that the event can overrule our choice. CPTextField for instance wants the
@@ -505,7 +500,7 @@ Return true if the event may be a copy and paste event, but the target is not an
     var anEvent = [self _fakeClipboardEvent:aDOMEvent type:(aDOMEvent.type.indexOf("cut") != CPNotFound ? "x" : "c")],
         platformWindow = [[anEvent window] platformWindow];
 
-    SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent);
+    anEvent._suppressCappuccinoCut = YES;
 
     [platformWindow _propagateCurrentDOMEvent:NO];
 
@@ -539,4 +534,3 @@ Return true if the event may be a copy and paste event, but the target is not an
 
 @end
 
-#endif

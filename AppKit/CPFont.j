@@ -51,14 +51,40 @@ var _CPFontCache                   = {},
     _CPFontSystemFontFaceSpecified = NO;
 
 
-#define _CPRealFontSize(aSize)  (aSize <= 0 ? _CPFontSystemFontSize : aSize)
-#define _CPFontNormalizedNames(aName)  _CPFontNormalizedNameArray(aName).join(", ")
-#define _CPCachedFont(aName, aSize, isBold, isItalic)  _CPFontCache[_CPFontCreateCSSString(_CPFontNormalizedNames(aName), aSize, isBold, isItalic)]
-#define _CPUserFont(aName, aSize, isBold, isItalic)  _CPCachedFont(aName, aSize, isBold, isItalic) || [[CPFont alloc] _initWithName:aName size:aSize bold:isBold italic:isItalic system:NO]
+function _CPRealFontSize(aSize)
+{
+    return (aSize <= 0 ? _CPFontSystemFontSize : aSize);
+}
 
-#define _CPSystemFontCacheKey(aSize, isBold)  (String(aSize) + (isBold ? "b" : ""))
-#define _CPCachedSystemFont(aSize, isBold)  _CPSystemFontCache[_CPSystemFontCacheKey(aSize, isBold)]
-#define _CPSystemFont(aSize, isBold)  (_CPCachedSystemFont(aSize, isBold) || [[CPFont alloc] _initWithName:_CPFontSystemFacePlaceholder size:aSize bold:isBold italic:NO system:YES])
+function _CPFontNormalizedNames(aName)
+{
+    return _CPFontNormalizedNameArray(aName).join(", ");
+}
+
+function _CPCachedFont(aName, aSize, isBold, isItalic)
+{
+    return _CPFontCache[_CPFontCreateCSSString(_CPFontNormalizedNames(aName), aSize, isBold, isItalic)];
+}
+
+function _CPUserFont(aName, aSize, isBold, isItalic)
+{
+    return _CPCachedFont(aName, aSize, isBold, isItalic) || [[CPFont alloc] _initWithName:aName size:aSize bold:isBold italic:isItalic system:NO];
+}
+
+function _CPSystemFontCacheKey(aSize, isBold)
+{
+    return (String(aSize) + (isBold ? "b" : ""));
+}
+
+function _CPCachedSystemFont(aSize, isBold)
+{
+    return _CPSystemFontCache[_CPSystemFontCacheKey(aSize, isBold)];
+}
+
+function _CPSystemFont(aSize, isBold)
+{
+    return (_CPCachedSystemFont(aSize, isBold) || [[CPFont alloc] _initWithName:_CPFontSystemFacePlaceholder size:aSize bold:isBold italic:NO system:YES]);
+}
 
 /*!
 @ingroup appkit

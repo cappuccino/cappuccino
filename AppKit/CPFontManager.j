@@ -25,6 +25,7 @@
 @import "CPControl.j"
 @import "CPFont.j"
 @import "CPFontDescriptor.j"
+@import "CPCompatibility.j"
 
 @global CPApp
 @class CPFontPanel
@@ -132,28 +133,31 @@ CPRemoveTraitFontAction = 7;
     {
         _availableFonts = [];
 
-#if PLATFORM(DOM)
-        _CPFontDetectSpan = document.createElement("span");
-        _CPFontDetectSpan.fontSize = "24px";
-        _CPFontDetectSpan.appendChild(document.createTextNode("mmmmmmmmmml"));
-        var div = document.createElement("div");
-        div.style.position = "absolute";
-        div.style.top = "-1000px";
-        div.appendChild(_CPFontDetectSpan);
-        document.getElementsByTagName("body")[0].appendChild(div);
-
-        _CPFontDetectReferenceFonts = _CPFontDetectPickTwoDifferentFonts(["monospace", "serif", "sans-serif", "cursive"]);
-
-        for (var i = 0; i < _CPFontDetectAllFonts.length; i++)
+        if (CPDOMAvailable)
         {
-            var available = _CPFontDetectFontAvailable(_CPFontDetectAllFonts[i]);
-            if (available)
-                _availableFonts.push(_CPFontDetectAllFonts[i]);
+            _CPFontDetectSpan = document.createElement("span");
+            _CPFontDetectSpan.fontSize = "24px";
+            _CPFontDetectSpan.appendChild(document.createTextNode("mmmmmmmmmml"));
+            var div = document.createElement("div");
+            div.style.position = "absolute";
+            div.style.top = "-1000px";
+            div.appendChild(_CPFontDetectSpan);
+            document.getElementsByTagName("body")[0].appendChild(div);
+
+            _CPFontDetectReferenceFonts = _CPFontDetectPickTwoDifferentFonts(["monospace", "serif", "sans-serif", "cursive"]);
+
+            for (var i = 0; i < _CPFontDetectAllFonts.length; i++)
+            {
+                var available = _CPFontDetectFontAvailable(_CPFontDetectAllFonts[i]);
+                if (available)
+                    _availableFonts.push(_CPFontDetectAllFonts[i]);
+            }
         }
-#else
-        // If there's no font detection, just assume all fonts are available.
-        _availableFonts = _CPFontDetectAllFonts;
-#endif
+        else
+        {
+            // If there's no font detection, just assume all fonts are available.
+            _availableFonts = _CPFontDetectAllFonts;
+        }
     }
     return _availableFonts;
 }

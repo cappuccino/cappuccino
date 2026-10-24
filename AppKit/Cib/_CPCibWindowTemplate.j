@@ -91,9 +91,7 @@
 
     if (!windowClass)
     {
-#if DEBUG
         CPLog.warn("Unknown class \"%@\" in cib file, using CPWindow instead.", [self windowClass]);
-#endif
         windowClass = [CPWindow class];
     }
 

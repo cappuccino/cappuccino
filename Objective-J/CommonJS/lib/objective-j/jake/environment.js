@@ -51,13 +51,10 @@ exports.ObjJ = new Environment("ObjJ");
 
 var CommonJS = new Environment("CommonJS");
 
-CommonJS.setCompilerFlags(["-DPLATFORM_COMMONJS"]);
-
 exports.CommonJS = CommonJS;
 
 var Browser = new Environment("Browser");
 
-Browser.setCompilerFlags(["-DPLATFORM_BROWSER", "-DPLATFORM_DOM"]);
 Browser.setSpritesImages(true);
 
 exports.Browser = Browser;

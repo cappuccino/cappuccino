@@ -112,7 +112,8 @@ CPLineMovesUp = 4;
 
 - (void)_init
 {
-    _lineFragmentPadding = 0.0;
+    // Cocoa's default: room at each end of a line fragment, so that text does not touch the container's edges.
+    _lineFragmentPadding = 5.0;
 
     _layoutManager = [[CPLayoutManager alloc] init];
     [_layoutManager addTextContainer:self];
@@ -129,6 +130,9 @@ CPLineMovesUp = 4;
 
     if (oldSize.width != _size.width)
     {
+        // Image attachments fit the new width before the text is laid out again.
+        [_textView _setTextAttachmentsMaximumWidth:MAX(0.0, _size.width - 2.0 * _lineFragmentPadding)];
+
         _inResizing = YES;
         [_layoutManager invalidateLayoutForCharacterRange:CPMakeRange(0, [[_layoutManager textStorage] length])
                                                    isSoft:NO
@@ -193,13 +197,16 @@ CPLineMovesUp = 4;
 
 - (void)textViewFrameChanged:(CPNotification)aNotification
 {
-    var newSize = CGSizeMake(_size.width, _size.height);
+    // As in Cocoa, a tracking container fills the text view inside its text container inset on both sides.
+    var newSize = CGSizeMake(_size.width, _size.height),
+        frameSize = [_textView frame].size,
+        inset = [_textView textContainerInset];
 
     if (_widthTracksTextView)
-        newSize.width = [_textView frame].size.width;
+        newSize.width = MAX(0.0, frameSize.width - 2.0 * inset.width);
 
     if (_heightTracksTextView)
-        newSize.height = [_textView frame].size.height;
+        newSize.height = MAX(0.0, frameSize.height - 2.0 * inset.height);
 
     [self setContainerSize:newSize];
 }
@@ -271,7 +278,8 @@ CPLineMovesUp = 4;
 var CPTextContainerSizeKey  = @"CPTextContainerSizeKey",
     CPTextContainerLayoutManagerKey  = @"CPTextContainerLayoutManagerKey",
     CPTextContainerWidthTracksTextViewKey  = @"CPTextContainerWidthTracksTextViewKey",
-    CPTextContainerHeightTracksTextViewKey  = @"CPTextContainerHeightTracksTextViewKey";
+    CPTextContainerHeightTracksTextViewKey  = @"CPTextContainerHeightTracksTextViewKey",
+    CPTextContainerLineFragmentPaddingKey   = @"CPTextContainerLineFragmentPaddingKey";
 
 @implementation CPTextContainer (CPCoding)
 
@@ -290,6 +298,10 @@ var CPTextContainerSizeKey  = @"CPTextContainerSizeKey",
 
         _widthTracksTextView = [aCoder decodeBoolForKey:CPTextContainerWidthTracksTextViewKey];
         _heightTracksTextView = [aCoder decodeBoolForKey:CPTextContainerHeightTracksTextViewKey];
+
+        // Archives made before the padding was archived keep the default from _init.
+        if ([aCoder containsValueForKey:CPTextContainerLineFragmentPaddingKey])
+            _lineFragmentPadding = [aCoder decodeFloatForKey:CPTextContainerLineFragmentPaddingKey];
     }
 
     return self;
@@ -301,6 +313,7 @@ var CPTextContainerSizeKey  = @"CPTextContainerSizeKey",
     [aCoder encodeObject:_layoutManager forKey:CPTextContainerLayoutManagerKey];
     [aCoder encodeBool:_widthTracksTextView forKey:CPTextContainerWidthTracksTextViewKey];
     [aCoder encodeBool:_heightTracksTextView forKey:CPTextContainerHeightTracksTextViewKey];
+    [aCoder encodeFloat:_lineFragmentPadding forKey:CPTextContainerLineFragmentPaddingKey];
 }
 
 @end

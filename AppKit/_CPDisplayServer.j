@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPRunLoop.j>
+@import "CPDOMDisplayServer.j"
 
 PREPARE_DOM_OPTIMIZATION();
 

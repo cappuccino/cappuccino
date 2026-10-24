@@ -135,9 +135,7 @@ CPCursorPlatformBoth    = 3;
     
     currentCursor = self;
 
-#if PLATFORM(DOM)
     [[self class] _setCursorCSS:_cssString];
-#endif
 }
 
 - (void)mouseEntered:(CPEvent)event
@@ -155,12 +153,10 @@ CPCursorPlatformBoth    = 3;
 
 + (void)_setCursorCSS:(CPString)aString
 {
-#if PLATFORM(DOM)
     var platformWindows = [[CPPlatformWindow visiblePlatformWindows] allObjects];
 
     for (var i = 0, count = [platformWindows count]; i < count; i++)
         platformWindows[i]._DOMBodyElement.style.cursor = aString;
-#endif
 }
 
 // Internal method that is used to return the system cursors.  Caches the system cursors for performance.
@@ -217,7 +213,6 @@ CPCursorPlatformBoth    = 3;
 
 + (BOOL)_nativeCursorExists:(CPString)cursorCSSName
 {
-#if PLATFORM(DOM)
 
     // FIXME: Trick until FF/Win & Chrome/Win correctly implement context-menu cursor
     // They will answer that they implement it but they actually don't
@@ -240,7 +235,6 @@ CPCursorPlatformBoth    = 3;
 
         return doesExist;
     }
-#endif
 
     return NO;
 }

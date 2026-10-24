@@ -30,11 +30,11 @@
 @import "CPScroller.j"
 @import "CPView.j"
 @import "CPRulerView.j"
+@import "CPCompatibility.j"
 
 @class CPTableView
 @class CPRulerView
 
-#define SHOULD_SHOW_CORNER_VIEW() (_scrollerStyle === CPScrollerStyleLegacy && _verticalScroller && ![_verticalScroller isHidden])
 
 
 @protocol CPScrollViewDelegate <CPObject>
@@ -49,7 +49,8 @@
 /*! @ignore */
 var _isBrowserUsingOverlayScrollers = function()
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable) return NO;
+
     /*
         Even if the system supports overlay (Lion) scrollers,
         the browser (e.g. FireFox *cough*) may not.
@@ -85,9 +86,6 @@ var _isBrowserUsingOverlayScrollers = function()
     document.body.removeChild(outer);
 
     return usingOverlayScrollers;
-#else
-    return NO;
-#endif
 };
 
 var TIMER_INTERVAL                              = 0.2,
@@ -223,7 +221,7 @@ var _CPScrollViews;
         bounds.size.height -= [horizontalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
     if (verticalScrollerClass)
-        bounds.size.width -= [verticalScrollerClass scrollerWidthForControlSize:scrollerStyle];
+        bounds.size.width -= [verticalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
     return bounds.size;
 }
@@ -252,11 +250,11 @@ var _CPScrollViews;
         heightInset = contentSize.height - bounds.size.height,
         frameSize = CGSizeMake(contentSize.width + widthInset, contentSize.height + heightInset);
 
-    if (hFlag)
+    if (horizontalScrollerClass)
         frameSize.height += [horizontalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
-    if (vFlag)
-        frameSize.width += [verticalScrollerClass scrollerWidthForControlSize:scrollerStyle];
+    if (verticalScrollerClass)
+        frameSize.width += [verticalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
     return frameSize;
 }
@@ -917,7 +915,10 @@ Notifies the delegate when the scroll view has finished scrolling.
     _horizontalRuler = aRulerView;
 
     if (_horizontalRuler)
+    {
+        [_horizontalRuler setScrollView:self];
         [self addSubview:_horizontalRuler];
+    }
 
     [self tile];
 }
@@ -936,7 +937,10 @@ Notifies the delegate when the scroll view has finished scrolling.
     _verticalRuler = aRulerView;
 
     if (_verticalRuler)
+    {
+        [_verticalRuler setScrollView:self];
         [self addSubview:_verticalRuler];
+    }
 
     [self tile];
 }
@@ -1037,7 +1041,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 
         if (_cornerView)
         {
-            [_cornerView setHidden:!SHOULD_SHOW_CORNER_VIEW()];
+            [_cornerView setHidden:![self _shouldShowCornerView]];
             [self addSubview:_cornerView];
         }
     }
@@ -1080,7 +1084,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     frame.size.height = CGRectGetHeight([headerView frame]);
 
-    if (SHOULD_SHOW_CORNER_VIEW())
+    if ([self _shouldShowCornerView])
         frame.size.width -= CGRectGetWidth([self _cornerViewFrame]);
 
     return frame;
@@ -1319,8 +1323,8 @@ Notifies the delegate when the scroll view has finished scrolling.
     var showHorizontalRuler = _rulersVisible && _hasHorizontalRuler && _horizontalRuler,
         showVerticalRuler = _rulersVisible && _hasVerticalRuler && _verticalRuler;
 
-    var horizRulerThickness = showHorizontalRuler ? ([_horizontalRuler respondsToSelector:@selector(ruleThickness)] ? [_horizontalRuler ruleThickness] : 16.0) : 0.0,
-        vertRulerThickness = showVerticalRuler ? ([_verticalRuler respondsToSelector:@selector(ruleThickness)] ? [_verticalRuler ruleThickness] : 24.0) : 0.0;
+    var horizRulerThickness = showHorizontalRuler ? [_horizontalRuler requiredThickness] : 0.0,
+        vertRulerThickness = showVerticalRuler ? [_verticalRuler requiredThickness] : 0.0;
 
     if (showHorizontalRuler)
     {
@@ -1443,7 +1447,7 @@ Notifies the delegate when the scroll view has finished scrolling.
     [_headerClipView setFrame:[self _headerClipViewFrame]];
     [[_headerClipView documentView] setNeedsDisplay:YES];
     
-    if (SHOULD_SHOW_CORNER_VIEW())
+    if ([self _shouldShowCornerView])
     {
         [_cornerView setFrame:[self _cornerViewFrame]];
         [_cornerView setHidden:NO];
@@ -1469,10 +1473,7 @@ Notifies the delegate when the scroll view has finished scrolling.
             horizRulerThickness
         )];
         
-        if ([_horizontalRuler respondsToSelector:@selector(updateRuler)])
-            [_horizontalRuler updateRuler];
-        else
-            [_horizontalRuler setNeedsDisplay:YES];
+        [_horizontalRuler setNeedsDisplay:YES];
     }
 
     if (showVerticalRuler)
@@ -1484,10 +1485,7 @@ Notifies the delegate when the scroll view has finished scrolling.
             CGRectGetHeight(contentFrame)
         )];
         
-        if ([_verticalRuler respondsToSelector:@selector(updateRuler)])
-            [_verticalRuler updateRuler];
-        else
-            [_verticalRuler setNeedsDisplay:YES];
+        [_verticalRuler setNeedsDisplay:YES];
     }
 
     --_recursionCount;
@@ -1763,6 +1761,10 @@ Notifies the delegate when the scroll view has finished scrolling.
     [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0)];
 }
 
+- (BOOL)_shouldShowCornerView
+{
+    return (_scrollerStyle === CPScrollerStyleLegacy && _verticalScroller && ![_verticalScroller isHidden]);
+}
 @end
 
 // MARK: -
@@ -1907,6 +1909,10 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _verticalRuler          = [aCoder decodeObjectForKey:CPScrollViewVRulerKey];
         _horizontalRuler        = [aCoder decodeObjectForKey:CPScrollViewHRulerKey];
 
+        // A ruler does not archive its scroll view, which owns it.
+        [_verticalRuler setScrollView:self];
+        [_horizontalRuler setScrollView:self];
+
         _delegate = nil;
         _scrollTimer = nil;
         _implementedDelegateMethods = 0;
@@ -1966,5 +1972,6 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
     [aCoder encodeObject:_verticalRuler         forKey:CPScrollViewVRulerKey];
     [aCoder encodeObject:_horizontalRuler       forKey:CPScrollViewHRulerKey];
 }
+
 
 @end

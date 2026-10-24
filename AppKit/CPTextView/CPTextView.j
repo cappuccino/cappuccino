@@ -29,13 +29,14 @@
 @import "CPColorPanel.j"
 @import "CPFontManager.j"
 @import "CPTextStorage.j"
-@import "CPTextContainer.j"
 @import "CPLayoutManager.j"
 @import "CPParagraphStyle.j"
+@import "CPTextList.j"
+@import "CPTextContainer.j"
+@import "CPRulerView.j"
 
 @import "_CPRTFParser.j"
 @import "_CPRTFProducer.j"
-
 
 @class CPClipView;
 @class CPMenu;
@@ -57,6 +58,36 @@
 @end
 
 @global document
+
+/*
+    The system clipboard. A key equivalent such as Command-C, Command-X or Command-V lets the
+    browser send its own clipboard event, which _CPNativeInputManager handles with the
+    clipboard data of that event. A menu item chosen with the mouse, or a button, has no such
+    event, so the text view uses the asynchronous Clipboard API instead. That API carries only
+    plain text in current browsers. Rich text copied in the application stays on the internal
+    pasteboard, and is pasted from there when the system clipboard still holds the same plain
+    text.
+*/
+
+/*
+    Returns YES if two clipboard strings hold the same text, ignoring the line ending
+    conventions that the system clipboard may apply.
+*/
+var _CPTextViewClipboardStringsMatch = function(aString, anotherString)
+{
+    if (!aString || !anotherString)
+        return NO;
+
+    return aString.replace(/\r\n?/g, "\n") === anotherString.replace(/\r\n?/g, "\n");
+};
+
+/*
+    Returns YES if the browser provides the asynchronous Clipboard API.
+*/
+var _CPTextViewHasAsyncClipboard = function()
+{
+    return CPDOMAvailable && typeof navigator !== "undefined" && !!navigator.clipboard && !!navigator.clipboard.readText && !!navigator.clipboard.writeText;
+};
 
 _MakeRangeFromAbs = function(a1, a2)
 {
@@ -122,6 +153,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 @implementation CPTextView : CPText
 {
     BOOL                        _allowsUndo                   @accessors(property=allowsUndo);
+    BOOL                        _usesRuler;
     BOOL                        _isHorizontallyResizable      @accessors(getter=isHorizontallyResizable, setter=setHorizontallyResizable:);
     BOOL                        _isVerticallyResizable        @accessors(getter=isVerticallyResizable, setter=setVerticallyResizable:);
     BOOL                        _usesFontPanel                @accessors(property=usesFontPanel);
@@ -149,7 +181,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     int                         _startTrackingLocation;
 
     _CPCaret                    _caret;
-    CPTimer                     _scrollingTimer;
 
     BOOL                        _scrollingDownward;
     CPRange                     _movingSelection;
@@ -210,6 +241,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self _init];
         [aContainer setTextView:self];
 
+        // Fit a container that tracks the text view's size inside the text container inset.
+        [aContainer textViewFrameChanged:nil];
+
         [self setEditable:YES];
         [self setSelectable:YES];
         [self setRichText:NO];
@@ -242,11 +276,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)_init
 {
-#if PLATFORM(DOM)
+    if (CPDOMAvailable)
+    {
         _DOMElement.style.cursor = "text";
-#endif
+    }
 
     _selectionRange = CPMakeRange(0, 0);
+    _usesRuler = YES;
     _textContainerInset = CGSizeMake(2, 0);
     _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
 
@@ -293,6 +329,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [super _removeObservers];
     [self _setObserveWindowKeyNotifications:NO];
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPTextAttachmentDidChangeSizeNotification object:nil];
     [self _removeDelegateObservers];
 }
 
@@ -303,6 +340,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [super _addObservers];
     [self _setObserveWindowKeyNotifications:YES];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_textAttachmentDidChangeSize:) name:_CPTextAttachmentDidChangeSizeNotification object:nil];
     [self _startObservingClipView];
     [self _addDelegateObservers];
 }
@@ -447,6 +485,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 // MARK: -
 // MARK: Copy and paste methods
 
+/* @ignore
+    Returns YES if a clipboard action comes from the browser's clipboard event or from a key
+    equivalent. The browser then sends its own clipboard event, which carries the clipboard data.
+*/
+- (BOOL)_isKeyboardClipboardAction:(id)sender
+{
+    return sender === _CPNativeInputManager || [sender isKindOfClass:_CPNativeInputManager] || [[CPApp currentEvent] type] === CPKeyDown;
+}
+
 - (void)copy:(id)sender
 {
     [super copy:sender];
@@ -462,13 +509,23 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [pasteboard setString:[stringForPasting._string stringByReplacingOccurrencesOfString:_CPAttachmentCharacterAsString withString:''] forType:CPStringPboardType];
         [pasteboard setString:richData forType:CPRTFPboardType];
         [pasteboard setString:_previousSelectionGranularity + '' forType:_CPSmartPboardType];
-        [pasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:stringForPasting] rawString] forType:_CPASPboardType];
+        [pasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:[self _attributedStringForArchiving:stringForPasting]] rawString] forType:_CPASPboardType];
     }
     else
     {
         [pasteboard declareTypes:[CPStringPboardType, _CPSmartPboardType] owner:nil];
         [pasteboard setString:stringForPasting._string forType:CPStringPboardType];
         [pasteboard setString:_previousSelectionGranularity + '' forType:_CPSmartPboardType];
+    }
+
+    // Without a browser clipboard event, the plain text goes to the system clipboard through the
+    // asynchronous Clipboard API.
+    if (selectedRange.length && ![self _isKeyboardClipboardAction:sender] && _CPTextViewHasAsyncClipboard())
+    {
+        navigator.clipboard.writeText([pasteboard stringForType:CPStringPboardType] || "").then(nil, function(anError)
+        {
+            CPLog.warn("CPTextView: the browser refused to write to the clipboard: " + anError);
+        });
     }
 }
 
@@ -513,18 +570,74 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 - (void)pasteAsPlainText:(id)sender
 {
-    if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
-        return
-
-    [self _pasteString:[self _plainStringForPasting]];
+    if (sender === _CPNativeInputManager || [sender isKindOfClass:_CPNativeInputManager])
+        [self _pasteString:[self _plainStringForPasting]];
+    else if (![self _isKeyboardClipboardAction:sender])
+        [self _pasteFromSystemClipboardAsPlainText:YES];
 }
 
+/*!
+    Pastes the contents of the clipboard at the insertion point or over the selection. Rich text
+    is pasted as rich text in a rich text view. From a key equivalent, the browser's paste event
+    supplies the clipboard. From a menu item or a button, the text view reads the system
+    clipboard through the asynchronous Clipboard API.
+    @param sender the object requesting this
+*/
 - (void)paste:(id)sender
 {
-    if ([[CPApp currentEvent] type] != CPAppKitDefined)
-        return;
+    if (![self _isKeyboardClipboardAction:sender])
+        [self _pasteFromSystemClipboardAsPlainText:NO];
+}
 
-    [self _pasteString:[self _stringForPasting]];
+/* @ignore
+    Reads the system clipboard asynchronously and pastes it. Without the Clipboard API, the
+    internal pasteboard is pasted, as before. If the browser refuses access, for example because
+    the user declines, nothing is pasted.
+*/
+- (void)_pasteFromSystemClipboardAsPlainText:(BOOL)asPlainText
+{
+    if (!_CPTextViewHasAsyncClipboard())
+    {
+        [self _pasteString:asPlainText ? [self _plainStringForPasting] : [self _stringForPasting]];
+        return;
+    }
+
+    var textView = self;
+
+    navigator.clipboard.readText().then(function(aString)
+    {
+        [textView _pasteSystemClipboardString:aString asPlainText:asPlainText];
+
+        // The paste happens outside the run loop, so the run loop is run here to close the
+        // undo group and to display the change.
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    },
+    function(anError)
+    {
+        CPLog.warn("CPTextView: the browser refused to read the clipboard: " + anError);
+    });
+}
+
+/* @ignore
+    Pastes aString, read from the system clipboard. When it is the plain text of the internal
+    pasteboard, the clipboard holds what the application copied last, so the internal pasteboard
+    is pasted, with its rich text. Otherwise the clipboard holds text from elsewhere: it replaces
+    the internal pasteboard, so that later pastes agree with it, and is pasted as plain text.
+*/
+- (void)_pasteSystemClipboardString:(CPString)aString asPlainText:(BOOL)asPlainText
+{
+    var pasteboard = [CPPasteboard generalPasteboard];
+
+    if (!_CPTextViewClipboardStringsMatch(aString, [pasteboard stringForType:CPStringPboardType]))
+    {
+        if (!aString)
+            return;
+
+        [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+        [pasteboard setString:aString forType:CPStringPboardType];
+    }
+
+    [self _pasteString:asPlainText ? [self _plainStringForPasting] : [self _stringForPasting]];
 }
 
 // MARK: -
@@ -689,6 +802,95 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [[[self window] undoManager] redo];
 }
 
+/*
+    @ignore
+    Returns the undo manager that records the text view's changes, or nil when allowsUndo is NO,
+    so that a text view that does not allow undo registers nothing.
+*/
+- (CPUndoManager)_registeringUndoManager
+{
+    return _allowsUndo ? [[self window] undoManager] : nil;
+}
+
+/*!
+    A text view that does not allow undo does not respond to \c -undo: or \c -redo:, so those
+    actions continue along the responder chain to the window, as in Cocoa.
+*/
+- (BOOL)respondsToSelector:(SEL)aSelector
+{
+    if (!_allowsUndo && (aSelector === @selector(undo:) || aSelector === @selector(redo:)))
+        return NO;
+
+    return [super respondsToSelector:aSelector];
+}
+
+/*!
+    Enables the Undo and Redo items only when the undo manager has a change to undo or redo.
+    For \c -toggleRuler:, the item's title becomes "Hide Ruler" or "Show Ruler" to reflect the
+    ruler's visibility, and the item is enabled only when the text view uses a ruler and lies
+    in a scroll view. \c -copyRuler: is enabled in rich text, and \c -pasteRuler: in editable
+    rich text when the ruler pasteboard holds a ruler. \c -changeTextList: is enabled in editable
+    rich text, and its item is checked when it shows the list style at the selection.
+    \c -insertImage: is enabled in editable rich text.
+    \c -copyFont: is enabled in rich text, and
+    \c -pasteFont: in editable rich text when the font pasteboard holds a style. The superscript,
+    subscript and baseline actions are enabled in editable rich text. Every other item is enabled.
+    @param anItem the item to validate
+    @return \c YES if the item should be enabled
+*/
+- (BOOL)validateUserInterfaceItem:(id /*<CPValidatedUserInterfaceItem>*/)anItem
+{
+    var action = [anItem action];
+
+    if (action === @selector(undo:))
+        return [[[self window] undoManager] canUndo];
+
+    if (action === @selector(redo:))
+        return [[[self window] undoManager] canRedo];
+
+    // Baseline changes apply only to editable rich text.
+    if (action === @selector(superscript:) || action === @selector(subscript:) || action === @selector(unscript:) ||
+        action === @selector(raiseBaseline:) || action === @selector(lowerBaseline:))
+        return [self isEditable] && [self isRichText];
+
+    // As in Cocoa, rulers can be copied and pasted only in rich text.
+    if (action === @selector(copyRuler:))
+        return [self isRichText];
+
+    if (action === @selector(pasteRuler:))
+        return [self isRichText] && [self isEditable] && !![[CPPasteboard pasteboardWithName:CPRulerPboard] availableTypeFromArray:[CPRulerPboardType]];
+
+    // Images can be inserted only in editable rich text.
+    if (action === @selector(insertImage:))
+        return [self isEditable] && [self isRichText];
+
+    // Lists apply only to editable rich text. The item for the list style at the selection is checked.
+    if (action === @selector(changeTextList:))
+    {
+        if ([anItem respondsToSelector:@selector(setState:)])
+            [anItem setState:[self _textListStyleMatchesItem:anItem] ? CPOnState : CPOffState];
+
+        return [self isEditable] && [self isRichText];
+    }
+
+    // As in Cocoa, styles can be copied and pasted only in rich text.
+    if (action === @selector(copyFont:))
+        return [self isRichText];
+
+    if (action === @selector(pasteFont:))
+        return [self isRichText] && [self isEditable] && !![[CPPasteboard pasteboardWithName:CPFontPboard] availableTypeFromArray:[CPFontPboardType]];
+
+    if (action === @selector(toggleRuler:))
+    {
+        if ([anItem respondsToSelector:@selector(setTitle:)])
+            [anItem setTitle:[self isRulerVisible] ? @"Hide Ruler" : @"Show Ruler"];
+
+        return _usesRuler && !![self enclosingScrollView];
+    }
+
+    return YES;
+}
+
 
 // MARK: -
 // MARK: Accessors
@@ -759,6 +961,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     _textContainerInset = aSize;
     [self invalidateTextContainerOrigin];
+
+    // A container that tracks the text view's size must shrink or grow with the new inset.
+    [_textContainer textViewFrameChanged:nil];
 }
 
 - (void)invalidateTextContainerOrigin
@@ -815,17 +1020,21 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self sizeToFit];
     [self scrollRangeToVisible:_selectionRange];
     [self setNeedsDisplay:YES];
+
+    // An undone or redone change may alter the paragraph style even when the selection stays the same.
+    [self updateRuler];
 }
 
 - (void)_replaceCharactersInRange:(CPRange)aRange withAttributedString:(CPString)aString selectionRange:(CPRange)selectionRange
 {
-    [[[[self window] undoManager] prepareWithInvocationTarget:self]
+    [[[self _registeringUndoManager] prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
                      withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]
                            selectionRange:CPMakeRangeCopy(_selectionRange)];
 
     [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
     [self _fixupReplaceForRange:selectionRange];
+    [self _updateTextListMarkersAroundRange:CPMakeRange(aRange.location, [aString length])];
 }
 
 - (void)insertText:(CPString)aString
@@ -840,8 +1049,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         aString = [[CPAttributedString alloc] initWithString:aString attributes:_typingAttributes];
     else if (![self isRichText])
         aString = [[CPAttributedString alloc] initWithString:string attributes:_typingAttributes];
+    else
+        [self _prepareTextAttachmentsInAttributedString:aString];
 
-    var undoManager = [[self window] undoManager];
+    var undoManager = [self _registeringUndoManager];
     [undoManager setActionName:@"Replace/insert text"];
 
     [[undoManager prepareWithInvocationTarget:self]
@@ -854,7 +1065,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self didChangeValueForKey:@"objectValue"];
     [self _continuouslyReverseSetBinding];
 
+    var insertionLocation = _selectionRange.location;
+
     [self _setSelectedRange:CPMakeRange(_selectionRange.location + [string length], 0) affinity:0 stillSelecting:NO overwriteTypingAttributes:NO];
+    [self _updateTextListMarkersAroundRange:CPMakeRange(insertionLocation, [string length])];
     _startTrackingLocation = _selectionRange.location;
 
     [self didChangeText];
@@ -887,7 +1101,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)drawRect:(CGRect)aRect
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     var range = [_layoutManager glyphRangeForBoundingRect:aRect inTextContainer:_textContainer];
 
     for (var i = 0; i < [_selectionSpans count]; i++)
@@ -924,7 +1140,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
     else
         [_caret setVisibility:NO];
-#endif
 }
 
 
@@ -969,6 +1184,33 @@ Sets the selection to a range of characters in response to user action.
 @param selecting YES to behave appropriately for a continuing selection where the user is still dragging the mouse, NO otherwise. If YES, the receiver doesn’t send notifications or remove the marking from its marked text. If NO, the receiver posts an NSTextViewDidChangeSelectionNotification to the default notification center and removes the marking from marked text if the new selection is greater than the marked region.
 @param doOverwrite YES to override typing attributes. NO to not override.
 */
+/* @ignore
+    Returns the typing attributes for a selection, as in Cocoa: those of the first character of
+    a selection, or of the character before an insertion point. At the start of a paragraph the
+    insertion point takes the attributes of the paragraph's first character, so that it keeps
+    the paragraph's own style. At the end of the text it takes those of the last character.
+*/
+- (CPDictionary)_typingAttributesForSelectionRange:(CPRange)aRange
+{
+    var string = [_textStorage string],
+        length = string.length,
+        index = aRange.location;
+
+    if (!length)
+        return [_typingAttributes copy];
+
+    if (!aRange.length && index > 0)
+    {
+        var previousCharCode = string.charCodeAt(index - 1),
+            isParagraphStart = previousCharCode === 10 || previousCharCode === 13 || previousCharCode === 0x2029;
+
+        if (!isParagraphStart || index >= length)
+            index--;
+    }
+
+    return [_textStorage attributesAtIndex:MIN(index, length - 1) effectiveRange:nil];
+}
+
 - (void)_setSelectedRange:(CPRange)range affinity:(CPSelectionAffinity)affinity stillSelecting:(BOOL)selecting overwriteTypingAttributes:(BOOL)doOverwrite
 {
     var maxRange = CPMakeRange(0, [_layoutManager numberOfCharacters]),
@@ -1008,7 +1250,11 @@ Sets the selection to a range of characters in response to user action.
             isNewSelection = !CPEqualRanges(newSelectionRange, _mouseDownOldSelection);
 
         if (doOverwrite && _placeholderString == nil && isNewSelection)
-            [self setTypingAttributes:[_textStorage attributesAtIndex:CPMaxRange(range) effectiveRange:nil]];
+            [self setTypingAttributes:[self _typingAttributesForSelectionRange:newSelectionRange]];
+
+        // The ruler shows the paragraph style at the selection.
+        if (isNewSelection)
+            [self updateRuler];
 
         // Update the shared CPColorPanel with the active selection color
         if ([self _isFirstResponder] && [_textStorage length] > 0)
@@ -1036,9 +1282,10 @@ Sets the selection to a range of characters in response to user action.
        [_CPNativeInputManager focusForClipboardOfTextView:self];
 }
 
-#if PLATFORM(DOM)
 - (CGPoint)_cumulativeOffset
 {
+    if (!CPDOMAvailable) return CGPointMake(0, 0);
+
     var top = 0,
         left = 0,
         element = self._DOMElement;
@@ -1053,7 +1300,6 @@ Sets the selection to a range of characters in response to user action.
 
     return CGPointMake(left, top);
 }
-#endif
 
 - (CPArray)selectedRanges
 {
@@ -1697,7 +1943,7 @@ Sets the selection to a range of characters in response to user action.
 
     changedRange = CPIntersectionRange(CPMakeRange(0, [_layoutManager numberOfCharacters]), changedRange);
 
-    [[[_window undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(changedRange.location, 0)
+    [[[self _registeringUndoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(changedRange.location, 0)
                                                                    withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(changedRange)]
                                                                          selectionRange:CPMakeRangeCopy(_selectionRange)];
     [self willChangeValueForKey:@"objectValue"];
@@ -1706,6 +1952,7 @@ Sets the selection to a range of characters in response to user action.
     [self _continuouslyReverseSetBinding];
 
     [self setSelectedRange:CPMakeRange(changedRange.location, 0)];
+    [self _updateTextListMarkersAroundRange:CPMakeRange(changedRange.location, 0)];
     [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
@@ -1739,6 +1986,9 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)deleteBackward:(id)sender
 {
+    if ([self _deleteBackwardInTextList])
+        return;
+
     [self deleteBackward:self handleSmart:[self _shouldUseSmartPasting] && _selectionRange.length > 0];
 }
 
@@ -1756,7 +2006,8 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)cut:(id)sender
 {
-    if ([[CPApp currentEvent] type] != CPAppKitDefined)
+    // From a key equivalent, the browser's cut event copies and deletes the selection.
+    if ([self _isKeyboardClipboardAction:sender])
         return;
 
     var selectedRange = [self selectedRange];
@@ -1777,7 +2028,33 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)insertTab:(id)sender
 {
+    if ([self _insertTabInTextList])
+        return;
+
     [self insertText:@"\t"];
+}
+
+/*!
+    Shift-Tab in a list item returns the item to the enclosing list. Elsewhere it moves to the
+    previous key view.
+    @param sender the object requesting this
+*/
+- (void)insertBacktab:(id)sender
+{
+    if ([self _insertBacktabInTextList])
+        return;
+
+    [[self window] selectPreviousKeyView:self];
+}
+
+/*
+    @ignore
+    As in Cocoa, an editable text view takes the Tab key and inserts a tab character.
+    Control-Tab still moves to the next key view.
+*/
+- (BOOL)_wantsTabKey
+{
+    return [self isEditable];
 }
 
 - (void)insertTabIgnoringFieldEditor:(id)sender
@@ -1792,6 +2069,12 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)insertNewline:(id)sender
 {
+    if ([self _insertNewlineInTextList])
+    {
+        [[self window] _temporarilyDisableKeyEquivalentForDefaultButton];
+        return;
+    }
+
     [self insertLineBreak:sender];
 }
 
@@ -1839,7 +2122,9 @@ Sets the selection to a range of characters in response to user action.
 
 - (CPDictionary)_attributesForFontPanel
 {
-    var attributes = [[_textStorage attributesAtIndex:CPMaxRange(_selectionRange) effectiveRange:nil] copy];
+    // The font panel shows the font that typing would use: that of the first selected character,
+    // or of the character before the insertion point.
+    var attributes = [[self _typingAttributesForSelectionRange:_selectionRange] mutableCopy];
 
     [self _enrichEssentialTypingAttributes:attributes];
 
@@ -1884,7 +2169,7 @@ Sets the selection to a range of characters in response to user action.
 
     var currentAttributes = [_textStorage attributesAtIndex:range.location effectiveRange:nil] || _typingAttributes;
 
-    [[[[self window] undoManager] prepareWithInvocationTarget:self]
+    [[[self _registeringUndoManager] prepareWithInvocationTarget:self]
                                                       setFont:[currentAttributes objectForKey:CPFontAttributeName] || [self font]
                                                         range:CPMakeRangeCopy(range)];
 
@@ -1898,7 +2183,7 @@ Sets the selection to a range of characters in response to user action.
         oldFont,
         attributes,
         scrollRange = CPMakeRange(CPMaxRange(_selectionRange), 0),
-        undoManager = [[self window] undoManager];
+        undoManager = [self _registeringUndoManager];
 
     [undoManager beginUndoGrouping];
 
@@ -1918,11 +2203,11 @@ Sets the selection to a range of characters in response to user action.
         }
         else
         {
-            attributes = [_textStorage attributesAtIndex:_selectionRange.location
-                                       longestEffectiveRange:_selectionRange
-                                                     inRange:_selectionRange];
-            oldFont = [attributes objectForKey:CPFontAttributeName] || [self font];
+            // As in Cocoa, without a selection the change applies to the typing attributes, so
+            // repeated changes, such as Bigger, build on each other.
+            oldFont = [_typingAttributes objectForKey:CPFontAttributeName] || [self font];
             [_typingAttributes setObject:[sender convertFont:oldFont] forKey:CPFontAttributeName];
+            [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
         }
     }
     else
@@ -1962,7 +2247,7 @@ Sets the selection to a range of characters in response to user action.
 {
     var currentAttributes = [_textStorage attributesAtIndex:range.location effectiveRange:nil] || _typingAttributes;
 
-    [[[[self window] undoManager] prepareWithInvocationTarget:self]
+    [[[self _registeringUndoManager] prepareWithInvocationTarget:self]
                                                  setTextColor:[currentAttributes objectForKey:CPForegroundColorAttributeName] || _textColor
                                                         range:CPMakeRangeCopy(range)];
 
@@ -1992,6 +2277,260 @@ Sets the selection to a range of characters in response to user action.
 {
     // This will trigger changeFont: via the FontManager
     [[CPFontManager sharedFontManager] addFontTrait:CPItalicFontMask];
+}
+
+// MARK: -
+// MARK: Style methods
+
+/*!
+    Copies the character attributes at the start of the selection, or the typing attributes
+    when nothing is selected, to the font pasteboard, so that Paste Style can apply them to
+    other text. The attributes include the font, colours, underline and baseline. As in Cocoa,
+    the paragraph style is not included: Copy Ruler copies it.
+    @param aSender the object requesting this
+*/
+- (@action)copyFont:(id)aSender
+{
+    var attributes = _selectionRange.length ? [_textStorage attributesAtIndex:_selectionRange.location effectiveRange:nil] : _typingAttributes,
+        pasteboard = [CPPasteboard pasteboardWithName:CPFontPboard];
+
+    [pasteboard declareTypes:[CPFontPboardType] owner:nil];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self _characterStyleFromAttributes:attributes]] forType:CPFontPboardType];
+}
+
+/*!
+    Applies the character attributes on the font pasteboard to the selected text, or to the
+    text typed next when nothing is selected. They replace the text's own character
+    attributes. Each paragraph keeps its paragraph style.
+    @param aSender the object requesting this
+*/
+- (@action)pasteFont:(id)aSender
+{
+    var data = [[CPPasteboard pasteboardWithName:CPFontPboard] dataForType:CPFontPboardType];
+
+    if (!data)
+        return;
+
+    var characterStyle = [CPKeyedUnarchiver unarchiveObjectWithData:data],
+        range = CPMakeRangeCopy(_selectionRange);
+
+    if (!range.length)
+    {
+        var typingAttributes = [characterStyle mutableCopy],
+            paragraphStyle = [_typingAttributes objectForKey:CPParagraphStyleAttributeName];
+
+        if (paragraphStyle)
+            [typingAttributes setObject:paragraphStyle forKey:CPParagraphStyleAttributeName];
+
+        [self setTypingAttributes:typingAttributes];
+        return;
+    }
+
+    if (![self _beginCharacterAttributeChangeInRange:range])
+        return;
+
+    // Each run keeps the attributes that are not part of a style: its paragraph style and, for an
+    // attachment character, the attachment.
+    var location = range.location,
+        end = CPMaxRange(range);
+
+    while (location < end)
+    {
+        var effectiveRange = CPMakeRange(0, 0),
+            runAttributes = [_textStorage attributesAtIndex:location effectiveRange:effectiveRange],
+            runRange = CPIntersectionRange(effectiveRange, range),
+            newAttributes = [characterStyle mutableCopy],
+            keptKeys = [CPParagraphStyleAttributeName, CPAttachmentAttributeName, _CPAttachmentView, _CPAttachmentInvisible];
+
+        if (!runRange.length)
+            runRange = CPMakeRange(location, end - location);
+
+        for (var i = 0; i < keptKeys.length; i++)
+        {
+            var value = [runAttributes objectForKey:keptKeys[i]];
+
+            if (value)
+                [newAttributes setObject:value forKey:keptKeys[i]];
+        }
+
+        [_textStorage setAttributes:newAttributes range:runRange];
+
+        location = CPMaxRange(runRange);
+    }
+
+    [self _endCharacterAttributeChangeInRange:range];
+}
+
+/* @ignore
+    Returns a copy of someAttributes without the attributes that are not part of a character
+    style: the paragraph style and the attachment.
+*/
+- (CPDictionary)_characterStyleFromAttributes:(CPDictionary)someAttributes
+{
+    var characterStyle = [someAttributes mutableCopy] || [CPDictionary dictionary];
+
+    [characterStyle removeObjectForKey:CPParagraphStyleAttributeName];
+    [characterStyle removeObjectForKey:CPAttachmentAttributeName];
+    [characterStyle removeObjectForKey:_CPAttachmentView];
+    [characterStyle removeObjectForKey:_CPAttachmentInvisible];
+
+    return characterStyle;
+}
+
+// MARK: -
+// MARK: Baseline methods
+
+/*!
+    Raises the superscript level of the selected text by one, or of the text typed next when
+    nothing is selected. Each run of the selection keeps its own level, raised by one.
+    @param aSender the object requesting this
+*/
+- (@action)superscript:(id)aSender
+{
+    [self _changeCharacterAttribute:CPSuperscriptAttributeName byAmount:1];
+}
+
+/*!
+    Lowers the superscript level of the selected text by one, or of the text typed next when
+    nothing is selected. A negative level is a subscript.
+    @param aSender the object requesting this
+*/
+- (@action)subscript:(id)aSender
+{
+    [self _changeCharacterAttribute:CPSuperscriptAttributeName byAmount:-1];
+}
+
+/*!
+    Removes the superscript level and the baseline offset of the selected text, or of the text
+    typed next when nothing is selected.
+    @param aSender the object requesting this
+*/
+- (@action)unscript:(id)aSender
+{
+    [self _removeCharacterAttributes:[CPSuperscriptAttributeName, CPBaselineOffsetAttributeName]];
+}
+
+/*!
+    Raises the baseline of the selected text by one point, or of the text typed next when
+    nothing is selected.
+    @param aSender the object requesting this
+*/
+- (@action)raiseBaseline:(id)aSender
+{
+    [self _changeCharacterAttribute:CPBaselineOffsetAttributeName byAmount:1.0];
+}
+
+/*!
+    Lowers the baseline of the selected text by one point, or of the text typed next when
+    nothing is selected.
+    @param aSender the object requesting this
+*/
+- (@action)lowerBaseline:(id)aSender
+{
+    [self _changeCharacterAttribute:CPBaselineOffsetAttributeName byAmount:-1.0];
+}
+
+/* @ignore
+    Adds anAmount to a numeric character attribute, run by run across the selection, or in the
+    typing attributes when nothing is selected. A value that reaches zero removes the attribute.
+*/
+- (void)_changeCharacterAttribute:(CPString)anAttributeName byAmount:(float)anAmount
+{
+    var range = CPMakeRangeCopy(_selectionRange);
+
+    if (!range.length)
+    {
+        var newValue = ([_typingAttributes objectForKey:anAttributeName] || 0) + anAmount;
+
+        if (newValue)
+            [_typingAttributes setObject:newValue forKey:anAttributeName];
+        else
+            [_typingAttributes removeObjectForKey:anAttributeName];
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+        return;
+    }
+
+    if (![self _beginCharacterAttributeChangeInRange:range])
+        return;
+
+    var location = range.location,
+        end = CPMaxRange(range);
+
+    while (location < end)
+    {
+        var effectiveRange = CPMakeRange(0, 0),
+            value = [_textStorage attribute:anAttributeName atIndex:location effectiveRange:effectiveRange] || 0,
+            runRange = CPIntersectionRange(effectiveRange, range),
+            newValue = value + anAmount;
+
+        if (!runRange.length)
+            runRange = CPMakeRange(location, end - location);
+
+        if (newValue)
+            [_textStorage addAttribute:anAttributeName value:newValue range:runRange];
+        else
+            [_textStorage removeAttribute:anAttributeName range:runRange];
+
+        location = CPMaxRange(runRange);
+    }
+
+    [self _endCharacterAttributeChangeInRange:range];
+}
+
+/* @ignore
+    Removes character attributes from the selection, or from the typing attributes when nothing
+    is selected.
+*/
+- (void)_removeCharacterAttributes:(CPArray)attributeNames
+{
+    var range = CPMakeRangeCopy(_selectionRange);
+
+    if (!range.length)
+    {
+        for (var i = 0; i < attributeNames.length; i++)
+            [_typingAttributes removeObjectForKey:attributeNames[i]];
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+        return;
+    }
+
+    if (![self _beginCharacterAttributeChangeInRange:range])
+        return;
+
+    for (var i = 0; i < attributeNames.length; i++)
+        [_textStorage removeAttribute:attributeNames[i] range:CPMakeRangeCopy(range)];
+
+    [self _endCharacterAttributeChangeInRange:range];
+}
+
+/* @ignore
+    Asks whether the change may happen, and registers undo for the attributes in aRange.
+*/
+- (BOOL)_beginCharacterAttributeChangeInRange:(CPRange)aRange
+{
+    if (![self isEditable] || ![self isRichText] || ![self shouldChangeTextInRange:aRange replacementString:nil])
+        return NO;
+
+    // Undo restores the text's previous attributes, and registers the reverse for redo.
+    [[[self _registeringUndoManager] prepareWithInvocationTarget:self]
+                _replaceCharactersInRange:CPMakeRangeCopy(aRange)
+                     withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]
+                           selectionRange:CPMakeRangeCopy(_selectionRange)];
+
+    return YES;
+}
+
+/* @ignore
+    Lays the changed text out again and shows it.
+*/
+- (void)_endCharacterAttributeChangeInRange:(CPRange)aRange
+{
+    [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(aRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(aRange)];
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
+    [self didChangeText];
 }
 
 - (void)alignLeft:(id)sender
@@ -2036,7 +2575,7 @@ Sets the selection to a range of characters in response to user action.
     if (_selectionRange.length > 0)
     {
         // Add rudimentary undo support
-        var undoManager = [[self window] undoManager];
+        var undoManager = [self _registeringUndoManager];
         if (undoManager)
         {
              [[undoManager prepareWithInvocationTarget:self]
@@ -2090,10 +2629,6 @@ Sets the selection to a range of characters in response to user action.
     return 0;
 }
 
-- (BOOL)isRulerVisible
-{
-    return NO;
-}
 
 - (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
@@ -2129,6 +2664,9 @@ Sets the selection to a range of characters in response to user action.
             rect = CGRectUnion([_layoutManager boundingRectForGlyphRange:CPMakeRange(0, 1) inTextContainer:_textContainer],
                            [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, [_layoutManager numberOfCharacters] - 2), 1) inTextContainer:_textContainer]);
 
+        // The last character can be taller than its line's text, as an image attachment at the end
+        // of the text is, so the view also fits it.
+        rect = CGRectUnion(rect, [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, [_layoutManager numberOfCharacters] - 1), 1) inTextContainer:_textContainer]);
         if ([_layoutManager extraLineFragmentTextContainer] === _textContainer)
             rect = CGRectUnion(rect, [_layoutManager extraLineFragmentRect]);
 
@@ -2331,7 +2869,8 @@ Sets the selection to a range of characters in response to user action.
     if (!numberOfGlyphs)
     {
         var font = [_typingAttributes objectForKey:CPFontAttributeName] || [self font];
-        return CGRectMake(1, ([font ascender] - [font descender]) * 0.5 + _textContainerOrigin.y, 1, [font size]);
+        // Like the empty line after text, the caret starts inside the line fragment padding.
+        return CGRectMake(MAX(1.0, [_textContainer lineFragmentPadding]), ([font ascender] - [font descender]) * 0.5 + _textContainerOrigin.y, 1, [font size]);
     }
 
     // cursor is at a newline character -> jump to next line
@@ -2465,366 +3004,654 @@ Sets the selection to a range of characters in response to user action.
 
 @end
 
-@implementation CPTextView (CPRulerSupport)
+/*
+    The represented objects of the paragraph indent markers. Tab stop markers represent
+    their CPTextTab.
+*/
+var CPTextViewFirstLineIndentMarker = @"CPTextViewFirstLineIndentMarker",
+    CPTextViewHeadIndentMarker      = @"CPTextViewHeadIndentMarker",
+    CPTextViewTailIndentMarker      = @"CPTextViewTailIndentMarker";
 
-- (void)updateRuler
+/*
+    The thickness the text view reserves for its markers above the ruler's baseline.
+*/
+var CPTextViewRulerMarkerThickness = 9.0;
+
+/*
+    The marker images, created on first use: { image, origin } by name.
+*/
+var CPTextViewRulerMarkerImages = nil;
+
+var compareTabStops = function(obj1, obj2, context)
 {
-    var scrollView = [self enclosingScrollView];
-    if (!scrollView || ![scrollView hasHorizontalRuler] || ![scrollView rulersVisible])
-        return;
+    if ([obj1 location] < [obj2 location])
+        return CPOrderedAscending;
 
-    var ruler = [scrollView horizontalRulerView];
-    if (!ruler)
-        return;
+    if ([obj1 location] > [obj2 location])
+        return CPOrderedDescending;
 
-    // Do not rebuild markers if user is currently dragging one
-    if ([ruler draggingMarker])
-        return;
+    return CPOrderedSame;
+};
 
-    var selectedRange = [self selectedRange],
-        paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
-        currentAttributes = _typingAttributes;
+/*
+    Returns an SVG image of the given size. SVG images stay sharp at any display resolution.
+*/
+var _CPTextViewRulerSVGImage = function(aWidth, aHeight, aBody)
+{
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + aWidth + '" height="' + aHeight + '" viewBox="0 0 ' + aWidth + ' ' + aHeight + '">' + aBody + '</svg>';
 
-    var textLength = [_textStorage length];
-    if (textLength > 0)
+    return [[CPImage alloc] initWithContentsOfFile:@"data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg) size:CGSizeMake(aWidth, aHeight)];
+};
+
+/*
+    Returns the image and image origin for a marker. Tab stop images are triangles above
+    the ruler's baseline: a left tab's flat side and a right tab's flat side lie at the
+    stop, and a centre or decimal tab points down at it. The first line indent marker
+    points down at the baseline from above, and the head and tail indent markers point up
+    at it from below.
+*/
+var _CPTextViewRulerMarkerImage = function(aName)
+{
+    if (!CPTextViewRulerMarkerImages)
     {
-        var charIndex = selectedRange.location;
+        // Tab stops keep the triangles that the ruler has always shown: pointing right for a left tab, left for a
+        // right tab and down for a centre or decimal tab, with the flat side or the point at the stop.
+        var tab = 'fill="#505050" stroke="#303030" stroke-width="1" stroke-linejoin="round"',
+            triangle = 'fill="#606060" stroke="#303030" stroke-width="1"';
 
-        if (charIndex >= textLength)
-            charIndex = textLength - 1;
-
-        if (charIndex < 0)
-            charIndex = 0;
-
-        currentAttributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
+        CPTextViewRulerMarkerImages = {
+            leftTab:    { image: _CPTextViewRulerSVGImage(8, 8, '<path d="M0.5 0.5 L7.5 4 L0.5 7.5 Z" ' + tab + '/>'), origin: CGPointMake(0.0, 8.0) },
+            rightTab:   { image: _CPTextViewRulerSVGImage(8, 8, '<path d="M7.5 0.5 L0.5 4 L7.5 7.5 Z" ' + tab + '/>'), origin: CGPointMake(8.0, 8.0) },
+            centerTab:  { image: _CPTextViewRulerSVGImage(9, 8, '<path d="M0.5 0.5 H8.5 L4.5 7.5 Z" ' + tab + '/>'), origin: CGPointMake(4.0, 8.0) },
+            decimalTab: { image: _CPTextViewRulerSVGImage(9, 8, '<path d="M0.5 0.5 H8.5 L4.5 7.5 Z" ' + tab + '/><circle cx="4.5" cy="3" r="1.2" fill="#f4f4f4"/>'), origin: CGPointMake(4.0, 8.0) },
+            downIndent: { image: _CPTextViewRulerSVGImage(9, 6, '<path d="M0.5 0.5 H8.5 L4.5 5.5 Z" ' + triangle + '/>'), origin: CGPointMake(4.0, 6.0) },
+            upIndent:   { image: _CPTextViewRulerSVGImage(9, 6, '<path d="M4.5 0.5 L8.5 5.5 H0.5 Z" ' + triangle + '/>'), origin: CGPointMake(4.0, 0.0) }
+        };
     }
 
-    if ([currentAttributes objectForKey:CPParagraphStyleAttributeName])
-        paragraphStyle = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
+    return CPTextViewRulerMarkerImages[aName];
+};
 
-    var markers = [],
+/*
+    Returns the name of the marker image for a tab stop of the given type.
+*/
+var _CPTextViewRulerImageNameForTab = function(aTab)
+{
+    switch ([aTab tabStopType])
+    {
+        case CPRightTabStopType:
+            return "rightTab";
+
+        case CPCenterTabStopType:
+            return "centerTab";
+
+        case CPDecimalTabStopType:
+            return "decimalTab";
+
+        default:
+            return "leftTab";
+    }
+};
+
+/*!
+    Ruler support. A text view in a scroll view can show a horizontal ruler with the tab
+    stops and indents of the paragraph at the selection. The user changes them by dragging
+    the markers, adds a left tab stop by clicking the ruler, and removes a tab stop by
+    dragging it off the ruler. Marker locations are in the text view's coordinate system,
+    and the ruler's zero lines up with the start of the text.
+*/
+@implementation CPTextView (CPRulerSupport)
+
+// MARK: Ruler Control
+
+/*!
+    Returns \c YES if the text view uses a ruler. The default is \c YES.
+*/
+- (BOOL)usesRuler
+{
+    return _usesRuler;
+}
+
+/*!
+    Sets whether the text view uses a ruler. A text view that does not use a ruler hides it.
+    @param shouldUseRuler \c YES to use a ruler
+*/
+- (void)setUsesRuler:(BOOL)shouldUseRuler
+{
+    if (_usesRuler === shouldUseRuler)
+        return;
+
+    _usesRuler = shouldUseRuler;
+
+    if (_usesRuler)
+        [self updateRuler];
+    else
+        [self setRulerVisible:NO];
+}
+
+/*!
+    Returns \c YES if the enclosing scroll view shows its horizontal ruler.
+*/
+- (BOOL)isRulerVisible
+{
+    var scrollView = [self enclosingScrollView];
+
+    return !!scrollView && [scrollView hasHorizontalRuler] && [scrollView rulersVisible];
+}
+
+/*!
+    Shows or hides the enclosing scroll view's horizontal ruler. The ruler is shown only if
+    the text view uses a ruler.
+    @param shouldBeVisible \c YES to show the ruler
+*/
+- (void)setRulerVisible:(BOOL)shouldBeVisible
+{
+    var scrollView = [self enclosingScrollView];
+
+    if (!scrollView || (shouldBeVisible && !_usesRuler))
+        return;
+
+    if (shouldBeVisible)
+        [scrollView setHasHorizontalRuler:YES];
+
+    [scrollView setRulersVisible:shouldBeVisible];
+
+    if (shouldBeVisible)
+        [self updateRuler];
+}
+
+/*!
+    Shows the ruler if it is hidden, and hides it if it is shown.
+    @param aSender the object requesting this
+*/
+- (@action)toggleRuler:(id)aSender
+{
+    [self setRulerVisible:![self isRulerVisible]];
+}
+
+/*!
+    Copies the paragraph style at the selection, with its tab stops, indents and alignment,
+    to the ruler pasteboard, so that Paste Ruler can apply it to other paragraphs.
+    @param aSender the object requesting this
+*/
+- (@action)copyRuler:(id)aSender
+{
+    var pasteboard = [CPPasteboard pasteboardWithName:CPRulerPboard];
+
+    [pasteboard declareTypes:[CPRulerPboardType] owner:nil];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self _rulerParagraphStyle]] forType:CPRulerPboardType];
+}
+
+/*!
+    Applies the paragraph style on the ruler pasteboard to the selected paragraphs, or to
+    the paragraph at the insertion point. When the style or the paragraphs belong to text
+    lists, the whole paragraphs change, and their list markers are added, removed and
+    numbered as for Format > List.
+    @param aSender the object requesting this
+*/
+- (@action)pasteRuler:(id)aSender
+{
+    var data = [[CPPasteboard pasteboardWithName:CPRulerPboard] dataForType:CPRulerPboardType];
+
+    if (!data)
+        return;
+
+    var paragraphStyle = [CPKeyedUnarchiver unarchiveObjectWithData:data];
+
+    if ([[paragraphStyle textLists] count] || [self _selectionTouchesTextList])
+        [self _pasteRulerParagraphStyleWithTextLists:paragraphStyle];
+    else
+        [self _applyRulerParagraphStyle:paragraphStyle];
+}
+
+/*!
+    Shows the tab stops and indents of the paragraph at the selection on the ruler, and
+    lines the ruler's zero up with the start of the text. Does nothing while the user drags
+    a marker, or when the ruler is hidden.
+*/
+- (void)updateRuler
+{
+    if (!_usesRuler || ![self isRulerVisible])
+        return;
+
+    var scrollView = [self enclosingScrollView],
+        ruler = [scrollView horizontalRulerView];
+
+    if (!ruler || [self _rulerHasDraggedMarker:ruler])
+        return;
+
+    [ruler setClientView:self];
+    [ruler setReservedThicknessForMarkers:CPTextViewRulerMarkerThickness];
+    [ruler setOriginOffset:[self convertPoint:CGPointMake([self _rulerTextStart], 0.0) toView:[scrollView documentView]].x];
+
+    var paragraphStyle = [self _rulerParagraphStyle],
+        markers = [],
         tabStops = [paragraphStyle tabStops],
         count = [tabStops count];
 
     for (var i = 0; i < count; i++)
-    {
-        var tab = [tabStops objectAtIndex:i],
-            marker = [[CPRulerMarker alloc] initWithRulerView:ruler 
-                                                      markerLocation:[tab location] 
-                                                          imageValue:[tab location] 
-                                                   representedObject:tab];
-        [markers addObject:marker];
-    }
+        markers.push([self _rulerMarkerForTab:tabStops[i] inRuler:ruler]);
 
-    var firstLineMarker = [[CPRulerMarker alloc] initWithRulerView:ruler 
-                                                    markerLocation:[paragraphStyle firstLineHeadIndent] 
-                                                        imageValue:[paragraphStyle firstLineHeadIndent] 
-                                                 representedObject:@"CPFirstLineIndent"];
-    [markers addObject:firstLineMarker];
-
-    var headMarker = [[CPRulerMarker alloc] initWithRulerView:ruler 
-                                                markerLocation:[paragraphStyle headIndent] 
-                                                    imageValue:[paragraphStyle headIndent] 
-                                             representedObject:@"CPHeadIndent"];
-    [markers addObject:headMarker];
+    markers.push([self _rulerIndentMarker:CPTextViewFirstLineIndentMarker imageName:"downIndent" location:[self _rulerLocationForIndent:[paragraphStyle firstLineHeadIndent]] inRuler:ruler]);
+    markers.push([self _rulerIndentMarker:CPTextViewHeadIndentMarker imageName:"upIndent" location:[self _rulerLocationForIndent:[paragraphStyle headIndent]] inRuler:ruler]);
+    markers.push([self _rulerIndentMarker:CPTextViewTailIndentMarker imageName:"upIndent" location:[self _rulerLocationForTailIndent:[paragraphStyle tailIndent]] inRuler:ruler]);
 
     [ruler setMarkers:markers];
 }
 
-var compareTabStops = function(obj1, obj2, context) {
-    if ([obj1 location] < [obj2 location]) return CPOrderedAscending;
-    if ([obj1 location] > [obj2 location]) return CPOrderedDescending;
-    return CPOrderedSame;
-};
+// MARK: Ruler Client Methods
 
-- (void)rulerView:(CPRulerView)rulerView didAddMarker:(CPRulerMarker)marker
+/*!
+    Adds a left tab stop where the user clicks the ruler, and lets the user drag it into
+    place before releasing it.
+*/
+- (void)rulerView:(CPRulerView)aRulerView handleMouseDown:(CPEvent)anEvent
 {
-    var selectedRange = [self selectedRange],
-        paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
-        currentAttributes = _typingAttributes;
-
-    var textLength = [_textStorage length],
-        charIndex = selectedRange.location;
-
-    if (textLength > 0)
-    {
-        if (charIndex >= textLength)
-            charIndex = textLength - 1;
-
-        if (charIndex < 0)
-            charIndex = 0;
-
-        currentAttributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
-    }
-
-    if ([currentAttributes objectForKey:CPParagraphStyleAttributeName])
-        paragraphStyle = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
-
-    var mutableStyle = [paragraphStyle mutableCopy],
-        newTab = [[CPTextTab alloc] initWithType:CPLeftTextAlignment location:[marker imageValue]],
-        tabs = [[mutableStyle tabStops] mutableCopy];
-
-    [tabs addObject:newTab];
-    [tabs sortUsingFunction:compareTabStops context:nil];
-
-    [mutableStyle setTabStops:tabs];
-    [marker setRepresentedObject:newTab];
-
-    var targetRange = selectedRange;
-    if (targetRange.length === 0 && textLength > 0)
-        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
-
-    if (targetRange.length > 0)
-    {
-        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
-        [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(targetRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(targetRange)];
-    }
-
-    [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
-}
-
-- (void)rulerView:(CPRulerView)rulerView didMoveMarker:(CPRulerMarker)marker
-{
-    var selectedRange = [self selectedRange],
-        paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
-        currentAttributes = _typingAttributes;
-
-    var textLength = [_textStorage length],
-        charIndex = selectedRange.location;
-
-    if (textLength > 0)
-    {
-        if (charIndex >= textLength)
-            charIndex = textLength - 1;
-
-        if (charIndex < 0)
-            charIndex = 0;
-
-        currentAttributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
-    }
-
-    if ([currentAttributes objectForKey:CPParagraphStyleAttributeName])
-        paragraphStyle = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
-
-    var mutableStyle = [paragraphStyle mutableCopy],
-        rep = [marker representedObject];
-
-    if (!rep)
+    if (![self isEditable])
         return;
 
-    // A. Handle standard tab stops
-    if ([rep isKindOfClass:[CPTextTab class]])
-    {
-        var newTab = [[CPTextTab alloc] initWithType:[rep alignment] location:[marker imageValue]],
-            tabs = [[mutableStyle tabStops] mutableCopy];
+    var point = [aRulerView convertPoint:[anEvent locationInWindow] fromView:nil],
+        location = [aRulerView _locationForRulerPoint:point.x],
+        tab = [[CPTextTab alloc] initWithType:CPLeftTabStopType location:location - [self _rulerTextStart]],
+        marker = [self _rulerMarkerForTab:tab inRuler:aRulerView];
 
-        [tabs removeObject:rep];
-        [tabs addObject:newTab];
+    [marker setMarkerLocation:location];
+    [aRulerView trackMarker:marker withMouseEvent:anEvent];
+}
+
+- (BOOL)rulerView:(CPRulerView)aRulerView shouldAddMarker:(CPRulerMarker)aMarker
+{
+    return [self isEditable];
+}
+
+- (float)rulerView:(CPRulerView)aRulerView willAddMarker:(CPRulerMarker)aMarker atLocation:(float)aLocation
+{
+    return [self _constrainedRulerLocation:aLocation forMarker:aMarker];
+}
+
+- (void)rulerView:(CPRulerView)aRulerView didAddMarker:(CPRulerMarker)aMarker
+{
+    var paragraphStyle = [[self _rulerParagraphStyle] mutableCopy],
+        tab = [[CPTextTab alloc] initWithType:[[aMarker representedObject] tabStopType] location:[aMarker markerLocation] - [self _rulerTextStart]],
+        tabs = [[paragraphStyle tabStops] mutableCopy];
+
+    [tabs addObject:tab];
+    [tabs sortUsingFunction:compareTabStops context:nil];
+    [paragraphStyle setTabStops:tabs];
+
+    [aMarker setRepresentedObject:tab];
+    [self _applyRulerParagraphStyle:paragraphStyle];
+}
+
+- (BOOL)rulerView:(CPRulerView)aRulerView shouldMoveMarker:(CPRulerMarker)aMarker
+{
+    return [self isEditable];
+}
+
+- (float)rulerView:(CPRulerView)aRulerView willMoveMarker:(CPRulerMarker)aMarker toLocation:(float)aLocation
+{
+    return [self _constrainedRulerLocation:aLocation forMarker:aMarker];
+}
+
+- (void)rulerView:(CPRulerView)aRulerView didMoveMarker:(CPRulerMarker)aMarker
+{
+    var paragraphStyle = [[self _rulerParagraphStyle] mutableCopy],
+        representedObject = [aMarker representedObject],
+        location = [aMarker markerLocation];
+
+    if ([representedObject isKindOfClass:[CPTextTab class]])
+    {
+        var tab = [[CPTextTab alloc] initWithType:[representedObject tabStopType] location:location - [self _rulerTextStart]],
+            tabs = [[paragraphStyle tabStops] mutableCopy];
+
+        [tabs removeObjectAtIndex:[self _indexOfTab:representedObject inTabs:tabs]];
+        [tabs addObject:tab];
         [tabs sortUsingFunction:compareTabStops context:nil];
-
-        [mutableStyle setTabStops:tabs];
-        [marker setRepresentedObject:newTab];
+        [paragraphStyle setTabStops:tabs];
+        [aMarker setRepresentedObject:tab];
     }
+    else if (representedObject === CPTextViewFirstLineIndentMarker)
+        [paragraphStyle setFirstLineHeadIndent:location - [self _rulerTextStart]];
 
-    // B. Handle Indentation Marker drags directly by string literal
-    else if (rep === @"CPFirstLineIndent")
-        [mutableStyle setFirstLineHeadIndent:[marker imageValue]];
-    else if (rep === @"CPHeadIndent")
-        [mutableStyle setHeadIndent:[marker imageValue]];
-    else if (rep === @"CPTailIndent")
-        [mutableStyle setTailIndent:[marker imageValue]];
+    else if (representedObject === CPTextViewHeadIndentMarker)
+        [paragraphStyle setHeadIndent:location - [self _rulerTextStart]];
 
-    var targetRange = selectedRange;
+    else if (representedObject === CPTextViewTailIndentMarker)
+        [paragraphStyle setTailIndent:[self _tailIndentForRulerLocation:location currentTailIndent:[paragraphStyle tailIndent]]];
 
-    if (targetRange.length === 0 && textLength > 0)
-        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
-
-    if (targetRange.length > 0)
-    {
-        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
-        [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(targetRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(targetRange)];
-    }
-
-    [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
-
-    [_layoutManager _validateLayoutAndGlyphs];
-    [self sizeToFit];
-    [self setNeedsDisplay:YES];
+    [self _applyRulerParagraphStyle:paragraphStyle];
 }
 
-- (void)rulerView:(CPRulerView)rulerView didRemoveMarker:(CPRulerMarker)marker
+- (BOOL)rulerView:(CPRulerView)aRulerView shouldRemoveMarker:(CPRulerMarker)aMarker
 {
-    var selectedRange = [self selectedRange],
-        paragraphStyle = [CPParagraphStyle defaultParagraphStyle],
-        currentAttributes = _typingAttributes;
-
-    var textLength = [_textStorage length],
-        charIndex = selectedRange.location;
-
-    if (textLength > 0)
-    {
-        if (charIndex >= textLength) charIndex = textLength - 1;
-        if (charIndex < 0) charIndex = 0;
-        currentAttributes = [_textStorage attributesAtIndex:charIndex effectiveRange:nil];
-    }
-
-    if ([currentAttributes objectForKey:CPParagraphStyleAttributeName])
-        paragraphStyle = [currentAttributes objectForKey:CPParagraphStyleAttributeName];
-
-    var mutableStyle = [paragraphStyle mutableCopy],
-        oldTab = [marker representedObject];
-
-    if (!oldTab)
-        return;
-
-    var tabs = [[mutableStyle tabStops] mutableCopy];
-    [tabs removeObject:oldTab];
-    [mutableStyle setTabStops:tabs];
-
-    var targetRange = selectedRange;
-    if (targetRange.length === 0 && textLength > 0)
-        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
-
-    if (targetRange.length > 0)
-    {
-        [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
-        [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(targetRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(targetRange)];
-    }
-
-    [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+    return [self isEditable] && [[aMarker representedObject] isKindOfClass:[CPTextTab class]];
 }
 
-- (void)rulerView:(CPRulerView)rulerView didUpdateMarker:(CPRulerMarker)marker oldTab:(id)oldTab
+- (void)rulerView:(CPRulerView)aRulerView didRemoveMarker:(CPRulerMarker)aMarker
 {
-    var selectedRange = [self selectedRange],
-        targetRange = selectedRange;
-
-    if (targetRange.length === 0)
-        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
-
-    if (targetRange.length === 0)
-        return;
-
-    var paragraphStyle = [[self textStorage] attribute:CPParagraphStyleAttributeName atIndex:targetRange.location effectiveRange:NULL];
-    if (!paragraphStyle)
-        paragraphStyle = [CPParagraphStyle defaultParagraphStyle];
-
-    var mutableStyle = [paragraphStyle mutableCopy],
-        newTab = [marker representedObject],
-        tabs = [[mutableStyle tabStops] mutableCopy];
-
-    [tabs removeObject:oldTab];
-    [tabs addObject:newTab];
-    [tabs sortUsingFunction:compareTabStops context:nil];
-    [mutableStyle setTabStops:tabs];
-
-    [_textStorage addAttribute:CPParagraphStyleAttributeName value:mutableStyle range:CPMakeRangeCopy(targetRange)];
-    [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(targetRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(targetRange)];
-
-    if (selectedRange.length === 0)
-    {
-        [_typingAttributes setObject:mutableStyle forKey:CPParagraphStyleAttributeName];
-        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
-    }
-
-    [_layoutManager _validateLayoutAndGlyphs];
-    [self sizeToFit];
-    [self setNeedsDisplay:YES];
+    [self _removeRulerTab:[aMarker representedObject]];
 }
 
-- (float)rulerView:(CPRulerView)aRulerView willMoveMarker:(CPRulerMarker)aMarker toLocation:(float)proposedLocation
+/* @ignore
+    Returns the context menu for a marker: tab stop types and removal for a tab stop, and
+    a reset for an indent.
+*/
+- (CPMenu)_rulerView:(CPRulerView)aRulerView menuForMarker:(CPRulerMarker)aMarker
 {
-    var rep = [aMarker representedObject];
+    if (![self isEditable])
+        return nil;
 
-    // Indent markers can be dragged anywhere >= 0
-    if (rep === @"CPFirstLineIndent" || rep === @"CPHeadIndent" || rep === @"CPTailIndent")
-        return Math.max(0.0, proposedLocation);
+    var menu = [[CPMenu alloc] initWithTitle:@""],
+        representedObject = [aMarker representedObject];
 
-    var textLength = [_textStorage length];
-    if (textLength === 0)
-        return Math.max(0.0, proposedLocation);
-
-    var selectedRange = [self selectedRange],
-        targetRange = selectedRange;
-
-    if (targetRange.length === 0)
-        targetRange = [self selectionRangeForProposedRange:CPMakeRange(targetRange.location, 0) granularity:CPSelectByParagraph];
-
-    if (targetRange.length === 0)
-        return Math.max(0.0, proposedLocation);
-
-    [_layoutManager _validateLayoutAndGlyphs];
-
-    var theString = [_textStorage string],
-        minLocation = 0.0,
-        containerWidth = [_textContainer containerSize].width,
-        maxLocation = containerWidth,
-        currentParagraphStyle = [_textStorage attribute:CPParagraphStyleAttributeName atIndex:targetRange.location effectiveRange:nil] || [CPParagraphStyle defaultParagraphStyle],
-        tabStops = [currentParagraphStyle tabStops] || [],
-        tabCount = [tabStops count];
-
-    // 1. Right boundary: Tail indent (if configured)
-    var tailIndent = [currentParagraphStyle tailIndent];
-    if (tailIndent > 0.0)
-        maxLocation = Math.min(maxLocation, tailIndent);
-    else if (tailIndent < 0.0)
-        maxLocation = Math.min(maxLocation, containerWidth + tailIndent);
-
-    // 2. Identify active tab stop index
-    var targetTabIndex = -1;
-    for (var i = 0; i < tabCount; i++)
+    if ([representedObject isKindOfClass:[CPTextTab class]])
     {
-        var tab = [tabStops objectAtIndex:i];
-        if (tab === rep || ([tab location] === [rep location] && [tab alignment] === [rep alignment]))
-        {
-            targetTabIndex = i;
-            break;
-        }
-    }
+        var types = [[CPLeftTabStopType, @"Left Tab"], [CPCenterTabStopType, @"Center Tab"], [CPRightTabStopType, @"Right Tab"], [CPDecimalTabStopType, @"Decimal Tab"]];
 
-    // 3. Constrain to neighboring tab stops (Left and Right)
-    var safetySpacer = 2.0;
-
-    if (targetTabIndex !== -1)
-    {
-        // Left neighbor constraint (previous tab stop)
-        if (targetTabIndex > 0)
+        for (var i = 0; i < types.length; i++)
         {
-            var prevTab = [tabStops objectAtIndex:targetTabIndex - 1];
-            minLocation = Math.max(minLocation, [prevTab location] + safetySpacer);
+            var item = [menu addItemWithTitle:types[i][1] action:@selector(_changeRulerTabType:) keyEquivalent:@""];
+
+            [item setTarget:self];
+            [item setTag:types[i][0]];
+            [item setRepresentedObject:aMarker];
+            [item setState:[representedObject tabStopType] === types[i][0] ? CPOnState : CPOffState];
         }
 
-        // Right neighbor constraint (next tab stop)
-        if (targetTabIndex + 1 < tabCount)
-        {
-            var nextTab = [tabStops objectAtIndex:targetTabIndex + 1];
-            maxLocation = Math.min(maxLocation, [nextTab location] - safetySpacer);
-        }
+        [menu addItem:[CPMenuItem separatorItem]];
+
+        var removeItem = [menu addItemWithTitle:@"Remove Tab" action:@selector(_removeRulerTabFromMenu:) keyEquivalent:@""];
+
+        [removeItem setTarget:self];
+        [removeItem setRepresentedObject:aMarker];
     }
     else
     {
-        // For new markers being added between existing tab stops
+        var resetItem = [menu addItemWithTitle:@"Reset Indent" action:@selector(_resetRulerIndent:) keyEquivalent:@""];
+
+        [resetItem setTarget:self];
+        [resetItem setRepresentedObject:aMarker];
+    }
+
+    return menu;
+}
+
+/* @ignore */
+- (void)_changeRulerTabType:(id)aSender
+{
+    var marker = [aSender representedObject],
+        oldTab = [marker representedObject],
+        paragraphStyle = [[self _rulerParagraphStyle] mutableCopy],
+        tabs = [[paragraphStyle tabStops] mutableCopy],
+        index = [self _indexOfTab:oldTab inTabs:tabs];
+
+    if (index === CPNotFound)
+        return;
+
+    [tabs replaceObjectAtIndex:index withObject:[[CPTextTab alloc] initWithType:[aSender tag] location:[oldTab location]]];
+    [paragraphStyle setTabStops:tabs];
+    [self _applyRulerParagraphStyle:paragraphStyle];
+}
+
+/* @ignore */
+- (void)_removeRulerTabFromMenu:(id)aSender
+{
+    [self _removeRulerTab:[[aSender representedObject] representedObject]];
+}
+
+/* @ignore */
+- (void)_resetRulerIndent:(id)aSender
+{
+    var representedObject = [[aSender representedObject] representedObject],
+        paragraphStyle = [[self _rulerParagraphStyle] mutableCopy];
+
+    if (representedObject === CPTextViewFirstLineIndentMarker)
+        [paragraphStyle setFirstLineHeadIndent:0.0];
+
+    else if (representedObject === CPTextViewHeadIndentMarker)
+        [paragraphStyle setHeadIndent:0.0];
+
+    else if (representedObject === CPTextViewTailIndentMarker)
+        [paragraphStyle setTailIndent:0.0];
+
+    [self _applyRulerParagraphStyle:paragraphStyle];
+}
+
+// MARK: Ruler Support
+
+/* @ignore */
+- (BOOL)_rulerHasDraggedMarker:(CPRulerView)aRulerView
+{
+    var markers = [aRulerView markers];
+
+    for (var i = 0; i < markers.length; i++)
+        if ([markers[i] isDragging])
+            return YES;
+
+    return NO;
+}
+
+/* @ignore */
+- (void)_removeRulerTab:(CPTextTab)aTab
+{
+    var paragraphStyle = [[self _rulerParagraphStyle] mutableCopy],
+        tabs = [[paragraphStyle tabStops] mutableCopy],
+        index = [self _indexOfTab:aTab inTabs:tabs];
+
+    if (index === CPNotFound)
+        return;
+
+    [tabs removeObjectAtIndex:index];
+    [paragraphStyle setTabStops:tabs];
+    [self _applyRulerParagraphStyle:paragraphStyle];
+}
+
+/* @ignore */
+- (CPRulerMarker)_rulerMarkerForTab:(CPTextTab)aTab inRuler:(CPRulerView)aRulerView
+{
+    var imageInfo = _CPTextViewRulerMarkerImage(_CPTextViewRulerImageNameForTab(aTab)),
+        marker = [[CPRulerMarker alloc] initWithRulerView:aRulerView
+                                           markerLocation:[self _rulerLocationForIndent:[aTab location]]
+                                                    image:imageInfo.image
+                                              imageOrigin:imageInfo.origin];
+
+    [marker setRemovable:YES];
+    [marker setRepresentedObject:aTab];
+
+    return marker;
+}
+
+/* @ignore */
+- (CPRulerMarker)_rulerIndentMarker:(CPString)aRepresentedObject imageName:(CPString)anImageName location:(float)aLocation inRuler:(CPRulerView)aRulerView
+{
+    var imageInfo = _CPTextViewRulerMarkerImage(anImageName),
+        marker = [[CPRulerMarker alloc] initWithRulerView:aRulerView markerLocation:aLocation image:imageInfo.image imageOrigin:imageInfo.origin];
+
+    [marker setRepresentedObject:aRepresentedObject];
+
+    return marker;
+}
+
+/* @ignore
+    Returns the position, in the text view's coordinate system, where lines of text start.
+*/
+- (float)_rulerTextStart
+{
+    return _textContainerOrigin.x + [_textContainer lineFragmentPadding];
+}
+
+/* @ignore
+    Returns the width available to lines of text.
+*/
+- (float)_rulerTextWidth
+{
+    return [_textContainer containerSize].width - 2.0 * [_textContainer lineFragmentPadding];
+}
+
+/* @ignore */
+- (float)_rulerLocationForIndent:(float)anIndent
+{
+    return [self _rulerTextStart] + anIndent;
+}
+
+/* @ignore
+    A positive tail indent is measured from the start of the text, and a zero or negative
+    one from its end.
+*/
+- (float)_rulerLocationForTailIndent:(float)aTailIndent
+{
+    if (aTailIndent > 0.0)
+        return [self _rulerTextStart] + aTailIndent;
+
+    return [self _rulerTextStart] + [self _rulerTextWidth] + aTailIndent;
+}
+
+/* @ignore
+    Converts a tail indent marker location back to a tail indent, keeping the way the
+    current tail indent is measured.
+*/
+- (float)_tailIndentForRulerLocation:(float)aLocation currentTailIndent:(float)aTailIndent
+{
+    var fromStart = aLocation - [self _rulerTextStart];
+
+    if (aTailIndent > 0.0)
+        return fromStart;
+
+    return MIN(0.0, fromStart - [self _rulerTextWidth]);
+}
+
+/* @ignore */
+- (CPUInteger)_indexOfTab:(CPTextTab)aTab inTabs:(CPArray)tabs
+{
+    for (var i = 0; i < tabs.length; i++)
+        if ([tabs[i] location] === [aTab location] && [tabs[i] tabStopType] === [aTab tabStopType])
+            return i;
+
+    return CPNotFound;
+}
+
+/* @ignore
+    Returns the paragraph style at the selection, or the typing attributes' style in empty text.
+*/
+- (CPParagraphStyle)_rulerParagraphStyle
+{
+    var attributes = _typingAttributes,
+        textLength = [_textStorage length];
+
+    if (textLength > 0)
+        attributes = [_textStorage attributesAtIndex:MAX(0, MIN(_selectionRange.location, textLength - 1)) effectiveRange:nil];
+
+    return [attributes objectForKey:CPParagraphStyleAttributeName] || [CPParagraphStyle defaultParagraphStyle];
+}
+
+/* @ignore
+    Returns the range that ruler changes apply to: the selection, or the paragraph at the
+    insertion point.
+*/
+- (CPRange)_rulerTargetRange
+{
+    if (_selectionRange.length > 0 || ![_textStorage length])
+        return CPMakeRangeCopy(_selectionRange);
+
+    return [self selectionRangeForProposedRange:CPMakeRange(_selectionRange.location, 0) granularity:CPSelectByParagraph];
+}
+
+/* @ignore
+    Applies a paragraph style changed through the ruler to the target range and the typing
+    attributes, lays the text out again and refreshes the ruler.
+*/
+- (void)_applyRulerParagraphStyle:(CPParagraphStyle)aParagraphStyle
+{
+    var targetRange = [self _rulerTargetRange];
+
+    if (targetRange.length > 0)
+    {
+        // Undo restores the paragraphs' previous attributes, and registers the reverse for redo.
+        [[[self _registeringUndoManager] prepareWithInvocationTarget:self]
+                    _replaceCharactersInRange:CPMakeRangeCopy(targetRange)
+                         withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(targetRange)]
+                               selectionRange:CPMakeRangeCopy(_selectionRange)];
+
+        [_textStorage addAttribute:CPParagraphStyleAttributeName value:aParagraphStyle range:CPMakeRangeCopy(targetRange)];
+        [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(targetRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(targetRange)];
+    }
+
+    [_typingAttributes setObject:aParagraphStyle forKey:CPParagraphStyleAttributeName];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
+    [self updateRuler];
+}
+
+/* @ignore
+    Constrains a marker location, in the text view's coordinate system. Indent markers stay
+    within the text width. Tab stops stay between their neighbouring tab stops, within the
+    right margin, and after the text that precedes them on the lines they affect.
+*/
+- (float)_constrainedRulerLocation:(float)aLocation forMarker:(CPRulerMarker)aMarker
+{
+    var textStart = [self _rulerTextStart],
+        textWidth = [self _rulerTextWidth],
+        proposed = aLocation - textStart,
+        representedObject = [aMarker representedObject];
+
+    if (![representedObject isKindOfClass:[CPTextTab class]])
+        return textStart + MAX(0.0, MIN(textWidth, proposed));
+
+    var paragraphStyle = [self _rulerParagraphStyle],
+        tabStops = [paragraphStyle tabStops] || [],
+        tabCount = [tabStops count],
+        isMoving = [[[aMarker ruler] markers] containsObjectIdenticalTo:aMarker],
+        targetTabIndex = isMoving ? [self _indexOfTab:representedObject inTabs:tabStops] : CPNotFound,
+        safetySpacer = 2.0,
+        minLocation = 0.0,
+        maxLocation = textWidth,
+        tailIndent = [paragraphStyle tailIndent];
+
+    // Right boundary: the tail indent.
+    if (tailIndent > 0.0)
+        maxLocation = MIN(maxLocation, tailIndent);
+    else if (tailIndent < 0.0)
+        maxLocation = MIN(maxLocation, textWidth + tailIndent);
+
+    // Neighbouring tab stops.
+    if (targetTabIndex !== CPNotFound)
+    {
+        if (targetTabIndex > 0)
+            minLocation = MAX(minLocation, [tabStops[targetTabIndex - 1] location] + safetySpacer);
+
+        if (targetTabIndex + 1 < tabCount)
+            maxLocation = MIN(maxLocation, [tabStops[targetTabIndex + 1] location] - safetySpacer);
+    }
+    else
+    {
         for (var i = 0; i < tabCount; i++)
         {
-            var tabLoc = [[tabStops objectAtIndex:i] location];
-            if (tabLoc < proposedLocation)
-                minLocation = Math.max(minLocation, tabLoc + safetySpacer);
-            else if (tabLoc > proposedLocation)
-                maxLocation = Math.min(maxLocation, tabLoc - safetySpacer);
+            var tabLocation = [tabStops[i] location];
+
+            if (tabLocation < proposed)
+                minLocation = MAX(minLocation, tabLocation + safetySpacer);
+            else if (tabLocation > proposed)
+                maxLocation = MIN(maxLocation, tabLocation - safetySpacer);
         }
     }
 
-    // 4. Constrain to preceding text on active lines
-    var start = targetRange.location,
+    // Text before the tab characters that use this tab stop.
+    var targetRange = [self _rulerTargetRange],
+        theString = [_textStorage string],
         end = CPMaxRange(targetRange),
         tabCountInLine = 0,
-        lineStart = start;
+        lineStart = targetRange.location;
 
-    for (var i = start; i < end; i++)
+    if (targetRange.length > 0)
+        [_layoutManager _validateLayoutAndGlyphs];
+
+    for (var i = targetRange.location; i < end; i++)
     {
         var charCode = theString.charCodeAt(i);
+
         if (charCode === 10 || charCode === 13)
         {
             tabCountInLine = 0;
@@ -2832,40 +3659,927 @@ var compareTabStops = function(obj1, obj2, context) {
             continue;
         }
 
-        if (charCode === 9) // '\t'
-        {
-            if (tabCountInLine === targetTabIndex || targetTabIndex === -1)
-            {
-                var precedingX = 0.0;
-                if (i === lineStart)
-                {
-                    var isFirstLine = (lineStart === 0 || theString.charCodeAt(lineStart - 1) === 10 || theString.charCodeAt(lineStart - 1) === 13);
-                    precedingX = isFirstLine ? [currentParagraphStyle firstLineHeadIndent] : [currentParagraphStyle headIndent];
-                }
-                else
-                {
-                    var glyphRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(i - 1, 1) inTextContainer:_textContainer];
-                    precedingX = CGRectGetMaxX(glyphRect);
-                }
+        if (charCode !== 9)
+            continue;
 
-                var textLimit = precedingX + safetySpacer;
-                if (textLimit > minLocation)
-                    minLocation = textLimit;
+        if (tabCountInLine === targetTabIndex || targetTabIndex === CPNotFound)
+        {
+            var precedingX;
+
+            if (i === lineStart)
+            {
+                var isFirstLine = lineStart === 0 || theString.charCodeAt(lineStart - 1) === 10 || theString.charCodeAt(lineStart - 1) === 13;
+                precedingX = isFirstLine ? [paragraphStyle firstLineHeadIndent] : [paragraphStyle headIndent];
             }
-            tabCountInLine++;
+            else
+                precedingX = CGRectGetMaxX([_layoutManager boundingRectForGlyphRange:CPMakeRange(i - 1, 1) inTextContainer:_textContainer]);
+
+            minLocation = MAX(minLocation, precedingX + safetySpacer);
         }
+
+        tabCountInLine++;
     }
 
     if (minLocation > maxLocation)
         minLocation = maxLocation;
 
-    // 5. Clamp proposedLocation within [minLocation, maxLocation]
-    return Math.min(maxLocation, Math.max(minLocation, proposedLocation));
+    return textStart + MIN(maxLocation, MAX(minLocation, proposed));
 }
 
-- (float)rulerView:(CPRulerView)aRulerView willAddMarker:(CPRulerMarker)aMarker atLocation:(float)proposedLocation
+@end
+
+/*
+    The indent of each list level, and the distance from the start of a level to its markers,
+    in points. As in TextEdit, the first level's markers start 11 points in, and its text starts
+    36 points in.
+*/
+var CPTextViewTextListLevelIndent = 36.0,
+    CPTextViewTextListMarkerIndent = 11.0;
+
+/*
+    The list styles that -changeTextList: applies, by the tag of the sender. Tag 0, or any tag
+    not listed, removes the list.
+*/
+var CPTextViewTextListStyles = {
+        1:  {format: @"{disc}",          options: 0},
+        2:  {format: @"{circle}",        options: 0},
+        3:  {format: @"{square}",        options: 0},
+        4:  {format: @"{hyphen}",        options: 0},
+        10: {format: @"{decimal}.",      options: 0},
+        11: {format: @"{lower-alpha}.",  options: 0},
+        12: {format: @"{upper-alpha}.",  options: 0},
+        13: {format: @"{lower-roman}.",  options: 0},
+        14: {format: @"{upper-roman}.",  options: 0},
+        20: {format: @"{decimal}.",      options: CPTextListPrependEnclosingMarker}
+    };
+
+/*!
+    Text list support. As in Cocoa, the markers of a list are ordinary text at the start of each
+    item: a tab, the marker and another tab. The paragraph style of an item lists its text lists,
+    outermost first, and sets the indents and tab stops that place the marker and the text.
+    Return in an item starts the next item, and Return in an empty item ends the list. Tab at the
+    start of an item makes it an item of a nested list, and Shift-Tab returns it to the enclosing
+    list. Delete at the start of an item's text removes the item from its list. After every change,
+    the markers of the lists around the change are numbered again.
+*/
+@implementation CPTextView (CPTextListSupport)
+
+// MARK: Changing Lists
+
+/*!
+    Applies the list style that the sender's tag selects to the selected paragraphs, or to the
+    paragraph at the insertion point. The tags are: 0 for no list; 1 bullet, 2 circle, 3 square
+    and 4 hyphen; 10 for 1. 2. 3., 11 for a. b. c., 12 for A. B. C., 13 for i. ii. iii. and 14
+    for I. II. III.; 20 for 1. with nested items numbered 1.1. A paragraph next to a list of the
+    same style at the same level joins that list, so that its numbering continues.
+    @param aSender the menu item or control that requests the change
+*/
+- (@action)changeTextList:(id)aSender
 {
-    return [self rulerView:aRulerView willMoveMarker:aMarker toLocation:proposedLocation];
+    var style = CPTextViewTextListStyles[[aSender tag]];
+
+    [self setTextList:style ? [self _textListWithMarkerFormat:style.format options:style.options] : nil];
+}
+
+/* @ignore
+    Returns the list of the paragraph just before or after the selected paragraphs when it has
+    the marker format and options at the selection's level, or a new list.
+*/
+- (CPTextList)_textListWithMarkerFormat:(CPString)aFormat options:(unsigned)anOptions
+{
+    var paragraphsRange = [self _textListParagraphsRangeForRange:_selectionRange],
+        level = MAX(1, [[_textStorage _textListsOfParagraphAtIndex:paragraphsRange.location] count]),
+        neighbours = [];
+
+    if (paragraphsRange.location > 0)
+        neighbours.push([_textStorage _paragraphRangeForIndex:paragraphsRange.location - 1].location);
+
+    if (CPMaxRange(paragraphsRange) < [_textStorage length])
+        neighbours.push(CPMaxRange(paragraphsRange));
+
+    for (var i = 0; i < neighbours.length; i++)
+    {
+        var lists = [_textStorage _textListsOfParagraphAtIndex:neighbours[i]],
+            list = [lists lastObject];
+
+        if ([lists count] === level && [list markerFormat] === aFormat && [list listOptions] === anOptions)
+            return list;
+    }
+
+    return [[CPTextList alloc] initWithMarkerFormat:aFormat options:anOptions];
+}
+
+/* @ignore
+    Returns YES if the menu item's tag selects the style of the innermost list at the
+    selection, or no list when the selection is not in a list.
+*/
+- (BOOL)_textListStyleMatchesItem:(id)anItem
+{
+    var paragraphStart = [_textStorage _paragraphRangeForIndex:_selectionRange.location].location,
+        list = [[_textStorage _textListsOfParagraphAtIndex:paragraphStart] lastObject],
+        style = CPTextViewTextListStyles[[anItem tag]];
+
+    if (!list)
+        return !style;
+
+    return !!style && [list markerFormat] === style.format && [list listOptions] === style.options;
+}
+
+/*!
+    Makes the selected paragraphs, or the paragraph at the insertion point, items of aList. A
+    paragraph that is already an item of a list changes to aList at the same level. With \c nil,
+    the paragraphs are removed from their lists, at every level.
+    @param aList the list, or \c nil
+*/
+- (void)setTextList:(CPTextList)aList
+{
+    if (![self isRichText])
+        return;
+
+    var paragraphsRange = [self _textListParagraphsRangeForRange:_selectionRange],
+        listsForParagraphs = [],
+        location = paragraphsRange.location;
+
+    do
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location],
+            lists = [[_textStorage _textListsOfParagraphAtIndex:paragraphRange.location] copy];
+
+        if (!aList)
+            lists = [];
+        else if ([lists count])
+            lists[[lists count] - 1] = aList;
+        else
+            lists = [aList];
+
+        listsForParagraphs.push(lists);
+        location = CPMaxRange(paragraphRange);
+    }
+    while (location < CPMaxRange(paragraphsRange));
+
+    [self _setTextLists:listsForParagraphs forParagraphsInRange:paragraphsRange];
+}
+
+/* @ignore
+    Makes the item at the insertion point an item of a list nested in its list. The item joins
+    the nested list of the item before it, when there is one, so that its numbering continues.
+    Otherwise a new nested list takes the marker format and options of the enclosing list.
+*/
+- (void)_indentTextListItemAtIndex:(unsigned)anIndex
+{
+    var paragraphRange = [_textStorage _paragraphRangeForIndex:anIndex],
+        lists = [_textStorage _textListsOfParagraphAtIndex:paragraphRange.location],
+        level = [lists count],
+        nestedList = nil;
+
+    if (paragraphRange.location > 0)
+    {
+        var previousRange = [_textStorage _paragraphRangeForIndex:paragraphRange.location - 1],
+            previousLists = [_textStorage _textListsOfParagraphAtIndex:previousRange.location];
+
+        if ([previousLists count] > level && [[previousLists subarrayWithRange:CPMakeRange(0, level)] isEqualToArray:lists])
+            nestedList = previousLists[level];
+    }
+
+    if (!nestedList)
+    {
+        var enclosingList = [lists lastObject];
+
+        nestedList = [[CPTextList alloc] initWithMarkerFormat:[enclosingList markerFormat] options:[enclosingList listOptions]];
+    }
+
+    [self _setTextLists:[[lists arrayByAddingObject:nestedList]] forParagraphsInRange:paragraphRange];
+}
+
+/* @ignore
+    Returns the item at anIndex to the enclosing list, or removes it from its list when the list
+    is not nested.
+*/
+- (void)_outdentTextListItemAtIndex:(unsigned)anIndex
+{
+    var paragraphRange = [_textStorage _paragraphRangeForIndex:anIndex],
+        lists = [_textStorage _textListsOfParagraphAtIndex:paragraphRange.location];
+
+    [self _setTextLists:[[lists subarrayWithRange:CPMakeRange(0, MAX(0, [lists count] - 1))]] forParagraphsInRange:paragraphRange];
+}
+
+/* @ignore
+    Gives each paragraph in aParagraphsRange the text lists at the same position in
+    listsForParagraphs, with a matching paragraph style and marker. The change can be undone.
+    The insertion point or selection keeps its place in the text after the markers.
+*/
+- (void)_setTextLists:(CPArray)listsForParagraphs forParagraphsInRange:(CPRange)aParagraphsRange
+{
+    [self _setTextLists:listsForParagraphs forParagraphsInRange:aParagraphsRange paragraphStyle:nil];
+}
+
+/* @ignore
+    As -_setTextLists:forParagraphsInRange:, but every paragraph takes a copy of aParagraphStyle,
+    with its text lists, in place of the indents and tab stops that the lists would set. With
+    \c nil, each paragraph keeps its own style and takes the indents and tab stops of its lists.
+*/
+- (void)_setTextLists:(CPArray)listsForParagraphs forParagraphsInRange:(CPRange)aParagraphsRange paragraphStyle:(CPParagraphStyle)aParagraphStyle
+{
+    if (![self _didBeginEditing] || ![self shouldChangeTextInRange:aParagraphsRange replacementString:nil])
+        return;
+
+    var result = [[CPAttributedString alloc] initWithString:@""],
+        selectionStart = _selectionRange.location,
+        selectionEnd = CPMaxRange(_selectionRange),
+        newSelectionStart = selectionStart,
+        newSelectionEnd = selectionEnd,
+        location = aParagraphsRange.location,
+        caretParagraphStyle = nil,
+        index = 0;
+
+    do
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location],
+            markerRange = [self _textListMarkerRangeInParagraphRange:paragraphRange],
+            oldMarkerLength = markerRange.location === CPNotFound ? 0 : markerRange.length,
+            paragraph = [[CPAttributedString alloc] initWithAttributedString:[_textStorage attributedSubstringFromRange:paragraphRange]],
+            textStart = paragraphRange.location + oldMarkerLength,
+            lists = listsForParagraphs[index++],
+            attributes = [self _textListAttributesForParagraphRange:paragraphRange textStart:textStart],
+            paragraphStyle = aParagraphStyle ? [aParagraphStyle mutableCopy] : [self _paragraphStyle:[attributes objectForKey:CPParagraphStyleAttributeName] withTextLists:lists],
+            newMarkerLength = [lists count] ? 2 : 0,
+            newParagraphStart = aParagraphsRange.location + [result length];
+
+        if (oldMarkerLength)
+            [paragraph deleteCharactersInRange:CPMakeRange(0, oldMarkerLength)];
+
+        if ([paragraph length])
+            [paragraph addAttribute:CPParagraphStyleAttributeName value:paragraphStyle range:CPMakeRange(0, [paragraph length])];
+
+        // The marker is filled in when the list is numbered, after the change.
+        if (newMarkerLength)
+        {
+            var markerAttributes = [attributes mutableCopy];
+
+            [markerAttributes setObject:paragraphStyle forKey:CPParagraphStyleAttributeName];
+            [paragraph insertAttributedString:[[CPAttributedString alloc] initWithString:@"\t\t" attributes:markerAttributes] atIndex:0];
+        }
+
+        // Positions in the text keep their place after the marker; positions in the old marker
+        // move to the start of the text.
+        if (CPLocationInRange(selectionStart, paragraphRange) || (selectionStart === CPMaxRange(paragraphRange) && selectionStart === CPMaxRange(aParagraphsRange)))
+        {
+            newSelectionStart = newParagraphStart + newMarkerLength + MAX(0, selectionStart - textStart);
+            caretParagraphStyle = paragraphStyle;
+        }
+
+        if (CPLocationInRange(selectionEnd, paragraphRange) || (selectionEnd === CPMaxRange(paragraphRange) && selectionEnd === CPMaxRange(aParagraphsRange)))
+            newSelectionEnd = newParagraphStart + newMarkerLength + MAX(0, selectionEnd - textStart);
+
+        [result appendAttributedString:paragraph];
+        location = CPMaxRange(paragraphRange);
+    }
+    while (location < CPMaxRange(aParagraphsRange));
+
+    [self _replaceCharactersInRange:CPMakeRangeCopy(aParagraphsRange)
+               withAttributedString:result
+                     selectionRange:CPMakeRange(newSelectionStart, MAX(0, newSelectionEnd - newSelectionStart))];
+
+    if (caretParagraphStyle)
+    {
+        [_typingAttributes setObject:caretParagraphStyle forKey:CPParagraphStyleAttributeName];
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+    }
+
+    [self updateRuler];
+    [self didChangeText];
+}
+
+/* @ignore
+    Returns YES if any paragraph that the selection touches is a list item.
+*/
+- (BOOL)_selectionTouchesTextList
+{
+    var paragraphsRange = [self _textListParagraphsRangeForRange:_selectionRange],
+        location = paragraphsRange.location;
+
+    do
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location];
+
+        if ([[_textStorage _textListsOfParagraphAtIndex:paragraphRange.location] count])
+            return YES;
+
+        location = CPMaxRange(paragraphRange);
+    }
+    while (location < CPMaxRange(paragraphsRange));
+
+    return NO;
+}
+
+/* @ignore
+    Applies a pasted paragraph style that has text lists, or replaces the lists of the selected
+    paragraphs, through the list path, so that markers follow. The pasted lists are new objects,
+    decoded from the pasteboard. At each level, the list of the paragraph just before or after
+    the selection takes the place of a pasted list with the same marker format and options, so
+    that the pasted paragraphs join a neighbouring list and continue its numbering.
+*/
+- (void)_pasteRulerParagraphStyleWithTextLists:(CPParagraphStyle)aParagraphStyle
+{
+    var paragraphsRange = [self _textListParagraphsRangeForRange:_selectionRange],
+        pastedLists = [aParagraphStyle textLists],
+        neighbourLists = [],
+        lists = [];
+
+    if (paragraphsRange.location > 0)
+        neighbourLists = [_textStorage _textListsOfParagraphAtIndex:[_textStorage _paragraphRangeForIndex:paragraphsRange.location - 1].location];
+
+    if (![neighbourLists count] && CPMaxRange(paragraphsRange) < [_textStorage length])
+        neighbourLists = [_textStorage _textListsOfParagraphAtIndex:CPMaxRange(paragraphsRange)];
+
+    for (var level = 0; level < [pastedLists count]; level++)
+    {
+        var pastedList = pastedLists[level],
+            neighbourList = level < [neighbourLists count] ? neighbourLists[level] : nil,
+            enclosingMatches = level === 0 || lists[level - 1] === neighbourLists[level - 1];
+
+        if (enclosingMatches && neighbourList && [neighbourList markerFormat] === [pastedList markerFormat] && [neighbourList listOptions] === [pastedList listOptions])
+            lists.push(neighbourList);
+        else
+            lists.push(pastedList);
+    }
+
+    var paragraphStyle = [aParagraphStyle mutableCopy],
+        listsForParagraphs = [],
+        location = paragraphsRange.location;
+
+    [paragraphStyle setTextLists:lists];
+
+    do
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location];
+
+        listsForParagraphs.push(lists);
+        location = CPMaxRange(paragraphRange);
+    }
+    while (location < CPMaxRange(paragraphsRange));
+
+    [self _setTextLists:listsForParagraphs forParagraphsInRange:paragraphsRange paragraphStyle:paragraphStyle];
+}
+
+// MARK: Editing in Lists
+
+/* @ignore
+    Return in a list item starts the next item, with the same paragraph style. Return in an
+    empty item ends the list there, or returns a nested item to the enclosing list. Returns
+    \c NO if the insertion point is not in the text of a list item.
+*/
+- (BOOL)_insertNewlineInTextList
+{
+    var paragraphRange = [self _textListItemRangeAtIndex:_selectionRange.location],
+        markerRange = paragraphRange ? [self _textListMarkerRangeInParagraphRange:paragraphRange] : nil;
+
+    if (!markerRange || markerRange.location === CPNotFound || _selectionRange.location < CPMaxRange(markerRange))
+        return NO;
+
+    var string = [_textStorage string],
+        textEnd = CPMaxRange(paragraphRange);
+
+    if (textEnd > paragraphRange.location && string.charCodeAt(textEnd - 1) === 10)
+        textEnd--;
+
+    if (!_selectionRange.length && CPMaxRange(markerRange) === textEnd)
+    {
+        [self _outdentTextListItemAtIndex:_selectionRange.location];
+        return YES;
+    }
+
+    var attributes = [_typingAttributes mutableCopy];
+
+    [attributes setObject:[_textStorage attribute:CPParagraphStyleAttributeName atIndex:paragraphRange.location effectiveRange:nil] forKey:CPParagraphStyleAttributeName];
+
+    // The new item's marker is filled in when the list is numbered, after the insertion.
+    [self insertText:[[CPAttributedString alloc] initWithString:@"\n\t\t" attributes:attributes]];
+
+    return YES;
+}
+
+/* @ignore
+    Tab at the start of a list item makes it an item of a nested list. Returns \c NO if the
+    insertion point is not at the start of a list item.
+*/
+- (BOOL)_insertTabInTextList
+{
+    var paragraphRange = [self _textListItemRangeAtIndex:_selectionRange.location],
+        markerRange = paragraphRange ? [self _textListMarkerRangeInParagraphRange:paragraphRange] : nil;
+
+    if (_selectionRange.length || !markerRange || markerRange.location === CPNotFound || _selectionRange.location > CPMaxRange(markerRange))
+        return NO;
+
+    [self _indentTextListItemAtIndex:_selectionRange.location];
+    return YES;
+}
+
+/* @ignore
+    Shift-Tab in an item of a nested list returns it to the enclosing list. In an item of a list
+    that is not nested, it does nothing. Returns \c NO if the insertion point is not in a list item.
+*/
+- (BOOL)_insertBacktabInTextList
+{
+    var paragraphRange = [self _textListItemRangeAtIndex:_selectionRange.location];
+
+    if (!paragraphRange)
+        return NO;
+
+    if ([[_textStorage _textListsOfParagraphAtIndex:paragraphRange.location] count] > 1)
+        [self _outdentTextListItemAtIndex:_selectionRange.location];
+
+    return YES;
+}
+
+/* @ignore
+    Delete at the start of a list item's text returns a nested item to the enclosing list, or
+    removes the item from its list, with its marker. Returns \c NO if the insertion point is
+    not at the start of a list item's text.
+*/
+- (BOOL)_deleteBackwardInTextList
+{
+    var paragraphRange = [self _textListItemRangeAtIndex:_selectionRange.location],
+        markerRange = paragraphRange ? [self _textListMarkerRangeInParagraphRange:paragraphRange] : nil;
+
+    if (_selectionRange.length || !markerRange || markerRange.location === CPNotFound || _selectionRange.location !== CPMaxRange(markerRange))
+        return NO;
+
+    [self _outdentTextListItemAtIndex:_selectionRange.location];
+    return YES;
+}
+
+// MARK: Numbering
+
+/* @ignore
+    Numbers again the markers of the lists in and next to aRange, which a change has just
+    affected. Only marker text changes, without undo: undoing the change restores the text, and
+    the lists are numbered again afterwards. The selection keeps its place in the text.
+*/
+- (void)_updateTextListMarkersAroundRange:(CPRange)aRange
+{
+    var length = [_textStorage length];
+
+    if (!length || ![self isRichText])
+        return;
+
+    // The paragraphs from the one before the change to the one after it.
+    var scanStart = [_textStorage _paragraphRangeForIndex:MAX(0, aRange.location - 1)].location,
+        scanEnd = CPMaxRange([_textStorage _paragraphRangeForIndex:MIN(length, CPMaxRange(aRange))]),
+        listRanges = [],
+        location = scanStart;
+
+    if (scanEnd < length)
+        scanEnd = CPMaxRange([_textStorage _paragraphRangeForIndex:scanEnd]);
+
+    while (location < scanEnd)
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location],
+            lists = [_textStorage _textListsOfParagraphAtIndex:location];
+
+        if ([lists count])
+        {
+            var listRange = [_textStorage rangeOfTextList:lists[0] atIndex:location];
+
+            listRanges.push(listRange);
+            location = MAX(CPMaxRange(listRange), CPMaxRange(paragraphRange));
+        }
+        else
+            location = CPMaxRange(paragraphRange);
+
+        if (!paragraphRange.length)
+            break;
+    }
+
+    if (!listRanges.length)
+        return;
+
+    var replacements = [];
+
+    for (var i = 0; i < listRanges.length; i++)
+        [self _collectTextListMarkerReplacements:replacements inRange:listRanges[i]];
+
+    if (!replacements.length)
+        return;
+
+    var selectionStart = _selectionRange.location,
+        selectionEnd = CPMaxRange(_selectionRange);
+
+    // Replace from the end, so that the earlier ranges stay valid.
+    [_textStorage beginEditing];
+
+    for (var i = replacements.length - 1; i >= 0; i--)
+    {
+        var replacement = replacements[i],
+            range = replacement.range,
+            delta = replacement.string.length - range.length;
+
+        [_textStorage replaceCharactersInRange:range
+                          withAttributedString:[[CPAttributedString alloc] initWithString:replacement.string attributes:[_textStorage attributesAtIndex:range.location effectiveRange:nil]]];
+
+        if (selectionStart >= CPMaxRange(range))
+            selectionStart += delta;
+        else if (selectionStart > range.location)
+            selectionStart = range.location + replacement.string.length;
+
+        if (selectionEnd >= CPMaxRange(range))
+            selectionEnd += delta;
+        else if (selectionEnd > range.location)
+            selectionEnd = range.location + replacement.string.length;
+    }
+
+    [_textStorage endEditing];
+
+    [self _setSelectedRange:CPMakeRange(selectionStart, selectionEnd - selectionStart) affinity:0 stillSelecting:NO overwriteTypingAttributes:NO];
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
+}
+
+/* @ignore
+    Adds to someReplacements the marker of each item in aListRange whose text differs from its
+    number. The items are counted in one pass, with a counter for each list. As in Cocoa, a list
+    with the CPTextListPrependEnclosingMarker option puts the enclosing item's marker before its
+    own.
+*/
+- (void)_collectTextListMarkerReplacements:(CPArray)someReplacements inRange:(CPRange)aListRange
+{
+    var string = [_textStorage string],
+        counters = {},
+        location = aListRange.location;
+
+    while (location < CPMaxRange(aListRange))
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location],
+            lists = [_textStorage _textListsOfParagraphAtIndex:location],
+            count = [lists count],
+            innermostUID = [lists[count - 1] UID],
+            marker = @"";
+
+        counters[innermostUID] = (counters.hasOwnProperty(innermostUID) ? counters[innermostUID] : [lists[count - 1] startingItemNumber] - 1) + 1;
+
+        for (var level = 0; level < count; level++)
+        {
+            var list = lists[level],
+                uid = [list UID],
+                itemNumber = counters.hasOwnProperty(uid) ? counters[uid] : [list startingItemNumber],
+                levelMarker = [list markerForItemNumber:itemNumber];
+
+            marker = ([list listOptions] & CPTextListPrependEnclosingMarker) ? marker + levelMarker : levelMarker;
+        }
+
+        var markerRange = [self _textListMarkerRangeInParagraphRange:paragraphRange],
+            newMarker = "\t" + marker + "\t";
+
+        if (markerRange.location !== CPNotFound && string.substr(markerRange.location, markerRange.length) !== newMarker)
+            someReplacements.push({range: markerRange, string: newMarker});
+
+        if (!paragraphRange.length)
+            break;
+
+        location = CPMaxRange(paragraphRange);
+    }
+}
+
+// MARK: Helpers
+
+/* @ignore
+    Returns the range of the list item paragraph at anIndex, or \c nil if the paragraph is not
+    a list item or the text is not rich.
+*/
+- (CPRange)_textListItemRangeAtIndex:(unsigned)anIndex
+{
+    if (![self isRichText])
+        return nil;
+
+    var paragraphRange = [_textStorage _paragraphRangeForIndex:anIndex];
+
+    // At the end of the text after a paragraph separator, the insertion point is in an empty
+    // paragraph that has no attributes of its own.
+    if (![[_textStorage _textListsOfParagraphAtIndex:paragraphRange.location] count])
+        return nil;
+
+    return paragraphRange;
+}
+
+/* @ignore
+    Returns the range of the marker at the start of a list item: a tab, the marker and another
+    tab. Returns a range with the location CPNotFound if the paragraph is not a list item, or
+    its text does not start with a marker.
+*/
+- (CPRange)_textListMarkerRangeInParagraphRange:(CPRange)aParagraphRange
+{
+    var string = [_textStorage string],
+        start = aParagraphRange.location,
+        end = CPMaxRange(aParagraphRange);
+
+    if (![[_textStorage _textListsOfParagraphAtIndex:start] count] || string.charCodeAt(start) !== 9)
+        return CPMakeRange(CPNotFound, 0);
+
+    for (var i = start + 1; i < end; i++)
+    {
+        var charCode = string.charCodeAt(i);
+
+        if (charCode === 9)
+            return CPMakeRange(start, i - start + 1);
+
+        if (charCode === 10 || charCode === 13 || charCode === 0x2029)
+            break;
+    }
+
+    return CPMakeRange(CPNotFound, 0);
+}
+
+/* @ignore
+    Returns the range of whole paragraphs that aRange touches. A selection that ends at the
+    start of a paragraph does not include that paragraph.
+*/
+- (CPRange)_textListParagraphsRangeForRange:(CPRange)aRange
+{
+    var first = [_textStorage _paragraphRangeForIndex:aRange.location],
+        lastIndex = aRange.length ? CPMaxRange(aRange) - 1 : aRange.location,
+        last = [_textStorage _paragraphRangeForIndex:MAX(first.location, lastIndex)];
+
+    return CPMakeRange(first.location, CPMaxRange(last) - first.location);
+}
+
+/* @ignore
+    Returns the attributes for a list item's marker and paragraph style: those of the first
+    character of its text, or of the paragraph, or the typing attributes for an empty paragraph.
+*/
+- (CPDictionary)_textListAttributesForParagraphRange:(CPRange)aParagraphRange textStart:(unsigned)aTextStart
+{
+    var length = [_textStorage length];
+
+    if (aTextStart < CPMaxRange(aParagraphRange) && aTextStart < length && [_textStorage string].charCodeAt(aTextStart) !== 10)
+        return [_textStorage attributesAtIndex:aTextStart effectiveRange:nil];
+
+    if (aParagraphRange.location < length)
+        return [_textStorage attributesAtIndex:aParagraphRange.location effectiveRange:nil];
+
+    return [_typingAttributes mutableCopy];
+}
+
+/* @ignore
+    Returns a copy of aParagraphStyle for the text lists someLists. The indents and tab stops of
+    a list item place its marker CPTextViewTextListMarkerIndent points into its level, and its
+    text, including later lines, at the start of the next level. A paragraph without lists gets
+    no indents and the default tab stops.
+*/
+- (CPParagraphStyle)_paragraphStyle:(CPParagraphStyle)aParagraphStyle withTextLists:(CPArray)someLists
+{
+    var paragraphStyle = [(aParagraphStyle || [CPParagraphStyle defaultParagraphStyle]) mutableCopy],
+        level = [someLists count];
+
+    [paragraphStyle setTextLists:someLists];
+
+    if (level)
+    {
+        var levelStart = (level - 1) * CPTextViewTextListLevelIndent,
+            textStart = level * CPTextViewTextListLevelIndent;
+
+        [paragraphStyle setFirstLineHeadIndent:levelStart];
+        [paragraphStyle setHeadIndent:textStart];
+        [paragraphStyle setTabStops:[[[CPTextTab alloc] initWithType:CPLeftTabStopType location:levelStart + CPTextViewTextListMarkerIndent],
+                                     [[CPTextTab alloc] initWithType:CPLeftTabStopType location:textStart]]];
+    }
+    else
+    {
+        [paragraphStyle setFirstLineHeadIndent:0.0];
+        [paragraphStyle setHeadIndent:0.0];
+        [paragraphStyle setTabStops:[[CPParagraphStyle defaultParagraphStyle] tabStops]];
+    }
+
+    return paragraphStyle;
+}
+
+@end
+
+/*!
+    Text attachment support. An image in rich text is a CPTextAttachment, held by one attachment
+    character. Its view is laid out as that character, at most as wide as the text. The user
+    inserts images with -insertImage:, or by pasting them.
+*/
+@implementation CPTextView (CPTextAttachmentSupport)
+
+// MARK: Inserting Images
+
+/*!
+    Lets the user choose image files with the browser's file picker, and inserts them as
+    attachments at the insertion point, or in place of the selection, in the order chosen.
+    @param aSender the object requesting this
+*/
+- (@action)insertImage:(id)aSender
+{
+    if (!CPDOMAvailable || ![self isRichText] || ![self isEditable])
+        return;
+
+    var textView = self,
+        input = document.createElement("input");
+
+    input.type = "file";
+    input.accept = "image/*";
+    input.multiple = YES;
+
+    input.onchange = function()
+    {
+        [textView _insertImageFiles:input.files];
+    };
+
+    input.click();
+}
+
+/* @ignore
+    Reads image files from the browser, and inserts them as attachments in their original
+    order once all of them have been read. Files that are not images are skipped.
+*/
+- (void)_insertImageFiles:(FileList)someFiles
+{
+    var files = [];
+
+    for (var i = 0; i < someFiles.length; i++)
+        if (someFiles[i].type.indexOf("image/") === 0)
+            files.push(someFiles[i]);
+
+    if (!files.length)
+        return;
+
+    var attachments = new Array(files.length);
+
+    for (var i = 0; i < files.length; i++)
+        [self _readImageFile:files[i] intoAttachments:attachments atIndex:i];
+}
+
+/* @ignore
+    Reads one image file as a data URL, and makes an attachment from it. When the last file has
+    been read, the attachments are inserted.
+*/
+- (void)_readImageFile:(File)aFile intoAttachments:(CPArray)someAttachments atIndex:(unsigned)anIndex
+{
+    var textView = self,
+        reader = new FileReader();
+
+    reader.onload = function()
+    {
+        someAttachments[anIndex] = [CPTextAttachment _attachmentWithDataURL:reader.result] || [CPNull null];
+        [textView _insertAttachmentsIfComplete:someAttachments];
+    };
+
+    reader.onerror = function()
+    {
+        CPLog.warn("CPTextView: the image file " + aFile.name + " could not be read.");
+        someAttachments[anIndex] = [CPNull null];
+        [textView _insertAttachmentsIfComplete:someAttachments];
+    };
+
+    reader.readAsDataURL(aFile);
+}
+
+/* @ignore
+    Inserts the attachments once every file has been read. The files are read outside the run
+    loop, so the run loop is run afterwards, to close the undo group and display the change.
+*/
+- (void)_insertAttachmentsIfComplete:(CPArray)someAttachments
+{
+    for (var i = 0; i < someAttachments.length; i++)
+        if (!someAttachments[i])
+            return;
+
+    var result = [[CPAttributedString alloc] initWithString:@""];
+
+    for (var i = 0; i < someAttachments.length; i++)
+    {
+        var attachment = someAttachments[i];
+
+        if (attachment === [CPNull null])
+            continue;
+
+        var attachmentString = [CPTextStorage attributedStringWithAttachment:attachment],
+            attributes = [_typingAttributes mutableCopy];
+
+        [attributes addEntriesFromDictionary:[attachmentString attributesAtIndex:0 effectiveRange:nil]];
+        [attachmentString setAttributes:attributes range:CPMakeRange(0, 1)];
+        [result appendAttributedString:attachmentString];
+    }
+
+    if ([result length])
+        [self insertText:result];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
+// MARK: Attachment Layout
+
+/* @ignore
+    Returns the widest an attachment may be shown: the width of the text container inside its
+    line fragment padding.
+*/
+- (float)_textAttachmentMaximumWidth
+{
+    return MAX(0.0, [_textContainer containerSize].width - 2.0 * [_textContainer lineFragmentPadding]);
+}
+
+/* @ignore
+    Gives each CPTextAttachment in anAttributedString its view, which the text system lays out
+    as the attachment character, and fits it to the width of the text. Text decoded from an
+    archive, such as the internal pasteboard, holds the attachments without their views.
+*/
+- (void)_prepareTextAttachmentsInAttributedString:(CPAttributedString)anAttributedString
+{
+    var string = [anAttributedString string],
+        maximumWidth = [self _textAttachmentMaximumWidth],
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+
+    while (index !== -1)
+    {
+        var attachment = [anAttributedString attribute:CPAttachmentAttributeName atIndex:index effectiveRange:nil];
+
+        if ([attachment isKindOfClass:[CPTextAttachment class]])
+        {
+            [attachment _setMaximumWidth:maximumWidth];
+            [anAttributedString addAttribute:_CPAttachmentView value:[attachment _attachmentView] range:CPMakeRange(index, 1)];
+        }
+
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+}
+
+/* @ignore
+    Fits every CPTextAttachment in the text to aWidth. The text container calls this when its
+    width changes, before it lays the text out again.
+*/
+- (void)_setTextAttachmentsMaximumWidth:(float)aWidth
+{
+    var string = [_textStorage string],
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+
+    while (index !== -1)
+    {
+        var attachment = [_textStorage attribute:CPAttachmentAttributeName atIndex:index effectiveRange:nil];
+
+        if ([attachment isKindOfClass:[CPTextAttachment class]])
+            [attachment _setMaximumWidth:aWidth];
+
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+}
+
+/* @ignore
+    Returns the index of anAttachment's character in the text, or CPNotFound.
+*/
+- (unsigned)_indexOfTextAttachment:(CPTextAttachment)anAttachment
+{
+    var string = [_textStorage string],
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+
+    while (index !== -1)
+    {
+        if ([_textStorage attribute:CPAttachmentAttributeName atIndex:index effectiveRange:nil] === anAttachment)
+            return index;
+
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+
+    return CPNotFound;
+}
+
+/* @ignore
+    An attachment's displayed size has changed, for example because its image has loaded. If
+    the attachment is in this text view, the text is laid out again from it.
+*/
+- (void)_textAttachmentDidChangeSize:(CPNotification)aNotification
+{
+    var index = [self _indexOfTextAttachment:[aNotification object]];
+
+    if (index === CPNotFound)
+        return;
+
+    [_layoutManager invalidateLayoutForCharacterRange:CPMakeRange(index, 1) isSoft:NO actualCharacterRange:nil];
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
+}
+
+/* @ignore
+    Returns a copy of anAttributedString for archiving, without the views of its
+    CPTextAttachments. An attachment archives its image data, and gets a new view when the text
+    is decoded and inserted.
+*/
+- (CPAttributedString)_attributedStringForArchiving:(CPAttributedString)anAttributedString
+{
+    var result = [[CPAttributedString alloc] initWithAttributedString:anAttributedString],
+        string = [result string],
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+
+    while (index !== -1)
+    {
+        if ([[result attribute:CPAttachmentAttributeName atIndex:index effectiveRange:nil] isKindOfClass:[CPTextAttachment class]])
+            [result removeAttribute:_CPAttachmentView range:CPMakeRange(index, 1)];
+
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+
+    return result;
 }
 
 @end
@@ -2935,6 +4649,7 @@ var compareTabStops = function(obj1, obj2, context) {
 
 var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     CPTextViewUsesFontPanelKey = @"CPTextViewUsesFontPanelKey",
+    CPTextViewUsesRulerKey = @"CPTextViewUsesRulerKey",
     CPTextViewContainerKey = @"CPTextViewContainerKey",
     CPTextViewLayoutManagerKey = @"CPTextViewLayoutManagerKey",
     CPTextViewTextStorageKey = @"CPTextViewTextStorageKey",
@@ -2970,6 +4685,10 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
         [self setAllowsUndo:[aCoder decodeBoolForKey:CPTextViewAllowsUndoKey]];
         [self setUsesFontPanel:[aCoder decodeBoolForKey:CPTextViewUsesFontPanelKey]];
+
+        // Archives made before usesRuler was archived keep the default from _init.
+        if ([aCoder containsValueForKey:CPTextViewUsesRulerKey])
+            _usesRuler = [aCoder decodeBoolForKey:CPTextViewUsesRulerKey];
 
         [self setDelegate:[aCoder decodeObjectForKey:CPTextViewDelegateKey]];
 
@@ -3009,6 +4728,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     [aCoder encodeObject:_selectedTextAttributes forKey:CPTextViewSelectedTextAttributesKey];
     [aCoder encodeBool:_allowsUndo forKey:CPTextViewAllowsUndoKey];
     [aCoder encodeBool:_usesFontPanel forKey:CPTextViewUsesFontPanelKey];
+    [aCoder encodeBool:_usesRuler forKey:CPTextViewUsesRulerKey];
     [aCoder encodeBool:_isHorizontallyResizable forKey:CPTextViewHorizontallyResizableKey];
     [aCoder encodeBool:_isVerticallyResizable forKey:CPTextViewVerticallyResizableKey];
     [aCoder encodeSize:_maxSize forKey:CPMaxSize];
@@ -3047,8 +4767,9 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 - (void)_createSpan
 {
+    if (!CPDOMAvailable)
+        return;
 
-#if PLATFORM(DOM)
     _selectionBoxDOM = document.createElement("span");
     _selectionBoxDOM.style.position = "absolute";
     _selectionBoxDOM.style.visibility = "visible";
@@ -3063,8 +4784,6 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     _selectionBoxDOM.style.height = (_rect.size.height) + "px";
     _selectionBoxDOM.style.zIndex = -1000;
     _selectionBoxDOM.oncontextmenu = _selectionBoxDOM.onmousedown = _selectionBoxDOM.onselectstart = function () { return false; };
-#endif
-
 }
 
 @end
@@ -3084,35 +4803,38 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 {
     _rect = CGRectCreateCopy(aRect);
 
-#if PLATFORM(DOM)
-    _caretDOM.style.left = (aRect.origin.x) + "px";
-    _caretDOM.style.top = (aRect.origin.y) + "px";
-    _caretDOM.style.height = (aRect.size.height) + "px";
-#endif
+    if (CPDOMAvailable)
+    {
+        _caretDOM.style.left = (aRect.origin.x) + "px";
+        _caretDOM.style.top = (aRect.origin.y) + "px";
+        _caretDOM.style.height = (aRect.size.height) + "px";
+    }
 }
 
 - (id)initWithTextView:(CPTextView)aView
 {
     if (self = [super init])
     {
-#if PLATFORM(DOM)
-        var style;
-
-        if (!_caretDOM)
+        if (CPDOMAvailable)
         {
-            _caretDOM = document.createElement("span");
-            style = _caretDOM.style;
-            style.position = "absolute";
-            style.visibility = "visible";
-            style.padding = "0px";
-            style.margin = "0px";
-            style.whiteSpace = "pre";
-            _caretDOM.style.width = "1px";
-            _caretDOM.style.zIndex = 10001;
-            _textView = aView;
-            _textView._DOMElement.appendChild(_caretDOM);
+            var style;
+
+            if (!_caretDOM)
+            {
+                _caretDOM = document.createElement("span");
+                style = _caretDOM.style;
+                style.position = "absolute";
+                style.visibility = "visible";
+                style.padding = "0px";
+                style.margin = "0px";
+                style.whiteSpace = "pre";
+                style.backgroundColor = "black";
+                _caretDOM.style.width = "1px";
+                _caretDOM.style.zIndex = 10001;
+                _textView = aView;
+                _textView._DOMElement.appendChild(_caretDOM);
+            }
         }
-#endif
     }
 
     return self;
@@ -3120,10 +4842,10 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 - (void)setVisibility:(BOOL)visibilityFlag stop:(BOOL)stopFlag
 {
-
-#if PLATFORM(DOM)
-    _caretDOM.style.visibility = visibilityFlag ? "visible" : "hidden";
-#endif
+    if (CPDOMAvailable)
+    {
+        _caretDOM.style.visibility = visibilityFlag ? "visible" : "hidden";
+    }
 
     if (!visibilityFlag && stopFlag)
         [self stopBlinking];
@@ -3188,25 +4910,28 @@ var _CPCopyPlaceholder = '-';
 
 + (void)isDeadKey:(CPEvent)event
 {
-#if PLATFORM(DOM)
-    return event._DOMEvent && (event._DOMEvent.key === 'Dead' || event._DOMEvent.key === 'Process');
-#endif
+    if (CPDOMAvailable)
+        return event._DOMEvent && (event._DOMEvent.key === 'Dead' || event._DOMEvent.key === 'Process');
+
     return NO;
 }
 
 + (void)cancelCurrentInputSessionIfNeeded
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     if (_CPNativeInputField) {
         _CPNativeInputField.innerHTML = '';
     }
     _isComposing = NO;
-#endif
 }
 
 + (void)initialize
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     _CPNativeInputField = document.createElement("div");
     _CPNativeInputField.contentEditable = YES;
 
@@ -3296,6 +5021,26 @@ var _CPCopyPlaceholder = '-';
         e.preventDefault();
         var nativeClipboard = (e.originalEvent || e).clipboardData;
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
+        var pasteboard = [CPPasteboard generalPasteboard];
+        var nativePlainText = nativeClipboard.getData('text/plain');
+
+        // An image on the clipboard, such as a screenshot, is inserted as an attachment when the
+        // clipboard holds no text.
+        if (!nativePlainText && nativeClipboard.files && nativeClipboard.files.length &&
+            [currentFirstResponder respondsToSelector:@selector(_insertImageFiles:)] && [currentFirstResponder isRichText])
+        {
+            [currentFirstResponder _insertImageFiles:nativeClipboard.files];
+            return;
+        }
+
+        // The internal pasteboard holds what the application copied last. When the system
+        // clipboard holds other text, copied elsewhere, the internal pasteboard is out of date:
+        // it is replaced with that text, so that its rich text is not pasted in its place.
+        if (nativePlainText && !_CPTextViewClipboardStringsMatch(nativePlainText, [pasteboard stringForType:CPStringPboardType]))
+        {
+            [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+            [pasteboard setString:nativePlainText forType:CPStringPboardType];
+        }
 
         // Can we accept richtext? Then this is our preference (fixme: shift key to force plain text paste)
         if ([currentFirstResponder respondsToSelector:@selector(isRichText)] && [currentFirstResponder isRichText])
@@ -3307,7 +5052,6 @@ var _CPCopyPlaceholder = '-';
                 richtext = [[_CPRTFParser new] parseRTF:richtext];
             else
             {
-                var pasteboard = [CPPasteboard generalPasteboard];
                 // If no RTF is available, try to get the internal represatation of richtext from the pasteboard
                 var richData = [pasteboard stringForType:_CPASPboardType];
 
@@ -3329,7 +5073,7 @@ var _CPCopyPlaceholder = '-';
             // If no richtext is available, fall back to plain text
         }
 
-        var nativeString = nativeClipboard.getData('text/plain');
+        var nativeString = nativePlainText;
 
         // Use setTimeout to prevent flickering
         setTimeout(function()
@@ -3384,21 +5128,22 @@ var _CPCopyPlaceholder = '-';
             [currentFirstResponder deleteBackward:self];
         }, 20);
     };
-#endif
 }
 
 + (void)focusForTextView:(CPTextView)currentFirstResponder
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
 
     if (_CPNativeInputField && document.activeElement !== _CPNativeInputField)
         _CPNativeInputField.focus();
-#endif
 }
 
 + (void)focusForClipboardOfTextView:(CPTextView)textview
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     var selectedRange = [textview selectedRange];
     if (selectedRange.length > 0) {
         // Put the selected text into the hidden div so the browser can natively copy it.
@@ -3419,7 +5164,6 @@ var _CPCopyPlaceholder = '-';
         selection.removeAllRanges();
         selection.addRange(range);
     }
-#endif
 }
 
 @end
