@@ -25,6 +25,7 @@
 @import "CPFontManager.j"
 @import "CPParagraphStyle.j"
 @import "_CPTableTextAttachment.j"
+@import "CPTextList.j"
 
 @global CPLeftTextAlignment
 @global CPRightTextAlignment
@@ -57,6 +58,209 @@ var cp1252Map = {
     0x9E: 0x017E, 0x9F: 0x0178
 };
 
+/*
+    The marker format names of the RTF number formats (\levelnfc). 23 is a bullet.
+*/
+var _CPRTFNumberFormatNames = {
+        0: "decimal",
+        1: "upper-roman",
+        2: "lower-roman",
+        3: "upper-alpha",
+        4: "lower-alpha"
+    },
+    _CPRTFBulletFormats = {
+        "\u2022": "{disc}",
+        "\u25E6": "{circle}",
+        "\u25AA": "{square}",
+        "\u2043": "{hyphen}",
+        "\u25C6": "{diamond}",
+        "\u2713": "{check}",
+        "\u25A1": "{box}"
+    };
+
+/*
+    Returns the index just after the group that opens with the brace at anOpenIndex in rtf. Escaped
+    braces, \{ and \}, do not open or close groups.
+*/
+var _CPRTFGroupEnd = function(rtf, anOpenIndex)
+{
+    var depth = 0;
+
+    for (var i = anOpenIndex; i < rtf.length; i++)
+    {
+        var character = rtf.charAt(i);
+
+        if (character === "\\")
+            i++;
+        else if (character === "{")
+            depth++;
+        else if (character === "}" && --depth === 0)
+            return i + 1;
+    }
+
+    return rtf.length;
+};
+
+/*
+    Returns the groups in rtf that open with aPattern, a regular expression that matches the
+    opening brace and the group's first control word.
+*/
+var _CPRTFGroups = function(rtf, aPattern)
+{
+    var groups = [],
+        match;
+
+    aPattern.lastIndex = 0;
+
+    while ((match = aPattern.exec(rtf)))
+    {
+        var end = _CPRTFGroupEnd(rtf, match.index);
+
+        groups.push(rtf.substring(match.index, end));
+        aPattern.lastIndex = end;
+    }
+
+    return groups;
+};
+
+/*
+    Decodes the text of a list level, the content of its \leveltext destination after the length
+    byte, into parts: strings, and numbers for the levels whose item numbers take their place. A
+    \'hh escape with a value below 9 is a level number; any other is a character.
+*/
+var _CPRTFLevelTextParts = function(aLevelText)
+{
+    var parts = [],
+        literal = "",
+        i = 0;
+
+    while (i < aLevelText.length)
+    {
+        var character = aLevelText.charAt(i);
+
+        if (character === ";")
+            break;
+
+        if (character !== "\\")
+        {
+            literal += character;
+            i++;
+            continue;
+        }
+
+        var hexMatch = /^\\'([0-9a-fA-F]{2})/.exec(aLevelText.substring(i)),
+            unicodeMatch = /^\\u(-?\d+) ?\??/.exec(aLevelText.substring(i)),
+            wordMatch = /^\\[a-z]+-?\d* ?/.exec(aLevelText.substring(i));
+
+        if (hexMatch)
+        {
+            var value = parseInt(hexMatch[1], 16);
+
+            if (value < 9)
+            {
+                if (literal)
+                    parts.push(literal);
+
+                literal = "";
+                parts.push(value);
+            }
+            else
+                literal += String.fromCharCode(value);
+
+            i += hexMatch[0].length;
+        }
+        else if (unicodeMatch)
+        {
+            var code = parseInt(unicodeMatch[1], 10);
+
+            literal += String.fromCharCode(code < 0 ? code + 65536 : code);
+            i += unicodeMatch[0].length;
+        }
+        else if (wordMatch)
+            i += wordMatch[0].length;
+        else
+        {
+            literal += aLevelText.charAt(i + 1);
+            i += 2;
+        }
+    }
+
+    if (literal)
+        parts.push(literal);
+
+    return parts;
+};
+
+/*
+    Returns the definition of one list level, {format, options, start}, from its \listlevel group.
+    Cocoa writes the marker format in \levelmarker. For other writers, the format is made from the
+    number format and the level's text.
+*/
+var _CPRTFListLevelDefinition = function(aLevelGroup, aLevel)
+{
+    var markerMatch = /\{\\\*\\levelmarker ?((?:\\.|[^\\}])*)\}/.exec(aLevelGroup),
+        startMatch = /\\levelstartat(-?\d+)/.exec(aLevelGroup),
+        numberFormatMatch = /\\levelnfc(\d+)/.exec(aLevelGroup),
+        levelTextMatch = /\{\\leveltext(?:\\leveltemplateid-?\d+)? ?\\'[0-9a-fA-F]{2}((?:\\.|[^\\}])*)\}/.exec(aLevelGroup),
+        parts = levelTextMatch ? _CPRTFLevelTextParts(levelTextMatch[1]) : [],
+        prepends = /\\levelprepend(?![a-z])/.test(aLevelGroup),
+        format = nil;
+
+    for (var i = 0; i < parts.length; i++)
+        if (typeof parts[i] === "number" && parts[i] < aLevel)
+            prepends = YES;
+
+    if (markerMatch)
+        format = markerMatch[1].replace(/\\([\\{}])/g, "$1");
+    else
+    {
+        var numberFormat = numberFormatMatch ? parseInt(numberFormatMatch[1], 10) : 0;
+
+        if (numberFormat === 23)
+        {
+            var bullet = parts.join("");
+
+            format = _CPRTFBulletFormats[bullet] || bullet || CPTextListMarkerDisc;
+        }
+        else
+        {
+            // The text around this level's own number. Text after an enclosing level's number
+            // ends that level's marker, which is prepended, so only text before any number is
+            // this level's prefix. Its suffix runs up to the next number.
+            var name = "{" + (_CPRTFNumberFormatNames[numberFormat] || "decimal") + "}",
+                prefix = "",
+                suffix = "",
+                found = NO,
+                seenEnclosingNumber = NO;
+
+            for (var i = 0; i < parts.length; i++)
+            {
+                if (parts[i] === aLevel)
+                    found = YES;
+                else if (typeof parts[i] === "number")
+                {
+                    if (found)
+                        break;
+
+                    seenEnclosingNumber = YES;
+                }
+                else if (found)
+                    suffix += parts[i];
+                else if (!seenEnclosingNumber)
+                    prefix += parts[i];
+            }
+
+            format = prefix + name + suffix;
+        }
+    }
+
+    return {
+        format: format,
+        options: prepends ? CPTextListPrependEnclosingMarker : 0,
+        start: startMatch ? parseInt(startMatch[1], 10) : 1
+    };
+};
+
 // Hold the attributes of the current run
 @implementation _RTFAttribute : CPObject
 {
@@ -76,6 +280,13 @@ var cp1252Map = {
     CPTabStopType       _nextTabType;
     int                 superscript;
     float               baselineOffset;
+
+    // The first line indent, \fi, is an offset from the left indent, \li, in RTF.
+    float               _firstLineOffset;
+
+    // The RTF list (\lsN) and level (\ilvlN) of a list item, or 0 and 0.
+    int                 _listNumber;
+    int                 _listLevel;
 }
 
 - (id)init
@@ -110,6 +321,9 @@ var cp1252Map = {
     mynew._nextTabType = _nextTabType;
     mynew.superscript = superscript;
     mynew.baselineOffset = baselineOffset;
+    mynew._firstLineOffset = _firstLineOffset;
+    mynew._listNumber = _listNumber;
+    mynew._listLevel = _listLevel;
 
     return mynew;
 }
@@ -162,6 +376,9 @@ var cp1252Map = {
     paragraph = [[CPParagraphStyle defaultParagraphStyle] mutableCopy];
     _tabChanged = NO;
     _nextTabType = CPLeftTabStopType;
+    _firstLineOffset = 0.0;
+    _listNumber = 0;
+    _listLevel = 0;
 }
 
 - (void)resetFont
@@ -342,6 +559,17 @@ var kRgsymRtf = {
     CPMutableArray      _tableRows;
     CPMutableArray      _currentRow;
     CPString            _currentCellText;
+
+    // Text lists: the level definitions of each RTF list by its \listid, the list of each
+    // override by its \ls number, and the text lists made for each override, one for each level.
+    Object              _listDefinitions;
+    Object              _listOverrides;
+    Object              _textListsByOverride;
+
+    // Unicode: the number of fallback characters after each \uN (\ucN), and how many of them are
+    // still to be skipped.
+    int                 _unicodeFallbackCount;
+    int                 _fallbackCharactersToSkip;
 }
 
 - (id)init
@@ -366,6 +594,13 @@ var kRgsymRtf = {
         _tableRows          = nil;
         _currentRow         = nil;
         _currentCellText    = "";
+
+        _listDefinitions    = {};
+        _listOverrides      = {};
+        _textListsByOverride = {};
+
+        _unicodeFallbackCount = 1;
+        _fallbackCharactersToSkip = 0;
 
         // Safe Initialization
         _currentRun         = [_RTFAttribute new];
@@ -834,15 +1069,50 @@ var kRgsymRtf = {
                  _currentRun.fontSize = parseInt(param) / 2;
                  break;
 
-            case "fi":  // first line indent
+            case "fi":  // first line indent, an offset from the left indent
                  if (_currentRun)
-                     [_currentRun.paragraph setFirstLineHeadIndent:parseInt(param) / 20.0];
+                 {
+                     _currentRun._firstLineOffset = parseInt(param) / 20.0;
+                     [_currentRun.paragraph setFirstLineHeadIndent:[_currentRun.paragraph headIndent] + _currentRun._firstLineOffset];
+                 }
                  break;
 
             case "li":  // left indent / head indent
                  if (_currentRun)
+                 {
                      [_currentRun.paragraph setHeadIndent:parseInt(param) / 20.0];
+                     [_currentRun.paragraph setFirstLineHeadIndent:[_currentRun.paragraph headIndent] + _currentRun._firstLineOffset];
+                 }
                  break;
+
+            case "ls":  // the RTF list of a list item
+                 if (_currentRun)
+                 {
+                     _currentRun._listNumber = parseInt(param);
+                     [self _applyTextListsToCurrentRun];
+                 }
+                 break;
+
+            case "ilvl":  // the level of a list item
+                 if (_currentRun)
+                 {
+                     _currentRun._listLevel = parseInt(param);
+                     [self _applyTextListsToCurrentRun];
+                 }
+                 break;
+
+            case "uc":  // the number of fallback characters after each Unicode character
+                 _unicodeFallbackCount = parseInt(param) || 0;
+                 break;
+
+            case "u":  // a Unicode character, followed by its fallback characters
+                 var code = parseInt(param);
+
+                 // Fallback characters are skipped only in text that is kept.
+                 if (_curState === 0)
+                     _fallbackCharactersToSkip = _unicodeFallbackCount;
+
+                 return String.fromCharCode(code < 0 ? code + 65536 : code);
 
             case "ri":  // right indent / tail indent
                  if (_currentRun)
@@ -932,6 +1202,76 @@ var kRgsymRtf = {
     return [self _translateKeyword:keyword parameter:param fParameter:fParam];
 }
 
+/*
+    Reads the list table and the list override table, which are destinations the parser otherwise
+    skips, before the text is parsed. Paragraphs then refer to the lists with \lsN and \ilvlN.
+*/
+- (void)_parseListTables:(CPString)rtf
+{
+    var lists = _CPRTFGroups(rtf, /\{\\list(?![a-z])/g);
+
+    for (var i = 0; i < lists.length; i++)
+    {
+        // Only the list itself has a \listid; its levels have \leveltemplateid.
+        var idMatch = /\\listid(-?\d+)/.exec(lists[i]),
+            levels = _CPRTFGroups(lists[i], /\{\\listlevel(?![a-z])/g),
+            definitions = [];
+
+        if (!idMatch)
+            continue;
+
+        for (var level = 0; level < levels.length; level++)
+            definitions.push(_CPRTFListLevelDefinition(levels[level], level));
+
+        _listDefinitions[idMatch[1]] = definitions;
+    }
+
+    var overrides = _CPRTFGroups(rtf, /\{\\listoverride(?![a-z])/g);
+
+    for (var i = 0; i < overrides.length; i++)
+    {
+        var idMatch = /\\listid(-?\d+)/.exec(overrides[i]),
+            numberMatch = /\\ls(\d+)/.exec(overrides[i]);
+
+        if (idMatch && numberMatch)
+            _listOverrides[numberMatch[1]] = idMatch[1];
+    }
+}
+
+/*
+    Gives the current run's paragraph the text lists of its RTF list and level. The text lists of
+    an RTF list are made once, one for each level, so the items of a list share them and are
+    numbered together.
+*/
+- (void)_applyTextListsToCurrentRun
+{
+    var listNumber = _currentRun._listNumber;
+
+    if (!listNumber)
+    {
+        [_currentRun.paragraph setTextLists:[]];
+        return;
+    }
+
+    var definitions = _listDefinitions[_listOverrides[listNumber]] || [],
+        textLists = _textListsByOverride[listNumber];
+
+    if (!textLists)
+        textLists = _textListsByOverride[listNumber] = [];
+
+    for (var level = 0; level <= _currentRun._listLevel; level++)
+    {
+        if (!textLists[level])
+        {
+            var definition = definitions[level] || {format: CPTextListMarkerDisc, options: 0, start: 1};
+
+            textLists[level] = [[CPTextList alloc] initWithMarkerFormat:definition.format options:definition.options startingItemNumber:definition.start];
+        }
+    }
+
+    [_currentRun.paragraph setTextLists:textLists.slice(0, _currentRun._listLevel + 1)];
+}
+
 - (void)_appendPlainString:(CPString) aString
 {
     if (_inTableActive)
@@ -952,6 +1292,8 @@ var kRgsymRtf = {
         return '';
 
     _currentParseIndex = -1;
+
+    [self _parseListTables:rtf];
 
     var len = rtf.length,
         tmp = '',
@@ -1035,7 +1377,9 @@ var kRgsymRtf = {
                 if (_hexreturn)
                 {
                     // Only append decoded characters if we are in the active body state
-                    if (ch.length > 0 && _curState === 0)
+                    if (ch.length > 0 && _curState === 0 && _fallbackCharactersToSkip > 0)
+                        _fallbackCharactersToSkip--;
+                    else if (ch.length > 0 && _curState === 0)
                     {
                         var byteVal = parseInt(ch, 16);
                         var unicodeVal = byteVal;
@@ -1065,7 +1409,12 @@ var kRgsymRtf = {
             default:
                 lastchar = 0;
 
-                if (_curState == 0)
+                if (_curState == 0 && _fallbackCharactersToSkip > 0)
+                {
+                    // A fallback character for the Unicode character before it.
+                    _fallbackCharactersToSkip--;
+                }
+                else if (_curState == 0)
                 {
                     [self _appendPlainString:tmp];
                 }

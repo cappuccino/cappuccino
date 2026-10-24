@@ -115,4 +115,15 @@
     [self assert:[attachment _attachmentView] equals:[[textView textStorage] attribute:_CPAttachmentView atIndex:0 effectiveRange:nil]];
 }
 
+- (void)testTableAttachmentArchiving
+{
+    var table = [[_CPTableTextAttachment alloc] initWithHeaders:[@"Name", @"Value"] rows:[[@"one", @"1"], [@"two", @"2"]] width:300.0],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:table]];
+
+    [self assertTrue:[decoded isKindOfClass:[_CPTableTextAttachment class]]];
+    [self assert:@"Value" equals:[[[decoded headers] objectAtIndex:1] string]];
+    [self assert:@"two" equals:[[[[decoded rows] objectAtIndex:1] objectAtIndex:0] string]];
+    [self assert:CGRectGetWidth([table frame]) equals:CGRectGetWidth([decoded frame]) message:@"the table keeps its width"];
+}
+
 @end
