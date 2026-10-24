@@ -22,7 +22,7 @@ TextEditor is a document-based test application and a tutorial. When the app use
 ### Text features not yet supported
 
 - **Images in text.** AppKit has no general `CPTextAttachment` class, only the table attachment `_CPTableTextAttachment`. The RTF parser and producer do not handle `\pict`.
-- **Lists.** There is no `CPTextList`, and `CPParagraphStyle` has no `textLists`.
+- **Lists are not read from or written to RTF.** `CPTextList` and `textLists` in `CPParagraphStyle` now exist, but the RTF parser and producer do not handle `\listtable`, `\listoverridetable`, `\ls` and `\ilvl`. A list copied as RTF keeps its marker text and indents, but loses its list structure. CPMarkdownParser also writes "- item" as the literal text "  • item", with no list.
 
 ### Text view
 
@@ -56,7 +56,7 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 
 - Fonts through `CPFontManager` and `CPFontPanel`.
 - RTF reading and writing.
-- Images and lists in text.
+- Images in text.
 - A storage facade, with saving and opening in IndexedDB and through HTTP.
 - An asynchronous fetch test: fetch the text of a page and show it for editing. The page must allow cross-origin requests.
 - An inspector pane with `CPSplitViewController` and `CPViewController`, with a View menu item that sends `toggleInspector:`.
@@ -83,4 +83,7 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 - Format > Font > Baseline: superscript, subscript, raised and lowered baselines lay out correctly, and Use Default restores the text, for an exact or a wider selection.
 - Format > Text > Justify: wrapped lines fill the width between the indents, with the spare width spread over the spaces; the last line of a paragraph stays left aligned. Centred text is centred between the indents, and spaces at the end of a wrapped line hang outside the alignment.
 - Format > Font > Copy Style and Paste Style: the style of the first character of the selection is applied to the whole target selection, which keeps its paragraph style.
+- Format > List: bulleted and numbered lists, applied to one or several paragraphs and removed with None. Return starts the next item and keeps the item's text style; Return in an empty item ends the list. Tab at the start of an item nests it, and Shift-Tab returns it. Delete at the start of an item's text removes it from the list. The items are numbered again after each change.
+- Format > Text > Copy Ruler and Paste Ruler with lists: pasting adds or removes list markers, on one or several paragraphs, and a pasted item joins the neighbouring list.
+- Typing at the end of styled text, and the font panel, use the style of the character before the insertion point.
 - Builds with both the legacy toolchain and capp-build.

@@ -208,6 +208,25 @@
     [self assertTrue:([[textView typingAttributes] objectForKey:CPSuperscriptAttributeName] == nil)];
 }
 
+- (void)testTypingAttributesComeFromTheCharacterBeforeTheInsertionPoint
+{
+    var font = [CPFont boldSystemFontOfSize:20.0],
+        length = [stringValue length];
+
+    [textView setRichText:YES];
+    [self assertTrue:[theWindow makeFirstResponder:textView]];
+    [[textView textStorage] addAttribute:CPFontAttributeName value:font range:CPMakeRange(length - 4, 4)];
+
+    [textView setSelectedRange:CPMakeRange(length, 0)];
+    [self assert:[font cssString] equals:[[[textView typingAttributes] objectForKey:CPFontAttributeName] cssString] message:@"at the end of the text"];
+
+    [textView setSelectedRange:CPMakeRange(length - 4, 0)];
+    [self assertFalse:[font cssString] === [[[textView typingAttributes] objectForKey:CPFontAttributeName] cssString] message:@"before the styled text"];
+
+    [textView setSelectedRange:CPMakeRange(length - 4, 2)];
+    [self assert:[font cssString] equals:[[[textView typingAttributes] objectForKey:CPFontAttributeName] cssString] message:@"for a selection"];
+}
+
 - (void)testCopyAndPasteStyle
 {
     var font = [CPFont boldSystemFontOfSize:20.0],
