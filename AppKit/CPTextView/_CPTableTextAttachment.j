@@ -556,3 +556,39 @@
 }
 
 @end
+
+var _CPTableTextAttachmentHeadersKey        = @"_CPTableTextAttachmentHeaders",
+    _CPTableTextAttachmentRowsKey           = @"_CPTableTextAttachmentRows",
+    _CPTableTextAttachmentWidthKey          = @"_CPTableTextAttachmentWidth",
+    _CPTableTextAttachmentIsEditableKey     = @"_CPTableTextAttachmentIsEditable",
+    _CPTableTextAttachmentAcceptsRichTextKey = @"_CPTableTextAttachmentAcceptsRichText";
+
+@implementation _CPTableTextAttachment (CPCoding)
+
+/*
+    Decodes the table from its headers, rows, width and settings, and builds its cells again.
+    The cells are not decoded as subviews; they are made from the decoded text.
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self initWithHeaders:[aCoder decodeObjectForKey:_CPTableTextAttachmentHeadersKey]
+                            rows:[aCoder decodeObjectForKey:_CPTableTextAttachmentRowsKey]
+                           width:[aCoder decodeFloatForKey:_CPTableTextAttachmentWidthKey] || 500.0
+                      isEditable:[aCoder decodeBoolForKey:_CPTableTextAttachmentIsEditableKey]
+                 acceptsRichText:[aCoder decodeBoolForKey:_CPTableTextAttachmentAcceptsRichTextKey]];
+}
+
+/*
+    Encodes the table's current text, including edits made in its cells, its width and its
+    settings. The cell views are not encoded.
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:[self headers] forKey:_CPTableTextAttachmentHeadersKey];
+    [aCoder encodeObject:[self rows] forKey:_CPTableTextAttachmentRowsKey];
+    [aCoder encodeFloat:CGRectGetWidth([self frame]) forKey:_CPTableTextAttachmentWidthKey];
+    [aCoder encodeBool:_isEditable forKey:_CPTableTextAttachmentIsEditableKey];
+    [aCoder encodeBool:_acceptsRichText forKey:_CPTableTextAttachmentAcceptsRichTextKey];
+}
+
+@end
