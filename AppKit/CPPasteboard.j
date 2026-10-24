@@ -45,6 +45,7 @@ CPURLPboardType         = @"CPURLPboardType";
 CPImagesPboardType      = @"CPImagesPboardType";
 CPVideosPboardType      = @"CPVideosPboardType";
 CPRTFPboardType         = @"CPRTFPboardType";
+CPRulerPboardType       = @"CPRulerPboardType";
 _CPSmartPboardType      = @"_CPSmartPboardType";
 _CPASPboardType         = @"_CPASPboardType";
 

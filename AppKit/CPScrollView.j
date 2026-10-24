@@ -1845,6 +1845,10 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _verticalRuler          = [aCoder decodeObjectForKey:CPScrollViewVRulerKey];
         _horizontalRuler        = [aCoder decodeObjectForKey:CPScrollViewHRulerKey];
 
+        // A ruler does not archive its scroll view, which owns it.
+        [_verticalRuler setScrollView:self];
+        [_horizontalRuler setScrollView:self];
+
         _delegate = nil;
         _scrollTimer = nil;
         _implementedDelegateMethods = 0;

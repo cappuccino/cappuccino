@@ -720,7 +720,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     Enables the Undo and Redo items only when the undo manager has a change to undo or redo.
     For \c -toggleRuler:, the item's title becomes "Hide Ruler" or "Show Ruler" to reflect the
     ruler's visibility, and the item is enabled only when the text view uses a ruler and lies
-    in a scroll view. Every other item is enabled.
+    in a scroll view. \c -copyRuler: is enabled in rich text, and \c -pasteRuler: in editable
+    rich text when the ruler pasteboard holds a ruler. Every other item is enabled.
     @param anItem the item to validate
     @return \c YES if the item should be enabled
 */
@@ -733,6 +734,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (action === @selector(redo:))
         return [[[self window] undoManager] canRedo];
+
+    // As in Cocoa, rulers can be copied and pasted only in rich text.
+    if (action === @selector(copyRuler:))
+        return [self isRichText];
+
+    if (action === @selector(pasteRuler:))
+        return [self isRichText] && [self isEditable] && !![[CPPasteboard pasteboardWithName:CPRulerPboard] availableTypeFromArray:[CPRulerPboardType]];
 
     if (action === @selector(toggleRuler:))
     {
@@ -874,6 +882,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self sizeToFit];
     [self scrollRangeToVisible:_selectionRange];
     [self setNeedsDisplay:YES];
+
+    // An undone or redone change may alter the paragraph style even when the selection stays the same.
+    [self updateRuler];
 }
 
 - (void)_replaceCharactersInRange:(CPRange)aRange withAttributedString:(CPString)aString selectionRange:(CPRange)selectionRange
@@ -2697,6 +2708,32 @@ var _CPTextViewRulerImageNameForTab = function(aTab)
 }
 
 /*!
+    Copies the paragraph style at the selection, with its tab stops, indents and alignment,
+    to the ruler pasteboard, so that Paste Ruler can apply it to other paragraphs.
+    @param aSender the object requesting this
+*/
+- (@action)copyRuler:(id)aSender
+{
+    var pasteboard = [CPPasteboard pasteboardWithName:CPRulerPboard];
+
+    [pasteboard declareTypes:[CPRulerPboardType] owner:nil];
+    [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self _rulerParagraphStyle]] forType:CPRulerPboardType];
+}
+
+/*!
+    Applies the paragraph style on the ruler pasteboard to the selected paragraphs, or to
+    the paragraph at the insertion point.
+    @param aSender the object requesting this
+*/
+- (@action)pasteRuler:(id)aSender
+{
+    var data = [[CPPasteboard pasteboardWithName:CPRulerPboard] dataForType:CPRulerPboardType];
+
+    if (data)
+        [self _applyRulerParagraphStyle:[CPKeyedUnarchiver unarchiveObjectWithData:data]];
+}
+
+/*!
     Shows the tab stops and indents of the paragraph at the selection on the ruler, and
     lines the ruler's zero up with the start of the text. Does nothing while the user drags
     a marker, or when the ruler is hidden.
@@ -3058,6 +3095,12 @@ var _CPTextViewRulerImageNameForTab = function(aTab)
 
     if (targetRange.length > 0)
     {
+        // Undo restores the paragraphs' previous attributes, and registers the reverse for redo.
+        [[[self _registeringUndoManager] prepareWithInvocationTarget:self]
+                    _replaceCharactersInRange:CPMakeRangeCopy(targetRange)
+                         withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(targetRange)]
+                               selectionRange:CPMakeRangeCopy(_selectionRange)];
+
         [_textStorage addAttribute:CPParagraphStyleAttributeName value:aParagraphStyle range:CPMakeRangeCopy(targetRange)];
         [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(targetRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(targetRange)];
     }
@@ -3239,6 +3282,7 @@ var _CPTextViewRulerImageNameForTab = function(aTab)
 
 var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     CPTextViewUsesFontPanelKey = @"CPTextViewUsesFontPanelKey",
+    CPTextViewUsesRulerKey = @"CPTextViewUsesRulerKey",
     CPTextViewContainerKey = @"CPTextViewContainerKey",
     CPTextViewLayoutManagerKey = @"CPTextViewLayoutManagerKey",
     CPTextViewTextStorageKey = @"CPTextViewTextStorageKey",
@@ -3274,6 +3318,10 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
         [self setAllowsUndo:[aCoder decodeBoolForKey:CPTextViewAllowsUndoKey]];
         [self setUsesFontPanel:[aCoder decodeBoolForKey:CPTextViewUsesFontPanelKey]];
+
+        // Archives made before usesRuler was archived keep the default from _init.
+        if ([aCoder containsValueForKey:CPTextViewUsesRulerKey])
+            _usesRuler = [aCoder decodeBoolForKey:CPTextViewUsesRulerKey];
 
         [self setDelegate:[aCoder decodeObjectForKey:CPTextViewDelegateKey]];
 
@@ -3313,6 +3361,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     [aCoder encodeObject:_selectedTextAttributes forKey:CPTextViewSelectedTextAttributesKey];
     [aCoder encodeBool:_allowsUndo forKey:CPTextViewAllowsUndoKey];
     [aCoder encodeBool:_usesFontPanel forKey:CPTextViewUsesFontPanelKey];
+    [aCoder encodeBool:_usesRuler forKey:CPTextViewUsesRulerKey];
     [aCoder encodeBool:_isHorizontallyResizable forKey:CPTextViewHorizontallyResizableKey];
     [aCoder encodeBool:_isVerticallyResizable forKey:CPTextViewVerticallyResizableKey];
     [aCoder encodeSize:_maxSize forKey:CPMaxSize];

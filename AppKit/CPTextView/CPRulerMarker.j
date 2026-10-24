@@ -451,3 +451,54 @@ var CPRulerMarkerRemovalDistance = 0.0;
 }
 
 @end
+
+
+var CPRulerMarkerRulerKey               = @"CPRulerMarkerRulerKey",
+    CPRulerMarkerLocationKey            = @"CPRulerMarkerLocationKey",
+    CPRulerMarkerImageKey               = @"CPRulerMarkerImageKey",
+    CPRulerMarkerImageOriginKey         = @"CPRulerMarkerImageOriginKey",
+    CPRulerMarkerMovableKey             = @"CPRulerMarkerMovableKey",
+    CPRulerMarkerRemovableKey           = @"CPRulerMarkerRemovableKey",
+    CPRulerMarkerRepresentedObjectKey   = @"CPRulerMarkerRepresentedObjectKey";
+
+@implementation CPRulerMarker (CPCoding)
+
+/*!
+    Initializes a marker from an archive.
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        _ruler = [aCoder decodeObjectForKey:CPRulerMarkerRulerKey];
+        _markerLocation = [aCoder decodeFloatForKey:CPRulerMarkerLocationKey];
+        _image = [aCoder decodeObjectForKey:CPRulerMarkerImageKey];
+        _imageOrigin = [aCoder decodePointForKey:CPRulerMarkerImageOriginKey];
+        _isMovable = [aCoder decodeBoolForKey:CPRulerMarkerMovableKey];
+        _isRemovable = [aCoder decodeBoolForKey:CPRulerMarkerRemovableKey];
+        _representedObject = [aCoder decodeObjectForKey:CPRulerMarkerRepresentedObjectKey];
+        _isDragging = NO;
+        _isOffRuler = NO;
+        _trackingCrossOffset = 0.0;
+    }
+
+    return self;
+}
+
+/*!
+    Archives the marker. The ruler is archived conditionally.
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeConditionalObject:_ruler forKey:CPRulerMarkerRulerKey];
+    [aCoder encodeFloat:_markerLocation forKey:CPRulerMarkerLocationKey];
+    [aCoder encodeObject:_image forKey:CPRulerMarkerImageKey];
+    [aCoder encodePoint:_imageOrigin forKey:CPRulerMarkerImageOriginKey];
+    [aCoder encodeBool:_isMovable forKey:CPRulerMarkerMovableKey];
+    [aCoder encodeBool:_isRemovable forKey:CPRulerMarkerRemovableKey];
+    [aCoder encodeObject:_representedObject forKey:CPRulerMarkerRepresentedObjectKey];
+}
+
+@end
