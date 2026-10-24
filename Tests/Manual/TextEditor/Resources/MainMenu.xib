@@ -139,6 +139,12 @@
                                     <action selector="insertLoremIpsum:" target="-1" id="KPb-XT-4QY"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Insert Image…" id="Ew2-J6-C29">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="insertImage:" target="-1" id="DCs-g8-Xuw"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="214">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>

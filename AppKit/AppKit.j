@@ -101,6 +101,7 @@
 @import "CPTableView.j"
 @import "CPTabView.j"
 @import "CPText.j"
+@import "CPTextAttachment.j"
 @import "CPTextField.j"
 @import "CPTextList.j"
 @import "CPTextView.j"

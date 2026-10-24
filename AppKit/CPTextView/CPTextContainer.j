@@ -130,6 +130,9 @@ CPLineMovesUp = 4;
 
     if (oldSize.width != _size.width)
     {
+        // Image attachments fit the new width before the text is laid out again.
+        [_textView _setTextAttachmentsMaximumWidth:MAX(0.0, _size.width - 2.0 * _lineFragmentPadding)];
+
         _inResizing = YES;
         [_layoutManager invalidateLayoutForCharacterRange:CPMakeRange(0, [[_layoutManager textStorage] length])
                                                    isSoft:NO

@@ -26,6 +26,7 @@
 
 @import "CPText.j"
 @import "CPFont.j"
+@import "CPTextAttachment.j"
 
 @class CPLayoutManager;
 
@@ -263,16 +264,23 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 }
 
 /*!
-    Returns an instance of CPTextStorage that contains the provided instance of CPView.
-    This can be used to insert arbitrary views into the text. These views are treated as individual characters during editing.
-    This works only with views that conform to the CPCoding protocol
+    Returns an instance of CPTextStorage that contains one attachment character for anAttachment.
+    The attachment is treated as an individual character during editing.
+
+    anAttachment is either a CPTextAttachment, as in Cocoa, or a view. A CPTextAttachment is
+    stored as the character's CPAttachmentAttributeName attribute, and its view is laid out as
+    the character. A view is inserted into the text directly; this works only with views that
+    conform to the CPCoding protocol.
 */
 
-+ (id)attributedStringWithAttachment:(CPView)someView
++ (id)attributedStringWithAttachment:(id)anAttachment
 {
     var result = [[self alloc] initWithString:_CPAttachmentCharacterAsString];
 
-    [result setAttributes:@{_CPAttachmentView:someView} range:CPMakeRange(0, 1)];
+    if ([anAttachment isKindOfClass:[CPTextAttachment class]])
+        [result setAttributes:@{CPAttachmentAttributeName:anAttachment, _CPAttachmentView:[anAttachment _attachmentView]} range:CPMakeRange(0, 1)];
+    else
+        [result setAttributes:@{_CPAttachmentView:anAttachment} range:CPMakeRange(0, 1)];
 
     return result;
 }

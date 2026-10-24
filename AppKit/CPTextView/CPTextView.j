@@ -329,6 +329,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [super _removeObservers];
     [self _setObserveWindowKeyNotifications:NO];
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPTextAttachmentDidChangeSizeNotification object:nil];
     [self _removeDelegateObservers];
 }
 
@@ -339,6 +340,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [super _addObservers];
     [self _setObserveWindowKeyNotifications:YES];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_textAttachmentDidChangeSize:) name:_CPTextAttachmentDidChangeSizeNotification object:nil];
     [self _startObservingClipView];
     [self _addDelegateObservers];
 }
@@ -507,7 +509,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [pasteboard setString:[stringForPasting._string stringByReplacingOccurrencesOfString:_CPAttachmentCharacterAsString withString:''] forType:CPStringPboardType];
         [pasteboard setString:richData forType:CPRTFPboardType];
         [pasteboard setString:_previousSelectionGranularity + '' forType:_CPSmartPboardType];
-        [pasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:stringForPasting] rawString] forType:_CPASPboardType];
+        [pasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:[self _attributedStringForArchiving:stringForPasting]] rawString] forType:_CPASPboardType];
     }
     else
     {
@@ -829,6 +831,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     in a scroll view. \c -copyRuler: is enabled in rich text, and \c -pasteRuler: in editable
     rich text when the ruler pasteboard holds a ruler. \c -changeTextList: is enabled in editable
     rich text, and its item is checked when it shows the list style at the selection.
+    \c -insertImage: is enabled in editable rich text.
     \c -copyFont: is enabled in rich text, and
     \c -pasteFont: in editable rich text when the font pasteboard holds a style. The superscript,
     subscript and baseline actions are enabled in editable rich text. Every other item is enabled.
@@ -856,6 +859,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (action === @selector(pasteRuler:))
         return [self isRichText] && [self isEditable] && !![[CPPasteboard pasteboardWithName:CPRulerPboard] availableTypeFromArray:[CPRulerPboardType]];
+
+    // Images can be inserted only in editable rich text.
+    if (action === @selector(insertImage:))
+        return [self isEditable] && [self isRichText];
 
     // Lists apply only to editable rich text. The item for the list style at the selection is checked.
     if (action === @selector(changeTextList:))
@@ -1042,6 +1049,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         aString = [[CPAttributedString alloc] initWithString:aString attributes:_typingAttributes];
     else if (![self isRichText])
         aString = [[CPAttributedString alloc] initWithString:string attributes:_typingAttributes];
+    else
+        [self _prepareTextAttachmentsInAttributedString:aString];
 
     var undoManager = [self _registeringUndoManager];
     [undoManager setActionName:@"Replace/insert text"];
@@ -2649,7 +2658,6 @@ Sets the selection to a range of characters in response to user action.
             maxSize = [self maxSize],
             rect = CGRectUnion([_layoutManager boundingRectForGlyphRange:CPMakeRange(0, 1) inTextContainer:_textContainer],
                            [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, [_layoutManager numberOfCharacters] - 2), 1) inTextContainer:_textContainer]);
-
         if ([_layoutManager extraLineFragmentTextContainer] === _textContainer)
             rect = CGRectUnion(rect, [_layoutManager extraLineFragmentRect]);
 
@@ -4338,6 +4346,235 @@ var CPTextViewTextListStyles = {
 
 @end
 
+/*!
+    Text attachment support. An image in rich text is a CPTextAttachment, held by one attachment
+    character. Its view is laid out as that character, at most as wide as the text. The user
+    inserts images with -insertImage:, or by pasting them.
+*/
+@implementation CPTextView (CPTextAttachmentSupport)
+
+// MARK: Inserting Images
+
+/*!
+    Lets the user choose image files with the browser's file picker, and inserts them as
+    attachments at the insertion point, or in place of the selection, in the order chosen.
+    @param aSender the object requesting this
+*/
+- (@action)insertImage:(id)aSender
+{
+    if (!CPDOMAvailable || ![self isRichText] || ![self isEditable])
+        return;
+
+    var textView = self,
+        input = document.createElement("input");
+
+    input.type = "file";
+    input.accept = "image/*";
+    input.multiple = YES;
+
+    input.onchange = function()
+    {
+        [textView _insertImageFiles:input.files];
+    };
+
+    input.click();
+}
+
+/* @ignore
+    Reads image files from the browser, and inserts them as attachments in their original
+    order once all of them have been read. Files that are not images are skipped.
+*/
+- (void)_insertImageFiles:(FileList)someFiles
+{
+    var files = [];
+
+    for (var i = 0; i < someFiles.length; i++)
+        if (someFiles[i].type.indexOf("image/") === 0)
+            files.push(someFiles[i]);
+
+    if (!files.length)
+        return;
+
+    var attachments = new Array(files.length);
+
+    for (var i = 0; i < files.length; i++)
+        [self _readImageFile:files[i] intoAttachments:attachments atIndex:i];
+}
+
+/* @ignore
+    Reads one image file as a data URL, and makes an attachment from it. When the last file has
+    been read, the attachments are inserted.
+*/
+- (void)_readImageFile:(File)aFile intoAttachments:(CPArray)someAttachments atIndex:(unsigned)anIndex
+{
+    var textView = self,
+        reader = new FileReader();
+
+    reader.onload = function()
+    {
+        someAttachments[anIndex] = [CPTextAttachment _attachmentWithDataURL:reader.result] || [CPNull null];
+        [textView _insertAttachmentsIfComplete:someAttachments];
+    };
+
+    reader.onerror = function()
+    {
+        CPLog.warn("CPTextView: the image file " + aFile.name + " could not be read.");
+        someAttachments[anIndex] = [CPNull null];
+        [textView _insertAttachmentsIfComplete:someAttachments];
+    };
+
+    reader.readAsDataURL(aFile);
+}
+
+/* @ignore
+    Inserts the attachments once every file has been read. The files are read outside the run
+    loop, so the run loop is run afterwards, to close the undo group and display the change.
+*/
+- (void)_insertAttachmentsIfComplete:(CPArray)someAttachments
+{
+    for (var i = 0; i < someAttachments.length; i++)
+        if (!someAttachments[i])
+            return;
+
+    var result = [[CPAttributedString alloc] initWithString:@""];
+
+    for (var i = 0; i < someAttachments.length; i++)
+    {
+        var attachment = someAttachments[i];
+
+        if (attachment === [CPNull null])
+            continue;
+
+        var attachmentString = [CPTextStorage attributedStringWithAttachment:attachment],
+            attributes = [_typingAttributes mutableCopy];
+
+        [attributes addEntriesFromDictionary:[attachmentString attributesAtIndex:0 effectiveRange:nil]];
+        [attachmentString setAttributes:attributes range:CPMakeRange(0, 1)];
+        [result appendAttributedString:attachmentString];
+    }
+
+    if ([result length])
+        [self insertText:result];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
+// MARK: Attachment Layout
+
+/* @ignore
+    Returns the widest an attachment may be shown: the width of the text container inside its
+    line fragment padding.
+*/
+- (float)_textAttachmentMaximumWidth
+{
+    return MAX(0.0, [_textContainer containerSize].width - 2.0 * [_textContainer lineFragmentPadding]);
+}
+
+/* @ignore
+    Gives each CPTextAttachment in anAttributedString its view, which the text system lays out
+    as the attachment character, and fits it to the width of the text. Text decoded from an
+    archive, such as the internal pasteboard, holds the attachments without their views.
+*/
+- (void)_prepareTextAttachmentsInAttributedString:(CPAttributedString)anAttributedString
+{
+    var string = [anAttributedString string],
+        maximumWidth = [self _textAttachmentMaximumWidth],
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+
+    while (index !== -1)
+    {
+        var attachment = [anAttributedString attribute:CPAttachmentAttributeName atIndex:index effectiveRange:nil];
+
+        if ([attachment isKindOfClass:[CPTextAttachment class]])
+        {
+            [attachment _setMaximumWidth:maximumWidth];
+            [anAttributedString addAttribute:_CPAttachmentView value:[attachment _attachmentView] range:CPMakeRange(index, 1)];
+        }
+
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+}
+
+/* @ignore
+    Fits every CPTextAttachment in the text to aWidth. The text container calls this when its
+    width changes, before it lays the text out again.
+*/
+- (void)_setTextAttachmentsMaximumWidth:(float)aWidth
+{
+    var string = [_textStorage string],
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+
+    while (index !== -1)
+    {
+        var attachment = [_textStorage attribute:CPAttachmentAttributeName atIndex:index effectiveRange:nil];
+
+        if ([attachment isKindOfClass:[CPTextAttachment class]])
+            [attachment _setMaximumWidth:aWidth];
+
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+}
+
+/* @ignore
+    Returns the index of anAttachment's character in the text, or CPNotFound.
+*/
+- (unsigned)_indexOfTextAttachment:(CPTextAttachment)anAttachment
+{
+    var string = [_textStorage string],
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+
+    while (index !== -1)
+    {
+        if ([_textStorage attribute:CPAttachmentAttributeName atIndex:index effectiveRange:nil] === anAttachment)
+            return index;
+
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+
+    return CPNotFound;
+}
+
+/* @ignore
+    An attachment's displayed size has changed, for example because its image has loaded. If
+    the attachment is in this text view, the text is laid out again from it.
+*/
+- (void)_textAttachmentDidChangeSize:(CPNotification)aNotification
+{
+    var index = [self _indexOfTextAttachment:[aNotification object]];
+
+    if (index === CPNotFound)
+        return;
+
+    [_layoutManager invalidateLayoutForCharacterRange:CPMakeRange(index, 1) isSoft:NO actualCharacterRange:nil];
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
+}
+
+/* @ignore
+    Returns a copy of anAttributedString for archiving, without the views of its
+    CPTextAttachments. An attachment archives its image data, and gets a new view when the text
+    is decoded and inserted.
+*/
+- (CPAttributedString)_attributedStringForArchiving:(CPAttributedString)anAttributedString
+{
+    var result = [[CPAttributedString alloc] initWithAttributedString:anAttributedString],
+        string = [result string],
+        index = string.indexOf(_CPAttachmentCharacterAsString);
+
+    while (index !== -1)
+    {
+        if ([[result attribute:CPAttachmentAttributeName atIndex:index effectiveRange:nil] isKindOfClass:[CPTextAttachment class]])
+            [result removeAttribute:_CPAttachmentView range:CPMakeRange(index, 1)];
+
+        index = string.indexOf(_CPAttachmentCharacterAsString, index + 1);
+    }
+
+    return result;
+}
+
+@end
+
 @implementation CPTextView (CPTextViewDelegate)
 
 - (BOOL)_delegateRespondsToShouldChangeTypingAttributesToAttributes
@@ -4777,6 +5014,15 @@ var _CPCopyPlaceholder = '-';
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
         var pasteboard = [CPPasteboard generalPasteboard];
         var nativePlainText = nativeClipboard.getData('text/plain');
+
+        // An image on the clipboard, such as a screenshot, is inserted as an attachment when the
+        // clipboard holds no text.
+        if (!nativePlainText && nativeClipboard.files && nativeClipboard.files.length &&
+            [currentFirstResponder respondsToSelector:@selector(_insertImageFiles:)] && [currentFirstResponder isRichText])
+        {
+            [currentFirstResponder _insertImageFiles:nativeClipboard.files];
+            return;
+        }
 
         // The internal pasteboard holds what the application copied last. When the system
         // clipboard holds other text, copied elsewhere, the internal pasteboard is out of date:
