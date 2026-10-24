@@ -227,6 +227,33 @@
     [self assert:[font cssString] equals:[[[textView typingAttributes] objectForKey:CPFontAttributeName] cssString] message:@"for a selection"];
 }
 
+- (void)testPasteOfSystemClipboardText
+{
+    var font = [CPFont boldSystemFontOfSize:20.0],
+        length = [stringValue length];
+
+    [textView setRichText:YES];
+    [self assertTrue:[theWindow makeFirstResponder:textView]];
+    [[textView textStorage] addAttribute:CPFontAttributeName value:font range:CPMakeRange(0, 2)];
+
+    [textView setSelectedRange:CPMakeRange(0, 2)];
+    [textView copy:nil];
+
+    // The system clipboard still holds the copied text, so the rich text is pasted.
+    [textView setSelectedRange:CPMakeRange(length, 0)];
+    [textView _pasteSystemClipboardString:@"My" asPlainText:NO];
+
+    [self assert:stringValue + @"My" equals:[textView stringValue]];
+    [self assert:[font cssString] equals:[[[textView textStorage] attribute:CPFontAttributeName atIndex:length effectiveRange:nil] cssString]];
+
+    // Text copied elsewhere replaces the internal pasteboard, and is pasted as plain text.
+    [textView _pasteSystemClipboardString:@"other" asPlainText:NO];
+
+    [self assert:stringValue + @"Myother" equals:[textView stringValue]];
+    [self assert:@"other" equals:[[CPPasteboard generalPasteboard] stringForType:CPStringPboardType]];
+    [self assertTrue:([[CPPasteboard generalPasteboard] stringForType:_CPASPboardType] == nil) message:@"the out of date rich text is removed"];
+}
+
 - (void)testCopyAndPasteStyle
 {
     var font = [CPFont boldSystemFontOfSize:20.0],
