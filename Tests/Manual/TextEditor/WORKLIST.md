@@ -24,6 +24,10 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - **Images in text.** AppKit has no general `CPTextAttachment` class, only the table attachment `_CPTableTextAttachment`. The RTF parser and producer do not handle `\pict`.
 - **Lists.** There is no `CPTextList`, and `CPParagraphStyle` has no `textLists`.
 
+### Text view
+
+- **Format > Font > Copy Style and Paste Style raise an exception.** They send `copyFont:` and `pasteFont:`, which `CPText` declares as abstract methods that raise (`CPText.j:210` and `:261`). `CPTextView` does not implement them, so the menu items are enabled and choosing one raises. `CPTextView` needs Cocoa's implementations: copy the font and character attributes at the selection to the font pasteboard (`CPFontPboard`), and apply them to the selection.
+
 ### Ruler
 
 - **Marker appearance and vertical alignment differ from TextEdit.** The marker images, and where markers sit across the ruler, are interim until Aristo3 supplies its own; adjust them to match TextEdit then. A tab stop dragged up off the ruler follows the pointer and is clipped by the ruler's edge, as in TextEdit. Dragged down off the ruler, it stays on its line and is drawn faded until release; TextEdit's behaviour in that direction has not been checked.
@@ -68,4 +72,5 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - The ruler: markers follow the paragraph at the selection; first line, head and right indents change the layout as shown; clicking adds a tab stop, and dragging moves or removes one; the Control-click menu changes a tab stop's type; the ruler's zero lines up with the start of the text, and markers at 0 are fully visible.
 - Text stays inside the visible width, with Cocoa's 5-point line fragment padding.
 - Tab characters: the Tab key inserts a tab in the text view, and left, centre, right and decimal tab stops align their columns.
+- Format > Text > Copy Ruler and Paste Ruler apply one paragraph's indents and tab stops to others.
 - Builds with both the legacy toolchain and capp-build.
