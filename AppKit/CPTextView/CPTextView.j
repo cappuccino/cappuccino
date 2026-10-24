@@ -59,6 +59,36 @@
 
 @global document
 
+/*
+    The system clipboard. A key equivalent such as Command-C, Command-X or Command-V lets the
+    browser send its own clipboard event, which _CPNativeInputManager handles with the
+    clipboard data of that event. A menu item chosen with the mouse, or a button, has no such
+    event, so the text view uses the asynchronous Clipboard API instead. That API carries only
+    plain text in current browsers. Rich text copied in the application stays on the internal
+    pasteboard, and is pasted from there when the system clipboard still holds the same plain
+    text.
+*/
+
+/*
+    Returns YES if two clipboard strings hold the same text, ignoring the line ending
+    conventions that the system clipboard may apply.
+*/
+var _CPTextViewClipboardStringsMatch = function(aString, anotherString)
+{
+    if (!aString || !anotherString)
+        return NO;
+
+    return aString.replace(/\r\n?/g, "\n") === anotherString.replace(/\r\n?/g, "\n");
+};
+
+/*
+    Returns YES if the browser provides the asynchronous Clipboard API.
+*/
+var _CPTextViewHasAsyncClipboard = function()
+{
+    return CPDOMAvailable && typeof navigator !== "undefined" && !!navigator.clipboard && !!navigator.clipboard.readText && !!navigator.clipboard.writeText;
+};
+
 _MakeRangeFromAbs = function(a1, a2)
 {
     return (a1 < a2) ? CPMakeRange(a1, a2 - a1) : CPMakeRange(a2, a1 - a2);
@@ -453,6 +483,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 // MARK: -
 // MARK: Copy and paste methods
 
+/* @ignore
+    Returns YES if a clipboard action comes from the browser's clipboard event or from a key
+    equivalent. The browser then sends its own clipboard event, which carries the clipboard data.
+*/
+- (BOOL)_isKeyboardClipboardAction:(id)sender
+{
+    return sender === _CPNativeInputManager || [sender isKindOfClass:_CPNativeInputManager] || [[CPApp currentEvent] type] === CPKeyDown;
+}
+
 - (void)copy:(id)sender
 {
     [super copy:sender];
@@ -475,6 +514,16 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [pasteboard declareTypes:[CPStringPboardType, _CPSmartPboardType] owner:nil];
         [pasteboard setString:stringForPasting._string forType:CPStringPboardType];
         [pasteboard setString:_previousSelectionGranularity + '' forType:_CPSmartPboardType];
+    }
+
+    // Without a browser clipboard event, the plain text goes to the system clipboard through the
+    // asynchronous Clipboard API.
+    if (selectedRange.length && ![self _isKeyboardClipboardAction:sender] && _CPTextViewHasAsyncClipboard())
+    {
+        navigator.clipboard.writeText([pasteboard stringForType:CPStringPboardType] || "").then(nil, function(anError)
+        {
+            CPLog.warn("CPTextView: the browser refused to write to the clipboard: " + anError);
+        });
     }
 }
 
@@ -519,18 +568,74 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 - (void)pasteAsPlainText:(id)sender
 {
-    if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
-        return
-
-    [self _pasteString:[self _plainStringForPasting]];
+    if (sender === _CPNativeInputManager || [sender isKindOfClass:_CPNativeInputManager])
+        [self _pasteString:[self _plainStringForPasting]];
+    else if (![self _isKeyboardClipboardAction:sender])
+        [self _pasteFromSystemClipboardAsPlainText:YES];
 }
 
+/*!
+    Pastes the contents of the clipboard at the insertion point or over the selection. Rich text
+    is pasted as rich text in a rich text view. From a key equivalent, the browser's paste event
+    supplies the clipboard. From a menu item or a button, the text view reads the system
+    clipboard through the asynchronous Clipboard API.
+    @param sender the object requesting this
+*/
 - (void)paste:(id)sender
 {
-    if ([[CPApp currentEvent] type] != CPAppKitDefined)
-        return;
+    if (![self _isKeyboardClipboardAction:sender])
+        [self _pasteFromSystemClipboardAsPlainText:NO];
+}
 
-    [self _pasteString:[self _stringForPasting]];
+/* @ignore
+    Reads the system clipboard asynchronously and pastes it. Without the Clipboard API, the
+    internal pasteboard is pasted, as before. If the browser refuses access, for example because
+    the user declines, nothing is pasted.
+*/
+- (void)_pasteFromSystemClipboardAsPlainText:(BOOL)asPlainText
+{
+    if (!_CPTextViewHasAsyncClipboard())
+    {
+        [self _pasteString:asPlainText ? [self _plainStringForPasting] : [self _stringForPasting]];
+        return;
+    }
+
+    var textView = self;
+
+    navigator.clipboard.readText().then(function(aString)
+    {
+        [textView _pasteSystemClipboardString:aString asPlainText:asPlainText];
+
+        // The paste happens outside the run loop, so the run loop is run here to close the
+        // undo group and to display the change.
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    },
+    function(anError)
+    {
+        CPLog.warn("CPTextView: the browser refused to read the clipboard: " + anError);
+    });
+}
+
+/* @ignore
+    Pastes aString, read from the system clipboard. When it is the plain text of the internal
+    pasteboard, the clipboard holds what the application copied last, so the internal pasteboard
+    is pasted, with its rich text. Otherwise the clipboard holds text from elsewhere: it replaces
+    the internal pasteboard, so that later pastes agree with it, and is pasted as plain text.
+*/
+- (void)_pasteSystemClipboardString:(CPString)aString asPlainText:(BOOL)asPlainText
+{
+    var pasteboard = [CPPasteboard generalPasteboard];
+
+    if (!_CPTextViewClipboardStringsMatch(aString, [pasteboard stringForType:CPStringPboardType]))
+    {
+        if (!aString)
+            return;
+
+        [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+        [pasteboard setString:aString forType:CPStringPboardType];
+    }
+
+    [self _pasteString:asPlainText ? [self _plainStringForPasting] : [self _stringForPasting]];
 }
 
 // MARK: -
@@ -1887,7 +1992,8 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)cut:(id)sender
 {
-    if ([[CPApp currentEvent] type] != CPAppKitDefined)
+    // From a key equivalent, the browser's cut event copies and deletes the selection.
+    if ([self _isKeyboardClipboardAction:sender])
         return;
 
     var selectedRange = [self selectedRange];
@@ -4669,6 +4775,17 @@ var _CPCopyPlaceholder = '-';
         e.preventDefault();
         var nativeClipboard = (e.originalEvent || e).clipboardData;
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
+        var pasteboard = [CPPasteboard generalPasteboard];
+        var nativePlainText = nativeClipboard.getData('text/plain');
+
+        // The internal pasteboard holds what the application copied last. When the system
+        // clipboard holds other text, copied elsewhere, the internal pasteboard is out of date:
+        // it is replaced with that text, so that its rich text is not pasted in its place.
+        if (nativePlainText && !_CPTextViewClipboardStringsMatch(nativePlainText, [pasteboard stringForType:CPStringPboardType]))
+        {
+            [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+            [pasteboard setString:nativePlainText forType:CPStringPboardType];
+        }
 
         // Can we accept richtext? Then this is our preference (fixme: shift key to force plain text paste)
         if ([currentFirstResponder respondsToSelector:@selector(isRichText)] && [currentFirstResponder isRichText])
@@ -4680,7 +4797,6 @@ var _CPCopyPlaceholder = '-';
                 richtext = [[_CPRTFParser new] parseRTF:richtext];
             else
             {
-                var pasteboard = [CPPasteboard generalPasteboard];
                 // If no RTF is available, try to get the internal represatation of richtext from the pasteboard
                 var richData = [pasteboard stringForType:_CPASPboardType];
 
@@ -4702,7 +4818,7 @@ var _CPCopyPlaceholder = '-';
             // If no richtext is available, fall back to plain text
         }
 
-        var nativeString = nativeClipboard.getData('text/plain');
+        var nativeString = nativePlainText;
 
         // Use setTimeout to prevent flickering
         setTimeout(function()

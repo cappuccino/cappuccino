@@ -9,12 +9,6 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - **The "save changes" alert is modal for the whole app.** `CPDocument` shows it with `runModal` (`CPDocument.j:903`). Cocoa attaches it as a sheet to the document window, so that only that document is blocked.
 - **Save cannot work without a server.** With no file URL, Save uses `CPSavePanel`, which falls back to `window.prompt` (`CPSavePanel.j:79`). `CPDocument` then sends an HTTP POST. A storage facade is needed, with local (IndexedDB) and remote (HTTP) implementations.
 
-### Clipboard
-
-- **Paste and Cut from the Edit menu do nothing.** `-[CPTextView paste:]` (`CPTextView.j:521`) and `cut:` (`:1754`) return unless the current event is `CPAppKitDefined`. Only the browser's native clipboard events, from the keyboard, create that event.
-- **Copy from the Edit menu cannot reach the system clipboard.** It fills only the internal `CPPasteboard`.
-- **Fix:** when a menu item calls these methods, use the asynchronous Clipboard API (`navigator.clipboard`). Read RTF first, then plain text. Write plain text, and RTF where the browser allows it. Keep the keyboard path unchanged.
-
 ### Toolbar
 
 - **The Fonts and Print standard items are not implemented.** `_standardItemWithItemIdentifier:` returns `nil` for both (`_CPToolbarItem.j:641`). AppKit needs `_CPToolbarShowFontsItem` (sends `orderFrontFontPanel:`) and `_CPToolbarPrintItem` (sends `printDocument:`). nib2cib needs matching classes.
@@ -49,6 +43,8 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 - **Key equivalents on platforms other than macOS.** Filed as an issue.
 
 ## Opportunities for improvement
+
+- **Rich text through the asynchronous Clipboard API.** Edit > Copy, Cut and Paste chosen from the menu reach the system clipboard through `navigator.clipboard`, which carries plain text only. Rich text still moves between applications through the keyboard path, in the browser's clipboard events, and within the application through the internal pasteboard. Handling attributed text in general is an unbounded task, but a limited subset could be supported, for example through `text/html` in a `ClipboardItem`.
 
 - **Justification is nominally functional, but its quality is limited.** `CPSimpleTypesetter` breaks lines greedily: it fills each line as far as it fits, as Cocoa does, and then spreads the spare width of each wrapped line evenly over that line's spaces. This naive algorithm does not and cannot produce the quality that modern typesetting expects. It decides each line alone, so word spacing varies widely from line to line, and loose lines are common. Quality needs paragraph-wide line breaking in the manner of Knuth-Plass, as Typst also uses, with language-aware hyphenation. Cappuccino measures and lays out text itself, so this belongs in the typesetter, as its only behaviour, with no setting for users or developers.
 
@@ -86,4 +82,5 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 - Format > List: bulleted and numbered lists, applied to one or several paragraphs and removed with None. Return starts the next item and keeps the item's text style; Return in an empty item ends the list. Tab at the start of an item nests it, and Shift-Tab returns it. Delete at the start of an item's text removes it from the list. The items are numbered again after each change.
 - Format > Text > Copy Ruler and Paste Ruler with lists: pasting adds or removes list markers, on one or several paragraphs, and a pasted item joins the neighbouring list.
 - Typing at the end of styled text, and the font panel, use the style of the character before the insertion point.
+- Edit > Copy, Cut and Paste from the menu: plain text moves to and from other applications through the system clipboard; text copied and pasted within the application keeps its style. Command-V pastes text copied in another application, not an earlier copy within the application.
 - Builds with both the legacy toolchain and capp-build.
