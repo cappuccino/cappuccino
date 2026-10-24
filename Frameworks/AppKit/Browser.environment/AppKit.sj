@@ -71682,7 +71682,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
 ,["void","CPEvent"])]);
 }
 (CPFontManager == null ? CPFontManager : (CPFontManager.isa.method_msgSend["setFontPanelFactory:"] || _objj_forward)(CPFontManager, "setFontPanelFactory:", (CPFontPanel.isa.method_msgSend["class"] || _objj_forward)(CPFontPanel, "class")));
-p;17;CPLayoutManager.jt;68342;@STATIC;1.0;i;8;CPText.ji;11;CGContext.ji;14;CPTypesetter.ji;8;CPFont.ji;17;CPCompatibility.jt;68241;objj_executeFile("CPText.j", YES);objj_executeFile("CGContext.j", YES);objj_executeFile("CPTypesetter.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPCompatibility.j", YES);_isNewlineCharacter = function(chr)
+p;17;CPLayoutManager.jt;68575;@STATIC;1.0;i;8;CPText.ji;11;CGContext.ji;14;CPTypesetter.ji;8;CPFont.ji;17;CPCompatibility.jt;68474;objj_executeFile("CPText.j", YES);objj_executeFile("CGContext.j", YES);objj_executeFile("CPTypesetter.j", YES);objj_executeFile("CPFont.j", YES);objj_executeFile("CPCompatibility.j", YES);_isNewlineCharacter = function(chr)
 {
     return chr === '\n' || chr === '\r';
 }
@@ -72622,7 +72622,7 @@ var _objectsInRange = function(aList, aRange)
 };
 
 {var the_class = objj_allocateClassPair(CPObject, "_CPLineFragment"),
-meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_glyphsFrames", "CPArray"), new objj_ivar("_glyphsOffsets", "CPArray"), new objj_ivar("_isInvalid", "BOOL"), new objj_ivar("_isLast", "BOOL"), new objj_ivar("_fragmentRect", "CGRect"), new objj_ivar("_usedRect", "CGRect"), new objj_ivar("_location", "CGPoint"), new objj_ivar("_range", "CPRange"), new objj_ivar("_textContainer", "CPTextContainer"), new objj_ivar("_runs", "CPMutableArray")]);objj_registerClassPair(the_class);
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_glyphsFrames", "CPArray"), new objj_ivar("_glyphsOffsets", "CPArray"), new objj_ivar("_isInvalid", "BOOL"), new objj_ivar("_isLast", "BOOL"), new objj_ivar("_wordSpacing", "float"), new objj_ivar("_fragmentRect", "CGRect"), new objj_ivar("_usedRect", "CGRect"), new objj_ivar("_location", "CGPoint"), new objj_ivar("_range", "CPRange"), new objj_ivar("_textContainer", "CPTextContainer"), new objj_ivar("_runs", "CPMutableArray")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("glyphFrames"), function $_CPLineFragment__glyphFrames(self, _cmd)
 {
     return self._glyphsFrames;
@@ -72655,6 +72655,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("glyphFrames"), function
     style.whiteSpace = "pre";
     style.backgroundColor = "transparent";
     style.font = (aFont == null ? aFont : (aFont.isa.method_msgSend["cssString"] || _objj_forward)(aFont, "cssString"));
+    if (self._wordSpacing)
+        style.wordSpacing = self._wordSpacing + "px";
     if (aUnderline)
     {
         style.textDecoration = "underline";
@@ -72696,6 +72698,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("glyphFrames"), function
         self._range = CPMakeRangeCopy(aRange);
         self._textContainer = aContainer;
         self._isInvalid = NO;
+        self._wordSpacing = 0.0;
         self._runs = [];
         self._glyphsFrames = [];
         self._glyphsOffsets = [];
@@ -72893,6 +72896,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("glyphFrames"), function
     var newFragmentRuns = newLineFragment._runs,
         oldFragmentRuns = self._runs;
     if (!oldFragmentRuns || !newFragmentRuns || oldFragmentRuns.length !== newFragmentRuns.length)
+        return NO;
+    if (newLineFragment._wordSpacing !== self._wordSpacing)
         return NO;
     var l = oldFragmentRuns.length;
     for (var i = 0; i < l; i++)
@@ -77965,7 +77970,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("setPlaceholderValue:wit
 
 ,["void","id","CPString"])]);
 }
-p;14;CPTypesetter.jt;30754;@STATIC;1.0;I;21;Foundation/CPObject.ji;18;CPParagraphStyle.ji;15;CPTextStorage.ji;8;CPFont.jt;30653;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPFont.j", YES);CPTypesetterZeroAdvancementAction = 1 << 0;
+p;14;CPTypesetter.jt;32394;@STATIC;1.0;I;21;Foundation/CPObject.ji;18;CPParagraphStyle.ji;15;CPTextStorage.ji;8;CPFont.jt;32293;objj_executeFile("Foundation/CPObject.j", NO);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPFont.j", YES);CPTypesetterZeroAdvancementAction = 1 << 0;
 CPTypesetterWhitespaceAction = 1 << 1;
 CPSTypesetterHorizontalTabAction = 1 << 2;
 CPTypesetterLineBreakAction = 1 << 3;
@@ -78077,12 +78082,23 @@ class_addMethods(the_class, [new objj_method(sel_getUid("layoutManager"), functi
     var ___r1;
 }
 
-,["CPTextTab","double","CPWritingDirection"]), new objj_method(sel_getUid("_flushRange:lineOrigin:currentContainer:advancements:lineCount:sameLine:"), function $CPSimpleTypesetter___flushRange_lineOrigin_currentContainer_advancements_lineCount_sameLine_(self, _cmd, lineRange, lineOrigin, aContainer, advancements, lineCount, sameLine)
+,["CPTextTab","double","CPWritingDirection"]), new objj_method(sel_getUid("_flushRange:lineOrigin:currentContainer:advancements:lineCount:sameLine:wordWrapped:rightMargin:"), function $CPSimpleTypesetter___flushRange_lineOrigin_currentContainer_advancements_lineCount_sameLine_wordWrapped_rightMargin_(self, _cmd, lineRange, lineOrigin, aContainer, advancements, lineCount, sameLine, wordWrapped, rightMargin)
 {
     var padding = (aContainer == null ? aContainer : (aContainer.isa.method_msgSend["lineFragmentPadding"] || _objj_forward)(aContainer, "lineFragmentPadding")),
         myX = 0,
-        rect = CGRectMake(lineOrigin.x + padding, lineOrigin.y, self._lineWidth, self._lineHeight),
-        usableWidth = aContainer._size.width - 2.0 * padding;
+        rect = CGRectMake(lineOrigin.x + padding, lineOrigin.y, self._lineWidth, self._lineHeight);
+    var theString = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["string"] || _objj_forward)(___r1, "string")),
+        availableWidth = rightMargin - lineOrigin.x,
+        visibleLength = lineRange.length,
+        visibleWidth = self._lineWidth;
+    while (visibleLength > 0)
+    {
+        var trailingCharCode = theString.charCodeAt(lineRange.location + visibleLength - 1);
+        if (trailingCharCode !== 32 && trailingCharCode !== 10 && trailingCharCode !== 13)
+            break;
+        visibleLength--;
+        visibleWidth -= advancements[visibleLength].width;
+    }
     ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_appendNewLineFragmentInTextContainer:forGlyphRange:"] || _objj_forward)(___r1, "_appendNewLineFragmentInTextContainer:forGlyphRange:", self._currentTextContainer, lineRange));
     var fragment = ((___r1 = self._layoutManager._lineFragments), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["lastObject"] || _objj_forward)(___r1, "lastObject"));
     fragment._isLast = !sameLine;
@@ -78093,10 +78109,30 @@ class_addMethods(the_class, [new objj_method(sel_getUid("layoutManager"), functi
             myX = 0;
             break;
         case CPCenterTextAlignment:
-            myX = (usableWidth - self._lineWidth) / 2;
+            myX = (availableWidth - visibleWidth) / 2;
             break;
         case CPRightTextAlignment:
-            myX = usableWidth - self._lineWidth;
+            myX = availableWidth - visibleWidth;
+            break;
+        case CPJustifiedTextAlignment:
+            if (wordWrapped && !sameLine)
+            {
+                var spaceIndexes = [];
+                for (var i = 0; i < visibleLength; i++)
+                {
+                    var charCode = theString.charCodeAt(lineRange.location + i);
+                    if (charCode === 32 || charCode === 160)
+                        spaceIndexes.push(i);
+                }
+                var spaceCount = spaceIndexes.length,
+                    extraWidth = spaceCount ? (availableWidth - visibleWidth) / spaceCount : 0.0;
+                if (extraWidth > 0.0)
+                {
+                    for (var i = 0; i < spaceCount; i++)
+                        advancements[spaceIndexes[i]].width += extraWidth;
+                    fragment._wordSpacing = extraWidth;
+                }
+            }
             break;
     }
     ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setLocation:forStartOfGlyphRange:"] || _objj_forward)(___r1, "setLocation:forStartOfGlyphRange:", CGPointMake(myX, self._lineBase), lineRange));
@@ -78112,7 +78148,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("layoutManager"), functi
     var ___r1;
 }
 
-,["BOOL","CPRange","CGPoint","CPTextContainer","CPArray","unsigned","BOOL"]), new objj_method(sel_getUid("layoutGlyphsInLayoutManager:startingAtGlyphIndex:maxNumberOfLineFragments:nextGlyphIndex:"), function $CPSimpleTypesetter__layoutGlyphsInLayoutManager_startingAtGlyphIndex_maxNumberOfLineFragments_nextGlyphIndex_(self, _cmd, layoutManager, glyphIndex, maxNumLines, nextGlyph)
+,["BOOL","CPRange","CGPoint","CPTextContainer","CPArray","unsigned","BOOL","BOOL","float"]), new objj_method(sel_getUid("layoutGlyphsInLayoutManager:startingAtGlyphIndex:maxNumberOfLineFragments:nextGlyphIndex:"), function $CPSimpleTypesetter__layoutGlyphsInLayoutManager_startingAtGlyphIndex_maxNumberOfLineFragments_nextGlyphIndex_(self, _cmd, layoutManager, glyphIndex, maxNumLines, nextGlyph)
 {
     var textContainers = (layoutManager == null ? layoutManager : (layoutManager.isa.method_msgSend["textContainers"] || _objj_forward)(layoutManager, "textContainers")),
         textContainersCount = (textContainers == null ? textContainers : (textContainers.isa.method_msgSend["count"] || _objj_forward)(textContainers, "count"));
@@ -78364,7 +78400,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("layoutManager"), functi
         }
         if (isNewline || isTabStop || isAttachment)
         {
-            if ((self.isa.method_msgSend["_flushRange:lineOrigin:currentContainer:advancements:lineCount:sameLine:"] || _objj_forward)(self, "_flushRange:lineOrigin:currentContainer:advancements:lineCount:sameLine:", lineRange, lineOrigin, self._currentTextContainer, advancements, numLines, !isNewline))
+            if ((self.isa.method_msgSend["_flushRange:lineOrigin:currentContainer:advancements:lineCount:sameLine:wordWrapped:rightMargin:"] || _objj_forward)(self, "_flushRange:lineOrigin:currentContainer:advancements:lineCount:sameLine:wordWrapped:rightMargin:", lineRange, lineOrigin, self._currentTextContainer, advancements, numLines, !isNewline, isWordWrapped, rightMargin))
                 return;
             if (isTabStop || isAttachment)
                 lineOrigin.x += rangeWidth;
@@ -78408,7 +78444,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("layoutManager"), functi
         }
     }
     if (lineRange.length)
-        (self.isa.method_msgSend["_flushRange:lineOrigin:currentContainer:advancements:lineCount:sameLine:"] || _objj_forward)(self, "_flushRange:lineOrigin:currentContainer:advancements:lineCount:sameLine:", lineRange, lineOrigin, self._currentTextContainer, advancements, numLines, NO);
+        (self.isa.method_msgSend["_flushRange:lineOrigin:currentContainer:advancements:lineCount:sameLine:wordWrapped:rightMargin:"] || _objj_forward)(self, "_flushRange:lineOrigin:currentContainer:advancements:lineCount:sameLine:wordWrapped:rightMargin:", lineRange, lineOrigin, self._currentTextContainer, advancements, numLines, NO, NO, rightMargin);
     var rect = CGRectMake(MAX(1.0, lineFragmentPadding), lineOrigin.y - descent, containerSizeWidth, currentFontLineHeight);
     ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setExtraLineFragmentRect:usedRect:textContainer:"] || _objj_forward)(___r1, "setExtraLineFragmentRect:usedRect:textContainer:", rect, rect, self._currentTextContainer));
     var fragment = ((___r1 = self._layoutManager._lineFragments), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["lastObject"] || _objj_forward)(___r1, "lastObject"));
