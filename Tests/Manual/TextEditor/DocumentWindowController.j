@@ -27,6 +27,7 @@
 @import <AppKit/AppKit.j>
 
 @import "LoremIpsum.j"
+@import "TableExample.j"
 
 
 /*
@@ -104,6 +105,24 @@ var DocumentWindowMinimumWidth  = 360.0,
 - (@action)insertLoremIpsum:(id)aSender
 {
     [textView insertText:[LoremIpsum text]];
+}
+
+/*!
+    Inserts the sample document from TableExample at the text view's
+    selection, replacing any selected text. The sample contains a table.
+
+    Like Insert Lorem Ipsum, the Edit menu item sends this action to First
+    Responder, and the responder chain delivers it to the controller of the
+    active document's window.
+
+    The sample is an attributed string, so insertText: keeps its fonts and
+    its table, but only in a rich text view. A plain text view would keep
+    only the characters, so the table needs rich text. Edit > Undo removes
+    the inserted text, with the table.
+*/
+- (@action)insertTableExample:(id)aSender
+{
+    [textView insertText:[TableExample attributedString]];
 }
 
 /*!
