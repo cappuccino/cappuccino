@@ -74748,7 +74748,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTextView.jt;254159;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;17;CPTextContainer.ji;13;CPRulerView.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;253923;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
+p;12;CPTextView.jt;262335;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;17;CPTextContainer.ji;13;CPRulerView.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;262099;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
 ;
 ;
 ;
@@ -75396,6 +75396,8 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         return ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["undoManager"] || _objj_forward)(___r2, "undoManager"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["canUndo"] || _objj_forward)(___r1, "canUndo"));
     if (action === sel_getUid("redo:"))
         return ((___r1 = ((___r2 = (self.isa.method_msgSend["window"] || _objj_forward)(self, "window")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["undoManager"] || _objj_forward)(___r2, "undoManager"))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["canRedo"] || _objj_forward)(___r1, "canRedo"));
+    if (action === sel_getUid("superscript:") || action === sel_getUid("subscript:") || action === sel_getUid("unscript:") || action === sel_getUid("raiseBaseline:") || action === sel_getUid("lowerBaseline:"))
+        return (self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable") && (self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText");
     if (action === sel_getUid("copyRuler:"))
         return (self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText");
     if (action === sel_getUid("pasteRuler:"))
@@ -76502,7 +76504,104 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
     var ___r1;
 }
 
-,["void","id"]), new objj_method(sel_getUid("alignLeft:"), function $CPTextView__alignLeft_(self, _cmd, sender)
+,["void","id"]), new objj_method(sel_getUid("superscript:"), function $CPTextView__superscript_(self, _cmd, aSender)
+{
+    (self.isa.method_msgSend["_changeCharacterAttribute:byAmount:"] || _objj_forward)(self, "_changeCharacterAttribute:byAmount:", CPSuperscriptAttributeName, 1);
+}
+
+,["void","id"]), new objj_method(sel_getUid("subscript:"), function $CPTextView__subscript_(self, _cmd, aSender)
+{
+    (self.isa.method_msgSend["_changeCharacterAttribute:byAmount:"] || _objj_forward)(self, "_changeCharacterAttribute:byAmount:", CPSuperscriptAttributeName, -1);
+}
+
+,["void","id"]), new objj_method(sel_getUid("unscript:"), function $CPTextView__unscript_(self, _cmd, aSender)
+{
+    (self.isa.method_msgSend["_removeCharacterAttributes:"] || _objj_forward)(self, "_removeCharacterAttributes:", [CPSuperscriptAttributeName, CPBaselineOffsetAttributeName]);
+}
+
+,["void","id"]), new objj_method(sel_getUid("raiseBaseline:"), function $CPTextView__raiseBaseline_(self, _cmd, aSender)
+{
+    (self.isa.method_msgSend["_changeCharacterAttribute:byAmount:"] || _objj_forward)(self, "_changeCharacterAttribute:byAmount:", CPBaselineOffsetAttributeName, 1.0);
+}
+
+,["void","id"]), new objj_method(sel_getUid("lowerBaseline:"), function $CPTextView__lowerBaseline_(self, _cmd, aSender)
+{
+    (self.isa.method_msgSend["_changeCharacterAttribute:byAmount:"] || _objj_forward)(self, "_changeCharacterAttribute:byAmount:", CPBaselineOffsetAttributeName, -1.0);
+}
+
+,["void","id"]), new objj_method(sel_getUid("_changeCharacterAttribute:byAmount:"), function $CPTextView___changeCharacterAttribute_byAmount_(self, _cmd, anAttributeName, anAmount)
+{
+    var range = CPMakeRangeCopy(self._selectionRange);
+    if (!range.length)
+    {
+        var newValue = (((___r1 = self._typingAttributes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectForKey:"] || _objj_forward)(___r1, "objectForKey:", anAttributeName)) || 0) + anAmount;
+        if (newValue)
+            ((___r1 = self._typingAttributes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setObject:forKey:"] || _objj_forward)(___r1, "setObject:forKey:", newValue, anAttributeName));
+        else
+            ((___r1 = self._typingAttributes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectForKey:"] || _objj_forward)(___r1, "removeObjectForKey:", anAttributeName));
+        ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["postNotificationName:object:"] || _objj_forward)(___r1, "postNotificationName:object:", CPTextViewDidChangeTypingAttributesNotification, self));
+        return;
+    }
+    if (!(self.isa.method_msgSend["_beginCharacterAttributeChangeInRange:"] || _objj_forward)(self, "_beginCharacterAttributeChangeInRange:", range))
+        return;
+    var location = range.location,
+        end = CPMaxRange(range);
+    while (location < end)
+    {
+        var effectiveRange = CPMakeRange(0, 0),
+            value = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attribute:atIndex:effectiveRange:"] || _objj_forward)(___r1, "attribute:atIndex:effectiveRange:", anAttributeName, location, effectiveRange)) || 0,
+            runRange = CPIntersectionRange(effectiveRange, range),
+            newValue = value + anAmount;
+        if (!runRange.length)
+            runRange = CPMakeRange(location, end - location);
+        if (newValue)
+            ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["addAttribute:value:range:"] || _objj_forward)(___r1, "addAttribute:value:range:", anAttributeName, newValue, runRange));
+        else
+            ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeAttribute:range:"] || _objj_forward)(___r1, "removeAttribute:range:", anAttributeName, runRange));
+        location = CPMaxRange(runRange);
+    }
+    (self.isa.method_msgSend["_endCharacterAttributeChangeInRange:"] || _objj_forward)(self, "_endCharacterAttributeChangeInRange:", range);
+    var ___r1;
+}
+
+,["void","CPString","float"]), new objj_method(sel_getUid("_removeCharacterAttributes:"), function $CPTextView___removeCharacterAttributes_(self, _cmd, attributeNames)
+{
+    var range = CPMakeRangeCopy(self._selectionRange);
+    if (!range.length)
+    {
+        for (var i = 0; i < attributeNames.length; i++)
+            ((___r1 = self._typingAttributes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeObjectForKey:"] || _objj_forward)(___r1, "removeObjectForKey:", attributeNames[i]));
+        ((___r1 = (CPNotificationCenter.isa.method_msgSend["defaultCenter"] || _objj_forward)(CPNotificationCenter, "defaultCenter")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["postNotificationName:object:"] || _objj_forward)(___r1, "postNotificationName:object:", CPTextViewDidChangeTypingAttributesNotification, self));
+        return;
+    }
+    if (!(self.isa.method_msgSend["_beginCharacterAttributeChangeInRange:"] || _objj_forward)(self, "_beginCharacterAttributeChangeInRange:", range))
+        return;
+    for (var i = 0; i < attributeNames.length; i++)
+        ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["removeAttribute:range:"] || _objj_forward)(___r1, "removeAttribute:range:", attributeNames[i], CPMakeRangeCopy(range)));
+    (self.isa.method_msgSend["_endCharacterAttributeChangeInRange:"] || _objj_forward)(self, "_endCharacterAttributeChangeInRange:", range);
+    var ___r1;
+}
+
+,["void","CPArray"]), new objj_method(sel_getUid("_beginCharacterAttributeChangeInRange:"), function $CPTextView___beginCharacterAttributeChangeInRange_(self, _cmd, aRange)
+{
+    if (!(self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable") || !(self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText") || !(self.isa.method_msgSend["shouldChangeTextInRange:replacementString:"] || _objj_forward)(self, "shouldChangeTextInRange:replacementString:", aRange, nil))
+        return NO;
+    ((___r1 = ((___r2 = (self.isa.method_msgSend["_registeringUndoManager"] || _objj_forward)(self, "_registeringUndoManager")), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["prepareWithInvocationTarget:"] || _objj_forward)(___r2, "prepareWithInvocationTarget:", self))), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_replaceCharactersInRange:withAttributedString:selectionRange:"] || _objj_forward)(___r1, "_replaceCharactersInRange:withAttributedString:selectionRange:", CPMakeRangeCopy(aRange), ((___r2 = self._textStorage), ___r2 == null ? ___r2 : (___r2.isa.method_msgSend["attributedSubstringFromRange:"] || _objj_forward)(___r2, "attributedSubstringFromRange:", CPMakeRangeCopy(aRange))), CPMakeRangeCopy(self._selectionRange)));
+    return YES;
+    var ___r1, ___r2;
+}
+
+,["BOOL","CPRange"]), new objj_method(sel_getUid("_endCharacterAttributeChangeInRange:"), function $CPTextView___endCharacterAttributeChangeInRange_(self, _cmd, aRange)
+{
+    ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["textStorage:edited:range:changeInLength:invalidatedRange:"] || _objj_forward)(___r1, "textStorage:edited:range:changeInLength:invalidatedRange:", self._textStorage, 0, CPMakeRangeCopy(aRange), 0, CPMakeRangeCopy(aRange)));
+    ((___r1 = self._layoutManager), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["_validateLayoutAndGlyphs"] || _objj_forward)(___r1, "_validateLayoutAndGlyphs"));
+    (self.isa.method_msgSend["sizeToFit"] || _objj_forward)(self, "sizeToFit");
+    (self.isa.method_msgSend["setNeedsDisplay:"] || _objj_forward)(self, "setNeedsDisplay:", YES);
+    (self.isa.method_msgSend["didChangeText"] || _objj_forward)(self, "didChangeText");
+    var ___r1;
+}
+
+,["void","CPRange"]), new objj_method(sel_getUid("alignLeft:"), function $CPTextView__alignLeft_(self, _cmd, sender)
 {
     (self.isa.method_msgSend["_setAlignment:"] || _objj_forward)(self, "_setAlignment:", CPLeftTextAlignment);
 }

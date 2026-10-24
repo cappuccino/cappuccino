@@ -26,7 +26,12 @@ TextEditor is a document-based test application and a tutorial. When the app use
 
 ### Text view
 
+How the text system works, for the entries below: `CPTextView` does not use CSS text layout. `CPSimpleTypesetter` measures text with the canvas `measureText` (`sizeWithFont:inWidth:` in `CPStringDrawing.j`), measuring growing substrings so that each character's advancement includes the browser's kerning. It then breaks lines, places tabs, and applies indents and alignment itself (`CPTypesetter.j`). `_CPLineFragment` (`CPLayoutManager.j`) draws each run of identical attributes as one absolutely positioned `<span>`, at the computed position, with `white-space: pre` and the run's font, colour and underline in CSS. Inside a span the browser shapes the glyphs, including its own kerning and ligatures.
+
 - **Format > Font > Copy Style and Paste Style raise an exception.** They send `copyFont:` and `pasteFont:`, which `CPText` declares as abstract methods that raise (`CPText.j:210` and `:261`). `CPTextView` does not implement them, so the menu items are enabled and choosing one raises. `CPTextView` needs Cocoa's implementations: copy the font and character attributes at the selection to the font pasteboard (`CPFontPboard`), and apply them to the selection.
+- **Format > Text > Justify crashes the application.** `alignJustified:` sets the paragraph style's alignment to `CPJustifiedTextAlignment`, but the typesetter's alignment handling has cases only for left, centred and right text (`_flushRange:` in `CPTypesetter.j`). The exception text from the browser console will show where the crash occurs. Justified layout needs a full implementation: spreading each line's spare width across its spaces, except on the last line of a paragraph.
+- **Kerning and ligature settings are not implemented.** Format > Font > Kern sends `useStandardKerning:`, `turnOffKerning:`, `tightenKerning:` and `loosenKerning:`, and Format > Font > Ligatures sends `useStandardLigatures:`, `turnOffLigatures:` and `useAllLigatures:`. `CPTextView` implements none of them, so the items are disabled. `CPText.j` defines `CPKernAttributeName` and `CPLigatureAttributeName`, but only the RTF producer reads them. A complete implementation needs: the seven actions, changing the attributes over the selection or the typing attributes with undo, as the baseline actions do; the typesetter adding a run's `CPKernAttributeName` value to each character's advancement, and measuring with the same ligature setting it draws with; and `_CPLineFragment` setting CSS `letter-spacing` and `font-variant-ligatures` on each run's span to match.
+- **The font panel needs polish.** Found during the Format menu review on 24 October: the panel works with the text view, but its appearance and behaviour need refinement. The specific problems are not yet recorded; list them here, compared with the native font panel, when the panel is reviewed. `CPFontPanel` is in `AppKit/CPTextView/CPFontPanel.j`.
 
 ### Ruler
 
@@ -44,6 +49,10 @@ TextEditor is a document-based test application and a tutorial. When the app use
 ### Platform
 
 - **Key equivalents on platforms other than macOS.** Filed as an issue.
+
+## Opportunities for improvement
+
+- **Line breaking is greedy.** `CPSimpleTypesetter` fills each line as far as it fits, as Cocoa does. Typesetting quality, especially in justified text, needs paragraph-wide line breaking in the manner of Knuth-Plass, as Typst also uses, with language-aware hyphenation. Cappuccino measures and lays out text itself, so this belongs in the typesetter, as its only behaviour, with no setting for users or developers. It follows justification.
 
 ## Planned additions to the app
 
@@ -73,4 +82,5 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - Text stays inside the visible width, with Cocoa's 5-point line fragment padding.
 - Tab characters: the Tab key inserts a tab in the text view, and left, centre, right and decimal tab stops align their columns.
 - Format > Text > Copy Ruler and Paste Ruler apply one paragraph's indents and tab stops to others.
+- Format > Font > Baseline: superscript, subscript, raised and lowered baselines lay out correctly, and Use Default restores the text, for an exact or a wider selection.
 - Builds with both the legacy toolchain and capp-build.
