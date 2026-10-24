@@ -1125,6 +1125,7 @@ var _objectsInRange = function(aList, aRange)
 
     BOOL            _isInvalid;
     BOOL            _isLast;
+    float           _wordSpacing;
     CGRect          _fragmentRect;
     CGRect          _usedRect;
     CGPoint         _location;
@@ -1162,6 +1163,10 @@ var _objectsInRange = function(aList, aRange)
     style.whiteSpace = "pre";
     style.backgroundColor = "transparent";
     style.font = [aFont cssString];
+
+    // A justified line widens its spaces; the typesetter has added the same width to their advancements.
+    if (_wordSpacing)
+        style.wordSpacing = _wordSpacing + "px";
     
     if (aUnderline)
     {
@@ -1214,6 +1219,7 @@ var _objectsInRange = function(aList, aRange)
         _range = CPMakeRangeCopy(aRange);
         _textContainer = aContainer;
         _isInvalid = NO;
+        _wordSpacing = 0.0;
         _runs = [];
         _glyphsFrames = [];
         _glyphsOffsets = [];
@@ -1492,6 +1498,9 @@ var _objectsInRange = function(aList, aRange)
         oldFragmentRuns= _runs;
 
     if (!oldFragmentRuns || !newFragmentRuns || oldFragmentRuns.length !== newFragmentRuns.length)
+        return NO;
+
+    if (newLineFragment._wordSpacing !== _wordSpacing)
         return NO;
 
     var l = oldFragmentRuns.length;
