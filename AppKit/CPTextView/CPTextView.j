@@ -2386,7 +2386,8 @@ Sets the selection to a range of characters in response to user action.
     if (!numberOfGlyphs)
     {
         var font = [_typingAttributes objectForKey:CPFontAttributeName] || [self font];
-        return CGRectMake(1, ([font ascender] - [font descender]) * 0.5 + _textContainerOrigin.y, 1, [font size]);
+        // Like the empty line after text, the caret starts inside the line fragment padding.
+        return CGRectMake(MAX(1.0, [_textContainer lineFragmentPadding]), ([font ascender] - [font descender]) * 0.5 + _textContainerOrigin.y, 1, [font size]);
     }
 
     // cursor is at a newline character -> jump to next line

@@ -171,9 +171,12 @@ var CPSystemTypesetterFactory,
           lineCount:(unsigned)lineCount
            sameLine:(BOOL)sameLine
 {
-    var myX = 0,
-        rect = CGRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight),
-        containerSize = aContainer._size;
+    // Line positions are computed inside the line fragment padding. The padding is added here, where
+    // the line fragment rectangle is stored, and alignment uses the width inside the padding.
+    var padding = [aContainer lineFragmentPadding],
+        myX = 0,
+        rect = CGRectMake(lineOrigin.x + padding, lineOrigin.y, _lineWidth, _lineHeight),
+        usableWidth = aContainer._size.width - 2.0 * padding;
 
     [_layoutManager _appendNewLineFragmentInTextContainer:_currentTextContainer forGlyphRange:lineRange];
 
@@ -190,11 +193,11 @@ var CPSystemTypesetterFactory,
             break;
 
         case CPCenterTextAlignment:
-            myX = (containerSize.width - _lineWidth) / 2;
+            myX = (usableWidth - _lineWidth) / 2;
             break;
 
         case CPRightTextAlignment:
-            myX = containerSize.width - _lineWidth;
+            myX = usableWidth - _lineWidth;
             break;
     }
 
@@ -237,8 +240,10 @@ var CPSystemTypesetterFactory,
     _lineBase = 0;
     _lineWidth = 0;
 
+    // containerSizeWidth is the width inside the line fragment padding at both ends.
     var containerSize = [_currentTextContainer containerSize],
-        containerSizeWidth = containerSize.width,
+        lineFragmentPadding = [_currentTextContainer lineFragmentPadding],
+        containerSizeWidth = containerSize.width - 2.0 * lineFragmentPadding,
         containerSizeHeight = containerSize.height,
         lineRange = CPMakeRange(glyphIndex, 0),
         wrapRange = CPMakeRange(0, 0),
@@ -274,7 +279,11 @@ var CPSystemTypesetterFactory,
         rightMargin = containerSizeWidth;
 
     if (glyphIndex > 0)
+    {
+        // Stored line fragment rectangles include the padding, which the layout below does not.
         lineOrigin = CGPointCreateCopy([_layoutManager lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:nil].origin);
+        lineOrigin.x -= lineFragmentPadding;
+    }
     else if ([_layoutManager extraLineFragmentTextContainer])
         lineOrigin = CGPointMake(0, [_layoutManager extraLineFragmentUsedRect].origin.y);
     else
@@ -556,7 +565,8 @@ var CPSystemTypesetterFactory,
                 {
                     _currentTextContainer = textContainers[++_indexOfCurrentContainer];
                     containerSize = [_currentTextContainer containerSize];
-                    containerSizeWidth = containerSize.width;
+                    lineFragmentPadding = [_currentTextContainer lineFragmentPadding];
+                    containerSizeWidth = containerSize.width - 2.0 * lineFragmentPadding;
                     containerSizeHeight = containerSize.height;
                 }
 
@@ -589,7 +599,8 @@ var CPSystemTypesetterFactory,
     if (lineRange.length)
         [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:NO];
 
-    var rect = CGRectMake(1, lineOrigin.y - descent, containerSizeWidth, currentFontLineHeight);
+    // The empty line after the text starts inside the padding, and at least 1 point in, so the insertion point stays visible.
+    var rect = CGRectMake(MAX(1.0, lineFragmentPadding), lineOrigin.y - descent, containerSizeWidth, currentFontLineHeight);
     [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
 
     var fragment = [_layoutManager._lineFragments lastObject];
