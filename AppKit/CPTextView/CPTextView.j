@@ -3239,6 +3239,7 @@ var _CPTextViewRulerImageNameForTab = function(aTab)
 
 var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     CPTextViewUsesFontPanelKey = @"CPTextViewUsesFontPanelKey",
+    CPTextViewUsesRulerKey = @"CPTextViewUsesRulerKey",
     CPTextViewContainerKey = @"CPTextViewContainerKey",
     CPTextViewLayoutManagerKey = @"CPTextViewLayoutManagerKey",
     CPTextViewTextStorageKey = @"CPTextViewTextStorageKey",
@@ -3274,6 +3275,10 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
         [self setAllowsUndo:[aCoder decodeBoolForKey:CPTextViewAllowsUndoKey]];
         [self setUsesFontPanel:[aCoder decodeBoolForKey:CPTextViewUsesFontPanelKey]];
+
+        // Archives made before usesRuler was archived keep the default from _init.
+        if ([aCoder containsValueForKey:CPTextViewUsesRulerKey])
+            _usesRuler = [aCoder decodeBoolForKey:CPTextViewUsesRulerKey];
 
         [self setDelegate:[aCoder decodeObjectForKey:CPTextViewDelegateKey]];
 
@@ -3313,6 +3318,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     [aCoder encodeObject:_selectedTextAttributes forKey:CPTextViewSelectedTextAttributesKey];
     [aCoder encodeBool:_allowsUndo forKey:CPTextViewAllowsUndoKey];
     [aCoder encodeBool:_usesFontPanel forKey:CPTextViewUsesFontPanelKey];
+    [aCoder encodeBool:_usesRuler forKey:CPTextViewUsesRulerKey];
     [aCoder encodeBool:_isHorizontallyResizable forKey:CPTextViewHorizontallyResizableKey];
     [aCoder encodeBool:_isVerticallyResizable forKey:CPTextViewVerticallyResizableKey];
     [aCoder encodeSize:_maxSize forKey:CPMaxSize];

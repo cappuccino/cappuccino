@@ -914,3 +914,64 @@ var CPRulerViewMinimumLabelSpacing = 40.0,
 }
 
 @end
+
+
+var CPRulerViewOrientationKey                       = @"CPRulerViewOrientationKey",
+    CPRulerViewClientViewKey                        = @"CPRulerViewClientViewKey",
+    CPRulerViewAccessoryViewKey                     = @"CPRulerViewAccessoryViewKey",
+    CPRulerViewMarkersKey                           = @"CPRulerViewMarkersKey",
+    CPRulerViewRuleThicknessKey                     = @"CPRulerViewRuleThicknessKey",
+    CPRulerViewReservedThicknessForMarkersKey       = @"CPRulerViewReservedThicknessForMarkersKey",
+    CPRulerViewReservedThicknessForAccessoryViewKey = @"CPRulerViewReservedThicknessForAccessoryViewKey",
+    CPRulerViewOriginOffsetKey                      = @"CPRulerViewOriginOffsetKey",
+    CPRulerViewMeasurementUnitsKey                  = @"CPRulerViewMeasurementUnitsKey";
+
+@implementation CPRulerView (CPCoding)
+
+/*!
+    Initializes a ruler view from an archive. The scroll view that owns the ruler is not
+    archived; it sets itself as the ruler's scroll view when it is decoded.
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        _orientation = [aCoder decodeIntForKey:CPRulerViewOrientationKey];
+        _clientView = [aCoder decodeObjectForKey:CPRulerViewClientViewKey];
+        _accessoryView = [aCoder decodeObjectForKey:CPRulerViewAccessoryViewKey];
+        _markers = [aCoder decodeObjectForKey:CPRulerViewMarkersKey] || [];
+        _rulerlineLocations = [];
+
+        _ruleThickness = [aCoder decodeFloatForKey:CPRulerViewRuleThicknessKey];
+        _reservedThicknessForMarkers = [aCoder decodeFloatForKey:CPRulerViewReservedThicknessForMarkersKey];
+        _reservedThicknessForAccessoryView = [aCoder decodeFloatForKey:CPRulerViewReservedThicknessForAccessoryViewKey];
+        _originOffset = [aCoder decodeFloatForKey:CPRulerViewOriginOffsetKey];
+        _measurementUnits = [aCoder decodeObjectForKey:CPRulerViewMeasurementUnitsKey] || [[self class] _defaultMeasurementUnits];
+
+        [self invalidateHashMarks];
+    }
+
+    return self;
+}
+
+/*!
+    Archives the ruler view. The client view is archived conditionally.
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeInt:_orientation forKey:CPRulerViewOrientationKey];
+    [aCoder encodeConditionalObject:_clientView forKey:CPRulerViewClientViewKey];
+    [aCoder encodeObject:_accessoryView forKey:CPRulerViewAccessoryViewKey];
+    [aCoder encodeObject:_markers forKey:CPRulerViewMarkersKey];
+    [aCoder encodeFloat:_ruleThickness forKey:CPRulerViewRuleThicknessKey];
+    [aCoder encodeFloat:_reservedThicknessForMarkers forKey:CPRulerViewReservedThicknessForMarkersKey];
+    [aCoder encodeFloat:_reservedThicknessForAccessoryView forKey:CPRulerViewReservedThicknessForAccessoryViewKey];
+    [aCoder encodeFloat:_originOffset forKey:CPRulerViewOriginOffsetKey];
+    [aCoder encodeObject:_measurementUnits forKey:CPRulerViewMeasurementUnitsKey];
+}
+
+@end

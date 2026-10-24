@@ -42,6 +42,9 @@
         [self setAllowsUndo:[aTextViewSharedData allowsUndo]];
         [self setUsesFontPanel:[aTextViewSharedData usesFontPanel]];
 
+        // Interface Builder's "Uses Ruler". Whether the ruler is shown is decided at run time.
+        _usesRuler = [aTextViewSharedData usesRuler];
+
         [self setBackgroundColor:[aTextViewSharedData backgroundColor]];
         [self setInsertionPointColor:[aTextViewSharedData insertionColor]];
         [self setSelectedTextAttributes:[aTextViewSharedData selectedTextAttributes]];

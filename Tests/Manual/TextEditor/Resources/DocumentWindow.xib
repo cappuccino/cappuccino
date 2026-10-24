@@ -65,7 +65,7 @@
                     <toolbarItem reference="KGM-ll-EcW"/>
                 </defaultToolbarItems>
             </toolbar>
-            <point key="canvasLocation" x="153" y="24"/>
+            <point key="canvasLocation" x="144" y="11"/>
         </window>
     </objects>
 </document>
