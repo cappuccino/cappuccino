@@ -85,4 +85,5 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 - Edit > Copy, Cut and Paste from the menu: plain text moves to and from other applications through the system clipboard; text copied and pasted within the application keeps its style. Command-V pastes text copied in another application, not an earlier copy within the application.
 - Edit > Insert Image…: a JPEG or PNG image is inserted inside the text and at the end of the text.
 - A wide image fits the text width, and scales with the window without growing beyond its natural size. At the end of the text it is not clipped, and the scroll bars follow it.
+- Format > Font > Bigger and Smaller (Command-+ and Command--) without a selection change the size of the text typed next, step by step, also in a blank document.
 - Builds with both the legacy toolchain and capp-build.

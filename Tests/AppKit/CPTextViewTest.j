@@ -254,6 +254,23 @@
     [self assertTrue:([[CPPasteboard generalPasteboard] stringForType:_CPASPboardType] == nil) message:@"the out of date rich text is removed"];
 }
 
+- (void)testRepeatedFontChangeWithoutSelectionAccumulates
+{
+    var biggerSender = [[_CPTextViewTestBiggerFontSender alloc] init],
+        startSize = [[textView font] size];
+
+    [textView setRichText:YES];
+    [textView setString:@""];
+    [self assertTrue:[theWindow makeFirstResponder:textView]];
+    [textView setSelectedRange:CPMakeRange(0, 0)];
+
+    [textView changeFont:biggerSender];
+    [textView changeFont:biggerSender];
+    [textView changeFont:biggerSender];
+
+    [self assert:startSize + 3.0 equals:[[[textView typingAttributes] objectForKey:CPFontAttributeName] size]];
+}
+
 - (void)testCopyAndPasteStyle
 {
     var font = [CPFont boldSystemFontOfSize:20.0],
@@ -396,6 +413,18 @@
 - (void)textDidEndEditing:(CPNotification)aNotification
 {
 
+}
+
+@end
+
+/*
+    Converts a font as the font manager's Bigger action does, one point larger.
+*/
+@implementation _CPTextViewTestBiggerFontSender : CPObject
+
+- (CPFont)convertFont:(CPFont)aFont
+{
+    return [[CPFontManager sharedFontManager] convertFont:aFont toSize:[aFont size] + 1.0];
 }
 
 @end

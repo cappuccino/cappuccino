@@ -2198,11 +2198,11 @@ Sets the selection to a range of characters in response to user action.
         }
         else
         {
-            attributes = [_textStorage attributesAtIndex:_selectionRange.location
-                                       longestEffectiveRange:_selectionRange
-                                                     inRange:_selectionRange];
-            oldFont = [attributes objectForKey:CPFontAttributeName] || [self font];
+            // As in Cocoa, without a selection the change applies to the typing attributes, so
+            // repeated changes, such as Bigger, build on each other.
+            oldFont = [_typingAttributes objectForKey:CPFontAttributeName] || [self font];
             [_typingAttributes setObject:[sender convertFont:oldFont] forKey:CPFontAttributeName];
+            [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
         }
     }
     else
