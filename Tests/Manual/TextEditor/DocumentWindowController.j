@@ -42,6 +42,15 @@ var DocumentWindowMinimumWidth  = 360.0,
     DocumentWindowMinimumHeight = 240.0;
 
 
+/*
+    Orders two zoom levels, smallest first, for sorting.
+*/
+function compareZoomLevels(aLevel, anotherLevel)
+{
+    return aLevel - anotherLevel;
+}
+
+
 /*!
     Owns DocumentWindow.cib. The window's delegate outlet is connected to
     File's Owner in DocumentWindow.xib, so this controller is the window's
@@ -126,6 +135,120 @@ var DocumentWindowMinimumWidth  = 360.0,
 }
 
 /*!
+    Returns the scroll view that encloses the text view.
+
+    The zoom commands do not change the text view itself. They change the
+    magnification of its scroll view, as TextEdit does: the scroll view
+    scales its clip view, which draws the text view, with everything inside
+    it, larger or smaller. The text wraps to the window at every
+    magnification, because the text view takes the width of the clip view.
+*/
+- (CPScrollView)documentScrollView
+{
+    return [textView enclosingScrollView];
+}
+
+/*!
+    Sets the magnification to the zoom level in the sender's tag, a
+    percentage. Each item of View > Zoom Level sends this action, with its
+    level as its tag, for example 75 for 75%.
+*/
+- (@action)zoomToLevel:(id)aSender
+{
+    [[self documentScrollView] setMagnification:[aSender tag] / 100.0];
+}
+
+/*!
+    Returns the text to actual size, a magnification of 1.0.
+*/
+- (@action)zoomToActualSize:(id)aSender
+{
+    [[self documentScrollView] setMagnification:1.0];
+}
+
+/*!
+    Moves to the next zoom level above the current magnification.
+*/
+- (@action)zoomIn:(id)aSender
+{
+    var level = [self zoomLevelFrom:[[self documentScrollView] magnification] direction:1];
+
+    if (level)
+        [[self documentScrollView] setMagnification:level];
+}
+
+/*!
+    Moves to the next zoom level below the current magnification.
+*/
+- (@action)zoomOut:(id)aSender
+{
+    var level = [self zoomLevelFrom:[[self documentScrollView] magnification] direction:-1];
+
+    if (level)
+        [[self documentScrollView] setMagnification:level];
+}
+
+/*!
+    Returns the zoom levels, as magnifications in ascending order.
+
+    The menu items of View > Zoom Level are the only definition of the
+    levels: each item that sends zoomToLevel: carries its level as a
+    percentage in its tag. Zoom In and Zoom Out step through the same items,
+    so adding, removing or changing an item in MainMenu.xib changes all
+    three commands together.
+*/
+- (CPArray)zoomLevels
+{
+    var levels = [];
+
+    [self collectZoomLevelsFromMenu:[CPApp mainMenu] into:levels];
+
+    return levels.sort(compareZoomLevels);
+}
+
+/*!
+    Adds to someLevels the level of every item in aMenu, and in its
+    submenus, that sends zoomToLevel:.
+*/
+- (void)collectZoomLevelsFromMenu:(CPMenu)aMenu into:(CPArray)someLevels
+{
+    var items = [aMenu itemArray],
+        count = [items count];
+
+    for (var i = 0; i < count; i++)
+    {
+        var item = items[i];
+
+        if ([item action] === @selector(zoomToLevel:))
+            someLevels.push([item tag] / 100.0);
+
+        if ([item hasSubmenu])
+            [self collectZoomLevelsFromMenu:[item submenu] into:someLevels];
+    }
+}
+
+/*!
+    Returns the next zoom level above aMagnification, with a direction of 1,
+    or below it, with a direction of -1. Returns nil when there is none. The
+    comparison allows for rounding in the magnification.
+*/
+- (float)zoomLevelFrom:(float)aMagnification direction:(int)aDirection
+{
+    var levels = [self zoomLevels],
+        count = levels.length;
+
+    for (var i = 0; i < count; i++)
+    {
+        var level = levels[aDirection > 0 ? i : count - 1 - i];
+
+        if (aDirection > 0 ? level > aMagnification + 0.001 : level < aMagnification - 0.001)
+            return level;
+    }
+
+    return nil;
+}
+
+/*!
     Keeps the window at or above its minimum size while the user resizes it.
 
     This is a CPWindowDelegate method. The window calls it with the size it
@@ -179,13 +302,34 @@ var DocumentWindowMinimumWidth  = 360.0,
     AppKit calls this method before it shows a menu, for each item whose
     action reaches this controller through the responder chain. For Allow
     Undo, it sets the item's check mark from the active document's text
-    view, so the mark follows the document whose window is in front. Every
-    item is enabled.
+    view, so the mark follows the document whose window is in front. For the
+    zoom commands, it checks the current zoom level and disables commands
+    that would not change the magnification. Every other item is enabled.
 */
 - (BOOL)validateMenuItem:(CPMenuItem)aMenuItem
 {
-    if ([aMenuItem action] === @selector(toggleAllowsUndo:))
+    var action = [aMenuItem action],
+        magnification = [[self documentScrollView] magnification];
+
+    if (action === @selector(toggleAllowsUndo:))
         [aMenuItem setState:[textView allowsUndo] ? CPOnState : CPOffState];
+
+    /*
+        The zoom level that matches the current magnification is checked.
+        Zoom In and Zoom Out are disabled at the highest and lowest levels,
+        and Actual Size at actual size.
+    */
+    if (action === @selector(zoomToLevel:))
+        [aMenuItem setState:ABS(magnification - [aMenuItem tag] / 100.0) < 0.001 ? CPOnState : CPOffState];
+
+    if (action === @selector(zoomIn:))
+        return !![self zoomLevelFrom:magnification direction:1];
+
+    if (action === @selector(zoomOut:))
+        return !![self zoomLevelFrom:magnification direction:-1];
+
+    if (action === @selector(zoomToActualSize:))
+        return ABS(magnification - 1.0) >= 0.001;
 
     return YES;
 }

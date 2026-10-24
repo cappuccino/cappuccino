@@ -30,6 +30,15 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 
 - **Marker appearance and vertical alignment differ from TextEdit.** The marker images, and where markers sit across the ruler, are interim until Aristo3 supplies its own; adjust them to match TextEdit then. A tab stop dragged up off the ruler follows the pointer and is clipped by the ruler's edge, as in TextEdit. Dragged down off the ruler, it stays on its line and is drawn faded until release; TextEdit's behaviour in that direction has not been checked.
 
+### Zoom and view scaling
+
+View > Zoom Level, Zoom In, Zoom Out and Actual Size set the magnification of the document's scroll view, which scales its clip view's bounds. Zoom exercises CPView's scaling through the whole view hierarchy, so it is the test for scaling defects, below and above 100%. Found in the first test, under Aristo2:
+
+- **The ruler ignores the magnification.** Its tab stop markers follow the scaled text, but its scale and labels stay at 100%, so markers and units disagree. In Cocoa the ruler scales its units with the scroll view's magnification.
+- **Autoresizing uses frame sizes, not bounds sizes.** `-[CPView resizeWithOldSuperviewSize:]` resizes a subview by the change in its superview's frame size, but a subview lives in its superview's bounds coordinates. Cocoa uses the bounds size. Under magnification, an autoresized subview changes by the wrong amount: above 100%, the text became wider than the window after it was resized.
+- **Below 100%, a few points are cut off at the left.** The first letter of some lines is missing.
+- **Below 100%, a grey band shows below the text.** The text view is only as tall as its text, and the clip view's background shows below it. Cocoa draws the document's background there.
+
 ### nib2cib
 
 - **nib2cib ignores the ruler settings.** The "Uses Ruler" setting in Interface Builder does not reach the cib. `CPTextView` and `CPRulerView` also need to archive their ruler settings.
@@ -92,4 +101,5 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 - Table cells can be edited, as a first pass.
 - Pasting text with several images and a table: the table appears in place at once, and tables, images and text below a change move with their lines.
 - A table wider than the text stays on its own line below the text before it when the window is narrowed, and is clipped at the right edge, without a horizontal scroll bar, as in Cocoa when text wraps to the window.
+- View > Zoom Level, Zoom In, Zoom Out and Actual Size change the magnification below and above 100%, in the source app and in the build product; text, tables and images stay together at every level.
 - Builds with both the legacy toolchain and capp-build.
