@@ -2007,10 +2007,11 @@ CPTexturedBackgroundWindowMask
             return [[self firstResponder] keyUp:anEvent];
 
         case CPKeyDown:
-            // Tab moves to the next key view, unless the first responder takes plain Tab itself, as an
-            // editable text view does to insert a tab character. Control-Tab always moves on, as in Cocoa.
+            // Tab and Shift-Tab move to the next and previous key view, unless the first responder takes
+            // them itself, as an editable text view does to insert a tab character or change a list
+            // item's level. Control-Tab always moves on, as in Cocoa.
             var modifierFlags = [anEvent modifierFlags],
-                firstResponderTakesTab = !(modifierFlags & (CPShiftKeyMask | CPControlKeyMask)) && [[self firstResponder] _wantsTabKey];
+                firstResponderTakesTab = !(modifierFlags & CPControlKeyMask) && [[self firstResponder] _wantsTabKey];
 
             if ([anEvent charactersIgnoringModifiers] === CPTabCharacter &&
                 !(modifierFlags & (CPAlternateKeyMask | CPCommandKeyMask)) &&
@@ -2029,7 +2030,7 @@ CPTexturedBackgroundWindowMask
                 }
                 return;
             }
-            else if ([anEvent charactersIgnoringModifiers] === CPBackTabCharacter)
+            else if ([anEvent charactersIgnoringModifiers] === CPBackTabCharacter && !firstResponderTakesTab)
             {
                 var didTabBack = [self selectPreviousKeyView:self];
 

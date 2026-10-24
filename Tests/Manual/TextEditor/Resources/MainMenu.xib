@@ -489,6 +489,85 @@
                                     </items>
                                 </menu>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="c67-9o-y2K">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="List" id="Rex-O9-TeZ">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="List" id="gKv-RZ-XKr">
+                                    <items>
+                                        <menuItem title="None" id="lqg-eV-ubr">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="aoD-m2-Fxo"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="YqH-ki-hw7"/>
+                                        <menuItem title="• Bullet" tag="1" id="OS2-09-IyA">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="Czq-4q-hOe"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="◦ Circle" tag="2" id="esv-7Z-gZe">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="UFt-wO-mDe"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="▪ Square" tag="3" id="e5f-jL-ROB">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="9tM-O8-Bdg"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="⁃ Hyphen" tag="4" id="Avr-zr-dEJ">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="wQu-aW-bEz"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="dVV-mi-86E"/>
+                                        <menuItem title="1. 2. 3." tag="10" id="Yde-5F-lEI">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="6Wi-PE-1Cu"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="a. b. c." tag="11" id="O7p-tZ-AKi">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="HQg-mn-alg"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="A. B. C." tag="12" id="P3D-s3-GxT">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="kFB-VA-TwH"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="i. ii. iii." tag="13" id="7Lg-rN-dp1">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="Zsx-hh-0L4"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="I. II. III." tag="14" id="8mi-WT-TnE">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="YkH-CV-4ju"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="DXf-Xw-3FD"/>
+                                        <menuItem title="1. 1.1. 1.1.1." tag="20" id="Mr8-pa-GEh">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeTextList:" target="-1" id="xIq-hL-gcz"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>

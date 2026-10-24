@@ -106,6 +106,24 @@ var kDefaultTabInterval = 28.0;
 
 // MARK: - CPParagraphStyle Implementation
 
+/*
+    Returns YES if both arrays hold the same text lists, in the same order. A text list is
+    identified by the object itself, so the lists are compared by identity.
+*/
+var _CPParagraphStyleTextListsAreIdentical = function(someLists, otherLists)
+{
+    var count = someLists ? someLists.length : 0;
+
+    if (count !== (otherLists ? otherLists.length : 0))
+        return NO;
+
+    for (var i = 0; i < count; i++)
+        if (someLists[i] !== otherLists[i])
+            return NO;
+
+    return YES;
+};
+
 var _sharedDefaultParagraphStyle = nil;
 
 @implementation CPParagraphStyle : CPObject
@@ -124,6 +142,7 @@ var _sharedDefaultParagraphStyle = nil;
     float                   _paragraphSpacingBefore @accessors(readonly, property=paragraphSpacingBefore);
     float                   _defaultTabInterval     @accessors(readonly, property=defaultTabInterval);
     CPArray                 _tabStops               @accessors(readonly, property=tabStops);
+    CPArray                 _textLists              @accessors(readonly, property=textLists);
 }
 
 + (CPParagraphStyle)defaultParagraphStyle
@@ -168,6 +187,8 @@ var _sharedDefaultParagraphStyle = nil;
             [_tabStops addObject:[[CPTextTab alloc] initWithType:CPLeftTextAlignment 
                                                         location:i * kDefaultTabInterval]];
         }
+
+        _textLists = [];
     }
     return self;
 }
@@ -190,6 +211,7 @@ var _sharedDefaultParagraphStyle = nil;
         _paragraphSpacingBefore = [other paragraphSpacingBefore];
         _defaultTabInterval     = [other defaultTabInterval];
         _tabStops               = [[other tabStops] copy];
+        _textLists              = [[other textLists] copy] || [];
     }
     return self;
 }
@@ -229,6 +251,7 @@ var _sharedDefaultParagraphStyle = nil;
         _paragraphSpacingBefore = [aCoder decodeFloatForKey:@"CPParagraphStyleParagraphSpacingBefore"];
         _defaultTabInterval     = [aCoder decodeFloatForKey:@"CPParagraphStyleDefaultTabInterval"];
         _tabStops               = [aCoder decodeObjectForKey:@"CPParagraphStyleTabStops"];
+        _textLists              = [aCoder decodeObjectForKey:@"CPParagraphStyleTextLists"] || [];
     }
     return self;
 }
@@ -249,6 +272,9 @@ var _sharedDefaultParagraphStyle = nil;
     [aCoder encodeFloat:_paragraphSpacingBefore forKey:@"CPParagraphStyleParagraphSpacingBefore"];
     [aCoder encodeFloat:_defaultTabInterval forKey:@"CPParagraphStyleDefaultTabInterval"];
     [aCoder encodeObject:_tabStops forKey:@"CPParagraphStyleTabStops"];
+
+    if ([_textLists count])
+        [aCoder encodeObject:_textLists forKey:@"CPParagraphStyleTextLists"];
 }
 
 // MARK: - Equality
@@ -265,7 +291,8 @@ var _sharedDefaultParagraphStyle = nil;
            _tailIndent === [other tailIndent] &&
            _firstLineHeadIndent === [other firstLineHeadIndent] &&
            _lineBreakMode === [other lineBreakMode] &&
-           [_tabStops isEqualToArray:[other tabStops]];
+           [_tabStops isEqualToArray:[other tabStops]] &&
+           _CPParagraphStyleTextListsAreIdentical(_textLists, [other textLists]);
 }
 
 @end
@@ -375,6 +402,14 @@ var _sharedDefaultParagraphStyle = nil;
 {
     if (_tabStops === newTabStops) return;
     _tabStops = [newTabStops mutableCopy];
+}
+
+/*!
+    Sets the text lists that the paragraph belongs to, outermost first.
+*/
+- (void)setTextLists:(CPArray)someTextLists
+{
+    _textLists = [someTextLists copy] || [];
 }
 
 - (id)copyWithZone:(CPZone)aZone

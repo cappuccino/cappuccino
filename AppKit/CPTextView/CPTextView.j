@@ -31,6 +31,7 @@
 @import "CPTextStorage.j"
 @import "CPLayoutManager.j"
 @import "CPParagraphStyle.j"
+@import "CPTextList.j"
 @import "CPTextContainer.j"
 @import "CPRulerView.j"
 
@@ -721,7 +722,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     For \c -toggleRuler:, the item's title becomes "Hide Ruler" or "Show Ruler" to reflect the
     ruler's visibility, and the item is enabled only when the text view uses a ruler and lies
     in a scroll view. \c -copyRuler: is enabled in rich text, and \c -pasteRuler: in editable
-    rich text when the ruler pasteboard holds a ruler. \c -copyFont: is enabled in rich text, and
+    rich text when the ruler pasteboard holds a ruler. \c -changeTextList: is enabled in editable
+    rich text, and its item is checked when it shows the list style at the selection.
+    \c -copyFont: is enabled in rich text, and
     \c -pasteFont: in editable rich text when the font pasteboard holds a style. The superscript,
     subscript and baseline actions are enabled in editable rich text. Every other item is enabled.
     @param anItem the item to validate
@@ -748,6 +751,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (action === @selector(pasteRuler:))
         return [self isRichText] && [self isEditable] && !![[CPPasteboard pasteboardWithName:CPRulerPboard] availableTypeFromArray:[CPRulerPboardType]];
+
+    // Lists apply only to editable rich text. The item for the list style at the selection is checked.
+    if (action === @selector(changeTextList:))
+    {
+        if ([anItem respondsToSelector:@selector(setState:)])
+            [anItem setState:[self _textListStyleMatchesItem:anItem] ? CPOnState : CPOffState];
+
+        return [self isEditable] && [self isRichText];
+    }
 
     // As in Cocoa, styles can be copied and pasted only in rich text.
     if (action === @selector(copyFont:))
@@ -910,6 +922,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
     [self _fixupReplaceForRange:selectionRange];
+    [self _updateTextListMarkersAroundRange:CPMakeRange(aRange.location, [aString length])];
 }
 
 - (void)insertText:(CPString)aString
@@ -938,7 +951,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self didChangeValueForKey:@"objectValue"];
     [self _continuouslyReverseSetBinding];
 
+    var insertionLocation = _selectionRange.location;
+
     [self _setSelectedRange:CPMakeRange(_selectionRange.location + [string length], 0) affinity:0 stillSelecting:NO overwriteTypingAttributes:NO];
+    [self _updateTextListMarkersAroundRange:CPMakeRange(insertionLocation, [string length])];
     _startTrackingLocation = _selectionRange.location;
 
     [self didChangeText];
@@ -1049,6 +1065,33 @@ Sets the selection to a range of characters in response to user action.
 @param selecting YES to behave appropriately for a continuing selection where the user is still dragging the mouse, NO otherwise. If YES, the receiver doesn’t send notifications or remove the marking from its marked text. If NO, the receiver posts an NSTextViewDidChangeSelectionNotification to the default notification center and removes the marking from marked text if the new selection is greater than the marked region.
 @param doOverwrite YES to override typing attributes. NO to not override.
 */
+/* @ignore
+    Returns the typing attributes for a selection, as in Cocoa: those of the first character of
+    a selection, or of the character before an insertion point. At the start of a paragraph the
+    insertion point takes the attributes of the paragraph's first character, so that it keeps
+    the paragraph's own style. At the end of the text it takes those of the last character.
+*/
+- (CPDictionary)_typingAttributesForSelectionRange:(CPRange)aRange
+{
+    var string = [_textStorage string],
+        length = string.length,
+        index = aRange.location;
+
+    if (!length)
+        return [_typingAttributes copy];
+
+    if (!aRange.length && index > 0)
+    {
+        var previousCharCode = string.charCodeAt(index - 1),
+            isParagraphStart = previousCharCode === 10 || previousCharCode === 13 || previousCharCode === 0x2029;
+
+        if (!isParagraphStart || index >= length)
+            index--;
+    }
+
+    return [_textStorage attributesAtIndex:MIN(index, length - 1) effectiveRange:nil];
+}
+
 - (void)_setSelectedRange:(CPRange)range affinity:(CPSelectionAffinity)affinity stillSelecting:(BOOL)selecting overwriteTypingAttributes:(BOOL)doOverwrite
 {
     var maxRange = CPMakeRange(0, [_layoutManager numberOfCharacters]),
@@ -1088,7 +1131,7 @@ Sets the selection to a range of characters in response to user action.
             isNewSelection = !CPEqualRanges(newSelectionRange, _mouseDownOldSelection);
 
         if (doOverwrite && _placeholderString == nil && isNewSelection)
-            [self setTypingAttributes:[_textStorage attributesAtIndex:CPMaxRange(range) effectiveRange:nil]];
+            [self setTypingAttributes:[self _typingAttributesForSelectionRange:newSelectionRange]];
 
         // The ruler shows the paragraph style at the selection.
         if (isNewSelection)
@@ -1790,6 +1833,7 @@ Sets the selection to a range of characters in response to user action.
     [self _continuouslyReverseSetBinding];
 
     [self setSelectedRange:CPMakeRange(changedRange.location, 0)];
+    [self _updateTextListMarkersAroundRange:CPMakeRange(changedRange.location, 0)];
     [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
@@ -1823,6 +1867,9 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)deleteBackward:(id)sender
 {
+    if ([self _deleteBackwardInTextList])
+        return;
+
     [self deleteBackward:self handleSmart:[self _shouldUseSmartPasting] && _selectionRange.length > 0];
 }
 
@@ -1861,7 +1908,23 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)insertTab:(id)sender
 {
+    if ([self _insertTabInTextList])
+        return;
+
     [self insertText:@"\t"];
+}
+
+/*!
+    Shift-Tab in a list item returns the item to the enclosing list. Elsewhere it moves to the
+    previous key view.
+    @param sender the object requesting this
+*/
+- (void)insertBacktab:(id)sender
+{
+    if ([self _insertBacktabInTextList])
+        return;
+
+    [[self window] selectPreviousKeyView:self];
 }
 
 /*
@@ -1886,6 +1949,12 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)insertNewline:(id)sender
 {
+    if ([self _insertNewlineInTextList])
+    {
+        [[self window] _temporarilyDisableKeyEquivalentForDefaultButton];
+        return;
+    }
+
     [self insertLineBreak:sender];
 }
 
@@ -1933,7 +2002,9 @@ Sets the selection to a range of characters in response to user action.
 
 - (CPDictionary)_attributesForFontPanel
 {
-    var attributes = [[_textStorage attributesAtIndex:CPMaxRange(_selectionRange) effectiveRange:nil] copy];
+    // The font panel shows the font that typing would use: that of the first selected character,
+    // or of the character before the insertion point.
+    var attributes = [[self _typingAttributesForSelectionRange:_selectionRange] mutableCopy];
 
     [self _enrichEssentialTypingAttributes:attributes];
 
@@ -2990,15 +3061,24 @@ var _CPTextViewRulerImageNameForTab = function(aTab)
 
 /*!
     Applies the paragraph style on the ruler pasteboard to the selected paragraphs, or to
-    the paragraph at the insertion point.
+    the paragraph at the insertion point. When the style or the paragraphs belong to text
+    lists, the whole paragraphs change, and their list markers are added, removed and
+    numbered as for Format > List.
     @param aSender the object requesting this
 */
 - (@action)pasteRuler:(id)aSender
 {
     var data = [[CPPasteboard pasteboardWithName:CPRulerPboard] dataForType:CPRulerPboardType];
 
-    if (data)
-        [self _applyRulerParagraphStyle:[CPKeyedUnarchiver unarchiveObjectWithData:data]];
+    if (!data)
+        return;
+
+    var paragraphStyle = [CPKeyedUnarchiver unarchiveObjectWithData:data];
+
+    if ([[paragraphStyle textLists] count] || [self _selectionTouchesTextList])
+        [self _pasteRulerParagraphStyleWithTextLists:paragraphStyle];
+    else
+        [self _applyRulerParagraphStyle:paragraphStyle];
 }
 
 /*!
@@ -3481,6 +3561,673 @@ var _CPTextViewRulerImageNameForTab = function(aTab)
         minLocation = maxLocation;
 
     return textStart + MIN(maxLocation, MAX(minLocation, proposed));
+}
+
+@end
+
+/*
+    The indent of each list level, and the distance from the start of a level to its markers,
+    in points. As in TextEdit, the first level's markers start 11 points in, and its text starts
+    36 points in.
+*/
+var CPTextViewTextListLevelIndent = 36.0,
+    CPTextViewTextListMarkerIndent = 11.0;
+
+/*
+    The list styles that -changeTextList: applies, by the tag of the sender. Tag 0, or any tag
+    not listed, removes the list.
+*/
+var CPTextViewTextListStyles = {
+        1:  {format: @"{disc}",          options: 0},
+        2:  {format: @"{circle}",        options: 0},
+        3:  {format: @"{square}",        options: 0},
+        4:  {format: @"{hyphen}",        options: 0},
+        10: {format: @"{decimal}.",      options: 0},
+        11: {format: @"{lower-alpha}.",  options: 0},
+        12: {format: @"{upper-alpha}.",  options: 0},
+        13: {format: @"{lower-roman}.",  options: 0},
+        14: {format: @"{upper-roman}.",  options: 0},
+        20: {format: @"{decimal}.",      options: CPTextListPrependEnclosingMarker}
+    };
+
+/*!
+    Text list support. As in Cocoa, the markers of a list are ordinary text at the start of each
+    item: a tab, the marker and another tab. The paragraph style of an item lists its text lists,
+    outermost first, and sets the indents and tab stops that place the marker and the text.
+    Return in an item starts the next item, and Return in an empty item ends the list. Tab at the
+    start of an item makes it an item of a nested list, and Shift-Tab returns it to the enclosing
+    list. Delete at the start of an item's text removes the item from its list. After every change,
+    the markers of the lists around the change are numbered again.
+*/
+@implementation CPTextView (CPTextListSupport)
+
+// MARK: Changing Lists
+
+/*!
+    Applies the list style that the sender's tag selects to the selected paragraphs, or to the
+    paragraph at the insertion point. The tags are: 0 for no list; 1 bullet, 2 circle, 3 square
+    and 4 hyphen; 10 for 1. 2. 3., 11 for a. b. c., 12 for A. B. C., 13 for i. ii. iii. and 14
+    for I. II. III.; 20 for 1. with nested items numbered 1.1. A paragraph next to a list of the
+    same style at the same level joins that list, so that its numbering continues.
+    @param aSender the menu item or control that requests the change
+*/
+- (@action)changeTextList:(id)aSender
+{
+    var style = CPTextViewTextListStyles[[aSender tag]];
+
+    [self setTextList:style ? [self _textListWithMarkerFormat:style.format options:style.options] : nil];
+}
+
+/* @ignore
+    Returns the list of the paragraph just before or after the selected paragraphs when it has
+    the marker format and options at the selection's level, or a new list.
+*/
+- (CPTextList)_textListWithMarkerFormat:(CPString)aFormat options:(unsigned)anOptions
+{
+    var paragraphsRange = [self _textListParagraphsRangeForRange:_selectionRange],
+        level = MAX(1, [[_textStorage _textListsOfParagraphAtIndex:paragraphsRange.location] count]),
+        neighbours = [];
+
+    if (paragraphsRange.location > 0)
+        neighbours.push([_textStorage _paragraphRangeForIndex:paragraphsRange.location - 1].location);
+
+    if (CPMaxRange(paragraphsRange) < [_textStorage length])
+        neighbours.push(CPMaxRange(paragraphsRange));
+
+    for (var i = 0; i < neighbours.length; i++)
+    {
+        var lists = [_textStorage _textListsOfParagraphAtIndex:neighbours[i]],
+            list = [lists lastObject];
+
+        if ([lists count] === level && [list markerFormat] === aFormat && [list listOptions] === anOptions)
+            return list;
+    }
+
+    return [[CPTextList alloc] initWithMarkerFormat:aFormat options:anOptions];
+}
+
+/* @ignore
+    Returns YES if the menu item's tag selects the style of the innermost list at the
+    selection, or no list when the selection is not in a list.
+*/
+- (BOOL)_textListStyleMatchesItem:(id)anItem
+{
+    var paragraphStart = [_textStorage _paragraphRangeForIndex:_selectionRange.location].location,
+        list = [[_textStorage _textListsOfParagraphAtIndex:paragraphStart] lastObject],
+        style = CPTextViewTextListStyles[[anItem tag]];
+
+    if (!list)
+        return !style;
+
+    return !!style && [list markerFormat] === style.format && [list listOptions] === style.options;
+}
+
+/*!
+    Makes the selected paragraphs, or the paragraph at the insertion point, items of aList. A
+    paragraph that is already an item of a list changes to aList at the same level. With \c nil,
+    the paragraphs are removed from their lists, at every level.
+    @param aList the list, or \c nil
+*/
+- (void)setTextList:(CPTextList)aList
+{
+    if (![self isRichText])
+        return;
+
+    var paragraphsRange = [self _textListParagraphsRangeForRange:_selectionRange],
+        listsForParagraphs = [],
+        location = paragraphsRange.location;
+
+    do
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location],
+            lists = [[_textStorage _textListsOfParagraphAtIndex:paragraphRange.location] copy];
+
+        if (!aList)
+            lists = [];
+        else if ([lists count])
+            lists[[lists count] - 1] = aList;
+        else
+            lists = [aList];
+
+        listsForParagraphs.push(lists);
+        location = CPMaxRange(paragraphRange);
+    }
+    while (location < CPMaxRange(paragraphsRange));
+
+    [self _setTextLists:listsForParagraphs forParagraphsInRange:paragraphsRange];
+}
+
+/* @ignore
+    Makes the item at the insertion point an item of a list nested in its list. The item joins
+    the nested list of the item before it, when there is one, so that its numbering continues.
+    Otherwise a new nested list takes the marker format and options of the enclosing list.
+*/
+- (void)_indentTextListItemAtIndex:(unsigned)anIndex
+{
+    var paragraphRange = [_textStorage _paragraphRangeForIndex:anIndex],
+        lists = [_textStorage _textListsOfParagraphAtIndex:paragraphRange.location],
+        level = [lists count],
+        nestedList = nil;
+
+    if (paragraphRange.location > 0)
+    {
+        var previousRange = [_textStorage _paragraphRangeForIndex:paragraphRange.location - 1],
+            previousLists = [_textStorage _textListsOfParagraphAtIndex:previousRange.location];
+
+        if ([previousLists count] > level && [[previousLists subarrayWithRange:CPMakeRange(0, level)] isEqualToArray:lists])
+            nestedList = previousLists[level];
+    }
+
+    if (!nestedList)
+    {
+        var enclosingList = [lists lastObject];
+
+        nestedList = [[CPTextList alloc] initWithMarkerFormat:[enclosingList markerFormat] options:[enclosingList listOptions]];
+    }
+
+    [self _setTextLists:[[lists arrayByAddingObject:nestedList]] forParagraphsInRange:paragraphRange];
+}
+
+/* @ignore
+    Returns the item at anIndex to the enclosing list, or removes it from its list when the list
+    is not nested.
+*/
+- (void)_outdentTextListItemAtIndex:(unsigned)anIndex
+{
+    var paragraphRange = [_textStorage _paragraphRangeForIndex:anIndex],
+        lists = [_textStorage _textListsOfParagraphAtIndex:paragraphRange.location];
+
+    [self _setTextLists:[[lists subarrayWithRange:CPMakeRange(0, MAX(0, [lists count] - 1))]] forParagraphsInRange:paragraphRange];
+}
+
+/* @ignore
+    Gives each paragraph in aParagraphsRange the text lists at the same position in
+    listsForParagraphs, with a matching paragraph style and marker. The change can be undone.
+    The insertion point or selection keeps its place in the text after the markers.
+*/
+- (void)_setTextLists:(CPArray)listsForParagraphs forParagraphsInRange:(CPRange)aParagraphsRange
+{
+    [self _setTextLists:listsForParagraphs forParagraphsInRange:aParagraphsRange paragraphStyle:nil];
+}
+
+/* @ignore
+    As -_setTextLists:forParagraphsInRange:, but every paragraph takes a copy of aParagraphStyle,
+    with its text lists, in place of the indents and tab stops that the lists would set. With
+    \c nil, each paragraph keeps its own style and takes the indents and tab stops of its lists.
+*/
+- (void)_setTextLists:(CPArray)listsForParagraphs forParagraphsInRange:(CPRange)aParagraphsRange paragraphStyle:(CPParagraphStyle)aParagraphStyle
+{
+    if (![self _didBeginEditing] || ![self shouldChangeTextInRange:aParagraphsRange replacementString:nil])
+        return;
+
+    var result = [[CPAttributedString alloc] initWithString:@""],
+        selectionStart = _selectionRange.location,
+        selectionEnd = CPMaxRange(_selectionRange),
+        newSelectionStart = selectionStart,
+        newSelectionEnd = selectionEnd,
+        location = aParagraphsRange.location,
+        caretParagraphStyle = nil,
+        index = 0;
+
+    do
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location],
+            markerRange = [self _textListMarkerRangeInParagraphRange:paragraphRange],
+            oldMarkerLength = markerRange.location === CPNotFound ? 0 : markerRange.length,
+            paragraph = [[CPAttributedString alloc] initWithAttributedString:[_textStorage attributedSubstringFromRange:paragraphRange]],
+            textStart = paragraphRange.location + oldMarkerLength,
+            lists = listsForParagraphs[index++],
+            attributes = [self _textListAttributesForParagraphRange:paragraphRange textStart:textStart],
+            paragraphStyle = aParagraphStyle ? [aParagraphStyle mutableCopy] : [self _paragraphStyle:[attributes objectForKey:CPParagraphStyleAttributeName] withTextLists:lists],
+            newMarkerLength = [lists count] ? 2 : 0,
+            newParagraphStart = aParagraphsRange.location + [result length];
+
+        if (oldMarkerLength)
+            [paragraph deleteCharactersInRange:CPMakeRange(0, oldMarkerLength)];
+
+        if ([paragraph length])
+            [paragraph addAttribute:CPParagraphStyleAttributeName value:paragraphStyle range:CPMakeRange(0, [paragraph length])];
+
+        // The marker is filled in when the list is numbered, after the change.
+        if (newMarkerLength)
+        {
+            var markerAttributes = [attributes mutableCopy];
+
+            [markerAttributes setObject:paragraphStyle forKey:CPParagraphStyleAttributeName];
+            [paragraph insertAttributedString:[[CPAttributedString alloc] initWithString:@"\t\t" attributes:markerAttributes] atIndex:0];
+        }
+
+        // Positions in the text keep their place after the marker; positions in the old marker
+        // move to the start of the text.
+        if (CPLocationInRange(selectionStart, paragraphRange) || (selectionStart === CPMaxRange(paragraphRange) && selectionStart === CPMaxRange(aParagraphsRange)))
+        {
+            newSelectionStart = newParagraphStart + newMarkerLength + MAX(0, selectionStart - textStart);
+            caretParagraphStyle = paragraphStyle;
+        }
+
+        if (CPLocationInRange(selectionEnd, paragraphRange) || (selectionEnd === CPMaxRange(paragraphRange) && selectionEnd === CPMaxRange(aParagraphsRange)))
+            newSelectionEnd = newParagraphStart + newMarkerLength + MAX(0, selectionEnd - textStart);
+
+        [result appendAttributedString:paragraph];
+        location = CPMaxRange(paragraphRange);
+    }
+    while (location < CPMaxRange(aParagraphsRange));
+
+    [self _replaceCharactersInRange:CPMakeRangeCopy(aParagraphsRange)
+               withAttributedString:result
+                     selectionRange:CPMakeRange(newSelectionStart, MAX(0, newSelectionEnd - newSelectionStart))];
+
+    if (caretParagraphStyle)
+    {
+        [_typingAttributes setObject:caretParagraphStyle forKey:CPParagraphStyleAttributeName];
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+    }
+
+    [self updateRuler];
+    [self didChangeText];
+}
+
+/* @ignore
+    Returns YES if any paragraph that the selection touches is a list item.
+*/
+- (BOOL)_selectionTouchesTextList
+{
+    var paragraphsRange = [self _textListParagraphsRangeForRange:_selectionRange],
+        location = paragraphsRange.location;
+
+    do
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location];
+
+        if ([[_textStorage _textListsOfParagraphAtIndex:paragraphRange.location] count])
+            return YES;
+
+        location = CPMaxRange(paragraphRange);
+    }
+    while (location < CPMaxRange(paragraphsRange));
+
+    return NO;
+}
+
+/* @ignore
+    Applies a pasted paragraph style that has text lists, or replaces the lists of the selected
+    paragraphs, through the list path, so that markers follow. The pasted lists are new objects,
+    decoded from the pasteboard. At each level, the list of the paragraph just before or after
+    the selection takes the place of a pasted list with the same marker format and options, so
+    that the pasted paragraphs join a neighbouring list and continue its numbering.
+*/
+- (void)_pasteRulerParagraphStyleWithTextLists:(CPParagraphStyle)aParagraphStyle
+{
+    var paragraphsRange = [self _textListParagraphsRangeForRange:_selectionRange],
+        pastedLists = [aParagraphStyle textLists],
+        neighbourLists = [],
+        lists = [];
+
+    if (paragraphsRange.location > 0)
+        neighbourLists = [_textStorage _textListsOfParagraphAtIndex:[_textStorage _paragraphRangeForIndex:paragraphsRange.location - 1].location];
+
+    if (![neighbourLists count] && CPMaxRange(paragraphsRange) < [_textStorage length])
+        neighbourLists = [_textStorage _textListsOfParagraphAtIndex:CPMaxRange(paragraphsRange)];
+
+    for (var level = 0; level < [pastedLists count]; level++)
+    {
+        var pastedList = pastedLists[level],
+            neighbourList = level < [neighbourLists count] ? neighbourLists[level] : nil,
+            enclosingMatches = level === 0 || lists[level - 1] === neighbourLists[level - 1];
+
+        if (enclosingMatches && neighbourList && [neighbourList markerFormat] === [pastedList markerFormat] && [neighbourList listOptions] === [pastedList listOptions])
+            lists.push(neighbourList);
+        else
+            lists.push(pastedList);
+    }
+
+    var paragraphStyle = [aParagraphStyle mutableCopy],
+        listsForParagraphs = [],
+        location = paragraphsRange.location;
+
+    [paragraphStyle setTextLists:lists];
+
+    do
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location];
+
+        listsForParagraphs.push(lists);
+        location = CPMaxRange(paragraphRange);
+    }
+    while (location < CPMaxRange(paragraphsRange));
+
+    [self _setTextLists:listsForParagraphs forParagraphsInRange:paragraphsRange paragraphStyle:paragraphStyle];
+}
+
+// MARK: Editing in Lists
+
+/* @ignore
+    Return in a list item starts the next item, with the same paragraph style. Return in an
+    empty item ends the list there, or returns a nested item to the enclosing list. Returns
+    \c NO if the insertion point is not in the text of a list item.
+*/
+- (BOOL)_insertNewlineInTextList
+{
+    var paragraphRange = [self _textListItemRangeAtIndex:_selectionRange.location],
+        markerRange = paragraphRange ? [self _textListMarkerRangeInParagraphRange:paragraphRange] : nil;
+
+    if (!markerRange || markerRange.location === CPNotFound || _selectionRange.location < CPMaxRange(markerRange))
+        return NO;
+
+    var string = [_textStorage string],
+        textEnd = CPMaxRange(paragraphRange);
+
+    if (textEnd > paragraphRange.location && string.charCodeAt(textEnd - 1) === 10)
+        textEnd--;
+
+    if (!_selectionRange.length && CPMaxRange(markerRange) === textEnd)
+    {
+        [self _outdentTextListItemAtIndex:_selectionRange.location];
+        return YES;
+    }
+
+    var attributes = [_typingAttributes mutableCopy];
+
+    [attributes setObject:[_textStorage attribute:CPParagraphStyleAttributeName atIndex:paragraphRange.location effectiveRange:nil] forKey:CPParagraphStyleAttributeName];
+
+    // The new item's marker is filled in when the list is numbered, after the insertion.
+    [self insertText:[[CPAttributedString alloc] initWithString:@"\n\t\t" attributes:attributes]];
+
+    return YES;
+}
+
+/* @ignore
+    Tab at the start of a list item makes it an item of a nested list. Returns \c NO if the
+    insertion point is not at the start of a list item.
+*/
+- (BOOL)_insertTabInTextList
+{
+    var paragraphRange = [self _textListItemRangeAtIndex:_selectionRange.location],
+        markerRange = paragraphRange ? [self _textListMarkerRangeInParagraphRange:paragraphRange] : nil;
+
+    if (_selectionRange.length || !markerRange || markerRange.location === CPNotFound || _selectionRange.location > CPMaxRange(markerRange))
+        return NO;
+
+    [self _indentTextListItemAtIndex:_selectionRange.location];
+    return YES;
+}
+
+/* @ignore
+    Shift-Tab in an item of a nested list returns it to the enclosing list. In an item of a list
+    that is not nested, it does nothing. Returns \c NO if the insertion point is not in a list item.
+*/
+- (BOOL)_insertBacktabInTextList
+{
+    var paragraphRange = [self _textListItemRangeAtIndex:_selectionRange.location];
+
+    if (!paragraphRange)
+        return NO;
+
+    if ([[_textStorage _textListsOfParagraphAtIndex:paragraphRange.location] count] > 1)
+        [self _outdentTextListItemAtIndex:_selectionRange.location];
+
+    return YES;
+}
+
+/* @ignore
+    Delete at the start of a list item's text returns a nested item to the enclosing list, or
+    removes the item from its list, with its marker. Returns \c NO if the insertion point is
+    not at the start of a list item's text.
+*/
+- (BOOL)_deleteBackwardInTextList
+{
+    var paragraphRange = [self _textListItemRangeAtIndex:_selectionRange.location],
+        markerRange = paragraphRange ? [self _textListMarkerRangeInParagraphRange:paragraphRange] : nil;
+
+    if (_selectionRange.length || !markerRange || markerRange.location === CPNotFound || _selectionRange.location !== CPMaxRange(markerRange))
+        return NO;
+
+    [self _outdentTextListItemAtIndex:_selectionRange.location];
+    return YES;
+}
+
+// MARK: Numbering
+
+/* @ignore
+    Numbers again the markers of the lists in and next to aRange, which a change has just
+    affected. Only marker text changes, without undo: undoing the change restores the text, and
+    the lists are numbered again afterwards. The selection keeps its place in the text.
+*/
+- (void)_updateTextListMarkersAroundRange:(CPRange)aRange
+{
+    var length = [_textStorage length];
+
+    if (!length || ![self isRichText])
+        return;
+
+    // The paragraphs from the one before the change to the one after it.
+    var scanStart = [_textStorage _paragraphRangeForIndex:MAX(0, aRange.location - 1)].location,
+        scanEnd = CPMaxRange([_textStorage _paragraphRangeForIndex:MIN(length, CPMaxRange(aRange))]),
+        listRanges = [],
+        location = scanStart;
+
+    if (scanEnd < length)
+        scanEnd = CPMaxRange([_textStorage _paragraphRangeForIndex:scanEnd]);
+
+    while (location < scanEnd)
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location],
+            lists = [_textStorage _textListsOfParagraphAtIndex:location];
+
+        if ([lists count])
+        {
+            var listRange = [_textStorage rangeOfTextList:lists[0] atIndex:location];
+
+            listRanges.push(listRange);
+            location = MAX(CPMaxRange(listRange), CPMaxRange(paragraphRange));
+        }
+        else
+            location = CPMaxRange(paragraphRange);
+
+        if (!paragraphRange.length)
+            break;
+    }
+
+    if (!listRanges.length)
+        return;
+
+    var replacements = [];
+
+    for (var i = 0; i < listRanges.length; i++)
+        [self _collectTextListMarkerReplacements:replacements inRange:listRanges[i]];
+
+    if (!replacements.length)
+        return;
+
+    var selectionStart = _selectionRange.location,
+        selectionEnd = CPMaxRange(_selectionRange);
+
+    // Replace from the end, so that the earlier ranges stay valid.
+    [_textStorage beginEditing];
+
+    for (var i = replacements.length - 1; i >= 0; i--)
+    {
+        var replacement = replacements[i],
+            range = replacement.range,
+            delta = replacement.string.length - range.length;
+
+        [_textStorage replaceCharactersInRange:range
+                          withAttributedString:[[CPAttributedString alloc] initWithString:replacement.string attributes:[_textStorage attributesAtIndex:range.location effectiveRange:nil]]];
+
+        if (selectionStart >= CPMaxRange(range))
+            selectionStart += delta;
+        else if (selectionStart > range.location)
+            selectionStart = range.location + replacement.string.length;
+
+        if (selectionEnd >= CPMaxRange(range))
+            selectionEnd += delta;
+        else if (selectionEnd > range.location)
+            selectionEnd = range.location + replacement.string.length;
+    }
+
+    [_textStorage endEditing];
+
+    [self _setSelectedRange:CPMakeRange(selectionStart, selectionEnd - selectionStart) affinity:0 stillSelecting:NO overwriteTypingAttributes:NO];
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
+}
+
+/* @ignore
+    Adds to someReplacements the marker of each item in aListRange whose text differs from its
+    number. The items are counted in one pass, with a counter for each list. As in Cocoa, a list
+    with the CPTextListPrependEnclosingMarker option puts the enclosing item's marker before its
+    own.
+*/
+- (void)_collectTextListMarkerReplacements:(CPArray)someReplacements inRange:(CPRange)aListRange
+{
+    var string = [_textStorage string],
+        counters = {},
+        location = aListRange.location;
+
+    while (location < CPMaxRange(aListRange))
+    {
+        var paragraphRange = [_textStorage _paragraphRangeForIndex:location],
+            lists = [_textStorage _textListsOfParagraphAtIndex:location],
+            count = [lists count],
+            innermostUID = [lists[count - 1] UID],
+            marker = @"";
+
+        counters[innermostUID] = (counters.hasOwnProperty(innermostUID) ? counters[innermostUID] : [lists[count - 1] startingItemNumber] - 1) + 1;
+
+        for (var level = 0; level < count; level++)
+        {
+            var list = lists[level],
+                uid = [list UID],
+                itemNumber = counters.hasOwnProperty(uid) ? counters[uid] : [list startingItemNumber],
+                levelMarker = [list markerForItemNumber:itemNumber];
+
+            marker = ([list listOptions] & CPTextListPrependEnclosingMarker) ? marker + levelMarker : levelMarker;
+        }
+
+        var markerRange = [self _textListMarkerRangeInParagraphRange:paragraphRange],
+            newMarker = "\t" + marker + "\t";
+
+        if (markerRange.location !== CPNotFound && string.substr(markerRange.location, markerRange.length) !== newMarker)
+            someReplacements.push({range: markerRange, string: newMarker});
+
+        if (!paragraphRange.length)
+            break;
+
+        location = CPMaxRange(paragraphRange);
+    }
+}
+
+// MARK: Helpers
+
+/* @ignore
+    Returns the range of the list item paragraph at anIndex, or \c nil if the paragraph is not
+    a list item or the text is not rich.
+*/
+- (CPRange)_textListItemRangeAtIndex:(unsigned)anIndex
+{
+    if (![self isRichText])
+        return nil;
+
+    var paragraphRange = [_textStorage _paragraphRangeForIndex:anIndex];
+
+    // At the end of the text after a paragraph separator, the insertion point is in an empty
+    // paragraph that has no attributes of its own.
+    if (![[_textStorage _textListsOfParagraphAtIndex:paragraphRange.location] count])
+        return nil;
+
+    return paragraphRange;
+}
+
+/* @ignore
+    Returns the range of the marker at the start of a list item: a tab, the marker and another
+    tab. Returns a range with the location CPNotFound if the paragraph is not a list item, or
+    its text does not start with a marker.
+*/
+- (CPRange)_textListMarkerRangeInParagraphRange:(CPRange)aParagraphRange
+{
+    var string = [_textStorage string],
+        start = aParagraphRange.location,
+        end = CPMaxRange(aParagraphRange);
+
+    if (![[_textStorage _textListsOfParagraphAtIndex:start] count] || string.charCodeAt(start) !== 9)
+        return CPMakeRange(CPNotFound, 0);
+
+    for (var i = start + 1; i < end; i++)
+    {
+        var charCode = string.charCodeAt(i);
+
+        if (charCode === 9)
+            return CPMakeRange(start, i - start + 1);
+
+        if (charCode === 10 || charCode === 13 || charCode === 0x2029)
+            break;
+    }
+
+    return CPMakeRange(CPNotFound, 0);
+}
+
+/* @ignore
+    Returns the range of whole paragraphs that aRange touches. A selection that ends at the
+    start of a paragraph does not include that paragraph.
+*/
+- (CPRange)_textListParagraphsRangeForRange:(CPRange)aRange
+{
+    var first = [_textStorage _paragraphRangeForIndex:aRange.location],
+        lastIndex = aRange.length ? CPMaxRange(aRange) - 1 : aRange.location,
+        last = [_textStorage _paragraphRangeForIndex:MAX(first.location, lastIndex)];
+
+    return CPMakeRange(first.location, CPMaxRange(last) - first.location);
+}
+
+/* @ignore
+    Returns the attributes for a list item's marker and paragraph style: those of the first
+    character of its text, or of the paragraph, or the typing attributes for an empty paragraph.
+*/
+- (CPDictionary)_textListAttributesForParagraphRange:(CPRange)aParagraphRange textStart:(unsigned)aTextStart
+{
+    var length = [_textStorage length];
+
+    if (aTextStart < CPMaxRange(aParagraphRange) && aTextStart < length && [_textStorage string].charCodeAt(aTextStart) !== 10)
+        return [_textStorage attributesAtIndex:aTextStart effectiveRange:nil];
+
+    if (aParagraphRange.location < length)
+        return [_textStorage attributesAtIndex:aParagraphRange.location effectiveRange:nil];
+
+    return [_typingAttributes mutableCopy];
+}
+
+/* @ignore
+    Returns a copy of aParagraphStyle for the text lists someLists. The indents and tab stops of
+    a list item place its marker CPTextViewTextListMarkerIndent points into its level, and its
+    text, including later lines, at the start of the next level. A paragraph without lists gets
+    no indents and the default tab stops.
+*/
+- (CPParagraphStyle)_paragraphStyle:(CPParagraphStyle)aParagraphStyle withTextLists:(CPArray)someLists
+{
+    var paragraphStyle = [(aParagraphStyle || [CPParagraphStyle defaultParagraphStyle]) mutableCopy],
+        level = [someLists count];
+
+    [paragraphStyle setTextLists:someLists];
+
+    if (level)
+    {
+        var levelStart = (level - 1) * CPTextViewTextListLevelIndent,
+            textStart = level * CPTextViewTextListLevelIndent;
+
+        [paragraphStyle setFirstLineHeadIndent:levelStart];
+        [paragraphStyle setHeadIndent:textStart];
+        [paragraphStyle setTabStops:[[[CPTextTab alloc] initWithType:CPLeftTabStopType location:levelStart + CPTextViewTextListMarkerIndent],
+                                     [[CPTextTab alloc] initWithType:CPLeftTabStopType location:textStart]]];
+    }
+    else
+    {
+        [paragraphStyle setFirstLineHeadIndent:0.0];
+        [paragraphStyle setHeadIndent:0.0];
+        [paragraphStyle setTabStops:[[CPParagraphStyle defaultParagraphStyle] tabStops]];
+    }
+
+    return paragraphStyle;
 }
 
 @end
