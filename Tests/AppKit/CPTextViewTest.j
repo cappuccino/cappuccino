@@ -167,6 +167,61 @@
     [self assertTrue:[undoManager canUndo] message:@"a text view that allows undo should register its change"];
 }
 
+- (void)testSuperscriptSubscriptAndUnscript
+{
+    [textView setRichText:YES];
+    [self assertTrue:[theWindow makeFirstResponder:textView]];
+    [textView setSelectedRange:CPMakeRange(0, 2)];
+
+    [textView superscript:nil];
+    [self assert:1 equals:[[textView textStorage] attribute:CPSuperscriptAttributeName atIndex:0 effectiveRange:nil]];
+
+    [textView superscript:nil];
+    [self assert:2 equals:[[textView textStorage] attribute:CPSuperscriptAttributeName atIndex:1 effectiveRange:nil]];
+
+    [textView subscript:nil];
+    [textView subscript:nil];
+    [self assertTrue:([[textView textStorage] attribute:CPSuperscriptAttributeName atIndex:0 effectiveRange:nil] == nil) message:@"a level of zero removes the attribute"];
+
+    [textView subscript:nil];
+    [textView raiseBaseline:nil];
+    [self assert:-1 equals:[[textView textStorage] attribute:CPSuperscriptAttributeName atIndex:0 effectiveRange:nil]];
+    [self assert:1 equals:[[textView textStorage] attribute:CPBaselineOffsetAttributeName atIndex:0 effectiveRange:nil]];
+
+    [textView unscript:nil];
+    [self assertTrue:([[textView textStorage] attribute:CPSuperscriptAttributeName atIndex:0 effectiveRange:nil] == nil)];
+    [self assertTrue:([[textView textStorage] attribute:CPBaselineOffsetAttributeName atIndex:0 effectiveRange:nil] == nil)];
+
+    [self assertTrue:([[textView textStorage] attribute:CPSuperscriptAttributeName atIndex:5 effectiveRange:nil] == nil) message:@"text outside the selection is unchanged"];
+}
+
+- (void)testSuperscriptWithoutSelectionChangesTypingAttributes
+{
+    [textView setRichText:YES];
+    [self assertTrue:[theWindow makeFirstResponder:textView]];
+    [textView setSelectedRange:CPMakeRange(3, 0)];
+
+    [textView superscript:nil];
+    [self assert:1 equals:[[textView typingAttributes] objectForKey:CPSuperscriptAttributeName]];
+
+    [textView unscript:nil];
+    [self assertTrue:([[textView typingAttributes] objectForKey:CPSuperscriptAttributeName] == nil)];
+}
+
+- (void)testBaselineActionsAreEnabledOnlyInEditableRichText
+{
+    var item = [[CPMenuItem alloc] initWithTitle:@"Superscript" action:@selector(superscript:) keyEquivalent:@""];
+
+    [textView setRichText:NO];
+    [self assertFalse:[textView validateUserInterfaceItem:item]];
+
+    [textView setRichText:YES];
+    [self assertTrue:[textView validateUserInterfaceItem:item]];
+
+    [textView setEditable:NO];
+    [self assertFalse:[textView validateUserInterfaceItem:item]];
+}
+
 - (void)testUndoItemIsEnabledOnlyWhenThereIsAChangeToUndo
 {
     var undoManager = [theWindow undoManager],

@@ -721,7 +721,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     For \c -toggleRuler:, the item's title becomes "Hide Ruler" or "Show Ruler" to reflect the
     ruler's visibility, and the item is enabled only when the text view uses a ruler and lies
     in a scroll view. \c -copyRuler: is enabled in rich text, and \c -pasteRuler: in editable
-    rich text when the ruler pasteboard holds a ruler. Every other item is enabled.
+    rich text when the ruler pasteboard holds a ruler. The superscript, subscript and baseline
+    actions are enabled in editable rich text. Every other item is enabled.
     @param anItem the item to validate
     @return \c YES if the item should be enabled
 */
@@ -734,6 +735,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (action === @selector(redo:))
         return [[[self window] undoManager] canRedo];
+
+    // Baseline changes apply only to editable rich text.
+    if (action === @selector(superscript:) || action === @selector(subscript:) || action === @selector(unscript:) ||
+        action === @selector(raiseBaseline:) || action === @selector(lowerBaseline:))
+        return [self isEditable] && [self isRichText];
 
     // As in Cocoa, rulers can be copied and pasted only in rich text.
     if (action === @selector(copyRuler:))
@@ -2072,6 +2078,162 @@ Sets the selection to a range of characters in response to user action.
 {
     // This will trigger changeFont: via the FontManager
     [[CPFontManager sharedFontManager] addFontTrait:CPItalicFontMask];
+}
+
+// MARK: -
+// MARK: Baseline methods
+
+/*!
+    Raises the superscript level of the selected text by one, or of the text typed next when
+    nothing is selected. Each run of the selection keeps its own level, raised by one.
+    @param aSender the object requesting this
+*/
+- (@action)superscript:(id)aSender
+{
+    [self _changeCharacterAttribute:CPSuperscriptAttributeName byAmount:1];
+}
+
+/*!
+    Lowers the superscript level of the selected text by one, or of the text typed next when
+    nothing is selected. A negative level is a subscript.
+    @param aSender the object requesting this
+*/
+- (@action)subscript:(id)aSender
+{
+    [self _changeCharacterAttribute:CPSuperscriptAttributeName byAmount:-1];
+}
+
+/*!
+    Removes the superscript level and the baseline offset of the selected text, or of the text
+    typed next when nothing is selected.
+    @param aSender the object requesting this
+*/
+- (@action)unscript:(id)aSender
+{
+    [self _removeCharacterAttributes:[CPSuperscriptAttributeName, CPBaselineOffsetAttributeName]];
+}
+
+/*!
+    Raises the baseline of the selected text by one point, or of the text typed next when
+    nothing is selected.
+    @param aSender the object requesting this
+*/
+- (@action)raiseBaseline:(id)aSender
+{
+    [self _changeCharacterAttribute:CPBaselineOffsetAttributeName byAmount:1.0];
+}
+
+/*!
+    Lowers the baseline of the selected text by one point, or of the text typed next when
+    nothing is selected.
+    @param aSender the object requesting this
+*/
+- (@action)lowerBaseline:(id)aSender
+{
+    [self _changeCharacterAttribute:CPBaselineOffsetAttributeName byAmount:-1.0];
+}
+
+/* @ignore
+    Adds anAmount to a numeric character attribute, run by run across the selection, or in the
+    typing attributes when nothing is selected. A value that reaches zero removes the attribute.
+*/
+- (void)_changeCharacterAttribute:(CPString)anAttributeName byAmount:(float)anAmount
+{
+    var range = CPMakeRangeCopy(_selectionRange);
+
+    if (!range.length)
+    {
+        var newValue = ([_typingAttributes objectForKey:anAttributeName] || 0) + anAmount;
+
+        if (newValue)
+            [_typingAttributes setObject:newValue forKey:anAttributeName];
+        else
+            [_typingAttributes removeObjectForKey:anAttributeName];
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+        return;
+    }
+
+    if (![self _beginCharacterAttributeChangeInRange:range])
+        return;
+
+    var location = range.location,
+        end = CPMaxRange(range);
+
+    while (location < end)
+    {
+        var effectiveRange = CPMakeRange(0, 0),
+            value = [_textStorage attribute:anAttributeName atIndex:location effectiveRange:effectiveRange] || 0,
+            runRange = CPIntersectionRange(effectiveRange, range),
+            newValue = value + anAmount;
+
+        if (!runRange.length)
+            runRange = CPMakeRange(location, end - location);
+
+        if (newValue)
+            [_textStorage addAttribute:anAttributeName value:newValue range:runRange];
+        else
+            [_textStorage removeAttribute:anAttributeName range:runRange];
+
+        location = CPMaxRange(runRange);
+    }
+
+    [self _endCharacterAttributeChangeInRange:range];
+}
+
+/* @ignore
+    Removes character attributes from the selection, or from the typing attributes when nothing
+    is selected.
+*/
+- (void)_removeCharacterAttributes:(CPArray)attributeNames
+{
+    var range = CPMakeRangeCopy(_selectionRange);
+
+    if (!range.length)
+    {
+        for (var i = 0; i < attributeNames.length; i++)
+            [_typingAttributes removeObjectForKey:attributeNames[i]];
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+        return;
+    }
+
+    if (![self _beginCharacterAttributeChangeInRange:range])
+        return;
+
+    for (var i = 0; i < attributeNames.length; i++)
+        [_textStorage removeAttribute:attributeNames[i] range:CPMakeRangeCopy(range)];
+
+    [self _endCharacterAttributeChangeInRange:range];
+}
+
+/* @ignore
+    Asks whether the change may happen, and registers undo for the attributes in aRange.
+*/
+- (BOOL)_beginCharacterAttributeChangeInRange:(CPRange)aRange
+{
+    if (![self isEditable] || ![self isRichText] || ![self shouldChangeTextInRange:aRange replacementString:nil])
+        return NO;
+
+    // Undo restores the text's previous attributes, and registers the reverse for redo.
+    [[[self _registeringUndoManager] prepareWithInvocationTarget:self]
+                _replaceCharactersInRange:CPMakeRangeCopy(aRange)
+                     withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]
+                           selectionRange:CPMakeRangeCopy(_selectionRange)];
+
+    return YES;
+}
+
+/* @ignore
+    Lays the changed text out again and shows it.
+*/
+- (void)_endCharacterAttributeChangeInRange:(CPRange)aRange
+{
+    [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(aRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(aRange)];
+    [_layoutManager _validateLayoutAndGlyphs];
+    [self sizeToFit];
+    [self setNeedsDisplay:YES];
+    [self didChangeText];
 }
 
 - (void)alignLeft:(id)sender
