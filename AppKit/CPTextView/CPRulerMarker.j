@@ -37,7 +37,7 @@
     Distance, in points, that the pointer must move beyond the ruler before a removable
     marker is removed when it is released.
 */
-var CPRulerMarkerRemovalDistance = 16.0;
+var CPRulerMarkerRemovalDistance = 0.0;
 
 /*!
     @ingroup appkit
@@ -66,6 +66,8 @@ var CPRulerMarkerRemovalDistance = 16.0;
 
     float           _trackingStartLocation;
     float           _trackingStartPoint;
+    float           _trackingStartCrossPoint;
+    float           _trackingCrossOffset;
     BOOL            _trackingIsAdding;
     BOOL            _trackingMoved;
 }
@@ -164,10 +166,13 @@ var CPRulerMarkerRemovalDistance = 16.0;
         baseline = [_ruler baselineLocation];
 
     // Whole-point positions keep every marker image sharp and identical, wherever it lies on the ruler.
-    if ([_ruler orientation] === CPHorizontalRuler)
-        return CGRectMake(ROUND(point - _imageOrigin.x), ROUND(baseline - _imageOrigin.y), imageSize.width, imageSize.height);
+    // While the user drags the marker outward, it follows the pointer across the ruler.
+    var crossPosition = baseline + (_isDragging ? _trackingCrossOffset : 0.0);
 
-    return CGRectMake(ROUND(baseline - _imageOrigin.x), ROUND(point - _imageOrigin.y), imageSize.width, imageSize.height);
+    if ([_ruler orientation] === CPHorizontalRuler)
+        return CGRectMake(ROUND(point - _imageOrigin.x), ROUND(crossPosition - _imageOrigin.y), imageSize.width, imageSize.height);
+
+    return CGRectMake(ROUND(crossPosition - _imageOrigin.x), ROUND(point - _imageOrigin.y), imageSize.width, imageSize.height);
 }
 
 /*!
@@ -286,7 +291,9 @@ var CPRulerMarkerRemovalDistance = 16.0;
 
     CGContextSaveGState(context);
 
-    if (_isOffRuler)
+    // Off the ruler's outer edge the marker follows the pointer and is clipped by the ruler.
+    // Off its inner edge it stays on its line, so it is drawn faded instead.
+    if (_isOffRuler && _trackingCrossOffset === 0.0)
         CGContextSetAlpha(context, 0.4);
 
     CGContextDrawImage(context, imageRect, _image);
@@ -320,6 +327,8 @@ var CPRulerMarkerRemovalDistance = 16.0;
     _trackingMoved = NO;
     _trackingStartLocation = _markerLocation;
     _trackingStartPoint = [self _axisPointForEvent:anEvent];
+    _trackingStartCrossPoint = [self _crossPointForEvent:anEvent];
+    _trackingCrossOffset = 0.0;
     _isDragging = YES;
     _isOffRuler = NO;
 
@@ -351,6 +360,10 @@ var CPRulerMarkerRemovalDistance = 16.0;
         _trackingMoved = YES;
         _isOffRuler = [self _isEventOffRuler:anEvent] && (_trackingIsAdding || _isRemovable);
 
+        // As in Cocoa, the marker stays on its line while the pointer is on the ruler, and follows
+        // the pointer out over the ruler's outer edge, where the ruler clips it.
+        _trackingCrossOffset = (_trackingIsAdding || _isRemovable) ? MIN(0.0, [self _crossPointForEvent:anEvent] - _trackingStartCrossPoint) : 0.0;
+
         if (_trackingIsAdding || _isMovable)
         {
             var proposedLocation = _trackingStartLocation + [self _axisPointForEvent:anEvent] - _trackingStartPoint;
@@ -375,6 +388,8 @@ var CPRulerMarkerRemovalDistance = 16.0;
         return;
 
     var wasOffRuler = _isOffRuler;
+
+    _trackingCrossOffset = 0.0;
 
     _isDragging = NO;
     _isOffRuler = NO;
@@ -404,6 +419,14 @@ var CPRulerMarkerRemovalDistance = 16.0;
     }
 
     [_ruler setNeedsDisplay:YES];
+}
+
+/* @ignore */
+- (float)_crossPointForEvent:(CPEvent)anEvent
+{
+    var point = [_ruler convertPoint:[anEvent locationInWindow] fromView:nil];
+
+    return [_ruler orientation] === CPHorizontalRuler ? point.y : point.x;
 }
 
 /* @ignore */
