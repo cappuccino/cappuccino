@@ -84,6 +84,8 @@
 @import "CPRadio.j"
 @import "CPResponder.j"
 @import "CPRuleEditor.j"
+@import "CPRulerMarker.j"
+@import "CPRulerView.j"
 @import "CPScroller.j"
 @import "CPScrollView.j"
 @import "CPSearchField.j"
