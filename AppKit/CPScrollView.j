@@ -878,7 +878,10 @@ Notifies the delegate when the scroll view has finished scrolling.
     _horizontalRuler = aRulerView;
 
     if (_horizontalRuler)
+    {
+        [_horizontalRuler setScrollView:self];
         [self addSubview:_horizontalRuler];
+    }
 
     [self tile];
 }
@@ -897,7 +900,10 @@ Notifies the delegate when the scroll view has finished scrolling.
     _verticalRuler = aRulerView;
 
     if (_verticalRuler)
+    {
+        [_verticalRuler setScrollView:self];
         [self addSubview:_verticalRuler];
+    }
 
     [self tile];
 }
@@ -1280,8 +1286,8 @@ Notifies the delegate when the scroll view has finished scrolling.
     var showHorizontalRuler = _rulersVisible && _hasHorizontalRuler && _horizontalRuler,
         showVerticalRuler = _rulersVisible && _hasVerticalRuler && _verticalRuler;
 
-    var horizRulerThickness = showHorizontalRuler ? ([_horizontalRuler respondsToSelector:@selector(ruleThickness)] ? [_horizontalRuler ruleThickness] : 16.0) : 0.0,
-        vertRulerThickness = showVerticalRuler ? ([_verticalRuler respondsToSelector:@selector(ruleThickness)] ? [_verticalRuler ruleThickness] : 24.0) : 0.0;
+    var horizRulerThickness = showHorizontalRuler ? [_horizontalRuler requiredThickness] : 0.0,
+        vertRulerThickness = showVerticalRuler ? [_verticalRuler requiredThickness] : 0.0;
 
     if (showHorizontalRuler)
     {
@@ -1428,10 +1434,7 @@ Notifies the delegate when the scroll view has finished scrolling.
             horizRulerThickness
         )];
         
-        if ([_horizontalRuler respondsToSelector:@selector(updateRuler)])
-            [_horizontalRuler updateRuler];
-        else
-            [_horizontalRuler setNeedsDisplay:YES];
+        [_horizontalRuler setNeedsDisplay:YES];
     }
 
     if (showVerticalRuler)
@@ -1443,10 +1446,7 @@ Notifies the delegate when the scroll view has finished scrolling.
             CGRectGetHeight(contentFrame)
         )];
         
-        if ([_verticalRuler respondsToSelector:@selector(updateRuler)])
-            [_verticalRuler updateRuler];
-        else
-            [_verticalRuler setNeedsDisplay:YES];
+        [_verticalRuler setNeedsDisplay:YES];
     }
 
     --_recursionCount;
