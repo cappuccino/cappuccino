@@ -74753,7 +74753,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void"])]);
 }
-p;12;CPTextView.jt;262335;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;17;CPTextContainer.ji;13;CPRulerView.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;262099;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
+p;12;CPTextView.jt;268695;@STATIC;1.0;i;8;CPText.ji;14;CPPasteboard.ji;14;CPColorPanel.ji;15;CPFontManager.ji;15;CPTextStorage.ji;17;CPLayoutManager.ji;18;CPParagraphStyle.ji;17;CPTextContainer.ji;13;CPRulerView.ji;14;_CPRTFParser.ji;16;_CPRTFProducer.jt;268459;objj_executeFile("CPText.j", YES);objj_executeFile("CPPasteboard.j", YES);objj_executeFile("CPColorPanel.j", YES);objj_executeFile("CPFontManager.j", YES);objj_executeFile("CPTextStorage.j", YES);objj_executeFile("CPLayoutManager.j", YES);objj_executeFile("CPParagraphStyle.j", YES);objj_executeFile("CPTextContainer.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("_CPRTFParser.j", YES);objj_executeFile("_CPRTFProducer.j", YES);;
 ;
 ;
 ;
@@ -75407,6 +75407,10 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
         return (self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText");
     if (action === sel_getUid("pasteRuler:"))
         return (self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText") && (self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable") && !!((___r1 = (CPPasteboard.isa.method_msgSend["pasteboardWithName:"] || _objj_forward)(CPPasteboard, "pasteboardWithName:", CPRulerPboard)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["availableTypeFromArray:"] || _objj_forward)(___r1, "availableTypeFromArray:", [CPRulerPboardType]));
+    if (action === sel_getUid("copyFont:"))
+        return (self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText");
+    if (action === sel_getUid("pasteFont:"))
+        return (self.isa.method_msgSend["isRichText"] || _objj_forward)(self, "isRichText") && (self.isa.method_msgSend["isEditable"] || _objj_forward)(self, "isEditable") && !!((___r1 = (CPPasteboard.isa.method_msgSend["pasteboardWithName:"] || _objj_forward)(CPPasteboard, "pasteboardWithName:", CPFontPboard)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["availableTypeFromArray:"] || _objj_forward)(___r1, "availableTypeFromArray:", [CPFontPboardType]));
     if (action === sel_getUid("toggleRuler:"))
     {
         if ((anItem == null ? anItem : (anItem.isa.method_msgSend["respondsToSelector:"] || _objj_forward)(anItem, "respondsToSelector:", sel_getUid("setTitle:"))))
@@ -76509,7 +76513,68 @@ class_addMethods(the_class, [new objj_method(sel_getUid("allowsUndo"), function 
     var ___r1;
 }
 
-,["void","id"]), new objj_method(sel_getUid("superscript:"), function $CPTextView__superscript_(self, _cmd, aSender)
+,["void","id"]), new objj_method(sel_getUid("copyFont:"), function $CPTextView__copyFont_(self, _cmd, aSender)
+{
+    var attributes = self._selectionRange.length ? ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attributesAtIndex:effectiveRange:"] || _objj_forward)(___r1, "attributesAtIndex:effectiveRange:", self._selectionRange.location, nil)) : self._typingAttributes,
+        pasteboard = (CPPasteboard.isa.method_msgSend["pasteboardWithName:"] || _objj_forward)(CPPasteboard, "pasteboardWithName:", CPFontPboard);
+    (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["declareTypes:owner:"] || _objj_forward)(pasteboard, "declareTypes:owner:", [CPFontPboardType], nil));
+    (pasteboard == null ? pasteboard : (pasteboard.isa.method_msgSend["setData:forType:"] || _objj_forward)(pasteboard, "setData:forType:", (CPKeyedArchiver.isa.method_msgSend["archivedDataWithRootObject:"] || _objj_forward)(CPKeyedArchiver, "archivedDataWithRootObject:", (self.isa.method_msgSend["_characterStyleFromAttributes:"] || _objj_forward)(self, "_characterStyleFromAttributes:", attributes)), CPFontPboardType));
+    var ___r1;
+}
+
+,["void","id"]), new objj_method(sel_getUid("pasteFont:"), function $CPTextView__pasteFont_(self, _cmd, aSender)
+{
+    var data = ((___r1 = (CPPasteboard.isa.method_msgSend["pasteboardWithName:"] || _objj_forward)(CPPasteboard, "pasteboardWithName:", CPFontPboard)), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["dataForType:"] || _objj_forward)(___r1, "dataForType:", CPFontPboardType));
+    if (!data)
+        return;
+    var characterStyle = (CPKeyedUnarchiver.isa.method_msgSend["unarchiveObjectWithData:"] || _objj_forward)(CPKeyedUnarchiver, "unarchiveObjectWithData:", data),
+        range = CPMakeRangeCopy(self._selectionRange);
+    if (!range.length)
+    {
+        var typingAttributes = (characterStyle == null ? characterStyle : (characterStyle.isa.method_msgSend["mutableCopy"] || _objj_forward)(characterStyle, "mutableCopy")),
+            paragraphStyle = ((___r1 = self._typingAttributes), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["objectForKey:"] || _objj_forward)(___r1, "objectForKey:", CPParagraphStyleAttributeName));
+        if (paragraphStyle)
+            (typingAttributes == null ? typingAttributes : (typingAttributes.isa.method_msgSend["setObject:forKey:"] || _objj_forward)(typingAttributes, "setObject:forKey:", paragraphStyle, CPParagraphStyleAttributeName));
+        (self.isa.method_msgSend["setTypingAttributes:"] || _objj_forward)(self, "setTypingAttributes:", typingAttributes);
+        return;
+    }
+    if (!(self.isa.method_msgSend["_beginCharacterAttributeChangeInRange:"] || _objj_forward)(self, "_beginCharacterAttributeChangeInRange:", range))
+        return;
+    var location = range.location,
+        end = CPMaxRange(range);
+    while (location < end)
+    {
+        var effectiveRange = CPMakeRange(0, 0),
+            runAttributes = ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["attributesAtIndex:effectiveRange:"] || _objj_forward)(___r1, "attributesAtIndex:effectiveRange:", location, effectiveRange)),
+            runRange = CPIntersectionRange(effectiveRange, range),
+            newAttributes = (characterStyle == null ? characterStyle : (characterStyle.isa.method_msgSend["mutableCopy"] || _objj_forward)(characterStyle, "mutableCopy")),
+            keptKeys = [CPParagraphStyleAttributeName, CPAttachmentAttributeName, _CPAttachmentView, _CPAttachmentInvisible];
+        if (!runRange.length)
+            runRange = CPMakeRange(location, end - location);
+        for (var i = 0; i < keptKeys.length; i++)
+        {
+            var value = (runAttributes == null ? runAttributes : (runAttributes.isa.method_msgSend["objectForKey:"] || _objj_forward)(runAttributes, "objectForKey:", keptKeys[i]));
+            if (value)
+                (newAttributes == null ? newAttributes : (newAttributes.isa.method_msgSend["setObject:forKey:"] || _objj_forward)(newAttributes, "setObject:forKey:", value, keptKeys[i]));
+        }
+        ((___r1 = self._textStorage), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setAttributes:range:"] || _objj_forward)(___r1, "setAttributes:range:", newAttributes, runRange));
+        location = CPMaxRange(runRange);
+    }
+    (self.isa.method_msgSend["_endCharacterAttributeChangeInRange:"] || _objj_forward)(self, "_endCharacterAttributeChangeInRange:", range);
+    var ___r1;
+}
+
+,["void","id"]), new objj_method(sel_getUid("_characterStyleFromAttributes:"), function $CPTextView___characterStyleFromAttributes_(self, _cmd, someAttributes)
+{
+    var characterStyle = (someAttributes == null ? someAttributes : (someAttributes.isa.method_msgSend["mutableCopy"] || _objj_forward)(someAttributes, "mutableCopy")) || (CPDictionary.isa.method_msgSend["dictionary"] || _objj_forward)(CPDictionary, "dictionary");
+    (characterStyle == null ? characterStyle : (characterStyle.isa.method_msgSend["removeObjectForKey:"] || _objj_forward)(characterStyle, "removeObjectForKey:", CPParagraphStyleAttributeName));
+    (characterStyle == null ? characterStyle : (characterStyle.isa.method_msgSend["removeObjectForKey:"] || _objj_forward)(characterStyle, "removeObjectForKey:", CPAttachmentAttributeName));
+    (characterStyle == null ? characterStyle : (characterStyle.isa.method_msgSend["removeObjectForKey:"] || _objj_forward)(characterStyle, "removeObjectForKey:", _CPAttachmentView));
+    (characterStyle == null ? characterStyle : (characterStyle.isa.method_msgSend["removeObjectForKey:"] || _objj_forward)(characterStyle, "removeObjectForKey:", _CPAttachmentInvisible));
+    return characterStyle;
+}
+
+,["CPDictionary","CPDictionary"]), new objj_method(sel_getUid("superscript:"), function $CPTextView__superscript_(self, _cmd, aSender)
 {
     (self.isa.method_msgSend["_changeCharacterAttribute:byAmount:"] || _objj_forward)(self, "_changeCharacterAttribute:byAmount:", CPSuperscriptAttributeName, 1);
 }
