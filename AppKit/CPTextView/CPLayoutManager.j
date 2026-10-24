@@ -1541,11 +1541,19 @@ var _objectsInRange = function(aList, aRange)
 
         if (verticalOffset)
         {
+            // An attachment view is moved through setFrameOrigin:, which also moves it on the
+            // screen. Changing its frame directly would leave it in place, because the next draw's
+            // setFrameOrigin: would then find it already at the new origin and do nothing.
             if (_runs[i].view)
-                _runs[i].view._frame.origin.y += verticalOffset;
+            {
+                var viewOrigin = [_runs[i].view frameOrigin];
 
-            if (_runs[i].elem)
-                _runs[i].elem.top = (_runs[i].elem.top + verticalOffset) + 'px';
+                [_runs[i].view setFrameOrigin:CGPointMake(viewOrigin.x, viewOrigin.y + verticalOffset)];
+            }
+
+            // A span that has been placed moves with its line. One that has not is placed when drawn.
+            if (_runs[i].elem && _runs[i].elem.style.top)
+                _runs[i].elem.style.top = (parseFloat(_runs[i].elem.style.top) + verticalOffset) + 'px';
 
             _runs[i].DOMpatched = YES;
         }
