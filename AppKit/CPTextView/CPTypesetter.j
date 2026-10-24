@@ -49,7 +49,23 @@ CPTypesetterParagraphBreakAction  = 1 << 4;
 CPTypesetterContainerBreakAction  = 1 << 5;
 
 var CPSystemTypesetterFactory,
-    _sharedSimpleTypesetter;
+    _sharedSimpleTypesetter,
+    _CPTypesetterCachedDecimalSeparator = nil;
+
+/*
+    Returns the decimal separator of the user's locale, which a decimal tab stop aligns on.
+*/
+var _CPTypesetterDecimalSeparator = function()
+{
+    if (!_CPTypesetterCachedDecimalSeparator)
+    {
+        var formatted = (1.5).toLocaleString();
+
+        _CPTypesetterCachedDecimalSeparator = formatted.length === 3 ? formatted.charAt(1) : @".";
+    }
+
+    return _CPTypesetterCachedDecimalSeparator;
+};
 
 @implementation CPTypesetter : CPObject
 
@@ -478,7 +494,16 @@ var CPSystemTypesetterFactory,
                         tabAlignment = [nextTab alignment];
 
                     // Mathematically offset the tab character's right boundary
-                    if (tabAlignment === CPCenterTextAlignment)
+                    if ([nextTab tabStopType] === CPDecimalTabStopType)
+                    {
+                        // As in Cocoa, the first decimal separator of the user's locale starts at the stop.
+                        // A segment without one ends at the stop, like a right tab.
+                        var separatorIndex = segmentString.indexOf(_CPTypesetterDecimalSeparator()),
+                            widthBeforeSeparator = separatorIndex === -1 ? nextSegmentWidth : [segmentString.substring(0, separatorIndex) sizeWithFont:currentFont inWidth:NULL].width;
+
+                        rangeWidth = (tabLocation - widthBeforeSeparator) - lineOrigin.x;
+                    }
+                    else if (tabAlignment === CPCenterTextAlignment)
                     {
                         rangeWidth = (tabLocation - nextSegmentWidth / 2.0) - lineOrigin.x;
                     }

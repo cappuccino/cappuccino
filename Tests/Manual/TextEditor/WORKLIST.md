@@ -61,6 +61,7 @@ TextEditor is a document-based test application and a tutorial. When the app use
 - The Window menu lists the open document windows, marks the main window with a check mark and brings a window to the front when chosen. Bring All to Front can be tested once documents open in separate browser windows.
 - The About panel shows the display name from `CPBundleDisplayName`.
 - Edit > Allow Undo turns undo on and off for the active document. With undo off, Undo and Redo stay disabled, and the check mark follows the document in front.
-- The ruler: markers follow the paragraph at the selection; first line, head and right indents change the layout as shown; clicking adds a tab stop, and dragging moves or removes one; the Control-click menu on a tab stop appears (its effect is not yet verified, for lack of tabbed text); the ruler's zero lines up with the start of the text, and markers at 0 are fully visible.
+- The ruler: markers follow the paragraph at the selection; first line, head and right indents change the layout as shown; clicking adds a tab stop, and dragging moves or removes one; the Control-click menu changes a tab stop's type; the ruler's zero lines up with the start of the text, and markers at 0 are fully visible.
 - Text stays inside the visible width, with Cocoa's 5-point line fragment padding.
+- Tab characters: the Tab key inserts a tab in the text view, and left, centre, right and decimal tab stops align their columns.
 - Builds with both the legacy toolchain and capp-build.
