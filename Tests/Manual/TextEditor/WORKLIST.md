@@ -91,4 +91,5 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 - Copy and paste within TextEditor with Command-C and Command-V, in one document and between documents: images, tables, including text edited in their cells, and lists are kept.
 - Table cells can be edited, as a first pass.
 - Pasting text with several images and a table: the table appears in place at once, and tables, images and text below a change move with their lines.
+- A table wider than the text stays on its own line below the text before it when the window is narrowed, and is clipped at the right edge, without a horizontal scroll bar, as in Cocoa when text wraps to the window.
 - Builds with both the legacy toolchain and capp-build.
