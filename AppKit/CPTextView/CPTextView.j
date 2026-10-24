@@ -210,6 +210,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self _init];
         [aContainer setTextView:self];
 
+        // Fit a container that tracks the text view's size inside the text container inset.
+        [aContainer textViewFrameChanged:nil];
+
         [self setEditable:YES];
         [self setSelectable:YES];
         [self setRichText:NO];
@@ -812,6 +815,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     _textContainerInset = aSize;
     [self invalidateTextContainerOrigin];
+
+    // A container that tracks the text view's size must shrink or grow with the new inset.
+    [_textContainer textViewFrameChanged:nil];
 }
 
 - (void)invalidateTextContainerOrigin

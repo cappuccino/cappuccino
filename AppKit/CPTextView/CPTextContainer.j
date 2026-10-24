@@ -193,13 +193,16 @@ CPLineMovesUp = 4;
 
 - (void)textViewFrameChanged:(CPNotification)aNotification
 {
-    var newSize = CGSizeMake(_size.width, _size.height);
+    // As in Cocoa, a tracking container fills the text view inside its text container inset on both sides.
+    var newSize = CGSizeMake(_size.width, _size.height),
+        frameSize = [_textView frame].size,
+        inset = [_textView textContainerInset];
 
     if (_widthTracksTextView)
-        newSize.width = [_textView frame].size.width;
+        newSize.width = MAX(0.0, frameSize.width - 2.0 * inset.width);
 
     if (_heightTracksTextView)
-        newSize.height = [_textView frame].size.height;
+        newSize.height = MAX(0.0, frameSize.height - 2.0 * inset.height);
 
     [self setContainerSize:newSize];
 }
