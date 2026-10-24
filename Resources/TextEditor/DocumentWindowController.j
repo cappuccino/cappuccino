@@ -73,15 +73,16 @@ var DocumentWindowMinimumWidth  = 360.0,
         A ruler is not a separate control. It belongs to the scroll view that
         encloses the text view, and the text view keeps its markers in step
         with the tab stops and indents of the paragraph at the selection.
+        setRulerVisible: asks the text view to show the ruler, and the
+        Format menu's Show Ruler item sends toggleRuler: to hide or show it
+        again.
 
-        In Interface Builder the text view's "Uses Ruler" setting turns this
-        on, but nib2cib does not yet carry the ruler settings into the cib,
-        so the ruler is set up here in code.
+        In Interface Builder the text view's "Uses Ruler" setting decides
+        whether the text view may show a ruler at all, but nib2cib does not
+        yet carry the ruler settings into the cib, so the ruler is shown here
+        in code.
     */
-    var scrollView = [textView enclosingScrollView];
-
-    [scrollView setHasHorizontalRuler:YES];
-    [scrollView setRulersVisible:YES];
+    [textView setRulerVisible:YES];
 }
 
 /*!
