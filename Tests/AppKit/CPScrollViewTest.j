@@ -28,6 +28,64 @@
     [[scrollView verticalScroller] layoutSubviews];
 }
 
+- (void)testMagnification
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 300.0, 200.0)],
+        documentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 300.0, 600.0)];
+
+    [documentView setAutoresizingMask:CPViewWidthSizable];
+    [scrollView setDocumentView:documentView];
+
+    [self assert:1.0 equals:[scrollView magnification]];
+
+    [scrollView setMagnification:2.0];
+    [self assert:2.0 equals:[scrollView magnification]];
+    [self assert:CGRectGetWidth([[scrollView contentView] bounds]) equals:CGRectGetWidth([documentView frame]) message:@"a document view that resizes its width takes the clip view's bounds width"];
+
+    [scrollView setMagnification:0.5];
+    [self assert:0.5 equals:[scrollView magnification]];
+
+    [scrollView setMagnification:10.0];
+    [self assert:[scrollView maxMagnification] equals:[scrollView magnification] message:@"the magnification is limited to the maximum"];
+
+    [scrollView setMagnification:1.0];
+    [self assert:1.0 equals:[scrollView magnification]];
+    [self assert:CGRectGetWidth([[scrollView contentView] frame]) equals:CGRectGetWidth([[scrollView contentView] bounds])];
+}
+
+- (void)testMagnificationArchiving
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 300.0, 200.0)];
+
+    [scrollView setAllowsMagnification:YES];
+    [scrollView setMinMagnification:0.5];
+    [scrollView setMaxMagnification:3.0];
+
+    var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:scrollView]];
+
+    [self assertTrue:[decoded allowsMagnification]];
+    [self assert:0.5 equals:[decoded minMagnification]];
+    [self assert:3.0 equals:[decoded maxMagnification]];
+}
+
+- (void)testMagnificationDecodingWithoutValidLimits
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 300.0, 200.0)];
+
+    // An archive made from a scroll view whose limits were never set, as nib2cib made before it
+    // set them, holds values that are not numbers.
+    scrollView._minMagnification = undefined;
+    scrollView._maxMagnification = undefined;
+
+    var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:scrollView]];
+
+    [self assert:0.25 equals:[decoded minMagnification]];
+    [self assert:4.0 equals:[decoded maxMagnification]];
+
+    [decoded setMagnification:0.5];
+    [self assert:0.5 equals:[decoded magnification]];
+}
+
 - (void)testBothScrollersVisible
 {
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];

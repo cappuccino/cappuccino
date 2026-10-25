@@ -15,9 +15,9 @@ TextEditor is a document-based test application and a tutorial. When the app use
 
 ### Text features not yet supported
 
-- **Images in text are not fully tested or complete.** `CPTextAttachment` holds an image as one attachment character, and Edit > Insert Image… and Command-V with an image on the clipboard insert images. Not yet tested: several images inserted at once, copying, pasting and undoing an image within the document, and pasting a screenshot. Not yet implemented: dropping image files on the text view, which needs file access in the drag pasteboard (`_CPDOMDataTransferPasteboard`); pasting images with Edit > Paste from the menu, which reads plain text only; and RTF `\pict` and Markdown `![]()`, so an image is lost when text is copied to another application as RTF.
-- **Tables can only be inserted from Markdown, and are not yet tested interactively.** The only source of tables is CPMarkdownParser, which builds the private `_CPTableTextAttachment`, a view in the text whose cells are text views of their own. Edit > Insert Table Example inserts a sample through it. Not yet tested: editing in a cell and what Tab does there, deleting the table and undoing, copying and pasting it within the document, narrowing the window, and Format menu commands while a cell is being edited. Known from the code: the table has no archiving, so copying it within the application may fail; nothing calls its `resizeToWidth:`, so it keeps its width of 500 points; and in the sample its right edge and the last row's bottom border are not drawn. A command to insert a table, with a fixed default size and no options, waits on these results.
-- **Lists are not read from or written to RTF.** `CPTextList` and `textLists` in `CPParagraphStyle` now exist, but the RTF parser and producer do not handle `\listtable`, `\listoverridetable`, `\ls` and `\ilvl`. A list copied as RTF keeps its marker text and indents, but loses its list structure. CPMarkdownParser also writes "- item" as the literal text "  • item", with no list.
+- **Images in text are not fully tested or complete.** `CPTextAttachment` holds an image as one attachment character, and Edit > Insert Image… and Command-V with an image on the clipboard insert images. Not yet tested: several images inserted at once, undoing an image change, and pasting a screenshot. Not yet implemented: dropping image files on the text view, which needs file access in the drag pasteboard (`_CPDOMDataTransferPasteboard`); pasting images with Edit > Paste from the menu, which reads plain text only; and RTF `\pict` and Markdown `![]()`, so an image is lost when text is copied to another application as RTF.
+- **Tables can only be inserted from Markdown, and are not yet tested interactively.** The only source of tables is CPMarkdownParser, which builds the private `_CPTableTextAttachment`, a view in the text whose cells are text views of their own. Edit > Insert Table Example inserts a sample through it. Not yet tested: what Tab does in a cell, deleting the table and undoing, narrowing the window, and Format menu commands while a cell is being edited. Known from the code: nothing calls its `resizeToWidth:`, so it keeps its width of 500 points; and in the sample its right edge and the last row's bottom border are not drawn. A command to insert a table, with a fixed default size and no options, waits on these results.
+- **Rich text does not reach native applications.** The RTF producer and parser now handle lists (`\listtable`, `\listoverridetable`, `\ls`, `\ilvl`, and Cocoa's `\levelmarker`), Unicode (`\uN`) and the first line indent as an offset from the left indent, and the unit tests round-trip them. But browsers do not put `text/rtf` from a page's clipboard event on the system clipboard in a form native applications read: text copied from TextEditor with Command-C reaches native TextEdit as plain text. RTF on the clipboard works only between Cappuccino applications in the same browser. Rich text for native applications needs an HTML producer (`text/html`) for the subset the text view makes. Not yet tested: what arrives from native TextEdit with Command-V, in each browser. RTF `\pict` is not implemented. CPMarkdownParser also writes "- item" as the literal text "  • item", with no list.
 
 ### Text view
 
@@ -29,6 +29,15 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 ### Ruler
 
 - **Marker appearance and vertical alignment differ from TextEdit.** The marker images, and where markers sit across the ruler, are interim until Aristo3 supplies its own; adjust them to match TextEdit then. A tab stop dragged up off the ruler follows the pointer and is clipped by the ruler's edge, as in TextEdit. Dragged down off the ruler, it stays on its line and is drawn faded until release; TextEdit's behaviour in that direction has not been checked.
+
+### Zoom and view scaling
+
+View > Zoom Level, Zoom In, Zoom Out and Actual Size set the magnification of the document's scroll view, which scales its clip view's bounds. Zoom exercises CPView's scaling through the whole view hierarchy, so it is the test for scaling defects, below and above 100%. Found in the first test, under Aristo2:
+
+- **The ruler ignores the magnification.** Its tab stop markers follow the scaled text, but its scale and labels stay at 100%, so markers and units disagree. In Cocoa the ruler scales its units with the scroll view's magnification.
+- **Autoresizing uses frame sizes, not bounds sizes.** `-[CPView resizeWithOldSuperviewSize:]` resizes a subview by the change in its superview's frame size, but a subview lives in its superview's bounds coordinates. Cocoa uses the bounds size. Under magnification, an autoresized subview changes by the wrong amount: above 100%, the text became wider than the window after it was resized.
+- **Below 100%, a few points are cut off at the left.** The first letter of some lines is missing.
+- **Below 100%, a grey band shows below the text.** The text view is only as tall as its text, and the clip view's background shows below it. Cocoa draws the document's background there.
 
 ### nib2cib
 
@@ -88,4 +97,9 @@ How the text system works, for the entries below: `CPTextView` does not use CSS 
 - A wide image fits the text width, and scales with the window without growing beyond its natural size. At the end of the text it is not clipped, and the scroll bars follow it.
 - Format > Font > Bigger and Smaller (Command-+ and Command--) without a selection change the size of the text typed next, step by step, also in a blank document.
 - Edit > Insert Table Example: the sample table appears between the surrounding sentences, with its header row and its bold and italic cells.
+- Copy and paste within TextEditor with Command-C and Command-V, in one document and between documents: images, tables, including text edited in their cells, and lists are kept.
+- Table cells can be edited, as a first pass.
+- Pasting text with several images and a table: the table appears in place at once, and tables, images and text below a change move with their lines.
+- A table wider than the text stays on its own line below the text before it when the window is narrowed, and is clipped at the right edge, without a horizontal scroll bar, as in Cocoa when text wraps to the window.
+- View > Zoom Level, Zoom In, Zoom Out and Actual Size change the magnification below and above 100%, in the source app and in the build product; text, tables and images stay together at every level.
 - Builds with both the legacy toolchain and capp-build.

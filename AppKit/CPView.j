@@ -2659,14 +2659,25 @@ setBoundsOrigin:
 */
 - (void)_applyCSSScalingTranformations
 {
-    if (CPDOMAvailable && _isScaled)
+    if (!CPDOMAvailable)
+        return;
+
+    var browserPropertyTransform = CPBrowserStyleProperty(@"transform");
+
+    if (_isScaled)
     {
         var scale = [self scaleSize],
-            browserPropertyTransform = CPBrowserStyleProperty(@"transform"),
             browserPropertyTransformOrigin = CPBrowserStyleProperty(@"transformOrigin");
 
         self._DOMElement.style[browserPropertyTransform] = 'scale(' + scale.width + ', ' + scale.height + ')';
         self._DOMElement.style[browserPropertyTransformOrigin] = '0 0';
+
+        [self _setDisplayServerSetStyleSize:[self frameSize]];
+    }
+    else if (self._DOMElement.style[browserPropertyTransform])
+    {
+        // A view whose scale has returned to 1.0 drops the scale it was drawn with.
+        self._DOMElement.style[browserPropertyTransform] = '';
 
         [self _setDisplayServerSetStyleSize:[self frameSize]];
     }

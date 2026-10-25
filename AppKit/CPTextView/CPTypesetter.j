@@ -510,6 +510,16 @@ var _CPTypesetterDecimalSeparator = function()
                 if (viewSize.height > _lineHeight)
                     _lineHeight = viewSize.height - descent + leading;
 
+                // An attachment wider than the container stays on the line it overflows, so a break
+                // there keeps the line's height and baseline with the attachment's size applied.
+                // Otherwise the attachment would be placed on the baseline of the text before it,
+                // and drawn above its line.
+                if (CPMaxRange(wrapRange) === CPMaxRange(lineRange))
+                {
+                    wrapRange._height = _lineHeight;
+                    wrapRange._base = _lineBase;
+                }
+
                 ascent = viewSize.height;
                 break;
             }
