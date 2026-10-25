@@ -64,8 +64,6 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
 @end
 
-#pragma mark -
-
 @implementation CPButtonBar : CPView
 {
     CPArray             _buttons;
@@ -103,8 +101,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     BOOL               _resizeControlIsLeftAligned;
 }
 
-#pragma mark -
-#pragma mark Class methods
+// Class methods
 
 + (CPString)defaultThemeClass
 {
@@ -165,8 +162,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     return [[CPButtonBar _sharedDummyButtonBar] actionPopupButton];
 }
 
-#pragma mark -
-#pragma mark Buttons constructors
+//  Buttons constructors
 
 - (id)buttonWithImage:(CPImage)image alternateImage:(CPImage)alternateImage
 {
@@ -263,8 +259,8 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     return [[_CPButtonBarAdaptativeLabel alloc] initWithTitle:aTitle];
 }
 
-#pragma mark -
-#pragma mark Backward compatibility
+//  -
+//  Backward compatibility
 
 - (id)plusButton
 {
@@ -281,8 +277,8 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     return [self pulldownButtonWithTemplateImage:CPActionTemplateImage];
 }
 
-#pragma mark -
-#pragma mark Initialization
+//  -
+//  Initialization
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -449,8 +445,8 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     }
 }
 
-#pragma mark -
-#pragma mark Properties
+//  -
+//  Properties
 
 - (void)setStyle:(CPButtonBarStyle)style
 {
@@ -738,8 +734,8 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     return _hasRightResizeControl;
 }
 
-#pragma mark -
-#pragma mark Layout
+//  -
+//  Layout
 
 - (CGRect)leftResizeControlFrame
 {
@@ -1006,8 +1002,8 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     [self setNeedsRelayout:YES];
 }
 
-#pragma mark -
-#pragma mark Delegate
+//  -
+//  Delegate
 
 - (id)delegate
 {
@@ -1040,8 +1036,8 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
 @end
 
-#pragma mark -
-#pragma mark CPCoding
+//  -
+//  CPCoding
 
 var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControlKey",
     CPButtonBarHasRightResizeControlKey      = @"CPButtonBarHasRightResizeControlKey",
@@ -1108,8 +1104,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @end
 
-#pragma mark -
-#pragma mark Adaptative Popup button
+//  -
+//  Adaptative Popup button
 
 @implementation _CPButtonBarAdaptativePopUpButton : CPPopUpButton
 {
@@ -1205,8 +1201,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @end
 
-#pragma mark -
-#pragma mark Adaptative PullDown button
+//  -
+//  Adaptative PullDown button
 
 @implementation _CPButtonBarAdaptativePullDownButton : CPPopUpButton
 {
@@ -1318,8 +1314,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @end
 
-#pragma mark -
-#pragma mark Menu item
+//  -
+//  Menu item
 
 @implementation _CPAdaptativeMenuItem : CPMenuItem
 {
@@ -1338,8 +1334,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @end
 
-#pragma mark -
-#pragma mark Separator
+//  -
+//  Separator
 
 @implementation _CPButtonBarSeparator : _CPImageAndTextView
 
@@ -1409,8 +1405,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @end
 
-#pragma mark -
-#pragma mark Flexible space
+//  -
+//  Flexible space
 
 @implementation _CPButtonBarFlexibleSpace : CPView
 
@@ -1464,8 +1460,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @end
 
-#pragma mark -
-#pragma mark Search field
+//  -
+//  Search field
 
 @implementation _CPButtonBarSearchField : CPSearchField
 {
@@ -1552,8 +1548,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @end
 
-#pragma mark -
-#pragma mark Button
+//  -
+//  Button
 
 @implementation _CPButtonBarButton : CPButton
 {
@@ -1619,8 +1615,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @end
 
-#pragma mark -
-#pragma mark Popup
+//  -
+//  Popup
 
 @implementation _CPButtonBarPopUpButton : CPPopUpButton
 {
@@ -1771,8 +1767,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @end
 
-#pragma mark -
-#pragma mark Adaptative Label
+//  -
+//  Adaptative Label
 
 @implementation _CPButtonBarAdaptativeLabel : CPTextField
 {
@@ -1840,8 +1836,7 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
 @end
 
-#pragma mark -
-#pragma mark Label
+//  Label
 
 @implementation _CPButtonBarLabel : CPTextField
 {

@@ -599,8 +599,8 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     return [_bodyView frame].origin.y;
 }
 
-#pragma mark -
-#pragma mark Hover management for buttons
+// pragma mark -
+// pragma mark Hover management for buttons
 
 - (void)updateTrackingAreas
 {
