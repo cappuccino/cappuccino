@@ -28,6 +28,7 @@
 @import "CPGraphics.j"
 @import "CPFontManager.j"
 @import "_CPTableTextAttachment.j"
+@import "CPTextList.j"
 
 @global CPForegroundColorAttributeName
 @global CPBackgroundColorAttributeName
@@ -57,6 +58,44 @@ var PAPERSIZE = @"PaperSize",
 
 function _points2twips(a) { return (a) * 20.0; }
 
+/*
+    Escapes text for RTF. Backslashes and braces are escaped, and every character outside ASCII
+    is written as a Unicode control word, \uN, with no fallback characters (\uc0), as Cocoa
+    writes it. Values above 32767 are written as negative numbers, as RTF requires.
+*/
+var _CPRTFEscapeUnicode = function(aString)
+{
+    return aString.replace(/[^\x00-\x7f]/g, function(aCharacter)
+    {
+        var code = aCharacter.charCodeAt(0);
+
+        return "\\uc0\\u" + (code > 32767 ? code - 65536 : code) + " ";
+    });
+};
+
+/*
+    Returns aNumber as two hexadecimal digits, for the \'hh escapes of a list level's text.
+*/
+var _CPRTFHexByte = function(aNumber)
+{
+    return ("0" + (aNumber & 0xff).toString(16)).slice(-2);
+};
+
+/*
+    The RTF number format (\levelnfc) of each marker format name. Bullets are 23. Hexadecimal and
+    octal have no RTF number format, so other readers show them as decimal numbers; Cocoa reads
+    the marker format itself from \levelmarker.
+*/
+var _CPRTFLevelNumberFormats = {
+        "decimal": 0,
+        "upper-roman": 1,
+        "lower-roman": 2,
+        "upper-alpha": 3,
+        "upper-latin": 3,
+        "lower-alpha": 4,
+        "lower-latin": 4
+    };
+
 @implementation _CPRTFProducer : CPObject
 {
     CPAttributedString  text;
@@ -68,6 +107,11 @@ function _points2twips(a) { return (a) * 20.0; }
     CPColor             fgColor;
     CPColor             bgColor;
     CPColor             ulColor;
+
+    // The outermost text lists in the text, each written as one RTF list, and for each, the text
+    // list of every level, as first met.
+    CPArray             textLists;
+    CPArray             textListLevels;
 }
 
 // MARK: -
@@ -94,6 +138,9 @@ function _points2twips(a) { return (a) * 20.0; }
 
         fgColor = [CPColor blackColor];
         bgColor= [CPColor whiteColor];
+
+        textLists = [];
+        textListLevels = [];
     }
 
     return self;
@@ -246,6 +293,7 @@ function _points2twips(a) { return (a) * 20.0; }
     result = [CPString stringWithString:@"{\\rtf1\\ansi"];
     result += [self fontTable];
     result += [self colorTable];
+    result += [self listTables];
     result += [self documentAttributes];
 
     return result;
@@ -313,7 +361,8 @@ function _points2twips(a) { return (a) * 20.0; }
             break;
     }
 
-    var twips = _points2twips([paraStyle firstLineHeadIndent]);
+    // In RTF the first line indent is an offset from the left indent.
+    var twips = _points2twips([paraStyle firstLineHeadIndent] - [paraStyle headIndent]);
 
     if (twips != 0.0)
         headerString += [CPString stringWithFormat:@"\\fi%d", twips];
@@ -375,12 +424,165 @@ function _points2twips(a) { return (a) * 20.0; }
         headerString += [CPString stringWithFormat:@"\\tx%d",_points2twips([tab location])];
     }
 
+    // A list item names its RTF list and its level.
+    var lists = [paraStyle textLists];
+
+    if ([lists count])
+        headerString += [CPString stringWithFormat:@"\\ls%d\\ilvl%d", [self listNumberForTextLists:lists], [lists count] - 1];
+
     return headerString;
+}
+
+// MARK: -
+// MARK: Text lists
+
+/*
+    Returns the number of the RTF list for a paragraph's text lists, and records the list of each
+    level. Each outermost text list becomes one RTF list, with one level for each nesting depth.
+*/
+- (int)listNumberForTextLists:(CPArray)someLists
+{
+    var index = [textLists indexOfObjectIdenticalTo:someLists[0]];
+
+    if (index === CPNotFound)
+    {
+        index = textLists.length;
+        textLists.push(someLists[0]);
+        textListLevels.push([]);
+    }
+
+    var levels = textListLevels[index];
+
+    for (var level = 0; level < someLists.length; level++)
+        if (!levels[level])
+            levels[level] = someLists[level];
+
+    return index + 1;
+}
+
+/*
+    Returns the list table and the list override table for the text lists in the text. Each RTF
+    list is a hybrid list with one level for each nesting depth, and one override, \lsN, that
+    paragraphs refer to.
+*/
+- (CPString)listTables
+{
+    if (!textLists.length)
+        return @"";
+
+    var listTable = @"{\\*\\listtable",
+        overrideTable = @"{\\*\\listoverridetable";
+
+    for (var i = 0; i < textLists.length; i++)
+    {
+        var listNumber = i + 1,
+            levels = textListLevels[i];
+
+        listTable += "{\\list\\listtemplateid" + listNumber + "\\listhybrid";
+
+        for (var level = 0; level < levels.length; level++)
+            listTable += [self listLevelString:levels atLevel:level templateID:listNumber * 100 + level + 1];
+
+        listTable += "{\\listname ;}\\listid" + listNumber + "}";
+        overrideTable += "{\\listoverride\\listid" + listNumber + "\\listoverridecount0\\ls" + listNumber + "}";
+    }
+
+    return listTable + "}\n" + overrideTable + "}\n";
+}
+
+/*
+    Returns the RTF definition of one list level. Cocoa reads the marker format from the
+    \levelmarker destination and the prepending of the enclosing marker from \levelprepend. Other
+    readers use the number format (\levelnfc), the starting number (\levelstartat) and the
+    level's text (\leveltext), in which \'0N stands for the number of level N.
+*/
+- (CPString)listLevelString:(CPArray)someLevels atLevel:(int)aLevel templateID:(int)aTemplateID
+{
+    var list = someLevels[aLevel],
+        format = [list markerFormat],
+        match = format.match(/\{([a-z-]+)\}/),
+        name = match ? match[1] : "",
+        numberFormat = [list isOrdered] ? (_CPRTFLevelNumberFormats[name] || 0) : 23,
+        parts = [self levelTextParts:someLevels atLevel:aLevel],
+        levelText = "",
+        levelNumbers = "",
+        length = 0,
+        indent = 720 * (aLevel + 1);
+
+    for (var i = 0; i < parts.length; i++)
+    {
+        var part = parts[i];
+
+        if (typeof part === "number")
+        {
+            length++;
+            levelText += "\\'" + _CPRTFHexByte(part);
+            levelNumbers += "\\'" + _CPRTFHexByte(length);
+        }
+        else
+        {
+            length += part.length;
+            levelText += _CPRTFEscapeUnicode(part.replace(/[\\{};]/g, function(aCharacter)
+            {
+                return "\\'" + _CPRTFHexByte(aCharacter.charCodeAt(0));
+            }));
+        }
+    }
+
+    return "{\\listlevel\\levelnfc" + numberFormat + "\\levelnfcn" + numberFormat +
+           "\\leveljc0\\leveljcn0\\levelfollow0\\levelstartat" + [list startingItemNumber] +
+           "\\levelspace360\\levelindent0{\\*\\levelmarker " + _CPRTFEscapeUnicode(format.replace(/([\\{}])/g, "\\$1")) + "}" +
+           (([list listOptions] & CPTextListPrependEnclosingMarker) ? "\\levelprepend" : "") +
+           "{\\leveltext\\leveltemplateid" + aTemplateID + "\\'" + _CPRTFHexByte(length) + levelText + ";}" +
+           "{\\levelnumbers" + levelNumbers + ";}\\fi-720\\li" + indent + "\\lin" + indent + " }";
+}
+
+/*
+    Returns the parts of a list level's text: strings, and the level numbers whose item numbers
+    take their place. A bullet level is its bullet. A numbered level is the text around its number,
+    after the enclosing level's text when the list prepends the enclosing marker.
+*/
+- (CPArray)levelTextParts:(CPArray)someLevels atLevel:(int)aLevel
+{
+    var list = someLevels[aLevel],
+        format = [list markerFormat];
+
+    if (![list isOrdered])
+        return [[list markerForItemNumber:1]];
+
+    var match = format.match(/\{[a-z-]+\}/),
+        parts = [];
+
+    if (aLevel > 0 && ([list listOptions] & CPTextListPrependEnclosingMarker))
+        parts = [self levelTextParts:someLevels atLevel:aLevel - 1];
+
+    if (match.index > 0)
+        parts.push(format.substring(0, match.index));
+
+    parts.push(aLevel);
+
+    if (match.index + match[0].length < format.length)
+        parts.push(format.substring(match.index + match[0].length));
+
+    return parts;
 }
 
 - (CPString)runStringForString:(CPString) substring
                     attributes:(CPDictionary) attributes
                 paragraphStart:(BOOL) first
+{
+    return [self runStringForString:substring attributes:attributes paragraphStart:first listMarker:NO];
+}
+
+/*
+    As -runStringForString:attributes:paragraphStart:. When isListMarker is YES, the run is the
+    marker at the start of a list item, and is written in a \listtext group, as Cocoa writes it.
+    Readers that understand lists number the items themselves; others show the marker text.
+*/
+- (CPString)runStringForString:(CPString) substring
+                    attributes:(CPDictionary) attributes
+                paragraphStart:(BOOL) first
+                    listMarker:(BOOL) isListMarker
 {
     var unwrap = function(obj) {
         if (!obj) return null;
@@ -704,11 +906,18 @@ function _points2twips(a) { return (a) * 20.0; }
         }
     }
 
+    // An image attachment is not written yet, so its attachment character is left out.
+    substring = substring.replace(/\uFFFC/g, '');
+
     substring = substring.replace(/\\/g, '\\\\');
     substring = substring.replace(/\n/g, '\\par\n');
     substring = substring.replace(/\t/g, '\\tab ');
     substring = substring.replace(/{/g, '\\{');
     substring = substring.replace(/}/g, '\\}');
+    substring = _CPRTFEscapeUnicode(substring);
+
+    if (isListMarker)
+        substring = "{\\listtext " + substring + "}";
 
     if (!first)
     {
@@ -752,13 +961,29 @@ function _points2twips(a) { return (a) * 20.0; }
             substring,
             runString;
 
-        attributes = [text attributesAtIndex:CPMaxRange(currRange)
+        var runStart = CPMaxRange(currRange);
+
+        attributes = [text attributesAtIndex:runStart
                        longestEffectiveRange:currRange
                                      inRange:completeRange];
+
+        // The longest effective range can reach back before the run's start, after a list marker
+        // that shares its attributes was written as a run of its own.
+        if (currRange.location < runStart)
+            currRange = CPMakeRange(runStart, CPMaxRange(currRange) - runStart);
+
+        // A list item's marker, a tab, the marker and a tab, is written as a run of its own.
+        var markerLength = paragraphStart ? [self listMarkerLengthAtIndex:currRange.location attributes:attributes] : 0,
+            isListMarker = markerLength > 0 && markerLength <= currRange.length;
+
+        if (isListMarker)
+            currRange.length = markerLength;
+
         substring = [string substringWithRange:currRange];
         runString = [self runStringForString:substring
                                   attributes:attributes
-                              paragraphStart:paragraphStart];
+                              paragraphStart:paragraphStart
+                                  listMarker:isListMarker];
 
         result += runString;
         
@@ -771,6 +996,31 @@ function _points2twips(a) { return (a) * 20.0; }
     return result;
 }
 
+
+/*
+    Returns the length of the marker at the start of a list item, a tab, the marker and a tab, or
+    0 when the paragraph is not a list item or does not start with a marker.
+*/
+- (unsigned)listMarkerLengthAtIndex:(unsigned)anIndex attributes:(CPDictionary)attributes
+{
+    var string = [text string];
+
+    if (![[[attributes objectForKey:CPParagraphStyleAttributeName] textLists] count] || string.charAt(anIndex) !== "\t")
+        return 0;
+
+    for (var i = anIndex + 1; i < string.length; i++)
+    {
+        var character = string.charAt(i);
+
+        if (character === "\t")
+            return i - anIndex + 1;
+
+        if (character === "\n")
+            break;
+    }
+
+    return 0;
+}
 
 - (CPString)RTFDStringFromAttributedString:(CPAttributedString)aText
                         documentAttributes:(CPDictionary)dict

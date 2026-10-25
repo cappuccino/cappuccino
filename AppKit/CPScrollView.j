@@ -106,6 +106,14 @@ var CPScrollViewBorderSuffixes = @[@"no-border", @"line-border", @"bezel-border"
 // _CPScrollViews will hold all created CPScrollView's in order to propagate changes
 // of scroller global style
 var _CPScrollViews;
+/*
+    The default smallest and largest magnifications. These are not arbitrary: they are the
+    defaults that Apple documents for NSScrollView's minMagnification and maxMagnification, so a
+    scroll view behaves as in Cocoa unless its limits are set. They apply to a scroll view made in
+    code, and to one decoded from an archive that has no valid limits.
+*/
+var CPScrollViewDefaultMinMagnification         = 0.25,
+    CPScrollViewDefaultMaxMagnification         = 4.0;
 
 /*!
     @ingroup appkit
@@ -154,6 +162,11 @@ var _CPScrollViews;
 
     CPRulerView                 _verticalRuler;
     CPRulerView                 _horizontalRuler;
+
+    // Magnification Support
+    BOOL                        _allowsMagnification;
+    float                       _minMagnification;
+    float                       _maxMagnification;
 }
 
 
@@ -352,6 +365,10 @@ var _CPScrollViews;
         _hasVerticalRuler = NO;
         _hasHorizontalRuler = NO;
         _rulersVisible = NO;
+
+        _allowsMagnification = NO;
+        _minMagnification = CPScrollViewDefaultMinMagnification;
+        _maxMagnification = CPScrollViewDefaultMaxMagnification;
 
         _delegate = nil;
         _scrollTimer = nil;
@@ -842,6 +859,118 @@ Notifies the delegate when the scroll view has finished scrolling.
     _verticalPageScroll = aPageScroll;
 }
 
+
+// MARK: -
+// MARK: Magnification
+
+/*!
+    Returns \c YES if the user may change the magnification. The default is \c NO. As in Cocoa,
+    -setMagnification: and -setMagnification:centeredAtPoint: change it in code either way.
+*/
+- (BOOL)allowsMagnification
+{
+    return _allowsMagnification;
+}
+
+/*!
+    Sets whether the user may change the magnification.
+*/
+- (void)setAllowsMagnification:(BOOL)shouldAllowMagnification
+{
+    _allowsMagnification = !!shouldAllowMagnification;
+}
+
+/*!
+    Returns the smallest magnification. The default is 0.25, as in Cocoa.
+*/
+- (float)minMagnification
+{
+    return _minMagnification;
+}
+
+/*!
+    Sets the smallest magnification.
+*/
+- (void)setMinMagnification:(float)aMagnification
+{
+    _minMagnification = aMagnification;
+}
+
+/*!
+    Returns the largest magnification. The default is 4.0, as in Cocoa.
+*/
+- (float)maxMagnification
+{
+    return _maxMagnification;
+}
+
+/*!
+    Sets the largest magnification.
+*/
+- (void)setMaxMagnification:(float)aMagnification
+{
+    _maxMagnification = aMagnification;
+}
+
+/*!
+    Returns the magnification of the document view: 1.0 at actual size, 2.0 at twice the size.
+*/
+- (float)magnification
+{
+    var boundsWidth = CGRectGetWidth([_contentView bounds]);
+
+    return boundsWidth ? CGRectGetWidth([_contentView frame]) / boundsWidth : 1.0;
+}
+
+/*!
+    Sets the magnification, keeping the centre of the visible part of the document in place.
+    @param aMagnification the magnification, limited to the minimum and maximum magnification
+*/
+- (void)setMagnification:(float)aMagnification
+{
+    var visibleRect = [_contentView bounds];
+
+    [self setMagnification:aMagnification centeredAtPoint:CGPointMake(CGRectGetMidX(visibleRect), CGRectGetMidY(visibleRect))];
+}
+
+/*!
+    Sets the magnification, and scrolls so that aPoint is at the centre of the visible area. As
+    in Cocoa, the clip view's bounds are scaled: at a magnification of 2.0 its bounds are half its
+    frame, so the document view is drawn at twice its size. A document view that resizes its width
+    with the clip view, as a text view that wraps to the window does, takes the new bounds width.
+    @param aMagnification the magnification, limited to the minimum and maximum magnification
+    @param aPoint the point in the clip view's bounds, which are the document view's coordinates,
+    to show at the centre
+*/
+- (void)setMagnification:(float)aMagnification centeredAtPoint:(CGPoint)aPoint
+{
+    var magnification = MIN(MAX(aMagnification, _minMagnification), _maxMagnification),
+        frameSize = [_contentView frameSize];
+
+    /*
+        If the limits are not numbers, the clamp above gives NaN. The clip view's bounds would
+        then become NaN, which the browser ignores, and -magnification would still report 1.0,
+        so the zoom would silently do nothing. This happened with scroll views loaded from cibs
+        whose limits were never set; see -initWithCoder: and -encodeWithCoder:. A magnification
+        that is not a positive number is therefore ignored.
+    */
+    if (!(magnification > 0.0) || !frameSize.width || !frameSize.height)
+        return;
+
+    var boundsSize = CGSizeMake(frameSize.width / magnification, frameSize.height / magnification),
+        documentView = [self documentView];
+
+    [_contentView setBoundsSize:boundsSize];
+
+    // The clip view applies its scale to its element when it is marked for display.
+    [_contentView setNeedsDisplay:YES];
+
+    if ([documentView autoresizingMask] & CPViewWidthSizable)
+        [documentView setFrameSize:CGSizeMake(boundsSize.width, [documentView frameSize].height)];
+
+    [_contentView scrollToPoint:CGPointMake(aPoint.x - boundsSize.width / 2.0, aPoint.y - boundsSize.height / 2.0)];
+    [self reflectScrolledClipView:_contentView];
+}
 
 // MARK: -
 // MARK: Rulers
@@ -1866,7 +1995,10 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
     CPScrollViewHasHRulerKey            = @"CPScrollViewHasHRuler",
     CPScrollViewRulersVisibleKey        = @"CPScrollViewRulersVisible",
     CPScrollViewVRulerKey               = @"CPScrollViewVRuler",
-    CPScrollViewHRulerKey               = @"CPScrollViewHRuler";
+    CPScrollViewHRulerKey               = @"CPScrollViewHRuler",
+    CPScrollViewAllowsMagnificationKey  = @"CPScrollViewAllowsMagnification",
+    CPScrollViewMinMagnificationKey     = @"CPScrollViewMinMagnification",
+    CPScrollViewMaxMagnificationKey     = @"CPScrollViewMaxMagnification";
 
 @implementation CPScrollView (CPCoding)
 
@@ -1900,6 +2032,26 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
 
         _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
         _bottomCornerView       = [aCoder decodeObjectForKey:CPScrollViewBottomCornerViewKey];
+
+        // Magnification decoding
+        _allowsMagnification    = [aCoder decodeBoolForKey:CPScrollViewAllowsMagnificationKey];
+        _minMagnification       = [aCoder decodeFloatForKey:CPScrollViewMinMagnificationKey];
+        _maxMagnification       = [aCoder decodeFloatForKey:CPScrollViewMaxMagnificationKey];
+
+        /*
+            Cibs compiled by nib2cib can hold limits that are not numbers. nib2cib builds a
+            scroll view from a xib through NSScrollView's -NS_initWithCoder:, which does not run
+            -initWithFrame:, so the limits are never set; it then archives the scroll view with
+            -encodeWithCoder: below, which wrote the unset limits into the cib. nib2cib belongs
+            to the legacy toolchain, which is frozen, so the problem is handled here: a limit
+            that is missing or not a positive number gets the Cocoa default. Without this, a
+            scroll view loaded from such a cib could not change its magnification.
+        */
+        if (!(_minMagnification > 0.0))
+            _minMagnification = CPScrollViewDefaultMinMagnification;
+
+        if (!(_maxMagnification > 0.0))
+            _maxMagnification = CPScrollViewDefaultMaxMagnification;
 
         // Ruler decoding
         _hasVerticalRuler       = [aCoder decodeBoolForKey:CPScrollViewHasVRulerKey];
@@ -1963,6 +2115,23 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
 
     [aCoder encodeInt:_scrollerStyle            forKey:CPScrollViewScrollerStyleKey];
     [aCoder encodeInt:_scrollerKnobStyle        forKey:CPScrollViewScrollerKnobStyleKey];
+
+    // Magnification encoding
+    [aCoder encodeBool:_allowsMagnification     forKey:CPScrollViewAllowsMagnificationKey];
+
+    /*
+        nib2cib archives scroll views with this method, after building them from a xib through
+        NSScrollView's -NS_initWithCoder:, which does not run -initWithFrame:. Their limits are
+        then unset, and writing them put values that are not numbers into the cib. nib2cib
+        belongs to the legacy toolchain, which is frozen, so the problem is handled here: only
+        limits that are positive numbers are written, and -initWithCoder: supplies the defaults
+        for the rest.
+    */
+    if (_minMagnification > 0.0)
+        [aCoder encodeFloat:_minMagnification   forKey:CPScrollViewMinMagnificationKey];
+
+    if (_maxMagnification > 0.0)
+        [aCoder encodeFloat:_maxMagnification   forKey:CPScrollViewMaxMagnificationKey];
 
     // Ruler encoding
     [aCoder encodeBool:_hasVerticalRuler        forKey:CPScrollViewHasVRulerKey];

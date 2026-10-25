@@ -5045,16 +5045,20 @@ var _CPCopyPlaceholder = '-';
         // Can we accept richtext? Then this is our preference (fixme: shift key to force plain text paste)
         if ([currentFirstResponder respondsToSelector:@selector(isRichText)] && [currentFirstResponder isRichText])
         {
-            var richtext = nativeClipboard.getData('text/rtf');
+            var richtext = nativeClipboard.getData('text/rtf'),
+                richData = [pasteboard stringForType:_CPASPboardType];
 
+            // RTF that this application wrote itself, on copy, describes the text on the internal
+            // pasteboard. The internal archive is pasted instead: it also keeps what RTF does not
+            // yet carry, such as images.
+            if (richtext && richData && richtext === [pasteboard stringForType:CPRTFPboardType])
+                richtext = [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:richData]];
             // prefer RTF form the outside of cappuccino
-            if (richtext)
+            else if (richtext)
                 richtext = [[_CPRTFParser new] parseRTF:richtext];
             else
             {
                 // If no RTF is available, try to get the internal represatation of richtext from the pasteboard
-                var richData = [pasteboard stringForType:_CPASPboardType];
-
                 if (richData)
                     richtext = [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:richData]];
             }
