@@ -77,34 +77,34 @@ CPProgressIndicatorHUDBarStyle = 2;
     if (self !== [CPProgressIndicator class])
         return;
 
-#if PLATFORM(DOM)
+    if (CPDOMAvailable)
+    {
+        if (document.getElementById("cp-progress-indicator-style"))
+            return;
 
-    if (document.getElementById("cp-progress-indicator-style"))
-        return;
+        var style = document.createElement("style");
+        style.id = "cp-progress-indicator-style";
+        style.type = "text/css";
 
-    var style = document.createElement("style");
-    style.id = "cp-progress-indicator-style";
-    style.type = "text/css";
-    
-    // We define two animations:
-    // 1. cp-progress-indicator-spin: Rotates 360 degrees (for spinners)
-    // 2. cp-progress-indicator-bar-slide: Moves background-position (for striped bars)
-    var css = 
-        "@keyframes cp-progress-indicator-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } " +
-        "@-webkit-keyframes cp-progress-indicator-spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } } " +
-        
-        "@keyframes cp-progress-indicator-bar-slide { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } } " +
-        "@-webkit-keyframes cp-progress-indicator-bar-slide { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } }";
-    
-    if (style.styleSheet)
-        style.styleSheet.cssText = css;
-    else
-        style.appendChild(document.createTextNode(css));
-        
-    var head = document.getElementsByTagName("head")[0];
-    if (head) 
-        head.appendChild(style);
-#endif
+        // We define two animations:
+        // 1. cp-progress-indicator-spin: Rotates 360 degrees (for spinners)
+        // 2. cp-progress-indicator-bar-slide: Moves background-position (for striped bars)
+        var css = 
+            "@keyframes cp-progress-indicator-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } " +
+            "@-webkit-keyframes cp-progress-indicator-spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } } " +
+
+            "@keyframes cp-progress-indicator-bar-slide { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } } " +
+            "@-webkit-keyframes cp-progress-indicator-bar-slide { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } }";
+
+        if (style.styleSheet)
+            style.styleSheet.cssText = css;
+        else
+            style.appendChild(document.createTextNode(css));
+
+        var head = document.getElementsByTagName("head")[0];
+        if (head) 
+            head.appendChild(style);
+    }
 }
 
 + (CPString)defaultThemeClass

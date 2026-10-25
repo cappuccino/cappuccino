@@ -573,9 +573,10 @@ var CPComboBoxTextSubview = @"text",
 
     [self _updatePlaceholderState];
 
-#if PLATFORM(DOM)
-    [self _setCSSStyleForInputElement];
-#endif
+    if (CPDOMAvailable)
+    {
+        [self _setCSSStyleForInputElement];
+    }
 
     [self _reverseSetBinding];
 

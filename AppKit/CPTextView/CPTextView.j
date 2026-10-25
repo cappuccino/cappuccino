@@ -1085,9 +1085,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     [_caret setRect:aRect];
 
-#if PLATFORM(DOM)
-    _caret._caretDOM.style.backgroundColor = [_insertionPointColor cssString] || "black";
-#endif
+    if (CPDOMAvailable)
+    {
+        _caret._caretDOM.style.backgroundColor = [_insertionPointColor cssString] || "black";
+    }
 
     [_caret setVisibility:flag stop:NO];
 }

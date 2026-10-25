@@ -700,10 +700,11 @@ CPSegmentSwitchTrackingMomentary = 2;
 
             // Trick : Put selected segments over unselected ones to automaticaly manage borders
 
-#if PLATFORM(DOM)
-            contentView._DOMElement.style.zIndex = ([segment selected] ? 1 : 0);
-            bezelView._DOMElement.style.zIndex   = ([segment selected] ? 1 : 0);
-#endif
+            if (CPDOMAvailable)
+            {
+                contentView._DOMElement.style.zIndex = ([segment selected] ? 1 : 0);
+                bezelView._DOMElement.style.zIndex   = ([segment selected] ? 1 : 0);
+            }
 
             [contentView setText:[segment label]];
             [contentView setImage:[segment image]];

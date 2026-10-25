@@ -1358,12 +1358,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)validateEditing
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     var element = [self _inputElement];
     
     if (element)
         [self _setStringValue:element.value isNewValue:YES errorDescription:nil];
-#endif
 }
 
 - (void)textDidBeginEditing:(CPNotification)note

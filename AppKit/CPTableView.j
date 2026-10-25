@@ -119,15 +119,6 @@ CPTableViewReverseSequentialColumnAutoresizingStyle = 3;
 CPTableViewLastColumnOnlyAutoresizingStyle = 4;
 CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
-#define NUMBER_OF_COLUMNS() (_tableColumns.length)
-#define UPDATE_COLUMN_RANGES_IF_NECESSARY() \
-    if (_dirtyTableColumnRangeIndex !== CPNotFound) \
-        [self _recalculateTableColumnRanges];
-#define FULL_ROW_HEIGHT() (_rowHeight + _intercellSpacing.height)
-#define ROW_BOTTOM(__heightInfo) (__heightInfo.y + __heightInfo.height + _intercellSpacing.height)
-#define HAS_VARIABLE_ROW_HEIGHTS()  (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
-
-
 @protocol CPTableViewDataSource <CPObject>
 
 @optional
@@ -226,7 +217,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)updateState
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     var backgroundColor = nil;
 
     if (_selected && [_tableView selectionHighlightStyle] != CPTableViewSelectionHighlightStyleNone)
@@ -253,7 +246,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     [self setBackgroundColor:backgroundColor];
     [self _updateGridLine];
-#endif
 }
 
 - (void)_updateGridLine
@@ -630,7 +622,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)_updateSelectedColumnBackgrounds
 {
-#if PLATFORM(DOM)
+    if (!CPDOMAvailable)
+        return;
+
     // 1. Remove existing column background views
     [_selectedColumnBackgroundViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [_selectedColumnBackgroundViews removeAllObjects];
@@ -668,7 +662,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         if (_visibleRowViews.hasOwnProperty(rowIndex))
             [self addSubview:_visibleRowViews[rowIndex] positioned:CPWindowBelow relativeTo:nil];
     }
-#endif
 }
 
 /*!
@@ -1278,9 +1271,9 @@ NOT YET IMPLEMENTED
     [aTableColumn setTableView:self];
 
     if (_dirtyTableColumnRangeIndex < 0)
-        _dirtyTableColumnRangeIndex = NUMBER_OF_COLUMNS() - 1;
+        _dirtyTableColumnRangeIndex = [self _numberOfColumns] - 1;
     else
-        _dirtyTableColumnRangeIndex = MIN(NUMBER_OF_COLUMNS() - 1, _dirtyTableColumnRangeIndex);
+        _dirtyTableColumnRangeIndex = MIN([self _numberOfColumns] - 1, _dirtyTableColumnRangeIndex);
 
     if ([[self sortDescriptors] count] > 0)
     {
@@ -1453,7 +1446,7 @@ NOT YET IMPLEMENTED
 - (CPInteger)columnWithIdentifier:(CPString)anIdentifier
 {
     var index = 0,
-        count = NUMBER_OF_COLUMNS();
+        count = [self _numberOfColumns];
 
     for (; index < count; ++index)
         if ([_tableColumns[index] identifier] === anIdentifier)
@@ -1816,7 +1809,7 @@ NOT YET IMPLEMENTED
 */
 - (int)numberOfColumns
 {
-    return NUMBER_OF_COLUMNS();
+    return [self _numberOfColumns];
 }
 
 /*!
@@ -1935,7 +1928,7 @@ NOT YET IMPLEMENTED
     _numberOfHiddenColumns = 0;
 
     var index = _dirtyTableColumnRangeIndex,
-        count = NUMBER_OF_COLUMNS(),
+        count = [self _numberOfColumns],
         x = index === 0 ? 0.0 : CPMaxRange(_tableColumnRanges[index - 1]);
 
     for (; index < count; ++index)
@@ -1975,13 +1968,13 @@ NOT YET IMPLEMENTED
     // Coerce aColumnIndex to a number in case it is a string.
     aColumnIndex = +aColumnIndex;
 
-    if (aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
+    if (aColumnIndex < 0 || aColumnIndex >= [self _numberOfColumns])
         return CGRectMakeZero();
 
     if ([[_tableColumns objectAtIndex:aColumnIndex] isHidden])
         return CGRectMakeZero();
 
-    UPDATE_COLUMN_RANGES_IF_NECESSARY();
+    [self _updateColumnRangesIfNecessary];
 
     var range = _tableColumnRanges[aColumnIndex];
 
@@ -2010,7 +2003,7 @@ NOT YET IMPLEMENTED
         height,
         fixedHeightRows = 0;
 
-    if (HAS_VARIABLE_ROW_HEIGHTS())
+    if ([self _hasVariableRowHeights])
     {
         [self _populateRowHeightCacheIfNeeded];
 
@@ -2026,12 +2019,12 @@ NOT YET IMPLEMENTED
         }
         else
         {
-            height = FULL_ROW_HEIGHT();
+            height = [self _fullRowHeight];
 
             if (_numberOfRows > 0)
             {
                 heightInfo = _cachedRowHeights[lastIndex];
-                y = ROW_BOTTOM(heightInfo);
+                y = [self _rowBottomOfHeightInfo:heightInfo];
 
                 // y is now at the top of the first row beyond the last valid row.
                 // Add the height of any rows beyond that.
@@ -2042,10 +2035,10 @@ NOT YET IMPLEMENTED
     else
     {
         fixedHeightRows = aRowIndex;
-        height = FULL_ROW_HEIGHT();
+        height = [self _fullRowHeight];
     }
 
-    y += fixedHeightRows * FULL_ROW_HEIGHT();
+    y += fixedHeightRows * [self _fullRowHeight];
 
     return CGRectMake(0.0, y, CGRectGetWidth([self bounds]), height);
 }
@@ -2115,7 +2108,7 @@ NOT YET IMPLEMENTED
     if (bottomOfRealRows >= rectBottom)
         return rowRange;
 
-    var numberOfSynthesizedRows = CEIL((rectBottom - bottomOfRealRows) / FULL_ROW_HEIGHT());
+    var numberOfSynthesizedRows = CEIL((rectBottom - bottomOfRealRows) / [self _fullRowHeight]);
 
     rowRange.length += numberOfSynthesizedRows;
 
@@ -2133,14 +2126,14 @@ NOT YET IMPLEMENTED
     // O(log numberOfColumns) if table view contains no hidden columns
     // O(numberOfColumns) if table view contains hidden columns
 
-    if (NUMBER_OF_COLUMNS() === 0)
+    if ([self _numberOfColumns] === 0)
         return [CPIndexSet indexSet];
 
     var column = MAX(0, [self columnAtPoint:CGPointMake(aRect.origin.x, 0.0)]),
         lastColumn = [self columnAtPoint:CGPointMake(CGRectGetMaxX(aRect), 0.0)];
 
     if (lastColumn === CPNotFound)
-        lastColumn = NUMBER_OF_COLUMNS() - 1;
+        lastColumn = [self _numberOfColumns] - 1;
 
     if (column > lastColumn || lastColumn < 0)
         return [CPIndexSet indexSet];
@@ -2178,7 +2171,7 @@ NOT YET IMPLEMENTED
     if (!CGRectContainsPoint(bounds, aPoint))
         return CPNotFound;
 
-    UPDATE_COLUMN_RANGES_IF_NECESSARY();
+    [self _updateColumnRangesIfNecessary];
 
     var x = aPoint.x,
         low = 0,
@@ -2231,13 +2224,13 @@ NOT YET IMPLEMENTED
 
     // aPoint.x is in bounds, now we just have to check aPoint.y
 
-    if (HAS_VARIABLE_ROW_HEIGHTS())
+    if ([self _hasVariableRowHeights])
     {
         // First make sure aPoint.y is above the bottom of the last row, otherwise we might
         // search the (potentially large number of) rows for nothing.
         var heightInfo = [_cachedRowHeights lastObject];
 
-        if (!heightInfo || aPoint.y >= ROW_BOTTOM(heightInfo))
+        if (!heightInfo || aPoint.y >= [self _rowBottomOfHeightInfo:heightInfo])
             return -1;
 
         return [_cachedRowHeights indexOfObject:aPoint
@@ -2248,7 +2241,7 @@ NOT YET IMPLEMENTED
                     if (aPoint.y < heightInfo.y)
                         return CPOrderedAscending;
 
-                    if (aPoint.y > ROW_BOTTOM(heightInfo))
+                    if (aPoint.y > [self _rowBottomOfHeightInfo:heightInfo])
                         return CPOrderedDescending;
 
                     return CPOrderedSame;
@@ -2256,7 +2249,7 @@ NOT YET IMPLEMENTED
     }
     else
     {
-        var row = FLOOR(aPoint.y / FULL_ROW_HEIGHT());
+        var row = FLOOR(aPoint.y / [self _fullRowHeight]);
 
         return row >= _numberOfRows ? -1 : row;
     }
@@ -2363,7 +2356,7 @@ NOT YET IMPLEMENTED
 */
 - (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
 {
-    UPDATE_COLUMN_RANGES_IF_NECESSARY();
+    [self _updateColumnRangesIfNecessary];
 
     if (aColumn > [self numberOfColumns] || aRow > [self numberOfRows])
         return CGRectMakeZero();
@@ -2428,9 +2421,9 @@ NOT YET IMPLEMENTED
     if (!superview)
         return;
 
-    UPDATE_COLUMN_RANGES_IF_NECESSARY();
+    [self _updateColumnRangesIfNecessary];
 
-    var count = NUMBER_OF_COLUMNS(),
+    var count = [self _numberOfColumns],
         columnToResize = nil,
         totalWidth = 0,
         i = 0;
@@ -2474,10 +2467,10 @@ NOT YET IMPLEMENTED
     if (!superview || ![superview isKindOfClass:[CPClipView class]])
         return;
 
-    UPDATE_COLUMN_RANGES_IF_NECESSARY();
+    [self _updateColumnRangesIfNecessary];
 
     var superviewWidth = [superview bounds].size.width,
-        count = NUMBER_OF_COLUMNS(),
+        count = [self _numberOfColumns],
         resizableColumns = [CPIndexSet indexSet],
         remainingSpace = 0.0,
         i = 0;
@@ -2582,9 +2575,9 @@ NOT YET IMPLEMENTED
 
     var superviewSize = [superview bounds].size;
 
-    UPDATE_COLUMN_RANGES_IF_NECESSARY();
+    [self _updateColumnRangesIfNecessary];
 
-    var count = NUMBER_OF_COLUMNS();
+    var count = [self _numberOfColumns];
 
     // Decrement the counter until we get to the last column that's not hidden
     while (count-- && [_tableColumns[count] isHidden]);
@@ -2652,7 +2645,7 @@ NOT YET IMPLEMENTED
 */
 - (void)_noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
 {
-    if (!HAS_VARIABLE_ROW_HEIGHTS())
+    if (![self _hasVariableRowHeights])
         return;
 
     // Update the height of the given rows by calling the delegate. Since the row height cache also contains
@@ -2694,21 +2687,21 @@ NOT YET IMPLEMENTED
 */
 - (void)tile
 {
-    UPDATE_COLUMN_RANGES_IF_NECESSARY();
+    [self _updateColumnRangesIfNecessary];
 
     var width = _tableColumnRanges.length > 0 ? CPMaxRange([_tableColumnRanges lastObject]) : 0.0,
         superview = [self superview],
         height = 0;
 
-    if (!HAS_VARIABLE_ROW_HEIGHTS())
-        height = FULL_ROW_HEIGHT() * _numberOfRows;
+    if (![self _hasVariableRowHeights])
+        height = [self _fullRowHeight] * _numberOfRows;
     else if (_numberOfRows > 0)
     {
         [self _populateRowHeightCacheIfNeeded];
 
         var heightInfo = _cachedRowHeights[_cachedRowHeights.length - 1];
 
-        height = ROW_BOTTOM(heightInfo);
+        height = [self _rowBottomOfHeightInfo:heightInfo];
     }
 
     if ([superview isKindOfClass:[CPClipView class]])
@@ -3887,7 +3880,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (![rowIndexes count] || ![columnIndexes count])
         return;
 
-    UPDATE_COLUMN_RANGES_IF_NECESSARY();
+    [self _updateColumnRangesIfNecessary];
 
     if (_numberOfHiddenColumns > 0)
         columnIndexes = [columnIndexes indexesPassingTest:function(idx, stop)
@@ -4177,9 +4170,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [CPException raise:CPInvalidArgumentException
                     reason:@"Row " + row + " out of row range [0-" + (_numberOfRows - 1) + "] for rowViewAtRow:createIfNeeded:"];
 
-    if (column > (NUMBER_OF_COLUMNS() - 1))
+    if (column > ([self _numberOfColumns] - 1))
         [CPException raise:CPInvalidArgumentException
-                    reason:@"Column " + column + " out of row range [0-" + (NUMBER_OF_COLUMNS ()- 1) + "] for rowViewAtRow:createIfNeeded:"];
+                    reason:@"Column " + column + " out of row range [0-" + ([self _numberOfColumns]- 1) + "] for rowViewAtRow:createIfNeeded:"];
 
     var dataViewsForRow = _dataViewsForRows[row],
         tableColumn = _tableColumns[column],
@@ -5674,6 +5667,31 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }, 0);
 }
 
+- (int)_numberOfColumns
+{
+    return _tableColumns.length;
+}
+
+- (void)_updateColumnRangesIfNecessary
+{
+    if (_dirtyTableColumnRangeIndex !== CPNotFound)
+        [self _recalculateTableColumnRanges];
+}
+
+- (CGFloat)_fullRowHeight
+{
+    return (_rowHeight + _intercellSpacing.height);
+}
+
+- (CGFloat)_rowBottomOfHeightInfo:(JSObject)heightInfo
+{
+    return (heightInfo.y + heightInfo.height + _intercellSpacing.height);
+}
+
+- (BOOL)_hasVariableRowHeights
+{
+    return (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_);
+}
 @end
 
 
@@ -6535,5 +6553,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 {
     return "<" + [self className] + " 0x" + [CPString stringWithHash:[self UID]] + " identifier=" + [self identifier] + ">";
 }
+
 
 @end

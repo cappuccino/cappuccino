@@ -2647,23 +2647,23 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
 {
     _isAnimatingClone = NO; // Default for real buttons
 
-#if PLATFORM(DOM)
+    if (CPDOMAvailable)
+    {
+        // Add a dedicated DOM element for the SVG arrow
+        _arrowElement = document.createElement("div");
+        _arrowElement.style.position = "absolute";
+        _arrowElement.style.top = "0px";
+        _arrowElement.style.left = "0px";
+        _arrowElement.style.width = "100%";
+        _arrowElement.style.height = "100%";
+        _arrowElement.style.backgroundPosition = "center center";
+        _arrowElement.style.backgroundRepeat = "no-repeat";
+        // 24px maps the 24x24 viewBox to exact pixels, making the 10x5 path scale perfectly
+        _arrowElement.style.backgroundSize = "24px 24px";
+        _arrowElement.style.pointerEvents = "none";
 
-    // Add a dedicated DOM element for the SVG arrow
-    _arrowElement = document.createElement("div");
-    _arrowElement.style.position = "absolute";
-    _arrowElement.style.top = "0px";
-    _arrowElement.style.left = "0px";
-    _arrowElement.style.width = "100%";
-    _arrowElement.style.height = "100%";
-    _arrowElement.style.backgroundPosition = "center center";
-    _arrowElement.style.backgroundRepeat = "no-repeat";
-    // 24px maps the 24x24 viewBox to exact pixels, making the 10x5 path scale perfectly
-    _arrowElement.style.backgroundSize = "24px 24px";
-    _arrowElement.style.pointerEvents = "none";
-    
-    self._DOMElement.appendChild(_arrowElement);
-#endif
+        self._DOMElement.appendChild(_arrowElement);
+    }
 }
 
 - (void)setAngle:(float)anAngle
@@ -2673,9 +2673,10 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
     // Rotate the DOM element directly using standard CSS transforms
     var deg = _angle * (180.0 / Math.PI);
 
-#if PLATFORM(DOM)
-    _arrowElement.style.transform = "rotate(" + deg + "deg)";
-#endif
+    if (CPDOMAvailable)
+    {
+        _arrowElement.style.transform = "rotate(" + deg + "deg)";
+    }
 
     [self display];
 }
@@ -2761,10 +2762,11 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
 - (void)drawRect:(CGRect)aRect
 {
 
-#if PLATFORM(DOM)
-    if (_arrowElement && _arrowElement.parentNode !== self._DOMElement)
-        self._DOMElement.appendChild(_arrowElement);
-#endif
+    if (CPDOMAvailable)
+    {
+        if (_arrowElement && _arrowElement.parentNode !== self._DOMElement)
+            self._DOMElement.appendChild(_arrowElement);
+    }
 
     // If I am NOT the clone, I must check if my row is animating.
     // If it is animating, the clone is drawing on top of me, so I should be invisible.
@@ -2777,9 +2779,10 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
             if (row !== CPNotFound && [outlineView _isRowAnimatingDisclosure:row])
             {
 
-#if PLATFORM(DOM)
-                _arrowElement.style.display = "none";
-#endif
+                if (CPDOMAvailable)
+                {
+                    _arrowElement.style.display = "none";
+                }
                 return; // Suppress the real button
             }
         }
@@ -2828,9 +2831,10 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
         var svgString = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 10L12 15L17 10H7Z" fill="' + colorCSS + '"/></svg>';
         var b64 = window.btoa(svgString);
 
-#if PLATFORM(DOM)
-        _arrowElement.style.backgroundImage = "url('data:image/svg+xml;charset=utf-8;base64," + b64 + "')";
-#endif
+        if (CPDOMAvailable)
+        {
+            _arrowElement.style.backgroundImage = "url('data:image/svg+xml;charset=utf-8;base64," + b64 + "')";
+        }
     }
 }
 

@@ -127,10 +127,11 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         cancelButton = nil,
         searchButton = nil;
     
-#if PLATFORM(DOM)
-    cancelButton = [[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]];
-    searchButton = [[CPButton alloc] initWithFrame:[self searchButtonRectForBounds:bounds]];
-#endif
+    if (CPDOMAvailable)
+    {
+        cancelButton = [[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]];
+        searchButton = [[CPButton alloc] initWithFrame:[self searchButtonRectForBounds:bounds]];
+    }
 
     [self setCancelButton:cancelButton];
     [self resetCancelButton];
