@@ -103,9 +103,6 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
 var CPScrollViewBorderSuffixes = @[@"no-border", @"line-border", @"bezel-border", @"groove-border"];
 
-// _CPScrollViews will hold all created CPScrollView's in order to propagate changes
-// of scroller global style
-var _CPScrollViews;
 /*
     The default smallest and largest magnifications. These are not arbitrary: they are the
     defaults that Apple documents for NSScrollView's minMagnification and maxMagnification, so a
