@@ -1928,7 +1928,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 
 @end
 
-#pragma mark -
+// pragma mark -
 
 @implementation CPScrollView (FirstResponder)
 
