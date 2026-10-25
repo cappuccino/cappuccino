@@ -26664,7 +26664,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","float","float"])]);
 }
-p;14;CPScrollView.jt;97821;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.ji;7;CPBox.ji;12;CPClipView.ji;12;CPScroller.ji;8;CPView.ji;13;CPRulerView.ji;17;CPCompatibility.jt;97666;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPBox.j", YES);objj_executeFile("CPClipView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("CPCompatibility.j", YES);{var the_protocol = objj_allocateProtocol("CPScrollViewDelegate");
+p;14;CPScrollView.jt;103929;@STATIC;1.0;I;33;Foundation/CPNotificationCenter.ji;7;CPBox.ji;12;CPClipView.ji;12;CPScroller.ji;8;CPView.ji;13;CPRulerView.ji;17;CPCompatibility.jt;103773;objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("CPBox.j", YES);objj_executeFile("CPClipView.j", YES);objj_executeFile("CPScroller.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPRulerView.j", YES);objj_executeFile("CPCompatibility.j", YES);{var the_protocol = objj_allocateProtocol("CPScrollViewDelegate");
 var aProtocol = objj_getProtocol("CPObject");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPScrollViewDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -26699,9 +26699,11 @@ var CPScrollViewWillStartLiveScrollNotification = "CPScrollViewWillStartLiveScro
     CPScrollViewDidEndLiveScrollNotification = "CPScrollViewDidEndLiveScrollNotification";
 var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
     CPScrollerStyleGlobalChangeNotification = "CPScrollerStyleGlobalChangeNotification";
+var CPScrollViewDefaultMinMagnification = 0.25,
+    CPScrollViewDefaultMaxMagnification = 4.0;
 
 {var the_class = objj_allocateClassPair(CPView, "CPScrollView"),
-meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_contentView", "CPClipView"), new objj_ivar("_headerClipView", "CPClipView"), new objj_ivar("_cornerView", "CPView"), new objj_ivar("_bottomCornerView", "CPView"), new objj_ivar("_delegate", "id"), new objj_ivar("_scrollTimer", "CPTimer"), new objj_ivar("_hasVerticalScroller", "BOOL"), new objj_ivar("_hasHorizontalScroller", "BOOL"), new objj_ivar("_autohidesScrollers", "BOOL"), new objj_ivar("_verticalScroller", "CPScroller"), new objj_ivar("_horizontalScroller", "CPScroller"), new objj_ivar("_recursionCount", "CPInteger"), new objj_ivar("_implementedDelegateMethods", "CPInteger"), new objj_ivar("_verticalLineScroll", "float"), new objj_ivar("_verticalPageScroll", "float"), new objj_ivar("_horizontalLineScroll", "float"), new objj_ivar("_horizontalPageScroll", "float"), new objj_ivar("_borderType", "CPBorderType"), new objj_ivar("_timerScrollersHide", "CPTimer"), new objj_ivar("_scrollerStyle", "int"), new objj_ivar("_scrollerKnobStyle", "int"), new objj_ivar("_hasVerticalRuler", "BOOL"), new objj_ivar("_hasHorizontalRuler", "BOOL"), new objj_ivar("_rulersVisible", "BOOL"), new objj_ivar("_verticalRuler", "CPRulerView"), new objj_ivar("_horizontalRuler", "CPRulerView")]);objj_registerClassPair(the_class);
+meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_contentView", "CPClipView"), new objj_ivar("_headerClipView", "CPClipView"), new objj_ivar("_cornerView", "CPView"), new objj_ivar("_bottomCornerView", "CPView"), new objj_ivar("_delegate", "id"), new objj_ivar("_scrollTimer", "CPTimer"), new objj_ivar("_hasVerticalScroller", "BOOL"), new objj_ivar("_hasHorizontalScroller", "BOOL"), new objj_ivar("_autohidesScrollers", "BOOL"), new objj_ivar("_verticalScroller", "CPScroller"), new objj_ivar("_horizontalScroller", "CPScroller"), new objj_ivar("_recursionCount", "CPInteger"), new objj_ivar("_implementedDelegateMethods", "CPInteger"), new objj_ivar("_verticalLineScroll", "float"), new objj_ivar("_verticalPageScroll", "float"), new objj_ivar("_horizontalLineScroll", "float"), new objj_ivar("_horizontalPageScroll", "float"), new objj_ivar("_borderType", "CPBorderType"), new objj_ivar("_timerScrollersHide", "CPTimer"), new objj_ivar("_scrollerStyle", "int"), new objj_ivar("_scrollerKnobStyle", "int"), new objj_ivar("_hasVerticalRuler", "BOOL"), new objj_ivar("_hasHorizontalRuler", "BOOL"), new objj_ivar("_rulersVisible", "BOOL"), new objj_ivar("_verticalRuler", "CPRulerView"), new objj_ivar("_horizontalRuler", "CPRulerView"), new objj_ivar("_allowsMagnification", "BOOL"), new objj_ivar("_minMagnification", "float"), new objj_ivar("_maxMagnification", "float")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), function $CPScrollView__initWithFrame_(self, _cmd, aFrame)
 {
     self = (objj_getClass("CPScrollView").super_class.method_dtable["initWithFrame:"] || _objj_forward)(self, "initWithFrame:", aFrame);
@@ -26725,6 +26727,9 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
         self._hasVerticalRuler = NO;
         self._hasHorizontalRuler = NO;
         self._rulersVisible = NO;
+        self._allowsMagnification = NO;
+        self._minMagnification = CPScrollViewDefaultMinMagnification;
+        self._maxMagnification = CPScrollViewDefaultMaxMagnification;
         self._delegate = nil;
         self._scrollTimer = nil;
         self._implementedDelegateMethods = 0;
@@ -27005,7 +27010,68 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithFrame:"), funct
     self._verticalPageScroll = aPageScroll;
 }
 
-,["void","float"]), new objj_method(sel_getUid("hasHorizontalRuler"), function $CPScrollView__hasHorizontalRuler(self, _cmd)
+,["void","float"]), new objj_method(sel_getUid("allowsMagnification"), function $CPScrollView__allowsMagnification(self, _cmd)
+{
+    return self._allowsMagnification;
+}
+
+,["BOOL"]), new objj_method(sel_getUid("setAllowsMagnification:"), function $CPScrollView__setAllowsMagnification_(self, _cmd, shouldAllowMagnification)
+{
+    self._allowsMagnification = !!shouldAllowMagnification;
+}
+
+,["void","BOOL"]), new objj_method(sel_getUid("minMagnification"), function $CPScrollView__minMagnification(self, _cmd)
+{
+    return self._minMagnification;
+}
+
+,["float"]), new objj_method(sel_getUid("setMinMagnification:"), function $CPScrollView__setMinMagnification_(self, _cmd, aMagnification)
+{
+    self._minMagnification = aMagnification;
+}
+
+,["void","float"]), new objj_method(sel_getUid("maxMagnification"), function $CPScrollView__maxMagnification(self, _cmd)
+{
+    return self._maxMagnification;
+}
+
+,["float"]), new objj_method(sel_getUid("setMaxMagnification:"), function $CPScrollView__setMaxMagnification_(self, _cmd, aMagnification)
+{
+    self._maxMagnification = aMagnification;
+}
+
+,["void","float"]), new objj_method(sel_getUid("magnification"), function $CPScrollView__magnification(self, _cmd)
+{
+    var boundsWidth = CGRectGetWidth(((___r1 = self._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["bounds"] || _objj_forward)(___r1, "bounds")));
+    return boundsWidth ? CGRectGetWidth(((___r1 = self._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["frame"] || _objj_forward)(___r1, "frame"))) / boundsWidth : 1.0;
+    var ___r1;
+}
+
+,["float"]), new objj_method(sel_getUid("setMagnification:"), function $CPScrollView__setMagnification_(self, _cmd, aMagnification)
+{
+    var visibleRect = ((___r1 = self._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["bounds"] || _objj_forward)(___r1, "bounds"));
+    (self.isa.method_msgSend["setMagnification:centeredAtPoint:"] || _objj_forward)(self, "setMagnification:centeredAtPoint:", aMagnification, CGPointMake(CGRectGetMidX(visibleRect), CGRectGetMidY(visibleRect)));
+    var ___r1;
+}
+
+,["void","float"]), new objj_method(sel_getUid("setMagnification:centeredAtPoint:"), function $CPScrollView__setMagnification_centeredAtPoint_(self, _cmd, aMagnification, aPoint)
+{
+    var magnification = MIN(MAX(aMagnification, self._minMagnification), self._maxMagnification),
+        frameSize = ((___r1 = self._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["frameSize"] || _objj_forward)(___r1, "frameSize"));
+    if (!(magnification > 0.0) || !frameSize.width || !frameSize.height)
+        return;
+    var boundsSize = CGSizeMake(frameSize.width / magnification, frameSize.height / magnification),
+        documentView = (self.isa.method_msgSend["documentView"] || _objj_forward)(self, "documentView");
+    ((___r1 = self._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setBoundsSize:"] || _objj_forward)(___r1, "setBoundsSize:", boundsSize));
+    ((___r1 = self._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["setNeedsDisplay:"] || _objj_forward)(___r1, "setNeedsDisplay:", YES));
+    if ((documentView == null ? documentView : (documentView.isa.method_msgSend["autoresizingMask"] || _objj_forward)(documentView, "autoresizingMask")) & CPViewWidthSizable)
+        (documentView == null ? documentView : (documentView.isa.method_msgSend["setFrameSize:"] || _objj_forward)(documentView, "setFrameSize:", CGSizeMake(boundsSize.width, (documentView == null ? documentView : (documentView.isa.method_msgSend["frameSize"] || _objj_forward)(documentView, "frameSize")).height)));
+    ((___r1 = self._contentView), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["scrollToPoint:"] || _objj_forward)(___r1, "scrollToPoint:", CGPointMake(aPoint.x - boundsSize.width / 2.0, aPoint.y - boundsSize.height / 2.0)));
+    (self.isa.method_msgSend["reflectScrolledClipView:"] || _objj_forward)(self, "reflectScrolledClipView:", self._contentView);
+    var ___r1;
+}
+
+,["void","float","CGPoint"]), new objj_method(sel_getUid("hasHorizontalRuler"), function $CPScrollView__hasHorizontalRuler(self, _cmd)
 {
     return self._hasHorizontalRuler;
 }
@@ -27875,7 +27941,10 @@ var CPScrollViewContentViewKey = "CPScrollViewContentView",
     CPScrollViewHasHRulerKey = "CPScrollViewHasHRuler",
     CPScrollViewRulersVisibleKey = "CPScrollViewRulersVisible",
     CPScrollViewVRulerKey = "CPScrollViewVRuler",
-    CPScrollViewHRulerKey = "CPScrollViewHRuler";
+    CPScrollViewHRulerKey = "CPScrollViewHRuler",
+    CPScrollViewAllowsMagnificationKey = "CPScrollViewAllowsMagnification",
+    CPScrollViewMinMagnificationKey = "CPScrollViewMinMagnification",
+    CPScrollViewMaxMagnificationKey = "CPScrollViewMaxMagnification";
 {
 var the_class = objj_getClass("CPScrollView")
 if(!the_class) throw new SyntaxError("*** Could not find definition for class \"CPScrollView\"");
@@ -27902,6 +27971,13 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
         self._borderType = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeIntForKey:"] || _objj_forward)(aCoder, "decodeIntForKey:", CPScrollViewBorderTypeKey));
         self._cornerView = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPScrollViewCornerViewKey));
         self._bottomCornerView = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPScrollViewBottomCornerViewKey));
+        self._allowsMagnification = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeBoolForKey:"] || _objj_forward)(aCoder, "decodeBoolForKey:", CPScrollViewAllowsMagnificationKey));
+        self._minMagnification = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeFloatForKey:"] || _objj_forward)(aCoder, "decodeFloatForKey:", CPScrollViewMinMagnificationKey));
+        self._maxMagnification = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeFloatForKey:"] || _objj_forward)(aCoder, "decodeFloatForKey:", CPScrollViewMaxMagnificationKey));
+        if (!(self._minMagnification > 0.0))
+            self._minMagnification = CPScrollViewDefaultMinMagnification;
+        if (!(self._maxMagnification > 0.0))
+            self._maxMagnification = CPScrollViewDefaultMaxMagnification;
         self._hasVerticalRuler = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeBoolForKey:"] || _objj_forward)(aCoder, "decodeBoolForKey:", CPScrollViewHasVRulerKey));
         self._hasHorizontalRuler = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeBoolForKey:"] || _objj_forward)(aCoder, "decodeBoolForKey:", CPScrollViewHasHRulerKey));
         self._rulersVisible = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeBoolForKey:"] || _objj_forward)(aCoder, "decodeBoolForKey:", CPScrollViewRulersVisibleKey));
@@ -27946,6 +28022,11 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
     (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeInt:forKey:"] || _objj_forward)(aCoder, "encodeInt:forKey:", self._borderType, CPScrollViewBorderTypeKey));
     (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeInt:forKey:"] || _objj_forward)(aCoder, "encodeInt:forKey:", self._scrollerStyle, CPScrollViewScrollerStyleKey));
     (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeInt:forKey:"] || _objj_forward)(aCoder, "encodeInt:forKey:", self._scrollerKnobStyle, CPScrollViewScrollerKnobStyleKey));
+    (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeBool:forKey:"] || _objj_forward)(aCoder, "encodeBool:forKey:", self._allowsMagnification, CPScrollViewAllowsMagnificationKey));
+    if (self._minMagnification > 0.0)
+        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeFloat:forKey:"] || _objj_forward)(aCoder, "encodeFloat:forKey:", self._minMagnification, CPScrollViewMinMagnificationKey));
+    if (self._maxMagnification > 0.0)
+        (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeFloat:forKey:"] || _objj_forward)(aCoder, "encodeFloat:forKey:", self._maxMagnification, CPScrollViewMaxMagnificationKey));
     (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeBool:forKey:"] || _objj_forward)(aCoder, "encodeBool:forKey:", self._hasVerticalRuler, CPScrollViewHasVRulerKey));
     (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeBool:forKey:"] || _objj_forward)(aCoder, "encodeBool:forKey:", self._hasHorizontalRuler, CPScrollViewHasHRulerKey));
     (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeBool:forKey:"] || _objj_forward)(aCoder, "encodeBool:forKey:", self._rulersVisible, CPScrollViewRulersVisibleKey));
@@ -46666,7 +46747,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithController:"), 
 
 ,["BOOL"])]);
 }
-p;8;CPView.jt;175839;@STATIC;1.0;I;20;Foundation/CPArray.jI;26;Foundation/CPObjJRuntime.jI;18;Foundation/CPSet.ji;17;_CPObject+Theme.ji;19;CGAffineTransform.ji;20;CPDOMDisplayServer.ji;12;CGGeometry.ji;14;CPAppearance.ji;9;CPColor.ji;17;CPCompatibility.ji;19;CPGraphicsContext.ji;13;CPResponder.ji;9;CPTheme.ji;16;CPTrackingArea.ji;20;CPWindow_Constants.ji;18;_CPDisplayServer.jt;175473;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObjJRuntime.j", NO);objj_executeFile("Foundation/CPSet.j", NO);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CGAffineTransform.j", YES);objj_executeFile("CPDOMDisplayServer.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAppearance.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPGraphicsContext.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPTheme.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPDisplayServer.j", YES);{var the_typedef = objj_allocateTypeDef("_CPViewFullScreenModeState");
+p;8;CPView.jt;176198;@STATIC;1.0;I;20;Foundation/CPArray.jI;26;Foundation/CPObjJRuntime.jI;18;Foundation/CPSet.ji;17;_CPObject+Theme.ji;19;CGAffineTransform.ji;20;CPDOMDisplayServer.ji;12;CGGeometry.ji;14;CPAppearance.ji;9;CPColor.ji;17;CPCompatibility.ji;19;CPGraphicsContext.ji;13;CPResponder.ji;9;CPTheme.ji;16;CPTrackingArea.ji;20;CPWindow_Constants.ji;18;_CPDisplayServer.jt;175832;objj_executeFile("Foundation/CPArray.j", NO);objj_executeFile("Foundation/CPObjJRuntime.j", NO);objj_executeFile("Foundation/CPSet.j", NO);objj_executeFile("_CPObject+Theme.j", YES);objj_executeFile("CGAffineTransform.j", YES);objj_executeFile("CPDOMDisplayServer.j", YES);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAppearance.j", YES);objj_executeFile("CPColor.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPGraphicsContext.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPTheme.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPDisplayServer.j", YES);{var the_typedef = objj_allocateTypeDef("_CPViewFullScreenModeState");
 objj_registerTypeDef(the_typedef);
 }if (typeof appkit_tag_dom_elements !== "undefined" && appkit_tag_dom_elements)
 {
@@ -48372,13 +48453,20 @@ class_addMethods(the_class, [new objj_method(sel_getUid("identifier"), function 
 
 ,["CGSize"]), new objj_method(sel_getUid("_applyCSSScalingTranformations"), function $CPView___applyCSSScalingTranformations(self, _cmd)
 {
-    if (CPDOMAvailable && self._isScaled)
+    if (!CPDOMAvailable)
+        return;
+    var browserPropertyTransform = CPBrowserStyleProperty("transform");
+    if (self._isScaled)
     {
         var scale = (self.isa.method_msgSend["scaleSize"] || _objj_forward)(self, "scaleSize"),
-            browserPropertyTransform = CPBrowserStyleProperty("transform"),
             browserPropertyTransformOrigin = CPBrowserStyleProperty("transformOrigin");
         self._DOMElement.style[browserPropertyTransform] = 'scale(' + scale.width + ', ' + scale.height + ')';
         self._DOMElement.style[browserPropertyTransformOrigin] = '0 0';
+        (self.isa.method_msgSend["_setDisplayServerSetStyleSize:"] || _objj_forward)(self, "_setDisplayServerSetStyleSize:", (self.isa.method_msgSend["frameSize"] || _objj_forward)(self, "frameSize"));
+    }
+    else if (self._DOMElement.style[browserPropertyTransform])
+    {
+        self._DOMElement.style[browserPropertyTransform] = '';
         (self.isa.method_msgSend["_setDisplayServerSetStyleSize:"] || _objj_forward)(self, "_setDisplayServerSetStyleSize:", (self.isa.method_msgSend["frameSize"] || _objj_forward)(self, "frameSize"));
     }
 }
