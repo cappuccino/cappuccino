@@ -1084,6 +1084,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)drawInsertionPointInRect:(CGRect)aRect color:(CPColor)aColor turnedOn:(BOOL)flag
 {
     [_caret setRect:aRect];
+
+    if (CPDOMAvailable)
+    {
+        _caret._caretDOM.style.backgroundColor = [_insertionPointColor cssString] || "black";
+    }
+
     [_caret setVisibility:flag stop:NO];
 }
 

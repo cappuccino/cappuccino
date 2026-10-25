@@ -104,6 +104,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _sendsWholeSearchString = NO;
         _sendsSearchStringImmediately = NO;
         _recentsAutosaveName = nil;
+        
+        [self setPlaceholderString:@"Search"];
 
         [self _init];
     }
@@ -122,8 +124,14 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     [self setContinuous:YES];
 
     var bounds = [self bounds],
-        cancelButton = [[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]],
+        cancelButton = nil,
+        searchButton = nil;
+    
+    if (CPDOMAvailable)
+    {
+        cancelButton = [[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]];
         searchButton = [[CPButton alloc] initWithFrame:[self searchButtonRectForBounds:bounds]];
+    }
 
     [self setCancelButton:cancelButton];
     [self resetCancelButton];

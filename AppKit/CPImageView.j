@@ -242,6 +242,8 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
     if (_hasShadow)
     {
+        [self setClipsToBounds:NO];
+
         _shadowView = [[CPShadowView alloc] initWithFrame:[self bounds]];
 
         [self addSubview:_shadowView];
@@ -462,6 +464,12 @@ var CPImageViewEmptyPlaceholderImage = nil;
                                        onDOMElement:_DOMImageElement
                                           styleNode:_cssStyleNode
                                       previousState:@ref(_cssStylePreviousState)];
+    }
+
+    if (CPDOMAvailable && [image isCSSBased])
+    {
+        _DOMImageElement.style.width = _DOMImageElement.width + 'px';
+        _DOMImageElement.style.height = _DOMImageElement.height + 'px';
     }
 
     _imageRect = CGRectMake(x, y, width, height);

@@ -531,6 +531,64 @@ var CPRulerViewMinimumLabelSpacing = 40.0,
     [self setNeedsDisplay:YES];
 }
 
+// MARK: HUD Appearance
+
+/*!
+    Returns \c YES if the ruler is drawn with the dark HUD appearance.
+*/
+- (BOOL)isHUD
+{
+    return [self hasThemeState:CPThemeStateHUD];
+}
+
+/* @ignore */
+- (BOOL)setThemeState:(ThemeState)aState
+{
+    var result = [super setThemeState:aState];
+    [self setNeedsDisplay:YES];
+
+    return result;
+}
+
+/* @ignore */
+- (BOOL)unsetThemeState:(ThemeState)aState
+{
+    var result = [super unsetThemeState:aState];
+    [self setNeedsDisplay:YES];
+
+    return result;
+}
+
+/* @ignore */
+- (CPColor)_backgroundColorForDrawing
+{
+    return [CPColor colorWithWhite:([self isHUD] ? 0.18 : 0.96) alpha:1.0];
+}
+
+/* @ignore */
+- (CPColor)_edgeColorForDrawing
+{
+    return [CPColor colorWithWhite:([self isHUD] ? 0.10 : 0.75) alpha:1.0];
+}
+
+/* @ignore */
+- (CPColor)_hashMarkColorForDrawing
+{
+    return [CPColor colorWithWhite:([self isHUD] ? 0.60 : 0.55) alpha:1.0];
+}
+
+/* @ignore */
+- (CPColor)_labelColorForDrawing
+{
+    return [CPColor colorWithWhite:([self isHUD] ? 0.75 : 0.55) alpha:1.0];
+}
+
+/* @ignore */
+- (CPColor)_rulerlineColorForDrawing
+{
+    return [CPColor colorWithWhite:([self isHUD] ? 0.85 : 0.3) alpha:1.0];
+}
+
 // MARK: Drawing
 
 /*!
@@ -542,11 +600,11 @@ var CPRulerViewMinimumLabelSpacing = 40.0,
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         bounds = [self bounds];
 
-    CGContextSetFillColor(context, [CPColor colorWithWhite:0.96 alpha:1.0]);
+    CGContextSetFillColor(context, [self _backgroundColorForDrawing]);
     CGContextFillRect(context, bounds);
 
     // The edge next to the scroll view's content.
-    CGContextSetFillColor(context, [CPColor colorWithWhite:0.75 alpha:1.0]);
+    CGContextSetFillColor(context, [self _edgeColorForDrawing]);
 
     if (_orientation === CPHorizontalRuler)
         CGContextFillRect(context, CGRectMake(CGRectGetMinX(bounds), CGRectGetMaxY(bounds) - 1.0, CGRectGetWidth(bounds), 1.0));
@@ -577,9 +635,11 @@ var CPRulerViewMinimumLabelSpacing = 40.0,
         smallestStep = _hashMarkSteps.length ? _hashMarkSteps[_hashMarkSteps.length - 1] : _labelStep,
         stepPoints = smallestStep * unit.factor,
         firstIndex = Math.floor((firstPoint - zero) / stepPoints),
-        lastIndex = Math.ceil((lastPoint - zero) / stepPoints);
+        lastIndex = Math.ceil((lastPoint - zero) / stepPoints),
+        hashMarkColor = [self _hashMarkColorForDrawing],
+        labelColor = [self _labelColorForDrawing];
 
-    CGContextSetFillColor(context, [CPColor colorWithWhite:0.55 alpha:1.0]);
+    CGContextSetFillColor(context, hashMarkColor);
     CGContextSelectFont(context, [CPFont systemFontOfSize:8.0]);
 
     for (var index = firstIndex; index <= lastIndex; index++)
@@ -598,11 +658,15 @@ var CPRulerViewMinimumLabelSpacing = 40.0,
 
         var label = [self _labelForValue:value];
 
+        CGContextSetFillColor(context, labelColor);
+
         // Labels sit in the half of the rule area away from the baseline, clear of markers that reach below it.
         if (isHorizontal)
             CGContextShowTextAtPoint(context, ROUND(point) + 2.0, ruleEdge - 4.5, label);
         else
             CGContextShowTextAtPoint(context, ruleEdge - _ruleThickness + 1.0, ROUND(point) + 6.0, label);
+
+        CGContextSetFillColor(context, hashMarkColor);
     }
 }
 
@@ -635,7 +699,7 @@ var CPRulerViewMinimumLabelSpacing = 40.0,
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         bounds = [self bounds];
 
-    CGContextSetFillColor(context, [CPColor colorWithWhite:0.3 alpha:1.0]);
+    CGContextSetFillColor(context, [self _rulerlineColorForDrawing]);
 
     for (var i = 0; i < count; i++)
     {

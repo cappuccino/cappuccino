@@ -153,7 +153,7 @@ var CPBrowserDelegate_browser_acceptDrop_atRow_column_dropOperation_            
 
     _prototypeView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     [_prototypeView setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [_prototypeView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateSelectedDataView];
+    [_prototypeView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateSelectedDataView.and(CPThemeStateTableDataView)];
     [_prototypeView setLineBreakMode:CPLineBreakByTruncatingTail];
 
     _horizontalScrollView = [[CPScrollView alloc] initWithFrame:[self bounds]];

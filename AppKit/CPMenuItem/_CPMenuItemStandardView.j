@@ -145,6 +145,26 @@
     return self;
 }
 
+- (void)setThemeState:(CPThemeState)aState
+{
+    var oldState = [self themeState];
+    [super setThemeState:aState];
+    // If the state changed (e.g. adding HUD), we must re-run update
+    // to fetch the new text color defined for that state.
+    if (oldState !== [self themeState])
+        [self update];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    var oldState = [self themeState];
+    [super unsetThemeState:aState];
+    
+    if (oldState !== [self themeState])
+        [self update];
+}
+
+
 - (CPColor)textColor
 {
     if (![_menuItem isEnabled])
@@ -153,7 +173,7 @@
     if (_highlighted)
         return [CPColor whiteColor];
 
-    return [self valueForThemeAttribute:@"menu-item-text-color"];
+    return [self currentValueForThemeAttribute:@"menu-item-text-color"];
 }
 
 - (CPColor)textShadowColor
@@ -164,7 +184,7 @@
     if (_highlighted)
         return nil;
 
-    return [self valueForThemeAttribute:@"menu-item-text-shadow-color"];
+    return [self currentValueForThemeAttribute:@"menu-item-text-shadow-color"];
 }
 
 - (void)setFont:(CPFont)aFont
@@ -178,6 +198,11 @@
     return _font || [_menuItem font] || [CPFont systemFontOfSize:CPFontCurrentSystemSize];
 }
 
+// override needed to cancel out the standard HUD propagation
+- (void)viewDidMoveToWindow
+{
+}
+
 // FIXME: update is called 2 times at each display. Find why and fix.
 - (void)update
 {
@@ -188,6 +213,8 @@
 
         // When possible, use specific vertical margin/offset value based on font size (which could have been set by control size)
         correspondingControlSize = [myFont controlSizeCorrespondingToFontSize],
+        controlSizeState = CPControlSizeThemeStates[correspondingControlSize],
+        queryState = [self themeState] ? [self themeState].and(controlSizeState) : controlSizeState,
         verticalMargin = [self valueForThemeAttribute:@"vertical-margin" inState:CPControlSizeThemeStates[correspondingControlSize]],
         verticalOffset = [self valueForThemeAttribute:@"vertical-offset" inState:CPControlSizeThemeStates[correspondingControlSize]];
 
@@ -199,15 +226,15 @@
         switch ([_menuItem state])
         {
             case CPOnState:
-                [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:queryState] || [_menuItem onStateImage]];
                 break;
 
             case CPOffState:
-                [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:queryState] || [_menuItem offStateImage]];
                 break;
 
             case CPMixedState:
-                [_stateView setImage:[_menuItem mixedStateImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:queryState] || [_menuItem mixedStateImage]];
                 break;
 
             default:
@@ -326,7 +353,10 @@
 
     _highlighted = shouldHighlight;
 
-    var correspondingControlSize = [[self font] controlSizeCorrespondingToFontSize];
+    var correspondingControlSize = [[self font] controlSizeCorrespondingToFontSize],
+        // Construct the query state including the view's current theme state (e.g. HUD)
+        controlSizeState = CPControlSizeThemeStates[correspondingControlSize],
+        queryState = [self themeState] ? [self themeState].and(controlSizeState) : controlSizeState;
 
     [_imageAndTextView setTextColor:[self textColor]];
     [_keyEquivalentView setTextColor:[self textColor]];
@@ -339,7 +369,7 @@
         [_imageAndTextView setImage:[_menuItem alternateImage] || [_menuItem image]];
 
         if (_hasSubmenuIndicatorImage)
-            [_submenuIndicatorView setImage:[self valueForThemeAttribute:@"submenu-indicator-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+            [_submenuIndicatorView setImage:[self valueForThemeAttribute:@"submenu-indicator-highlighted-image" inState:queryState]];
         else
             [_submenuIndicatorView setColor:[self textColor]];
     }
@@ -349,7 +379,7 @@
         [_imageAndTextView setImage:[_menuItem image]];
 
         if (_hasSubmenuIndicatorImage)
-            [_submenuIndicatorView setImage:[self valueForThemeAttribute:@"submenu-indicator-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+            [_submenuIndicatorView setImage:[self valueForThemeAttribute:@"submenu-indicator-image" inState:queryState]];
         else
             [_submenuIndicatorView setColor:[self valueForThemeAttribute:@"submenu-indicator-color"]];
     }
@@ -361,15 +391,15 @@
             switch ([_menuItem state])
             {
                 case CPOnState:
-                    [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-highlighted-image" inState:queryState]];
                     break;
 
                 case CPOffState:
-                    [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-highlighted-image" inState:queryState]];
                     break;
 
                 case CPMixedState:
-                    [_stateView setImage:[_menuItem mixedImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem mixedImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-highlighted-image" inState:queryState]];
                     break;
 
                 default:
@@ -381,15 +411,15 @@
             switch ([_menuItem state])
             {
                 case CPOnState:
-                    [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:queryState]];
                     break;
 
                 case CPOffState:
-                    [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:queryState]];
                     break;
 
                 case CPMixedState:
-                    [_stateView setImage:[_menuItem mixedImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem mixedImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:queryState]];
                     break;
 
                 default:
