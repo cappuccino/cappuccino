@@ -1581,7 +1581,9 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
     _retargedChildIndex = theIndex;
     _shouldRetargetChildIndex = YES;
 
-    // set CPTableView's _retargetedDropRow based on retargetedItem and retargetedChildIndex
+    // set CPTableView's _retargetedDropOperation and _retargetedDropRow based on retargetedItem and retargetedChildIndex
+    _retargetedDropOperation = (_retargedChildIndex === CPOutlineViewDropOnItemIndex) ? CPTableViewDropOn : CPTableViewDropAbove;
+
     var retargetedItemInfo = (_retargetedItem != nil) ? _itemInfosForItems[[_retargetedItem UID]] : _rootItemInfo;
 
     if (_retargedChildIndex === [retargetedItemInfo.children count])
