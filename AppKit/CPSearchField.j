@@ -464,6 +464,12 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
   return [super isOpaque] && [_cancelButton isOpaque] && [_searchButton isOpaque];
 }
 
+- (void)setObjectValue:(id)anObject
+{
+    [super setObjectValue:anObject];
+    [self _updateCancelButtonVisibility];
+}
+
 - (void)_updateCancelButtonVisibility
 {
     [_cancelButton setHidden:([[self stringValue] length] === 0)];

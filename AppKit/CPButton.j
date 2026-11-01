@@ -202,6 +202,8 @@ CPButtonImageOffset   = 3.0;
         [self setBezelStyle:CPRoundRectBezelStyle];
         [self setBordered:YES];
 
+        _value = CPOffState;
+
         [self _init];
     }
 

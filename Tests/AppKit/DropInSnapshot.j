@@ -61,6 +61,37 @@ DropInWindowStyles = {
     @"hudClosable":     CPHUDBackgroundWindowMask | CPClosableWindowMask
 };
 
+/*
+ The getters that report a BOOL, and the getters that report a view's content.
+ */
+var DropInBooleanGetters = [
+    @"acceptsFirstResponder",
+    @"drawsBackground",
+    @"isBordered",
+    @"isEditable",
+    @"isEnabled",
+    @"isHidden",
+    @"isSelectable"
+],
+
+DropInContentGetters = [
+    @"color",
+    @"doubleValue",
+    @"indexOfSelectedItem",
+    @"maxValue",
+    @"minValue",
+    @"numberOfColumns",
+    @"numberOfItems",
+    @"numberOfTabViewItems",
+    @"objectValue",
+    @"segmentCount",
+    @"state",
+    @"string",
+    @"stringValue",
+    @"tag",
+    @"title"
+];
+
 function DropInIsPublicName(aName)
 {
     return aName.charAt(0) !== "_" && aName.charAt(0) !== "$";
@@ -226,18 +257,54 @@ function DropInDefaultConstruction(aClass, throwIfError)
 }
 
 /*
- Describes a view and its public subviews, in order. Private views are left out,
- because they are the class's own concern.
+ Lists the public views below a view, in order. A private view is the class's own
+ concern and is left out, but the public views inside it are the view's content.
+ An observed view has a generated isa, so its name comes from its class method.
+ */
+function DropInPublicSubviews(aView)
+{
+    return [aView subviews].reduce(function(aList, aSubview)
+    {
+        return aList.concat(DropInIsPublicName([aSubview className]) ? [aSubview] : DropInPublicSubviews(aSubview));
+    }, []);
+}
+
+/*
+ Describes the state of one view. An unset BOOL is nil and means NO, so a BOOL is
+ recorded by its truth value.
+ */
+function DropInViewTreeState(aView)
+{
+    var state = {};
+
+    DropInConstructionGetters.concat(DropInContentGetters).forEach(function(aGetter)
+    {
+        var selector = CPSelectorFromString(aGetter);
+
+        if (![aView respondsToSelector:selector])
+            return;
+
+        var value = [aView performSelector:selector];
+
+        state[aGetter] = DropInDescribeValue(DropInBooleanGetters.indexOf(aGetter) !== -1 ? !!value : value);
+    });
+
+    return state;
+}
+
+/*
+ Describes a view and everything public below it.
  */
 function DropInViewTree(aView)
 {
     return {
-        @"class": aView.isa.name,
+        @"class": [aView className],
         @"frame": DropInDescribeValue([aView frame]),
-        @"subviews": [aView subviews].filter(function(aSubview)
-                                             {
-            return DropInIsPublicName(aSubview.isa.name);
-        }).map(DropInViewTree)
+        @"state": DropInViewTreeState(aView),
+        @"subviews": DropInPublicSubviews(aView).map(function(aSubview)
+        {
+            return DropInViewTree(aSubview);
+        })
     };
 }
 
@@ -291,23 +358,37 @@ function DropInObjectTree(anObject)
 @end
 
 /*
- Loads a cib and describes its top level objects, sorted so that the order in
- which the cib lists them does not matter.
-
- A scroll view takes its scroller style from a global setting when it is decoded,
- and that style changes the frames inside it. Applications and tests change the
- setting, so each cib loads with the same style. Layout also changes frames and
- adds subviews, so it is complete before anything is described.
+ A scroll view takes its scroller style from a global setting, and that style changes
+ the frames and views inside it. Applications and tests change the setting, so a
+ description that is saved or compared is always made with the same style.
  */
-function DropInCibTree(aCibName, aRawString)
+function DropInWithFixedScrollerStyle(aFunction)
 {
-    var topLevelObjects = [],
-    cib = [[CPCib alloc] _initWithData:[CPData dataWithRawString:aRawString] bundle:nil cibName:aCibName],
-    scrollerStyle = [CPScrollView globalScrollerStyle];
+    var scrollerStyle = [CPScrollView globalScrollerStyle];
 
     [CPScrollView setGlobalScrollerStyle:CPScrollerStyleLegacy];
 
     try
+    {
+        return aFunction();
+    }
+    finally
+    {
+        [CPScrollView setGlobalScrollerStyle:scrollerStyle];
+    }
+}
+
+/*
+ Loads a cib and describes its top level objects, sorted so that the order in
+ which the cib lists them does not matter. Layout changes frames and adds subviews,
+ so it is complete before anything is described.
+ */
+function DropInCibTree(aCibName, aRawString)
+{
+    var topLevelObjects = [],
+    cib = [[CPCib alloc] _initWithData:[CPData dataWithRawString:aRawString] bundle:nil cibName:aCibName];
+
+    return DropInWithFixedScrollerStyle(function()
     {
         [cib instantiateCibWithExternalNameTable:@{ CPCibOwner: [[_DropInCibOwner alloc] init], CPCibTopLevelObjects: topLevelObjects }];
         [_CPDisplayServer run];
@@ -316,11 +397,7 @@ function DropInCibTree(aCibName, aRawString)
                                                          {
             return JSON.stringify(aTree);
         }).sort();
-    }
-    finally
-    {
-        [CPScrollView setGlobalScrollerStyle:scrollerStyle];
-    }
+    });
 }
 
 function DropInClassIsView(aClass)
