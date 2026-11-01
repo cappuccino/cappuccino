@@ -35,7 +35,8 @@ function main(args, namedArgs)
 {
     [[CPApplication alloc] init];
 
-    var snapshot = DropInCreateSnapshot(),
+    var skipped = [],
+        snapshot = DropInCreateSnapshot(YES, skipped),
         baselinePath = path.join(process.cwd(), "Tests", "AppKit", "Resources", "DropInBaseline.json");
 
     fs.writeFileSync(baselinePath, JSON.stringify(snapshot, null, 1) + "\n");
@@ -45,4 +46,5 @@ function main(args, namedArgs)
           Object.keys(snapshot.themeAttributes).length + " themed classes, " +
           Object.keys(snapshot.construction).length + " constructed views, " +
           Object.keys(snapshot.windows).length + " window styles");
+    skipped.forEach(function(aLine) { print("skipped " + aLine); });
 }
