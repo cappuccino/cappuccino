@@ -162,8 +162,9 @@ var fs = require("fs"),
     Tests/Manual/SmartFoldersTest/Resources/PredicateEditor.cib and
     Tests/Manual/TextEditor/Resources/DocumentWindow.cib, as of commit 5db5adac0.
     Loading one must produce the same windows, views and frames as main. The MainMenu
-    cibs of those applications are not here, because they need application classes
-    to load.
+    cibs of those applications are not here. TextEditor's shows a menu bar, which needs
+    a platform window, and SmartFoldersTest's connects a data source that is defined by
+    the application.
 */
 - (void)testExistingCibsProduceTheSameObjects
 {
