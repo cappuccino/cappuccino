@@ -826,9 +826,14 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         var items = [aCoder decodeObjectForKey:CPTabViewItemsKey] || [CPArray array];
         [self _insertTabViewItems:items atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [items count])] canUpdateSelectedTab:NO];
 
-        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
+        // Inserting the items selected the first one. This is done before there is a
+        // delegate, because decoding is not a selection made by the user.
+        var selectedItem = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
 
-        _selectedTabViewItem = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
+        if (selectedItem)
+            [self _selectTabViewItemAtIndex:[self indexOfTabViewItem:selectedItem]];
+
+        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
         _type = [aCoder decodeIntForKey:CPTabViewTypeKey];
     }

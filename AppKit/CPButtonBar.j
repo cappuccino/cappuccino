@@ -390,6 +390,11 @@ var CPButtonBarHasResizeControlKey = @"CPButtonBarHasResizeControlKey",
         _rightButtons = [aCoder decodeObjectForKey:CPButtonBarRightButtonsKey] || [];
         _hasResizeControl = [aCoder decodeBoolForKey:CPButtonBarHasResizeControlKey];
         _resizeControlIsLeftAligned = [aCoder decodeBoolForKey:CPButtonBarResizeControlIsLeftAlignedKey];
+
+        var buttons = [_buttons arrayByAddingObjectsFromArray:_rightButtons];
+
+        for (var i = [buttons count] - 1; i >= 0; i--)
+            [buttons[i] addObserver:self forKeyPath:@"hidden" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:nil];
     }
 
     return self;

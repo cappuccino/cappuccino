@@ -2273,7 +2273,8 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     CPTextFieldPlaceholderStringKey     = "CPTextFieldPlaceholderStringKey",
     CPTextFieldUsesSingleLineMode       = "CPTextFieldUsesSingleLineMode",
     CPTextFieldWraps                    = "CPTextFieldWraps",
-    CPTextFieldScrolls                  = "CPTextFieldScrolls";
+    CPTextFieldScrolls                  = "CPTextFieldScrolls",
+    CPTextFieldDelegateKey              = "CPTextFieldDelegateKey";
 
 
 @implementation CPTextField (CPCoding)
@@ -2303,6 +2304,8 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self _setUsesSingleLineMode:[aCoder decodeBoolForKey:CPTextFieldUsesSingleLineMode]];
         [self _setWraps:[aCoder decodeBoolForKey:CPTextFieldWraps]];
         [self _setScrolls:[aCoder decodeBoolForKey:CPTextFieldScrolls]];
+
+        [self setDelegate:[aCoder decodeObjectForKey:CPTextFieldDelegateKey]];
         [self updateTrackingAreas];
     }
 
@@ -2332,6 +2335,8 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     [aCoder encodeBool:_usesSingleLineMode forKey:CPTextFieldUsesSingleLineMode];
     [aCoder encodeBool:_wraps forKey:CPTextFieldWraps];
     [aCoder encodeBool:_scrolls forKey:CPTextFieldScrolls];
+
+    [aCoder encodeConditionalObject:_delegate forKey:CPTextFieldDelegateKey];
 }
 
 @end
