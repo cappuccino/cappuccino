@@ -45,6 +45,7 @@
 @import "CPIndexPath.j"
 @import "CPIndexSet.j"
 @import "CPInvocation.j"
+@import "CPItemProvider.j"
 @import "CPJSONPConnection.j"
 @import "CPKeyedArchiver.j"
 @import "CPKeyedUnarchiver.j"

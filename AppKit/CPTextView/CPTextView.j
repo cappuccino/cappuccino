@@ -24,7 +24,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPItemProvider.j>
+
 @import "CPText.j"
+@import "CPOpenPanel.j"
 @import "CPPasteboard.j"
 @import "CPColorPanel.j"
 @import "CPFontManager.j"
@@ -4366,79 +4369,76 @@ var CPTextViewTextListStyles = {
 // MARK: Inserting Images
 
 /*!
-    Lets the user choose image files with the browser's file picker, and inserts them as
-    attachments at the insertion point, or in place of the selection, in the order chosen.
+    Lets the user choose image files with an open panel, and inserts them as attachments at the
+    insertion point, or in place of the selection, in the order chosen.
     @param aSender the object requesting this
 */
 - (@action)insertImage:(id)aSender
 {
-    if (!CPDOMAvailable || ![self isRichText] || ![self isEditable])
+    if (![self isRichText] || ![self isEditable])
         return;
 
     var textView = self,
-        input = document.createElement("input");
+        openPanel = [CPOpenPanel openPanel];
 
-    input.type = "file";
-    input.accept = "image/*";
-    input.multiple = YES;
-
-    input.onchange = function()
+    [openPanel setAllowedFileTypes:[@"image/*"]];
+    [openPanel setAllowsMultipleSelection:YES];
+    [openPanel beginWithCompletionHandler:function(aResponse)
     {
-        [textView _insertImageFiles:input.files];
-    };
-
-    input.click();
+        if (aResponse === CPOKButton)
+            [textView _insertImagesFromItemProviders:[openPanel itemProviders]];
+    }];
 }
 
 /* @ignore
-    Reads image files from the browser, and inserts them as attachments in their original
-    order once all of them have been read. Files that are not images are skipped.
+    Loads images from item providers, and inserts them as attachments in their original order
+    once all of them have loaded. Items that are not images are skipped.
 */
-- (void)_insertImageFiles:(FileList)someFiles
+- (void)_insertImagesFromItemProviders:(CPArray)someItemProviders
 {
-    var files = [];
+    var itemProviders = [];
 
-    for (var i = 0; i < someFiles.length; i++)
-        if (someFiles[i].type.indexOf("image/") === 0)
-            files.push(someFiles[i]);
+    for (var i = 0, count = [someItemProviders count]; i < count; i++)
+        if ([someItemProviders[i] hasItemConformingToTypeIdentifier:@"image/*"])
+            itemProviders.push(someItemProviders[i]);
 
-    if (!files.length)
+    if (!itemProviders.length)
         return;
 
-    var attachments = new Array(files.length);
+    var attachments = new Array(itemProviders.length);
 
-    for (var i = 0; i < files.length; i++)
-        [self _readImageFile:files[i] intoAttachments:attachments atIndex:i];
+    for (var i = 0; i < itemProviders.length; i++)
+        [self _loadImageFromItemProvider:itemProviders[i] intoAttachments:attachments atIndex:i];
 }
 
 /* @ignore
-    Reads one image file as a data URL, and makes an attachment from it. When the last file has
-    been read, the attachments are inserted.
+    Loads one image from an item provider, and makes an attachment from it. When the last image
+    has loaded, the attachments are inserted. An image that cannot be loaded is reported and
+    skipped.
 */
-- (void)_readImageFile:(File)aFile intoAttachments:(CPArray)someAttachments atIndex:(unsigned)anIndex
+- (void)_loadImageFromItemProvider:(CPItemProvider)anItemProvider intoAttachments:(CPArray)someAttachments atIndex:(unsigned)anIndex
 {
     var textView = self,
-        reader = new FileReader();
+        typeIdentifier = [anItemProvider _registeredTypeIdentifierConformingToTypeIdentifier:@"image/*"];
 
-    reader.onload = function()
+    [anItemProvider loadDataRepresentationForTypeIdentifier:typeIdentifier completionHandler:function(data, error)
     {
-        someAttachments[anIndex] = [CPTextAttachment _attachmentWithDataURL:reader.result] || [CPNull null];
-        [textView _insertAttachmentsIfComplete:someAttachments];
-    };
+        if (data)
+            someAttachments[anIndex] = [[CPTextAttachment alloc] initWithData:data ofType:typeIdentifier];
+        else
+        {
+            CPLog.warn("CPTextView: the image " + [anItemProvider suggestedName] + " could not be loaded. " + [error localizedDescription]);
+            someAttachments[anIndex] = [CPNull null];
+        }
 
-    reader.onerror = function()
-    {
-        CPLog.warn("CPTextView: the image file " + aFile.name + " could not be read.");
-        someAttachments[anIndex] = [CPNull null];
         [textView _insertAttachmentsIfComplete:someAttachments];
-    };
-
-    reader.readAsDataURL(aFile);
+    }];
 }
 
 /* @ignore
-    Inserts the attachments once every file has been read. The files are read outside the run
-    loop, so the run loop is run afterwards, to close the undo group and display the change.
+    Inserts the attachments once every image has loaded. An item provider calls its completion
+    handler inside a run loop pass, so the insertion closes its undo group and is displayed like
+    any other edit.
 */
 - (void)_insertAttachmentsIfComplete:(CPArray)someAttachments
 {
@@ -4465,8 +4465,6 @@ var CPTextViewTextListStyles = {
 
     if ([result length])
         [self insertText:result];
-
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 // MARK: Attachment Layout
@@ -5028,9 +5026,9 @@ var _CPCopyPlaceholder = '-';
         // An image on the clipboard, such as a screenshot, is inserted as an attachment when the
         // clipboard holds no text.
         if (!nativePlainText && nativeClipboard.files && nativeClipboard.files.length &&
-            [currentFirstResponder respondsToSelector:@selector(_insertImageFiles:)] && [currentFirstResponder isRichText])
+            [currentFirstResponder respondsToSelector:@selector(_insertImagesFromItemProviders:)] && [currentFirstResponder isRichText])
         {
-            [currentFirstResponder _insertImageFiles:nativeClipboard.files];
+            [currentFirstResponder _insertImagesFromItemProviders:[CPItemProvider _itemProvidersWithFiles:nativeClipboard.files]];
             return;
         }
 
