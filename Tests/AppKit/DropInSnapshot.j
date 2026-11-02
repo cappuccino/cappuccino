@@ -165,6 +165,13 @@ function DropInDescribeValue(aValue)
 
     if (aValue.isa)
     {
+        /*
+         A date is recorded by its instant in UTC. Its description is in the time zone
+         of the machine that runs the test, so it differs between machines.
+         */
+        if ([aValue isKindOfClass:[CPDate class]])
+            return "CPDate:" + (isNaN(aValue.getTime()) ? "invalid" : aValue.toISOString());
+
         if ([aValue isKindOfClass:[CPColor class]])
             return "CPColor:" + [aValue cssString];
 
@@ -285,6 +292,15 @@ function DropInViewTreeState(aView)
             return;
 
         var value = [aView performSelector:selector];
+
+        /*
+         A control that holds a date gives its string value in the time zone of the
+         machine that runs the test, because the browser formats it, not Cappuccino. It
+         is recorded by the date's instant instead, so that every machine records the
+         same snapshot.
+         */
+        if (aGetter === @"stringValue" && [aView respondsToSelector:@selector(objectValue)] && [[aView objectValue] isKindOfClass:[CPDate class]])
+            value = [aView objectValue];
 
         state[aGetter] = DropInDescribeValue(DropInBooleanGetters.indexOf(aGetter) !== -1 ? !!value : value);
     });
