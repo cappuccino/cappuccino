@@ -63,3 +63,4 @@ task ("Theme", [$BUILD_CJS_CAPPUCCINO_APPKIT], function()
 task ("build", ["AppKit", $BUILD_CJS_CAPPUCCINO_APPKIT, "Theme"]);
 
 CLOBBER.include($BUILD_CJS_CAPPUCCINO_APPKIT);
+CLOBBER.include(path.join(__dirname, "Build"));
