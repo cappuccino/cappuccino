@@ -434,6 +434,41 @@
     [self assertTrue:[predicate evaluateWithObject:dict] message:"Predicate " + predicate + " should evaluate to TRUE"];
 }
 
+- (void)testCustomSelectorPredicateParsing
+{
+    var predicate = [CPPredicate predicateWithFormat:@"SELF isKindOfClass: %@", [CPArray class]];
+
+    [self assert:CPCustomSelectorPredicateOperatorType equals:[predicate predicateOperatorType]];
+    [self assert:@selector(isKindOfClass:) equals:[predicate customSelector]];
+    [self assertTrue:[predicate evaluateWithObject:[CPArray array]]];
+    [self assertFalse:[predicate evaluateWithObject:@{}]];
+
+    var negated = [CPPredicate predicateWithFormat:@"NOT SELF isKindOfClass: %@", [CPArray class]];
+
+    [self assertFalse:[negated evaluateWithObject:[CPArray array]]];
+    [self assertTrue:[negated evaluateWithObject:@{}]];
+
+    // A parse failure is reported through CPLogConsole, which is captured here.
+    var logConsole = CPLogConsole,
+        messages = [];
+
+    CPLogConsole = function(aString)
+    {
+        messages.push(aString);
+    };
+
+    try
+    {
+        [self assertNull:[CPPredicate predicateWithFormat:@"ANY SELF isKindOfClass: %@", [CPArray class]]];
+    }
+    finally
+    {
+        CPLogConsole = logConsole;
+    }
+
+    [self assertTrue:messages.length > 0];
+}
+
 - (void)testExpressionAndPredicateIsEqual
 {
     var cexp1 = [CPExpression expressionForConstantValue:2],

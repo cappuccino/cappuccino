@@ -526,7 +526,21 @@
         type = CPBetweenPredicateOperatorType;
     }
     else
-        CPRaiseParseError(self, @"comparison predicate");
+    {
+        /*
+            A selector such as isKindOfClass: is a custom comparison operator. As in
+            Cocoa, a custom selector comparison has no modifier.
+        */
+        var selector = [self parseCustomSelector];
+
+        if (!selector || modifier !== CPDirectPredicateModifier)
+            CPRaiseParseError(self, @"comparison predicate");
+
+        right = [self parseExpression];
+        p = [CPComparisonPredicate predicateWithLeftExpression:left rightExpression:right customSelector:selector];
+
+        return negate ? [CPCompoundPredicate notPredicateWithSubpredicate:p] : p;
+    }
 
     if ([self scanString:@"[cd]" intoString:NULL])
     {
@@ -550,6 +564,23 @@
          options:opts];
 
     return negate ? [CPCompoundPredicate notPredicateWithSubpredicate:p]:p;
+}
+
+/*
+    Scans a one-argument selector, such as isKindOfClass:, and returns it. Returns nil
+    and leaves the scan location unchanged when there is none.
+*/
+- (SEL)parseCustomSelector
+{
+    var location = [self scanLocation],
+        name = [self scanCharactersFromSet:[CPCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"]];
+
+    if (name && [self scanString:@":" intoString:NULL])
+        return CPSelectorFromString(name + ":");
+
+    [self setScanLocation:location];
+
+    return nil;
 }
 
 - (CPExpression)parseExpression
