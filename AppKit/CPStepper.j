@@ -382,6 +382,8 @@ var CPStepperMinValue   = @"CPStepperMinValue",
         _valueWraps = [aCoder decodeBoolForKey:CPStepperValueWraps];
         _autorepeat = [aCoder decodeBoolForKey:CPStepperAutorepeat];
 
+        // The archive holds the buttons as subviews, and _init creates them again.
+        [self setSubviews:@[]];
         [self _init];
         [self setEnabled:[self isEnabled]];
     }

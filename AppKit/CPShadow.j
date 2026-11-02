@@ -52,6 +52,14 @@
 }
 
 /* @ignore */
+/*!
+    Initializes a shadow with no offset or blur, and a black color at one third opacity.
+*/
+- (id)init
+{
+    return [self _initWithOffset:CGSizeMakeZero() blurRadius:0.0 color:[CPColor colorWithWhite:0.0 alpha:1.0 / 3.0]];
+}
+
 - (id)_initWithOffset:(CGSize)anOffset blurRadius:(float)aBlurRadius color:(CPColor)aColor
 {
     self = [super init];
@@ -79,6 +87,28 @@
 - (CPString)cssString
 {
     return [_color cssString] + " " + ROUND(_offset.width) + @"px " + ROUND(_offset.height) + @"px " + ROUND(_blurRadius) + @"px";
+}
+
+@end
+
+var CPShadowOffsetKey     = @"CPShadowOffsetKey",
+    CPShadowBlurRadiusKey = @"CPShadowBlurRadiusKey",
+    CPShadowColorKey      = @"CPShadowColorKey";
+
+@implementation CPShadow (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self _initWithOffset:[aCoder decodeSizeForKey:CPShadowOffsetKey]
+                      blurRadius:[aCoder decodeFloatForKey:CPShadowBlurRadiusKey]
+                           color:[aCoder decodeObjectForKey:CPShadowColorKey]];
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeSize:_offset forKey:CPShadowOffsetKey];
+    [aCoder encodeFloat:_blurRadius forKey:CPShadowBlurRadiusKey];
+    [aCoder encodeObject:_color forKey:CPShadowColorKey];
 }
 
 @end

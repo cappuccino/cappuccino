@@ -1097,6 +1097,11 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
         _flexibleSpacesCount        = [aCoder decodeIntForKey:CPButtonBarFlexibleSpacesCountKey];
      
         [self setNeedsRelayout:YES];
+
+        var buttons = [_buttons arrayByAddingObjectsFromArray:_rightButtons];
+
+        for (var i = [buttons count] - 1; i >= 0; i--)
+            [buttons[i] addObserver:self forKeyPath:@"hidden" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:nil];
     }
 
     return self;

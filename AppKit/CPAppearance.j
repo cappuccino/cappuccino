@@ -125,6 +125,11 @@ CPThemeStateAppearanceVibrantDark      = CPThemeState("appearance-vibrant-dark")
 // MARK: -
 // MARK: Implementation
 
+- (CPString)name
+{
+    return _name;
+}
+
 - (BOOL)isEqual:(id)anObject
 {
     if (![anObject isKindOfClass:CPAppearance])

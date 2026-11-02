@@ -137,3 +137,34 @@
 }
 
 @end
+
+var CPMapTableKeysKey    = @"CPMapTableKeysKey",
+    CPMapTableObjectsKey = @"CPMapTableObjectsKey";
+
+@implementation CPMapTable (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [self init];
+
+    if (self)
+    {
+        var keys = [aCoder decodeObjectForKey:CPMapTableKeysKey],
+            objects = [aCoder decodeObjectForKey:CPMapTableObjectsKey];
+
+        keys.forEach(function(aKey, anIndex)
+        {
+            [self setObject:objects[anIndex] forKey:aKey];
+        });
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:Array.from(_map.keys()) forKey:CPMapTableKeysKey];
+    [aCoder encodeObject:Array.from(_map.values()) forKey:CPMapTableObjectsKey];
+}
+
+@end

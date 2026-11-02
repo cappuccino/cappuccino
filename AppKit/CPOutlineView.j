@@ -1940,7 +1940,9 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
     _retargedChildIndex = theIndex;
     _shouldRetargetChildIndex = YES;
 
-    // set CPTableView's _retargetedDropRow based on retargetedItem and retargetedChildIndex
+    // set CPTableView's _retargetedDropOperation and _retargetedDropRow based on retargetedItem and retargetedChildIndex
+    _retargetedDropOperation = (_retargedChildIndex === CPOutlineViewDropOnItemIndex) ? CPTableViewDropOn : CPTableViewDropAbove;
+
     var retargetedItemInfo = (_retargetedItem != nil) ? _itemInfosForItems[[_retargetedItem UID]] : _rootItemInfo;
 
     if (_retargedChildIndex === [retargetedItemInfo.children count])
@@ -2866,11 +2868,16 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
         _outlineTableColumn = [aCoder decodeObjectForKey:CPOutlineViewOutlineTableColumnKey];
         _indentationPerLevel = [aCoder decodeFloatForKey:CPOutlineViewIndentationPerLevelKey];
 
-        _outlineViewDataSource = [aCoder decodeObjectForKey:CPOutlineViewDataSourceKey];
-        _outlineViewDelegate = [aCoder decodeObjectForKey:CPOutlineViewDelegateKey];
-
         [super setDataSource:self];
         [super setDelegate:self];
+
+        // The setters record which optional methods each object implements.
+        var dataSource = [aCoder decodeObjectForKey:CPOutlineViewDataSourceKey];
+
+        if (dataSource)
+            [self setDataSource:dataSource];
+
+        [self setDelegate:[aCoder decodeObjectForKey:CPOutlineViewDelegateKey]];
 
         [self _updateIsViewBased];
 

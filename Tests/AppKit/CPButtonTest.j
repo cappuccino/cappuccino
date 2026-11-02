@@ -104,6 +104,12 @@
     [self assertTrue:wasClicked];
 }
 
+- (void)testNewButtonValueIsOff
+{
+    [self assert:CPOffState equals:[button objectValue] message:@"a new button should be off"];
+    [self assert:CPOffState equals:[button state] message:@"state should be CPOffState"];
+}
+
 - (void)testSetObjectValue
 {
     [button setObjectValue:CPOnState];

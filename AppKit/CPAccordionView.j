@@ -414,3 +414,85 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
 }
 
 @end
+
+
+var CPAccordionViewItemIdentifierKey = @"CPAccordionViewItemIdentifierKey",
+    CPAccordionViewItemViewKey       = @"CPAccordionViewItemViewKey",
+    CPAccordionViewItemLabelKey      = @"CPAccordionViewItemLabelKey";
+
+@implementation CPAccordionViewItem (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        _identifier = [aCoder decodeObjectForKey:CPAccordionViewItemIdentifierKey];
+        _view = [aCoder decodeObjectForKey:CPAccordionViewItemViewKey];
+        _label = [aCoder decodeObjectForKey:CPAccordionViewItemLabelKey];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_identifier forKey:CPAccordionViewItemIdentifierKey];
+    [aCoder encodeObject:_view forKey:CPAccordionViewItemViewKey];
+    [aCoder encodeObject:_label forKey:CPAccordionViewItemLabelKey];
+}
+
+@end
+
+var CPAccordionViewItemsKey               = @"CPAccordionViewItemsKey",
+    CPAccordionViewItemHeaderPrototypeKey = @"CPAccordionViewItemHeaderPrototypeKey",
+    CPAccordionViewExpandedItemIndexesKey = @"CPAccordionViewExpandedItemIndexesKey";
+
+@implementation CPAccordionView (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        _items = [];
+        _itemViews = [];
+        _expandedItemIndexes = [CPIndexSet indexSet];
+
+        [self setItemHeaderPrototype:[aCoder decodeObjectForKey:CPAccordionViewItemHeaderPrototypeKey]];
+
+        var items = [aCoder decodeObjectForKey:CPAccordionViewItemsKey],
+            expandedItemIndexes = [aCoder decodeObjectForKey:CPAccordionViewExpandedItemIndexesKey];
+
+        items.forEach(function(anItem)
+        {
+            [self addItem:anItem];
+        });
+
+        items.forEach(function(anItem, anIndex)
+        {
+            if (![expandedItemIndexes containsIndex:anIndex])
+                [self collapseItemAtIndex:anIndex];
+        });
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    // The item views are recreated on decode from the items, so they are not encoded.
+    var subviews = [self subviews];
+
+    [_itemViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    [super encodeWithCoder:aCoder];
+    [self setSubviews:subviews];
+
+    [aCoder encodeObject:_items forKey:CPAccordionViewItemsKey];
+    [aCoder encodeObject:_itemHeaderPrototype forKey:CPAccordionViewItemHeaderPrototypeKey];
+    [aCoder encodeObject:_expandedItemIndexes forKey:CPAccordionViewExpandedItemIndexesKey];
+}
+
+@end

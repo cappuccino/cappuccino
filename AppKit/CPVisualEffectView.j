@@ -121,7 +121,6 @@ CPVisualEffectStateInactive                 = 2;
 - (void)_setEffectEnabled:(BOOL)shouldEnable
 {
     var dark       = [[self appearance] isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]],
-        prop       = CPBrowserStyleProperty("backdrop-filter"),
         color      = (dark ? [CPColor colorWithHexString:@"1e1e1e"] : [CPColor whiteColor]),
         finalColor = shouldEnable ? [color colorWithAlphaComponent:0.6] : color;
 
@@ -129,7 +128,7 @@ CPVisualEffectStateInactive                 = 2;
 
     if (CPDOMAvailable)
     {
-        self._DOMElement.style[prop] = shouldEnable ? "blur(30px)" : nil;
+        self._DOMElement.style[CPBrowserStyleProperty("backdrop-filter")] = shouldEnable ? "blur(30px)" : nil;
     }
 
 }
