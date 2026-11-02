@@ -117,7 +117,7 @@ var CPStringEncodingDecodeWithTextDecoder = function(aLabel, bytes, isLossy)
 
     try
     {
-        return new TextDecoder(aLabel, { fatal: !isLossy }).decode(new Uint8Array(bytes));
+        return new TextDecoder(aLabel, { fatal: !isLossy }).decode(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
     }
     catch (anException)
     {
@@ -142,7 +142,7 @@ var CPStringEncodingDecodeASCII = function(bytes, isLossy)
             if (!isLossy)
                 return nil;
 
-            bytes = bytes.map(function(aByte) { return aByte > 0x7F ? CPStringEncodingReplacementCharacter : aByte; });
+            bytes = Array.prototype.map.call(bytes, function(aByte) { return aByte > 0x7F ? CPStringEncodingReplacementCharacter : aByte; });
             break;
         }
 
@@ -705,6 +705,38 @@ var CPStringEncodingIsAvailable = function(aDescriptor)
     }
 };
 
+/*
+    Returns the bytes of data as an array of bytes. Data that holds a binary string, such as
+    file contents from CPItemProvider, is converted to a Uint8Array, which takes one byte for
+    each byte. Asking CPData for its bytes would build a plain array of JavaScript numbers, many
+    times the size, because CFData stores bytes that way, and keep it in the data.
+*/
+var CPStringEncodingBytesOfData = function(someData)
+{
+    if (!someData)
+        return [];
+
+    if (someData._bytes)
+        return someData._bytes;
+
+    var string = someData.rawString(),
+        count = string.length,
+        bytes = new Uint8Array(count);
+
+    for (var i = 0; i < count; i++)
+        bytes[i] = string.charCodeAt(i) & 0xFF;
+
+    return bytes;
+};
+
+/*
+    Returns the bytes from anIndex to the end, without copying when the bytes are a Uint8Array.
+*/
+var CPStringEncodingBytesFromIndex = function(bytes, anIndex)
+{
+    return bytes.subarray ? bytes.subarray(anIndex) : bytes.slice(anIndex);
+};
+
 var CPStringEncodingDecode = function(bytes, anEncoding, isLossy)
 {
     var descriptor = CPStringEncodingDescriptors[anEncoding];
@@ -807,7 +839,12 @@ var CPStringEncodingDecode = function(bytes, anEncoding, isLossy)
 */
 - (id)initWithData:(CPData)someData encoding:(CPStringEncoding)anEncoding
 {
-    return [self initWithBytes:someData ? [someData bytes] : [] length:someData ? [someData length] : 0 encoding:anEncoding];
+    var decoded = CPStringEncodingDecode(CPStringEncodingBytesOfData(someData), anEncoding, NO);
+
+    if (decoded === nil)
+        return nil;
+
+    return [self initWithString:decoded];
 }
 
 /*!
@@ -856,7 +893,7 @@ var CPStringEncodingDecode = function(bytes, anEncoding, isLossy)
 */
 + (CPStringEncoding)stringEncodingForData:(CPData)someData encodingOptions:(CPDictionary)someOptions convertedString:(CPStringRef)aStringRef usedLossyConversion:(BOOLRef)aLossyRef
 {
-    var bytes = someData ? [someData bytes] : [],
+    var bytes = CPStringEncodingBytesOfData(someData),
         suggested = [someOptions objectForKey:CPStringEncodingDetectionSuggestedEncodingsKey] || [],
         usesOnlySuggested = !![someOptions objectForKey:CPStringEncodingDetectionUseOnlySuggestedEncodingsKey],
         allowLossy = [someOptions objectForKey:CPStringEncodingDetectionAllowLossyKey],
@@ -887,7 +924,7 @@ var CPStringEncodingDecode = function(bytes, anEncoding, isLossy)
 
         if (bytes.length >= mark.length && mark.every(function(aByte, anIndex) { return bytes[anIndex] === aByte; }))
         {
-            var decoded = CPStringEncodingDecode(bytes.slice(mark.length), byteOrderMarks[i][1], NO);
+            var decoded = CPStringEncodingDecode(CPStringEncodingBytesFromIndex(bytes, mark.length), byteOrderMarks[i][1], NO);
 
             if (decoded !== nil)
                 return result(byteOrderMarks[i][1], decoded, NO);

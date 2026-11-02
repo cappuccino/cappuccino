@@ -65,6 +65,7 @@
 @import "CPOperation.j"
 @import "CPOperationQueue.j"
 @import "CPPredicate.j"
+@import "CPProgress.j"
 @import "CPPropertyListSerialization.j"
 @import "CPRange.j"
 @import "CPRunLoop.j"

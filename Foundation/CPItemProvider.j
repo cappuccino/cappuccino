@@ -25,8 +25,10 @@
 @import "CPData.j"
 @import "CPDictionary.j"
 @import "CPError.j"
+@import "CPProgress.j"
 @import "CPRunLoop.j"
 @import "CPString.j"
+@import "CPString+Encoding.j"
 
 @global FileReader
 
@@ -36,18 +38,35 @@ CPItemProviderUnknownError                  = -1;
 CPItemProviderItemUnavailableError          = -1000;
 CPItemProviderUnexpectedValueClassError     = -1100;
 
+var CPItemProviderChunkSize = 32768;
+
+/*
+    Returns a binary string for an array buffer: one character for each byte, of the same value.
+    The buffer is converted in chunks, because a very long argument list exceeds the JavaScript
+    engine's limit.
+
+    CPData holds a binary string compactly, one byte for each character in current JavaScript
+    engines. Its byte array would hold one JavaScript number for each byte, many times the size,
+    because CFData stores bytes that way. File contents are given to CPData as a binary string.
+*/
+var CPItemProviderBinaryStringFromArrayBuffer = function(anArrayBuffer)
+{
+    var bytes = new Uint8Array(anArrayBuffer),
+        chunks = [];
+
+    for (var i = 0, count = bytes.length; i < count; i += CPItemProviderChunkSize)
+        chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + CPItemProviderChunkSize)));
+
+    return chunks.join("");
+};
+
 /*
     TODO: Gaps against NSItemProvider that can be filled:
 
-    - -loadDataRepresentationForTypeIdentifier:completionHandler: returns an NSProgress in Cocoa,
-      which reports reading progress and cancels the load. Foundation has no CPProgress yet.
-      Cancelling a file read would call FileReader's abort().
-    - Object loading: -canLoadObjectOfClass:, -loadObjectOfClass:completionHandler:,
-      -registerObject:visibility:, -initWithObject: and -initWithItem:typeIdentifier:, with the
-      reading and writing protocols. Loading a CPString this way could decode the browser's
-      buffer directly with TextDecoder.
-    - Files are read into a plain JavaScript array with one number per byte, because CFData
-      stores bytes that way. A large file needs many times its own size in memory.
+    - Writing: -registerObject:visibility:, -registerObjectOfClass:visibility:loadHandler:,
+      -initWithObject: and -initWithItem:typeIdentifier:, with a writing protocol.
+    - Loading a large file still holds it several times over at its peak: the browser's
+      buffer, the binary string in CPData, and the decoded text.
 */
 
 /*!
@@ -73,15 +92,21 @@ CPItemProviderUnexpectedValueClassError     = -1100;
     - Representations have no visibility. A page is one process, so Cocoa's visibility levels
       have no meaning.
 
+    Each load returns a CPProgress. For a file, it counts the bytes read. Cancelling it stops
+    the read, and the completion handler then receives a CPUserCancelledError.
+
     A completion handler receives the data, or nil and an error:
 
     <pre>
-    [anItemProvider loadDataRepresentationForTypeIdentifier:@"image/*" completionHandler:function(data, error)
+    var progress = [anItemProvider loadDataRepresentationForTypeIdentifier:@"image/*" completionHandler:function(data, error)
     {
         if (data)
             [self useData:data];
     }];
     </pre>
+
+    An object of a class that adopts the item provider reading methods, such as CPString, can
+    be loaded with -loadObjectOfClass:completionHandler:.
 */
 @implementation CPItemProvider : CPObject
 {
@@ -128,7 +153,7 @@ CPItemProviderUnexpectedValueClassError     = -1100;
     [itemProvider setSuggestedName:aFile.webkitRelativePath || aFile.name];
     [itemProvider registerDataRepresentationForTypeIdentifier:typeIdentifier loadHandler:function(completionHandler)
     {
-        [CPItemProvider _readFile:aFile completionHandler:completionHandler];
+        return [CPItemProvider _readFile:aFile completionHandler:completionHandler];
     }];
 
     return itemProvider;
@@ -151,22 +176,37 @@ CPItemProviderUnexpectedValueClassError     = -1100;
 
 /*!
     Reads a browser File object with FileReader, and calls \c aCompletionHandler with its
-    contents as data, or with nil and an error.
+    contents as data, or with nil and an error. Returns a progress object that counts the bytes
+    read. Cancelling it aborts the read.
     @ignore
 */
-+ (void)_readFile:(File)aFile completionHandler:(Function)aCompletionHandler
++ (CPProgress)_readFile:(File)aFile completionHandler:(Function)aCompletionHandler
 {
+    var progress = [CPProgress discreteProgressWithTotalUnitCount:MAX(aFile.size || 0, 1)];
+
+    [progress setKind:CPProgressKindFile];
+    [progress setFileOperationKind:CPProgressFileOperationKindReceiving];
+
     if (typeof FileReader === "undefined")
     {
         aCompletionHandler(nil, [self _errorWithCode:CPItemProviderItemUnavailableError description:@"Files cannot be read in this environment."]);
-        return;
+        return progress;
     }
 
     var reader = new FileReader();
 
+    reader.onprogress = function(anEvent)
+    {
+        if (anEvent.lengthComputable)
+            [progress setCompletedUnitCount:MIN(anEvent.loaded, [progress totalUnitCount] - 1)];
+    };
+
     reader.onload = function()
     {
-        aCompletionHandler([CPData dataWithBytes:Array.from(new Uint8Array(reader.result))], nil);
+        var data = [CPData dataWithRawString:CPItemProviderBinaryStringFromArrayBuffer(reader.result)];
+
+        [progress setCompletedUnitCount:[progress totalUnitCount]];
+        aCompletionHandler(data, nil);
     };
 
     reader.onerror = function()
@@ -179,7 +219,20 @@ CPItemProviderUnexpectedValueClassError     = -1100;
         aCompletionHandler(nil, [self _errorWithCode:CPItemProviderUnknownError description:description]);
     };
 
+    reader.onabort = function()
+    {
+        aCompletionHandler(nil, [self _cancelledError]);
+    };
+
+    [progress setCancellationHandler:function()
+    {
+        if (reader.readyState === 1)
+            reader.abort();
+    }];
+
     reader.readAsArrayBuffer(aFile);
+
+    return progress;
 }
 
 /*!
@@ -190,6 +243,16 @@ CPItemProviderUnexpectedValueClassError     = -1100;
     return [CPError errorWithDomain:CPItemProviderErrorDomain
                                code:aCode
                            userInfo:@{ CPLocalizedDescriptionKey: aDescription }];
+}
+
+/*!
+    @ignore
+*/
++ (CPError)_cancelledError
+{
+    return [CPError errorWithDomain:CPCocoaErrorDomain
+                               code:CPUserCancelledError
+                           userInfo:@{ CPLocalizedDescriptionKey: @"The operation was cancelled." }];
 }
 
 /*!
@@ -215,10 +278,12 @@ CPItemProviderUnexpectedValueClassError     = -1100;
 
     The load handler is called with one argument, a completion handler. It must call that
     completion handler once, with the data, or with nil and an error. It may do so at once, or
-    later.
+    later. It may return a CPProgress for its work; the progress object returned by
+    -loadDataRepresentationForTypeIdentifier:completionHandler: then follows it, and cancelling
+    that progress object cancels it.
 
     @param aTypeIdentifier a MIME type, such as "text/csv"
-    @param aLoadHandler a function that takes a completion handler
+    @param aLoadHandler a function that takes a completion handler, and may return a CPProgress
 */
 - (void)registerDataRepresentationForTypeIdentifier:(CPString)aTypeIdentifier loadHandler:(Function /*(Function completionHandler)*/)aLoadHandler
 {
@@ -276,14 +341,17 @@ CPItemProviderUnexpectedValueClassError     = -1100;
 /*!
     Loads the first registered representation that matches \c aTypeIdentifier, which may be a
     wildcard of the form "image/*". The completion handler is called once, inside a run loop
-    pass, with the data and nil, or with nil and an error.
+    pass, with the data and nil, or with nil and an error. When the returned progress object is
+    cancelled first, the error is a CPUserCancelledError.
 
     @param aTypeIdentifier the type identifier to load
     @param aCompletionHandler a function that takes the data and an error
+    @return a progress object for the load
 */
-- (void)loadDataRepresentationForTypeIdentifier:(CPString)aTypeIdentifier completionHandler:(Function /*(CPData data, CPError error)*/)aCompletionHandler
+- (CPProgress)loadDataRepresentationForTypeIdentifier:(CPString)aTypeIdentifier completionHandler:(Function /*(CPData data, CPError error)*/)aCompletionHandler
 {
     var registeredTypeIdentifier = [self _registeredTypeIdentifierConformingToTypeIdentifier:aTypeIdentifier],
+        progress = [CPProgress discreteProgressWithTotalUnitCount:1],
         didComplete = NO,
         complete = function(data, error)
         {
@@ -292,8 +360,19 @@ CPItemProviderUnexpectedValueClassError     = -1100;
 
             didComplete = YES;
 
+            if ([progress isCancelled])
+            {
+                data = nil;
+                error = [CPItemProvider _cancelledError];
+            }
+            else if (!data && !error)
+                error = [CPItemProvider _errorWithCode:CPItemProviderUnknownError description:@"The item could not be loaded."];
+
+            if (data && ![progress isFinished])
+                [progress setCompletedUnitCount:1];
+
             if (aCompletionHandler)
-                aCompletionHandler(data || nil, data ? nil : error || [CPItemProvider _errorWithCode:CPItemProviderUnknownError description:@"The item could not be loaded."]);
+                aCompletionHandler(data || nil, data ? nil : error);
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         };
@@ -301,21 +380,94 @@ CPItemProviderUnexpectedValueClassError     = -1100;
     if (!registeredTypeIdentifier)
     {
         complete(nil, [CPItemProvider _errorWithCode:CPItemProviderItemUnavailableError description:@"The item has no representation of type " + aTypeIdentifier + @"."]);
-        return;
+        return progress;
     }
 
-    var loadHandler = [_loadHandlers objectForKey:registeredTypeIdentifier];
-
-    loadHandler(function(data, error)
-    {
-        if (data && ![data isKindOfClass:[CPData class]])
+    var loadHandler = [_loadHandlers objectForKey:registeredTypeIdentifier],
+        loadProgress = loadHandler(function(data, error)
         {
-            complete(nil, [CPItemProvider _errorWithCode:CPItemProviderUnexpectedValueClassError description:@"The item's load handler returned an object that is not data."]);
+            if (data && ![data isKindOfClass:[CPData class]])
+            {
+                complete(nil, [CPItemProvider _errorWithCode:CPItemProviderUnexpectedValueClassError description:@"The item's load handler returned an object that is not data."]);
+                return;
+            }
+
+            complete(data, error);
+        });
+
+    if (loadProgress && [loadProgress isKindOfClass:[CPProgress class]] && !didComplete)
+        [progress addChild:loadProgress withPendingUnitCount:1];
+
+    return progress;
+}
+
+// MARK: Loading Objects
+
+/*!
+    Returns YES if an object of \c aClass can be loaded from the item. \c aClass must implement
+    +readableTypeIdentifiersForItemProvider, and the item must have a representation of one of
+    those types.
+*/
+- (BOOL)canLoadObjectOfClass:(Class)aClass
+{
+    return [self _typeIdentifierReadableByClass:aClass] !== nil;
+}
+
+/*!
+    Loads an object of \c aClass from the item. The first representation of a type that the
+    class can read is loaded, and given to +objectWithItemProviderData:typeIdentifier:error:.
+    The completion handler is called once, inside a run loop pass, with the object and nil, or
+    with nil and an error.
+
+    @param aClass a class that implements the item provider reading methods, such as CPString
+    @param aCompletionHandler a function that takes the object and an error
+    @return a progress object for the load
+*/
+- (CPProgress)loadObjectOfClass:(Class)aClass completionHandler:(Function /*(id object, CPError error)*/)aCompletionHandler
+{
+    var typeIdentifier = [self _typeIdentifierReadableByClass:aClass];
+
+    if (!typeIdentifier)
+        return [self loadDataRepresentationForTypeIdentifier:@"" completionHandler:function(data, error)
+        {
+            aCompletionHandler(nil, [CPItemProvider _errorWithCode:CPItemProviderItemUnavailableError description:@"The item has no representation that " + [aClass className] + @" can read."]);
+        }];
+
+    return [self loadDataRepresentationForTypeIdentifier:typeIdentifier completionHandler:function(data, error)
+    {
+        if (!data)
+        {
+            aCompletionHandler(nil, error);
             return;
         }
 
-        complete(data, error);
-    });
+        var readError = nil,
+            object = [aClass objectWithItemProviderData:data typeIdentifier:typeIdentifier error:@ref(readError)];
+
+        if (object === nil || object === undefined)
+            aCompletionHandler(nil, readError || [CPItemProvider _errorWithCode:CPItemProviderUnexpectedValueClassError description:@"The item could not be read as " + [aClass className] + @"."]);
+        else
+            aCompletionHandler(object, nil);
+    }];
+}
+
+/*!
+    Returns the first registered type identifier that \c aClass can read, or nil.
+    @ignore
+*/
+- (CPString)_typeIdentifierReadableByClass:(Class)aClass
+{
+    if (![aClass respondsToSelector:@selector(readableTypeIdentifiersForItemProvider)])
+        return nil;
+
+    var readableTypeIdentifiers = [aClass readableTypeIdentifiersForItemProvider];
+
+    for (var i = 0, count = [_registeredTypeIdentifiers count]; i < count; i++)
+        for (var j = 0, readableCount = [readableTypeIdentifiers count]; j < readableCount; j++)
+            if ([CPItemProvider _typeIdentifier:_registeredTypeIdentifiers[i] conformsToTypeIdentifier:readableTypeIdentifiers[j]])
+                return _registeredTypeIdentifiers[i];
+
+    return nil;
 }
 
 /*!
@@ -324,6 +476,46 @@ CPItemProviderUnexpectedValueClassError     = -1100;
 - (CPString)description
 {
     return [super description] + @" " + (_suggestedName || @"(unnamed)") + @" " + [_registeredTypeIdentifiers componentsJoinedByString:@", "];
+}
+
+@end
+
+/*!
+    CPString reads text from an item provider. The encoding is detected, as by
+    +stringEncodingForData:encodingOptions:convertedString:usedLossyConversion:.
+
+    Browsers report some text formats under other MIME types; for example, a CSV file may be
+    reported as "application/vnd.ms-excel" on Windows. Such an item is not readable as a string
+    by this method, but its data can be loaded and decoded directly.
+*/
+@implementation CPString (CPItemProvider)
+
+/*!
+    Returns the MIME types a string can be read from: every text type, JSON, XML and JavaScript.
+*/
++ (CPArray)readableTypeIdentifiersForItemProvider
+{
+    return [@"text/*", @"application/json", @"application/xml", @"application/javascript"];
+}
+
+/*!
+    Returns a string decoded from an item provider's data, or nil with an error when no
+    encoding fits the data.
+*/
++ (id)objectWithItemProviderData:(CPData)someData typeIdentifier:(CPString)aTypeIdentifier error:(CPErrorRef)anErrorRef
+{
+    var string = nil,
+        encoding = [CPString stringEncodingForData:someData encodingOptions:nil convertedString:@ref(string) usedLossyConversion:nil];
+
+    if (encoding)
+        return string;
+
+    if (anErrorRef)
+        @deref(anErrorRef) = [CPError errorWithDomain:CPItemProviderErrorDomain
+                                                  code:CPItemProviderUnexpectedValueClassError
+                                              userInfo:@{ CPLocalizedDescriptionKey: @"The item's data is not text in a known encoding." }];
+
+    return nil;
 }
 
 @end

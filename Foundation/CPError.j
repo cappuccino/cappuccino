@@ -40,6 +40,8 @@ CPStringEncodingErrorKey                = @"CPStringEncodingErrorKey";
 CPURLErrorKey                           = kCFErrorURLKey;
 CPFilePathErrorKey                      = kCFErrorFilePathKey;
 
+CPUserCancelledError                    = 3072;
+
 /*!
     @class CPError
     @ingroup foundation

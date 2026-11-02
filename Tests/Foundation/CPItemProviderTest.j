@@ -216,4 +216,95 @@
     [self assert:@"a.png" equals:[providers[1] suggestedName]];
 }
 
+/*
+    Installs a FileReader stand-in that reads nothing until the test drives it, and returns an
+    object through which the test reaches the reader.
+*/
+- (JSObject)installPendingFileReader
+{
+    var state = { reader: nil, aborted: NO };
+
+    globalThis.FileReader = function() { state.reader = this; this.readyState = 0; };
+    globalThis.FileReader.prototype.readAsArrayBuffer = function(aFile) { this.readyState = 1; };
+    globalThis.FileReader.prototype.abort = function()
+    {
+        state.aborted = YES;
+        this.readyState = 2;
+        this.onabort();
+    };
+
+    return state;
+}
+
+- (void)testFileProgressAndCancellation
+{
+    var state = [self installPendingFileReader],
+        provider = [CPItemProvider _itemProviderWithFile:{ name: "big.csv", type: "text/csv", size: 1000 }],
+        resultError = nil,
+        calls = 0,
+        progress = [provider loadDataRepresentationForTypeIdentifier:@"text/csv" completionHandler:function(someData, anError)
+        {
+            calls++;
+            resultError = anError;
+        }];
+
+    state.reader.onprogress({ lengthComputable: YES, loaded: 250 });
+
+    [self assert:0.25 equals:[progress fractionCompleted]];
+
+    [progress cancel];
+
+    [self assertTrue:state.aborted];
+    [self assert:1 equals:calls];
+    [self assert:CPCocoaErrorDomain equals:[resultError domain]];
+    [self assert:CPUserCancelledError equals:[resultError code]];
+}
+
+- (void)testFileProgressFinishes
+{
+    var state = [self installPendingFileReader],
+        provider = [CPItemProvider _itemProviderWithFile:{ name: "small.csv", type: "text/csv", size: 2 }],
+        result = nil,
+        progress = [provider loadDataRepresentationForTypeIdentifier:@"text/csv" completionHandler:function(someData, anError)
+        {
+            result = someData;
+        }];
+
+    state.reader.result = new Uint8Array([104, 105]).buffer;
+    state.reader.onload();
+
+    [self assertTrue:[progress isFinished]];
+    [self assert:@"hi" equals:[result rawString]];
+}
+
+- (void)testLoadObjectOfClassString
+{
+    var provider = [self providerWithType:@"text/csv" data:[CPData dataWithRawString:@"a,b"]],
+        result = nil;
+
+    [self assertTrue:[provider canLoadObjectOfClass:[CPString class]]];
+
+    [provider loadObjectOfClass:[CPString class] completionHandler:function(anObject, anError)
+    {
+        result = anObject;
+    }];
+
+    [self assert:@"a,b" equals:result];
+}
+
+- (void)testCannotLoadStringFromImage
+{
+    var provider = [self providerWithType:@"image/png" data:[CPData dataWithRawString:@"x"]],
+        resultError = nil;
+
+    [self assertFalse:[provider canLoadObjectOfClass:[CPString class]]];
+
+    [provider loadObjectOfClass:[CPString class] completionHandler:function(anObject, anError)
+    {
+        resultError = anError;
+    }];
+
+    [self assert:CPItemProviderItemUnavailableError equals:[resultError code]];
+}
+
 @end
