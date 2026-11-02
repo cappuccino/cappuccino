@@ -11344,7 +11344,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 ,["void","CPCoder"])]);
 }
 p;7;CPLog.jt;19;@STATIC;1.0;t;3;1;
-p;12;CPMapTable.jt;2669;@STATIC;1.0;i;10;CPObject.ji;14;CPEnumerator.ji;14;CPDictionary.ji;9;CPArray.jt;2584;objj_executeFile("CPObject.j", YES);objj_executeFile("CPEnumerator.j", YES);objj_executeFile("CPDictionary.j", YES);objj_executeFile("CPArray.j", YES);
+p;12;CPMapTable.jt;4313;@STATIC;1.0;i;10;CPObject.ji;14;CPEnumerator.ji;14;CPDictionary.ji;9;CPArray.jt;4228;objj_executeFile("CPObject.j", YES);objj_executeFile("CPEnumerator.j", YES);objj_executeFile("CPDictionary.j", YES);objj_executeFile("CPArray.j", YES);
 {var the_class = objj_allocateClassPair(CPObject, "CPMapTable"),
 meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_map", "id")]);objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("init"), function $CPMapTable__init(self, _cmd)
@@ -11407,6 +11407,34 @@ for(var entry of self._map.entries())
 }
 
 ,["CPDictionary"])]);
+}
+var CPMapTableKeysKey = "CPMapTableKeysKey",
+    CPMapTableObjectsKey = "CPMapTableObjectsKey";
+{
+var the_class = objj_getClass("CPMapTable")
+if(!the_class) throw new SyntaxError("*** Could not find definition for class \"CPMapTable\"");
+var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_getUid("initWithCoder:"), function $CPMapTable__initWithCoder_(self, _cmd, aCoder)
+{
+    self = (self == null ? self : (self.isa.method_msgSend["init"] || _objj_forward)(self, "init"));
+    if (self)
+    {
+        var keys = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPMapTableKeysKey)),
+            objects = (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["decodeObjectForKey:"] || _objj_forward)(aCoder, "decodeObjectForKey:", CPMapTableObjectsKey));
+        keys.forEach(        function(aKey, anIndex)
+        {
+            (self == null ? self : (self.isa.method_msgSend["setObject:forKey:"] || _objj_forward)(self, "setObject:forKey:", objects[anIndex], aKey));
+        });
+    }
+    return self;
+}
+
+,["id","CPCoder"]), new objj_method(sel_getUid("encodeWithCoder:"), function $CPMapTable__encodeWithCoder_(self, _cmd, aCoder)
+{
+    (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", Array.from(self._map.keys()), CPMapTableKeysKey));
+    (aCoder == null ? aCoder : (aCoder.isa.method_msgSend["encodeObject:forKey:"] || _objj_forward)(aCoder, "encodeObject:forKey:", Array.from(self._map.values()), CPMapTableObjectsKey));
+}
+
+,["void","CPCoder"])]);
 }
 p;16;CPNotification.jt;2675;@STATIC;1.0;i;13;CPException.ji;10;CPObject.ji;14;CPDictionary.jt;2604;objj_executeFile("CPException.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPDictionary.j", YES);
 {var the_class = objj_allocateClassPair(CPObject, "CPNotification"),
@@ -15008,7 +15036,7 @@ if (typeof window !== 'undefined')
         window.clearTimeout(aTimeoutID);
     };
 }
-p;12;CPTimeZone.jt;22831;@STATIC;1.0;i;10;CPObject.ji;10;CPString.ji;8;CPDate.ji;10;CPLocale.jt;22754;objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);objj_executeFile("CPDate.j", YES);objj_executeFile("CPLocale.j", YES);CPTimeZoneNameStyleStandard = 0;
+p;12;CPTimeZone.jt;23041;@STATIC;1.0;i;10;CPObject.ji;10;CPString.ji;8;CPDate.ji;10;CPLocale.jt;22964;objj_executeFile("CPObject.j", YES);objj_executeFile("CPString.j", YES);objj_executeFile("CPDate.j", YES);objj_executeFile("CPLocale.j", YES);CPTimeZoneNameStyleStandard = 0;
 CPTimeZoneNameStyleShortStandard = 1;
 CPTimeZoneNameStyleDaylightSaving = 2;
 CPTimeZoneNameStyleShortDaylightSaving = 3;
@@ -15176,12 +15204,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("data"), function $CPTim
     return self._secondsFromGMT;
 }
 
-,["CPInteger"]), new objj_method(sel_getUid("abbreviation"), function $CPTimeZone__abbreviation(self, _cmd)
-{
-    return self._abbreviation;
-}
-
-,["CPString"]), new objj_method(sel_getUid("name"), function $CPTimeZone__name(self, _cmd)
+,["CPInteger"]), new objj_method(sel_getUid("name"), function $CPTimeZone__name(self, _cmd)
 {
     return self._name;
 }
@@ -15247,7 +15270,12 @@ class_addMethods(the_class, [new objj_method(sel_getUid("data"), function $CPTim
     return self;
 }
 
-,["id","CPString","CPData"]), new objj_method(sel_getUid("abbreviationForDate:"), function $CPTimeZone__abbreviationForDate_(self, _cmd, date)
+,["id","CPString","CPData"]), new objj_method(sel_getUid("abbreviation"), function $CPTimeZone__abbreviation(self, _cmd)
+{
+    return (self.isa.method_msgSend["abbreviationForDate:"] || _objj_forward)(self, "abbreviationForDate:", (CPDate.isa.method_msgSend["date"] || _objj_forward)(CPDate, "date"));
+}
+
+,["CPString"]), new objj_method(sel_getUid("abbreviationForDate:"), function $CPTimeZone__abbreviationForDate_(self, _cmd, date)
 {
     if (!date)
         return nil;
@@ -15308,7 +15336,7 @@ class_addMethods(the_class, [new objj_method(sel_getUid("data"), function $CPTim
 
 ,["BOOL","CPTimeZone"]), new objj_method(sel_getUid("description"), function $CPTimeZone__description(self, _cmd)
 {
-    return (CPString.isa.method_msgSend["stringWithFormat:"] || _objj_forward)(CPString, "stringWithFormat:", "%s (%s) offset %i", self._name, self._abbreviation, (self.isa.method_msgSend["secondsFromGMT"] || _objj_forward)(self, "secondsFromGMT"));
+    return (CPString.isa.method_msgSend["stringWithFormat:"] || _objj_forward)(CPString, "stringWithFormat:", "%s (%s) offset %i", self._name, (self.isa.method_msgSend["abbreviation"] || _objj_forward)(self, "abbreviation"), (self.isa.method_msgSend["secondsFromGMT"] || _objj_forward)(self, "secondsFromGMT"));
 }
 
 ,["CPString"]), new objj_method(sel_getUid("localizedName:locale:"), function $CPTimeZone__localizedName_locale_(self, _cmd, style, locale)
@@ -20157,7 +20185,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["CPString"])]);
 }
-p;14;_CPPredicate.jt;55308;@STATIC;1.0;i;9;CPArray.ji;13;CPException.ji;8;CPNull.ji;10;CPObject.ji;11;CPScanner.ji;7;CPSet.ji;9;CPValue.ji;16;CPCharacterSet.ji;33;CPComparisonPredicate_Constants.ji;31;CPCompoundPredicate_Constants.ji;15;_CPExpression.jt;55075;objj_executeFile("CPArray.j", YES);objj_executeFile("CPException.j", YES);objj_executeFile("CPNull.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPScanner.j", YES);objj_executeFile("CPSet.j", YES);objj_executeFile("CPValue.j", YES);objj_executeFile("CPCharacterSet.j", YES);objj_executeFile("CPComparisonPredicate_Constants.j", YES);objj_executeFile("CPCompoundPredicate_Constants.j", YES);objj_executeFile("_CPExpression.j", YES);
+p;14;_CPPredicate.jt;57006;@STATIC;1.0;i;9;CPArray.ji;13;CPException.ji;8;CPNull.ji;10;CPObject.ji;11;CPScanner.ji;7;CPSet.ji;9;CPValue.ji;16;CPCharacterSet.ji;33;CPComparisonPredicate_Constants.ji;31;CPCompoundPredicate_Constants.ji;15;_CPExpression.jt;56773;objj_executeFile("CPArray.j", YES);objj_executeFile("CPException.j", YES);objj_executeFile("CPNull.j", YES);objj_executeFile("CPObject.j", YES);objj_executeFile("CPScanner.j", YES);objj_executeFile("CPSet.j", YES);objj_executeFile("CPValue.j", YES);objj_executeFile("CPCharacterSet.j", YES);objj_executeFile("CPComparisonPredicate_Constants.j", YES);objj_executeFile("CPCompoundPredicate_Constants.j", YES);objj_executeFile("_CPExpression.j", YES);
 {var the_class = objj_allocateClassPair(CPObject, "CPPredicate"),
 meta_class = the_class.isa;objj_registerClassPair(the_class);
 class_addMethods(the_class, [new objj_method(sel_getUid("predicateWithSubstitutionVariables:"), function $CPPredicate__predicateWithSubstitutionVariables_(self, _cmd, variables)
@@ -20535,7 +20563,14 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithString:args:"),
         type = CPBetweenPredicateOperatorType;
     }
     else
-        CPRaiseParseError(self, "comparison predicate");
+    {
+        var selector = (self.isa.method_msgSend["parseCustomSelector"] || _objj_forward)(self, "parseCustomSelector");
+        if (!selector || modifier !== CPDirectPredicateModifier)
+            CPRaiseParseError(self, "comparison predicate");
+        right = (self.isa.method_msgSend["parseExpression"] || _objj_forward)(self, "parseExpression");
+        p = (CPComparisonPredicate == null ? CPComparisonPredicate : (CPComparisonPredicate.isa.method_msgSend["predicateWithLeftExpression:rightExpression:customSelector:"] || _objj_forward)(CPComparisonPredicate, "predicateWithLeftExpression:rightExpression:customSelector:", left, right, selector));
+        return negate ? (CPCompoundPredicate == null ? CPCompoundPredicate : (CPCompoundPredicate.isa.method_msgSend["notPredicateWithSubpredicate:"] || _objj_forward)(CPCompoundPredicate, "notPredicateWithSubpredicate:", p)) : p;
+    }
     if ((self.isa.method_msgSend["scanString:intoString:"] || _objj_forward)(self, "scanString:intoString:", "[cd]", NULL))
     {
         opts = CPCaseInsensitivePredicateOption | CPDiacriticInsensitivePredicateOption;
@@ -20553,7 +20588,17 @@ class_addMethods(the_class, [new objj_method(sel_getUid("initWithString:args:"),
     return negate ? (CPCompoundPredicate == null ? CPCompoundPredicate : (CPCompoundPredicate.isa.method_msgSend["notPredicateWithSubpredicate:"] || _objj_forward)(CPCompoundPredicate, "notPredicateWithSubpredicate:", p)) : p;
 }
 
-,["CPPredicate"]), new objj_method(sel_getUid("parseExpression"), function $CPPredicateScanner__parseExpression(self, _cmd)
+,["CPPredicate"]), new objj_method(sel_getUid("parseCustomSelector"), function $CPPredicateScanner__parseCustomSelector(self, _cmd)
+{
+    var location = (self.isa.method_msgSend["scanLocation"] || _objj_forward)(self, "scanLocation"),
+        name = (self.isa.method_msgSend["scanCharactersFromSet:"] || _objj_forward)(self, "scanCharactersFromSet:", (CPCharacterSet.isa.method_msgSend["characterSetWithCharactersInString:"] || _objj_forward)(CPCharacterSet, "characterSetWithCharactersInString:", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"));
+    if (name && (self.isa.method_msgSend["scanString:intoString:"] || _objj_forward)(self, "scanString:intoString:", ":", NULL))
+        return CPSelectorFromString(name + ":");
+    (self.isa.method_msgSend["setScanLocation:"] || _objj_forward)(self, "setScanLocation:", location);
+    return nil;
+}
+
+,["SEL"]), new objj_method(sel_getUid("parseExpression"), function $CPPredicateScanner__parseExpression(self, _cmd)
 {
     return (self.isa.method_msgSend["parseBinaryExpression"] || _objj_forward)(self, "parseBinaryExpression");
 }
