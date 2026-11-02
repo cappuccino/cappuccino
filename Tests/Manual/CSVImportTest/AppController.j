@@ -36,6 +36,9 @@
     - Each file is read through its item provider, and decoded with the chosen encoding, or with
       encoding detection.
     - Map Fields… shows each column with sample values, and a pop-up to assign it to a field.
+    - A progress panel shows each phase of an import, with a progress bar driven by a
+      CPProgress object, and a Cancel button. Large files show how reading, decoding and
+      parsing perform, and how CPTableView scrolls through millions of rows.
 
     Sample files are in Resources/Samples. Their names state their encoding and delimiter.
     contacts-mac-roman.csv is detected as Windows Latin 1, which shows wrong accents; choosing
@@ -50,7 +53,13 @@
 var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
     CSVImportTestDelimiters = [nil, @",", @";", @"\t", @"|"],
     CSVImportTestDelimiterTitles = [@"Automatic", @"Comma", @"Semicolon", @"Tab", @"Vertical Bar"],
-    CSVImportTestSampleRowCount = 3;
+    CSVImportTestSampleRowCount = 3,
+    CSVImportTestReadUnits = 40,
+    CSVImportTestDecodeUnits = 10,
+    CSVImportTestParseUnits = 50,
+    CSVImportTestUnitsPerFile = CSVImportTestReadUnits + CSVImportTestDecodeUnits + CSVImportTestParseUnits,
+    CSVImportTestChunkLength = 1000000,
+    CSVImportTestMaximumElementHeight = 33554432;
 
 @implementation AppController : CPObject
 {
@@ -68,6 +77,13 @@ var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
     CPPopUpButton   _encodingPopUp;
     CPCheckBox      _headerCheckBox;
     CPArray         _encodings;
+
+    CPProgress      _importProgress;
+    JSObject        _import;
+    CPPanel         _progressPanel;
+    CPProgressIndicator _progressIndicator;
+    CPTextField     _phaseField;
+    CPTextField     _detailField;
 
     CPArray         _headers;
     CPArray         _rows;
@@ -266,35 +282,137 @@ var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
     return NO;
 }
 
+// MARK: Importing with Progress
+
 /*
-    Loads the files one after another, so that their rows keep the order the user chose.
+    An import runs in phases, for each file in turn: reading, decoding and parsing. Then the
+    table is built. One CPProgress object counts the whole import, so one progress bar covers
+    every phase of every file:
+
+    - Reading is the item provider's load. The progress object it returns counts the bytes
+      read, and becomes a child of the import's progress object.
+    - Decoding turns the bytes into text in one step, which cannot be divided.
+    - Parsing runs in chunks between run loop passes, so the panel stays responsive and the
+      user can cancel at any time. A child progress object counts the characters parsed.
+
+    Cancelling the import's progress object cancels the read in progress, through its child.
+    The parser stops before its next chunk. The table keeps its previous contents.
 */
 - (void)_importItemProviders:(CPArray)someItemProviders delimiter:(CPString)aDelimiter encoding:(CPStringEncoding)anEncoding hasHeaderRow:(BOOL)hasHeaderRow
 {
-    var results = [],
-        loadNext = function(anIndex)
+    _importProgress = [CPProgress discreteProgressWithTotalUnitCount:[someItemProviders count] * CSVImportTestUnitsPerFile];
+    _import = {
+        itemProviders: someItemProviders,
+        delimiter: aDelimiter,
+        encoding: anEncoding,
+        hasHeaderRow: hasHeaderRow,
+        index: 0,
+        results: [],
+        rowCount: 0,
+        startTime: new Date(),
+        hasEnded: NO
+    };
+
+    [self _beginProgressPanel];
+    [self _importNextFile];
+}
+
+/*
+    Reads the next file, or builds the table when every file has been read.
+*/
+- (void)_importNextFile
+{
+    if (!_import)
+        return;
+
+    if ([_importProgress isCancelled])
+        return [self _endImportCancelled];
+
+    if (_import.index >= [_import.itemProviders count])
+        return [self _buildTable];
+
+    var itemProvider = _import.itemProviders[_import.index],
+        name = [itemProvider suggestedName],
+        readHasEnded = NO,
+        readProgress = nil;
+
+    [self _setPhase:@"Reading " + name + @"…"];
+
+    readProgress = [itemProvider loadDataRepresentationForTypeIdentifier:@"*/*" completionHandler:function(data, error)
+    {
+        readHasEnded = YES;
+
+        if (!_import)
+            return;
+
+        if ([_importProgress isCancelled])
+            return [self _endImportCancelled];
+
+        if (!data)
         {
-            if (anIndex >= [someItemProviders count])
-            {
-                [self _showResults:results delimiter:aDelimiter hasHeaderRow:hasHeaderRow];
-                return;
-            }
+            if (readProgress && ![readProgress isFinished])
+                [readProgress setCompletedUnitCount:[readProgress totalUnitCount]];
 
-            var itemProvider = someItemProviders[anIndex];
+            [self _skipFileNamed:name error:[error localizedDescription]];
+            return;
+        }
 
-            [itemProvider loadDataRepresentationForTypeIdentifier:@"*/*" completionHandler:function(data, error)
-            {
-                var result = data ? [self _decodeData:data encoding:anEncoding] : { error: [error localizedDescription] };
+        [self _setPhase:@"Decoding " + name + @"…"];
 
-                result.name = [itemProvider suggestedName];
-                results.push(result);
+        /*
+            Decoding blocks until it ends. Waiting one run loop pass first lets the panel show
+            the new phase.
+        */
+        [CPTimer scheduledTimerWithTimeInterval:0.0 callback:function()
+        {
+            [self _decodeData:data name:name];
+        } repeats:NO];
+    }];
 
-                loadNext(anIndex + 1);
-            }];
-        };
+    if (!readHasEnded)
+        [_importProgress addChild:readProgress withPendingUnitCount:CSVImportTestReadUnits];
+}
 
-    [self _setStatus:@"Loading " + [someItemProviders count] + @" file(s)…"];
-    loadNext(0);
+/*
+    Records a file that could not be read or decoded, completes its units, and goes on.
+*/
+- (void)_skipFileNamed:(CPString)aName error:(CPString)anError
+{
+    _import.results.push({ name: aName, error: anError });
+    [_importProgress setCompletedUnitCount:(_import.index + 1) * CSVImportTestUnitsPerFile];
+    _import.index++;
+    [self _importNextFile];
+}
+
+/*
+    Decodes a file's data, then starts parsing it.
+*/
+- (void)_decodeData:(CPData)someData name:(CPString)aName
+{
+    if (!_import)
+        return;
+
+    if ([_importProgress isCancelled])
+        return [self _endImportCancelled];
+
+    var result = [self _decodeData:someData encoding:_import.encoding],
+        base = _import.index * CSVImportTestUnitsPerFile;
+
+    result.name = aName;
+
+    if (result.error)
+        return [self _skipFileNamed:aName error:result.error];
+
+    [_importProgress setCompletedUnitCount:base + CSVImportTestReadUnits + CSVImportTestDecodeUnits];
+
+    result.delimiter = _import.delimiter || [CSVParser detectedDelimiterForString:result.string];
+    result.parser = [[CSVParser alloc] initWithString:result.string delimiter:result.delimiter];
+    result.string = nil;
+
+    var parseProgress = [CPProgress progressWithTotalUnitCount:MAX([result.parser length], 1) parent:_importProgress pendingUnitCount:CSVImportTestParseUnits];
+
+    [self _setPhase:@"Parsing " + aName + @"…"];
+    [self _parseNextChunkOfResult:result progress:parseProgress];
 }
 
 /*
@@ -328,54 +446,127 @@ var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
 }
 
 /*
-    Parses the decoded files and shows their rows in the table. The first file's header row
-    names the columns. With several files, a first column names the file of each row.
+    Parses one chunk, then waits for the next run loop pass before the next chunk, so that the
+    panel can draw and the Cancel button can be clicked.
 */
-- (void)_showResults:(CPArray)someResults delimiter:(CPString)aDelimiter hasHeaderRow:(BOOL)hasHeaderRow
+- (void)_parseNextChunkOfResult:(JSObject)aResult progress:(CPProgress)aProgress
 {
-    var headers = nil,
-        rows = [],
-        lines = [],
-        showsFileColumn = [someResults count] > 1;
+    if (!_import)
+        return;
 
-    for (var i = 0; i < [someResults count]; i++)
+    if ([_importProgress isCancelled])
+        return [self _endImportCancelled];
+
+    var parser = aResult.parser,
+        isDone = [parser parseNextChunkOfLength:CSVImportTestChunkLength];
+
+    [aProgress setCompletedUnitCount:isDone ? [aProgress totalUnitCount] : [parser position]];
+    [self _setDetail:(_import.rowCount + [[parser records] count]).toLocaleString() + @" rows"];
+
+    if (!isDone)
     {
-        var result = someResults[i];
-
-        if (result.error)
+        [CPTimer scheduledTimerWithTimeInterval:0.0 callback:function()
         {
-            lines.push(result.name + @": " + result.error);
-            continue;
-        }
+            [self _parseNextChunkOfResult:aResult progress:aProgress];
+        } repeats:NO];
 
-        var delimiter = aDelimiter || [CSVParser detectedDelimiterForString:result.string],
-            records = [CSVParser recordsFromString:result.string delimiter:delimiter];
-
-        if (hasHeaderRow && records.length)
-        {
-            var headerRecord = records.shift();
-
-            if (!headers)
-                headers = headerRecord;
-        }
-
-        lines.push(result.name + @": " + result.encodingDescription + @", " + [self _nameOfDelimiter:delimiter] + @", " + records.length + @" row(s)");
-
-        for (var j = 0; j < records.length; j++)
-            rows.push(showsFileColumn ? [result.name].concat(records[j]) : records[j]);
+        return;
     }
 
-    headers = headers || [];
+    aResult.records = [parser records];
+    aResult.parser = nil;
 
-    if (showsFileColumn)
-        headers = [@"File"].concat(headers);
+    _import.rowCount += aResult.records.length;
+    _import.results.push(aResult);
+    _import.index++;
 
-    for (var i = 0; i < rows.length; i++)
-        while (headers.length < rows[i].length)
+    [self _importNextFile];
+}
+
+/*
+    Builds the table from the parsed files. The first file's header row names the columns. With
+    several files, a first column names the file of each row.
+*/
+- (void)_buildTable
+{
+    [self _setPhase:@"Building the table…"];
+
+    [CPTimer scheduledTimerWithTimeInterval:0.0 callback:function()
+    {
+        if (!_import)
+            return;
+
+        if ([_importProgress isCancelled])
+            return [self _endImportCancelled];
+
+        var results = _import.results,
+            headers = nil,
+            rows = [],
+            lines = [],
+            showsFileColumn = results.length > 1;
+
+        for (var i = 0; i < results.length; i++)
+        {
+            var result = results[i];
+
+            if (result.error)
+            {
+                lines.push(result.name + @": " + result.error);
+                continue;
+            }
+
+            var records = result.records;
+
+            if (_import.hasHeaderRow && records.length)
+            {
+                var headerRecord = records.shift();
+
+                if (!headers)
+                    headers = headerRecord;
+            }
+
+            lines.push(result.name + @": " + result.encodingDescription + @", " + [self _nameOfDelimiter:result.delimiter] + @", " + records.length.toLocaleString() + @" row(s)");
+
+            if (showsFileColumn)
+            {
+                for (var j = 0; j < records.length; j++)
+                    rows.push([result.name].concat(records[j]));
+            }
+            else
+                rows = rows.length ? rows.concat(records) : records;
+        }
+
+        headers = headers || [];
+
+        if (showsFileColumn)
+            headers = [@"File"].concat(headers);
+
+        var widestRow = 0;
+
+        for (var i = 0; i < rows.length; i++)
+            widestRow = MAX(widestRow, rows[i].length);
+
+        while (headers.length < widestRow)
             headers.push(@"Column " + (headers.length + 1));
 
-    [self _setHeaders:headers rows:rows];
-    [self _setStatus:lines.join(@" · ")];
+        [self _setHeaders:headers rows:rows];
+
+        var seconds = ((new Date() - _import.startTime) / 1000).toFixed(1),
+            rowHeight = [_tableView rowHeight] + [_tableView intercellSpacing].height,
+            displayableRowCount = FLOOR(CSVImportTestMaximumElementHeight / rowHeight);
+
+        lines.unshift(@"Imported " + rows.length.toLocaleString() + @" rows in " + seconds + @" s");
+
+        /*
+            The table's document view is as tall as all its rows, and browsers limit an element's
+            height to 33,554,432 pixels. Rows past that height cannot be shown.
+        */
+        if (rows.length > displayableRowCount)
+            lines.push(@"Rows after " + displayableRowCount.toLocaleString() + @" cannot be shown: the table would be taller than the browser allows");
+
+        [self _setStatus:lines.join(@" · ")];
+        [self _endProgressPanel];
+    } repeats:NO];
 }
 
 - (CPString)_nameOfDelimiter:(CPString)aDelimiter
@@ -383,6 +574,100 @@ var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
     var index = CSVImportTestDelimiters.indexOf(aDelimiter);
 
     return index > 0 ? CSVImportTestDelimiterTitles[index].toLowerCase() + @" delimiter" : @"delimiter " + aDelimiter;
+}
+
+// MARK: The Progress Panel
+
+/*
+    Shows a modal panel with the current phase, a progress bar and a Cancel button. The progress
+    bar follows the import's progress object through key-value observing.
+*/
+- (void)_beginProgressPanel
+{
+    _progressPanel = [[CPPanel alloc] initWithContentRect:CGRectMake(0.0, 0.0, 440.0, 140.0) styleMask:CPTitledWindowMask];
+    [_progressPanel setTitle:@"Importing"];
+
+    var contentView = [_progressPanel contentView],
+        cancelButton = [self _buttonWithTitle:@"Cancel" action:@selector(cancelImport:) frame:CGRectMake(330.0, 100.0, 90.0, 24.0)];
+
+    _phaseField = [CPTextField labelWithTitle:@""];
+    [_phaseField setFrame:CGRectMake(20.0, 18.0, 400.0, 20.0)];
+    [_phaseField setFont:[CPFont boldSystemFontOfSize:12.0]];
+    [contentView addSubview:_phaseField];
+
+    _progressIndicator = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(20.0, 46.0, 400.0, 20.0)];
+    [_progressIndicator setStyle:CPProgressIndicatorBarStyle];
+    [_progressIndicator setIndeterminate:NO];
+    [_progressIndicator setMinValue:0.0];
+    [_progressIndicator setMaxValue:1.0];
+    [_progressIndicator setDoubleValue:0.0];
+    [contentView addSubview:_progressIndicator];
+
+    _detailField = [CPTextField labelWithTitle:@""];
+    [_detailField setFrame:CGRectMake(20.0, 72.0, 400.0, 20.0)];
+    [_detailField setTextColor:[CPColor grayColor]];
+    [contentView addSubview:_detailField];
+
+    [cancelButton setKeyEquivalent:CPEscapeFunctionKey];
+    [contentView addSubview:cancelButton];
+
+    [_importProgress addObserver:self forKeyPath:@"fractionCompleted" options:CPKeyValueObservingOptionNew context:nil];
+
+    [_progressPanel center];
+    [CPApp runModalForWindow:_progressPanel];
+}
+
+- (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)aChange context:(id)aContext
+{
+    if (anObject === _importProgress)
+        [_progressIndicator setDoubleValue:[_importProgress fractionCompleted]];
+}
+
+- (void)_setPhase:(CPString)aPhase
+{
+    [_phaseField setStringValue:aPhase];
+}
+
+- (void)_setDetail:(CPString)aDetail
+{
+    var seconds = ((new Date() - _import.startTime) / 1000).toFixed(1);
+
+    [_detailField setStringValue:aDetail + @" · " + seconds + @" s"];
+}
+
+/*
+    Cancels the import. Cancelling the progress object reaches the read in progress, and the
+    parser checks it before each chunk.
+*/
+- (@action)cancelImport:(id)aSender
+{
+    [self _setPhase:@"Cancelling…"];
+    [_importProgress cancel];
+}
+
+- (void)_endImportCancelled
+{
+    if (!_import || _import.hasEnded)
+        return;
+
+    [self _setStatus:@"The import was cancelled. The table is unchanged."];
+    [self _endProgressPanel];
+}
+
+- (void)_endProgressPanel
+{
+    if (!_import || _import.hasEnded)
+        return;
+
+    _import.hasEnded = YES;
+
+    [_importProgress removeObserver:self forKeyPath:@"fractionCompleted"];
+    [CPApp abortModal];
+    [_progressPanel close];
+
+    _progressPanel = nil;
+    _importProgress = nil;
+    _import = nil;
 }
 
 // MARK: The Table

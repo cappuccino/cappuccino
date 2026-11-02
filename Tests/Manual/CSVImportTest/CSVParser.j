@@ -22,7 +22,10 @@
 
 @import <Foundation/CPObject.j>
 
-var CSVParserCandidateDelimiters = [",", ";", "\t", "|"];
+var CSVParserCandidateDelimiters = [",", ";", "\t", "|"],
+    CSVParserQuote = 0x22,
+    CSVParserCarriageReturn = 0x0D,
+    CSVParserLineFeed = 0x0A;
 
 /*
     Parses comma-separated values as RFC 4180 describes them, with any one-character delimiter:
@@ -30,10 +33,23 @@ var CSVParserCandidateDelimiters = [",", ";", "\t", "|"];
     - A field may be quoted. A quoted field may hold the delimiter, line breaks, and quotes,
       which are doubled.
     - A record ends at CR LF, LF or CR.
-    - A final line break does not start an empty record.
+    - A final line break does not start an empty record, and empty lines are skipped.
+
+    The parser works in chunks, so that an application can parse a large file between run loop
+    passes. That keeps the user interface responsive, lets it show progress, and lets the user
+    cancel. Call -parseNextChunkOfLength: until it returns YES.
+
+    Each field is cut from the text with one substring call, rather than built a character at a
+    time. With millions of fields, building strings character by character costs far more time
+    and memory than the parse itself.
 */
 @implementation CSVParser : CPObject
 {
+    CPString    _string;
+    CPString    _delimiter;
+    int         _delimiterCode;
+    int         _position;
+    CPArray     _records;
 }
 
 /*
@@ -75,76 +91,159 @@ var CSVParserCandidateDelimiters = [",", ";", "\t", "|"];
 }
 
 /*
-    Returns the records of a string, each an array of field strings.
+    Returns every record of a string at once. For small strings.
 */
 + (CPArray)recordsFromString:(CPString)aString delimiter:(CPString)aDelimiter
 {
-    var records = [],
-        record = [],
-        field = "",
-        isQuoted = NO,
-        fieldStarted = NO,
-        count = aString.length,
-        i = 0;
+    var parser = [[self alloc] initWithString:aString delimiter:aDelimiter];
 
-    if (aString.charCodeAt(0) === 0xFEFF)
-        i = 1;
+    while (![parser parseNextChunkOfLength:aString.length + 1]);
 
-    for (; i < count; i++)
+    return [parser records];
+}
+
+- (id)initWithString:(CPString)aString delimiter:(CPString)aDelimiter
+{
+    if (self = [super init])
     {
-        var character = aString.charAt(i);
+        _string = aString;
+        _delimiter = aDelimiter;
+        _delimiterCode = aDelimiter.charCodeAt(0);
+        _position = aString.charCodeAt(0) === 0xFEFF ? 1 : 0;
+        _records = [];
+    }
 
-        if (isQuoted)
+    return self;
+}
+
+/*
+    Returns the records parsed so far, each an array of field strings.
+*/
+- (CPArray)records
+{
+    return _records;
+}
+
+/*
+    Returns the position in the text that parsing has reached.
+*/
+- (int)position
+{
+    return _position;
+}
+
+/*
+    Returns the length of the text.
+*/
+- (int)length
+{
+    return _string.length;
+}
+
+/*
+    Parses whole records until about aLength more characters have been read, or the text ends.
+    Returns YES when the text has ended.
+*/
+- (BOOL)parseNextChunkOfLength:(int)aLength
+{
+    var string = _string,
+        length = string.length,
+        end = MIN(length, _position + aLength),
+        position = _position;
+
+    while (position < length && position < end)
+    {
+        var record = [];
+
+        while (YES)
         {
-            if (character !== "\"")
-                field += character;
-            else if (aString.charAt(i + 1) === "\"")
+            var field;
+
+            if (string.charCodeAt(position) === CSVParserQuote)
             {
-                field += "\"";
-                i++;
+                var parts = [];
+
+                position++;
+
+                while (YES)
+                {
+                    var closingQuote = string.indexOf("\"", position);
+
+                    if (closingQuote < 0)
+                    {
+                        parts.push(string.substring(position));
+                        position = length;
+                        break;
+                    }
+
+                    parts.push(string.substring(position, closingQuote));
+
+                    if (string.charCodeAt(closingQuote + 1) === CSVParserQuote)
+                    {
+                        parts.push("\"");
+                        position = closingQuote + 2;
+                        continue;
+                    }
+
+                    position = closingQuote + 1;
+                    break;
+                }
+
+                field = parts.join("");
             }
             else
-                isQuoted = NO;
+                field = "";
 
-            continue;
-        }
+            /*
+                Read up to the next delimiter or line break. For a quoted field, this keeps any
+                characters after the closing quote, which RFC 4180 does not allow, rather than
+                losing them.
+            */
+            var fieldStart = position;
 
-        if (character === "\"" && !fieldStarted)
-        {
-            isQuoted = YES;
-            fieldStarted = YES;
-        }
-        else if (character === aDelimiter)
-        {
+            while (position < length)
+            {
+                var code = string.charCodeAt(position);
+
+                if (code === _delimiterCode || code === CSVParserCarriageReturn || code === CSVParserLineFeed)
+                    break;
+
+                position++;
+            }
+
+            if (position > fieldStart)
+                field += string.substring(fieldStart, position);
+
             record.push(field);
-            field = "";
-            fieldStarted = NO;
-        }
-        else if (character === "\r" || character === "\n")
-        {
-            if (character === "\r" && aString.charAt(i + 1) === "\n")
-                i++;
 
-            record.push(field);
-            records.push(record);
-            record = [];
-            field = "";
-            fieldStarted = NO;
+            var terminator = position < length ? string.charCodeAt(position) : -1;
+
+            if (terminator === _delimiterCode)
+            {
+                position++;
+                continue;
+            }
+
+            if (terminator === CSVParserCarriageReturn)
+            {
+                position++;
+
+                if (string.charCodeAt(position) === CSVParserLineFeed)
+                    position++;
+            }
+            else if (terminator === CSVParserLineFeed)
+                position++;
+
+            break;
         }
-        else
-        {
-            field += character;
-            fieldStarted = YES;
-        }
+
+        if (record.length > 1 || record[0] !== "")
+            _records.push(record);
     }
 
-    if (fieldStarted || record.length)
-    {
-        record.push(field);
-        records.push(record);
-    }
+    _position = position;
 
-    return records;
+    return position >= length;
 }
 
 @end
