@@ -40,6 +40,7 @@
 @class CPClipView
 @class CPUserDefaults
 @class CPTableHeaderView
+@class CPTableView
 @class _CPTableColumnHeaderView
 @class CPClipView
 @class CPButton
