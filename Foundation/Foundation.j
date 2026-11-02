@@ -71,6 +71,7 @@
 @import "CPSet.j"
 @import "CPSortDescriptor.j"
 @import "CPString.j"
+@import "CPString+Encoding.j"
 @import "CPTimer.j"
 @import "CPTimeZone.j"
 @import "CPUndoManager.j"
