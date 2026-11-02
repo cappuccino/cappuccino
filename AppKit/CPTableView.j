@@ -6269,13 +6269,14 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         _headerView = [aCoder decodeObjectForKey:CPTableViewHeaderViewKey];
         _cornerView = [aCoder decodeObjectForKey:CPTableViewCornerViewKey];
 
-        [self setDataSource:[aCoder decodeObjectForKey:CPTableViewDataSourceKey]];
-        [self setDelegate:[aCoder decodeObjectForKey:CPTableViewDelegateKey]];
-
         [self _init];
 
         if ([aCoder containsValueForKey:CPTableViewArchivedReusableViewsKey])
             _archivedDataViews = [aCoder decodeObjectForKey:CPTableViewArchivedReusableViewsKey];
+
+        // Setting the data source reloads the table, which needs the state set by _init.
+        [self setDataSource:[aCoder decodeObjectForKey:CPTableViewDataSourceKey]];
+        [self setDelegate:[aCoder decodeObjectForKey:CPTableViewDelegateKey]];
 
         [self _updateIsViewBased];
 

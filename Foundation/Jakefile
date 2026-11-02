@@ -70,3 +70,4 @@ filedir ($BUILD_CJS_FOUNDATION, ["Foundation"], function()
 task ("build", ["Foundation", $BUILD_CJS_FOUNDATION]);
 
 CLOBBER.include($BUILD_CJS_FOUNDATION);
+CLOBBER.include(path.join(__dirname, "Build"));

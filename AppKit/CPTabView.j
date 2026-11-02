@@ -826,9 +826,14 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         var items = [aCoder decodeObjectForKey:CPTabViewItemsKey] || [CPArray array];
         [self _insertTabViewItems:items atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [items count])] canUpdateSelectedTab:NO];
 
-        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
+        // Inserting the items selected the first one. This is done before there is a
+        // delegate, because decoding is not a selection made by the user.
+        var selectedItem = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
 
-        _selectedTabViewItem = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
+        if (selectedItem)
+            [self _selectTabViewItemAtIndex:[self indexOfTabViewItem:selectedItem]];
+
+        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
         _type = [aCoder decodeIntForKey:CPTabViewTypeKey];
     }
@@ -866,15 +871,17 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // Don't bother to encode the CPBox. We will recreate it on decode and its content view is already
+    // Don't bother to encode the CPBox or the tabs. We will recreate them on decode and its content view is already
     // stored by the tab view item. Not encoding _box makes the resulting archive smaller and reduces
     // the surface for decoding bugs (of which we've had many in tab view).
     var subviews = [self subviews];
     [_box removeFromSuperview];
+    [_tabs removeFromSuperview];
     [super encodeWithCoder:aCoder];
     [self setSubviews:subviews];
 
-    [aCoder encodeObject:_items forKey:CPTabViewItemsKey];
+    // nib2cib stores its items in _items. Otherwise the items are the segments of _tabs.
+    [aCoder encodeObject:_items || [self items] forKey:CPTabViewItemsKey];
 
     [aCoder encodeConditionalObject:_selectedTabViewItem forKey:CPTabViewSelectedItemKey];
 

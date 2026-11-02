@@ -5,12 +5,24 @@
 
 @implementation CPScrollViewTest : OJTestCase
 {
+    CPScrollerStyle     globalScrollerStyle;
 }
 
 - (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
+
+    globalScrollerStyle = [CPScrollView globalScrollerStyle];
+}
+
+/*
+    The global scroller style applies to every scroll view, including those in later
+    test suites, so a test that changes it must not leave it changed.
+*/
+- (void)tearDown
+{
+    [CPScrollView setGlobalScrollerStyle:globalScrollerStyle];
 }
 
 /*!

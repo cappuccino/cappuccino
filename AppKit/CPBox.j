@@ -869,6 +869,11 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
             // We're coming from elsewhere
 
             _titleView   = [aCoder decodeObjectForKey:CPBoxTitleViewKey];
+
+            // The archiver encodes these views after encodeWithCoder: returns, when they
+            // are subviews again. They are added back below.
+            _boxView._superview = nil;
+            _titleView._superview = nil;
         }
 
         _contentView = [aCoder decodeObjectForKey:CPBoxContentViewKey];
@@ -877,7 +882,9 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
         // FIXME: (see encodeWithCoder to understand why this is not possible)
         // FIXME: we fix this by hand. This is horrible so please find a structural solution !
 
-        if (_contentView)
+        var contentViewNeedsBoxView = _contentView && [_contentView superview] !== _boxView;
+
+        if (contentViewNeedsBoxView)
             _contentView._superview = nil;
 
         [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -885,7 +892,7 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
         [_boxView     setAutoresizesSubviews:YES];
         [self         setAutoresizesSubviews:YES];
 
-        if (_contentView)
+        if (contentViewNeedsBoxView)
             [_boxView setSubviews:@[_contentView]];
 
         [self addSubview:_boxView];
@@ -945,9 +952,9 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
     [aCoder encodeInt:_borderType forKey:CPBoxBorderTypeKey];
     [aCoder encodeObject:_title forKey:CPBoxTitleKey];
     [aCoder encodeInt:_titlePosition forKey:CPBoxTitlePositionKey];
-    [aCoder encodeConditionalObject:_contentView forKey:CPBoxContentViewKey];
-    [aCoder encodeConditionalObject:_titleView forKey:CPBoxTitleViewKey];
-    [aCoder encodeConditionalObject:_boxView forKey:CPBoxBoxViewKey];
+    [aCoder encodeObject:_contentView forKey:CPBoxContentViewKey];
+    [aCoder encodeObject:_titleView forKey:CPBoxTitleViewKey];
+    [aCoder encodeObject:_boxView forKey:CPBoxBoxViewKey];
 }
 
 @end

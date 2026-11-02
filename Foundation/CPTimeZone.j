@@ -320,7 +320,7 @@ function _systemTimeZoneFromRuntime()
 {
     CPData      _data                @accessors(property=data, readonly);
     CPInteger   _secondsFromGMT      @accessors(property=secondFromGMT, readonly);
-    CPString    _abbreviation        @accessors(property=abbreviation, readonly);
+    CPString    _abbreviation;
     CPString    _name                @accessors(property=name, readonly);
 
     // Set only for zones created with +timeZoneForSecondsFromGMT:, which per
@@ -738,6 +738,14 @@ function _systemTimeZoneFromRuntime()
  Returns nil if the date is nil
  @return the abbreviation
  */
+/*!
+    Returns the abbreviation for the current date, as abbreviationForDate: does.
+*/
+- (CPString)abbreviation
+{
+    return [self abbreviationForDate:[CPDate date]];
+}
+
 - (CPString)abbreviationForDate:(CPDate)date
 {
     if (!date)
@@ -856,7 +864,7 @@ function _systemTimeZoneFromRuntime()
  */
 - (CPString)description
 {
-    return [CPString stringWithFormat:@"%s (%s) offset %i", _name, _abbreviation, [self secondsFromGMT]];
+    return [CPString stringWithFormat:@"%s (%s) offset %i", _name, [self abbreviation], [self secondsFromGMT]];
 }
 
 

@@ -1741,7 +1741,16 @@ var CPTokenFieldTokenizingCharacterSetKey   = "CPTokenFieldTokenizingCharacterSe
         _completionDelay = [aCoder decodeDoubleForKey:CPTokenFieldCompletionDelayKey] || [[self class] defaultCompletionDelay];
         _buttonType = [aCoder decodeIntForKey:CPTokenFieldButtonTypeKey] || CPTokenFieldDisclosureButtonType;
 
+        // The archive holds the token scroll view as a subview, and _init creates it again.
+        [self setSubviews:@[]];
         [self _init];
+
+        // The tokens were created by setObjectValue: before the scroll view existed.
+        var contentView = [_tokenScrollView documentView],
+            tokens = [self _tokens];
+
+        for (var i = 0, count = [tokens count]; i < count; i++)
+            [contentView addSubview:tokens[i]];
 
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];

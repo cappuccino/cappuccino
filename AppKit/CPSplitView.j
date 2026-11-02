@@ -221,7 +221,10 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
     if (_dividerStyle === CPSplitViewDividerStyleThin)
         return [self currentValueForThemeAttribute:@"pane-divider-color"];
 
-    return [CPColor colorWithPatternImage:[self currentValueForThemeAttribute:(_isVertical ? @"vertical-divider-color" : @"horizontal-divider-color")]];
+    // A theme may define no divider image, and a pattern needs one.
+    var image = [self currentValueForThemeAttribute:(_isVertical ? @"vertical-divider-color" : @"horizontal-divider-color")];
+
+    return image ? [CPColor colorWithPatternImage:image] : nil;
 }
 
 /*!

@@ -1,6 +1,8 @@
 @import <Foundation/CPMapTable.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPEnumerator.j>
+@import <Foundation/CPKeyedArchiver.j>
+@import <Foundation/CPKeyedUnarchiver.j>
 @import <Foundation/CPMutableArray.j>
 @import <OJUnit/OJTestCase.j>
 
@@ -137,6 +139,18 @@
     [self assertTrue:[foundValues containsObject:@"value1"]];
     [self assertTrue:[foundValues containsObject:@"value2"]];
     [self assertTrue:[foundValues containsObject:@"value3"]];
+}
+
+- (void)testArchivingPreservesEntries
+{
+    [map_table setObject:@"first" forKey:@"one"];
+    [map_table setObject:@"second" forKey:@"two"];
+
+    var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:map_table]];
+
+    [self assert:2 equals:[decoded count]];
+    [self assert:@"first" equals:[decoded objectForKey:@"one"]];
+    [self assert:@"second" equals:[decoded objectForKey:@"two"]];
 }
 
 - (void)testDictionaryRepresentation

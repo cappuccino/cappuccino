@@ -79,6 +79,9 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     if (self)
     {
+        // The value of a pop up button is its selected index, and not a button state.
+        _value = nil;
+
         [self selectItemAtIndex:CPNotFound];
 
         _preferredEdge = CPMaxYEdge;
