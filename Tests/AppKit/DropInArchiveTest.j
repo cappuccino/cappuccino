@@ -125,6 +125,14 @@ var fs = require("fs"),
 
 /*
     An archive written by main must restore the view it was written from.
+
+    The descriptions compared must be the same on every machine. A date, and the
+    string value of a control that holds one, are recorded by the date's instant in
+    UTC, because their text is in the local time zone (DropInSnapshot.j). GitHub's
+    continuous integration runs this test in UTC, so run it in UTC as well as in the
+    local time zone before committing a change:
+
+        TZ=UTC npx jake test
 */
 - (void)testExistingArchivesRestoreTheOriginalView
 {

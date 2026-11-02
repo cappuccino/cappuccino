@@ -755,8 +755,8 @@
     "lineBreakMode": "2",
     "verticalAlignment": "1",
     "doubleValue": "0",
-    "objectValue": "CPDate",
-    "stringValue": "Sat Oct 31 2026 06:00:00 GMT-0600 (Mountain Daylight Time)",
+    "objectValue": "CPDate:2026-10-31T12:00:00.000Z",
+    "stringValue": "CPDate:2026-10-31T12:00:00.000Z",
     "tag": "-1"
    },
    "subviews": [
