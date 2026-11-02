@@ -1,0 +1,95 @@
+/*
+ *  Jakefile
+ *  CSVImportTest
+ *
+ *  Created by David Richardson on 2026-11-02.
+ *  Copyright David Richardson 2026.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+const cp = require("child_process");
+const path = require("path");
+
+var ENV = process.env,
+    task = JAKE.task,
+    FileList = JAKE.FileList,
+    app = CAPPUCCINO.Jake.applicationtask.app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
+    projectName = "CSVImportTest";
+
+var buildDir = path.resolve(ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build");
+
+app (projectName, function(task)
+{
+    ENV["OBJJ_INCLUDE_PATHS"] = "Frameworks";
+
+    if (configuration === "Debug")
+        ENV["OBJJ_INCLUDE_PATHS"] = path.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
+
+    task.setBuildIntermediatesPath(path.join(buildDir, projectName + ".build", configuration));
+    task.setBuildPath(path.join(buildDir, configuration));
+
+    task.setProductName(projectName);
+    task.setIdentifier("dev.cappuccino." + projectName);
+    task.setVersion("1.0");
+    task.setAuthor("David Richardson");
+    task.setSummary(projectName);
+    task.setSources(new FileList("**/*.j").exclude(path.join("Build", "**")).exclude(path.join("Frameworks", "**")));
+    task.setResources(new FileList("Resources/**"));
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g -S --inline-msg-send");
+    else
+        task.setCompilerFlags("-O2");
+});
+
+task ("default", [projectName], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"]);
+
+task ("debug", function()
+{
+    configuration = ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    configuration = ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("run", ["debug"], function()
+{
+    cp.execFileSync("open", [path.join(buildDir, "Debug", projectName, "index.html")], { stdio: "inherit" });
+});
+
+task ("run-release", ["release"], function()
+{
+    cp.execFileSync("open", [path.join(buildDir, "Release", projectName, "index.html")], { stdio: "inherit" });
+});
+
+function printResults(configuration)
+{
+    console.log("----------------------------");
+    console.log(configuration + " app built at path: " + path.join(buildDir, configuration, projectName));
+    console.log("----------------------------");
+}
