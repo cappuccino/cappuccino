@@ -23,6 +23,7 @@
 @import "CPArray.j"
 @import "CPObject.j"
 @import "CPRange.j"
+@import "_CPFoundationUtilities.j"
 
 /*!
     @class CPIndexSet
