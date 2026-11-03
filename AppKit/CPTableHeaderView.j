@@ -299,8 +299,7 @@ var CPTableHeaderViewResizeZone = 3.0,
             @"background-color": [CPNull null],
             @"divider-color": [CPColor grayColor],
             @"divider-thickness": 1.0,
-            @"swap-animation": [CPNull null],
-            @"return-animation": [CPNull null]
+            @"column-animation-duration": [CPNull null]
         };
 }
 
@@ -660,80 +659,91 @@ var CPTableHeaderViewResizeZone = 3.0,
     return point;
 }
 
+/*
+    Returns the duration of the column move and return animations, from the theme's
+    column-animation-duration value, or 0 when the theme has none. With no value the column
+    moves at once, as it always has, so that themes without the value keep their behaviour.
+*/
+- (float)_columnAnimationDuration
+{
+    var duration = [self currentValueForThemeAttribute:@"column-animation-duration"];
+
+    return (duration && duration !== [CPNull null] && duration > 0) ? duration : 0;
+}
+
 - (void)_moveColumn:(CPInteger)aFromIndex toColumn:(CPInteger)aToIndex
 {
     if (_isAnimating)
         return;
 
-    var swapAnimation = [self currentValueForThemeAttribute:@"swap-animation"];
+    var duration = [self _columnAnimationDuration];
 
-    if (swapAnimation)
-    {
-        _isAnimating = YES;
-
-        // There's a theme defined animation function, just use it
-        objj_eval("("+swapAnimation+")")(self, aFromIndex, aToIndex, _columnDragClipView, _columnDragView);
-
-//        var animatedColumn       = [[_tableView tableColumns] objectAtIndex:aToIndex],
-//            animatedHeader       = [animatedColumn headerView],
-//            animatedHeaderOrigin = [animatedHeader frameOrigin],
-//
-//            destinationX,
-//            draggedHeader        = [[[_tableView tableColumns] objectAtIndex:aFromIndex] headerView],
-//
-//            scrollView = [self enclosingScrollView],
-//            animatedView = [_tableView _animationViewForColumn:aToIndex],
-//            animatedOrigin = [animatedView frameOrigin];
-//
-//        [_columnDragClipView addSubview:animatedView positioned:CPWindowBelow relativeTo:_columnDragView];
-//
-//        [[animatedHeader subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:YES];
-//        [animatedHeader setThemeState:CPThemeStateVertical];
-//
-//        if (aFromIndex < aToIndex)
-//            destinationX = CGRectGetMinX([_tableView rectOfColumn:aFromIndex]);
-//        else
-//            destinationX = animatedOrigin.x + CGRectGetWidth([_tableView rectOfColumn:aFromIndex]);
-//
-//        [CPAnimationContext beginGrouping];
-//
-//        var context = [CPAnimationContext currentContext];
-//
-//        [context setDuration:0.15];
-//        [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-//        [context setCompletionHandler:function() {
-//            [animatedView removeFromSuperview];
-//
-//            [self _finalize_moveColumn:aFromIndex toColumn:aToIndex];
-//
-//            [animatedHeader unsetThemeState:CPThemeStateVertical];
-//            [[animatedHeader subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:NO];
-//
-//            if ([animatedView isSelected])
-//            {
-//                [animatedHeader setThemeState:CPThemeStateSelected];
-//
-//                // We have to reselect the animated column
-//                [[_tableView selectedColumnIndexes] addIndex:aFromIndex];
-//            }
-//
-//            // Reload animated column
-//            var columnVisRect  = CGRectIntersection([_tableView rectOfColumn:aFromIndex], [_tableView visibleRect]),
-//                rowsIndexes    = [CPIndexSet indexSetWithIndexesInRange:[_tableView rowsInRect:columnVisRect]],
-//                columnsIndexes = [CPIndexSet indexSetWithIndex:aFromIndex];
-//
-//            [_tableView _loadDataViewsInRows:rowsIndexes columns:columnsIndexes];
-//            [_tableView _layoutViewsForRowIndexes:rowsIndexes columnIndexes:columnsIndexes];
-//
-//            [_tableView._tableDrawView displayRect:columnVisRect];
-//        }];
-//
-//        [[animatedView animator] setFrameOrigin:CGPointMake(destinationX, animatedOrigin.y)];
-//
-//        [CPAnimationContext endGrouping];
-    }
+    if (duration > 0)
+        [self _animateMoveColumn:aFromIndex toColumn:aToIndex duration:duration];
     else
         [self _finalize_moveColumn:aFromIndex toColumn:aToIndex];
+}
+
+/*
+    Slides the column that makes way for the dragged column into its new place, then moves the
+    column in the table. The animation is the class's behaviour; the theme supplies only its
+    duration.
+*/
+- (void)_animateMoveColumn:(CPInteger)aFromIndex toColumn:(CPInteger)aToIndex duration:(float)aDuration
+{
+    var animatedColumn = [[_tableView tableColumns] objectAtIndex:aToIndex],
+        animatedHeader = [animatedColumn headerView],
+        animatedView = [_tableView _animationViewForColumn:aToIndex],
+        animatedOrigin = [animatedView frameOrigin],
+        destinationX;
+
+    _isAnimating = YES;
+
+    [_columnDragClipView addSubview:animatedView positioned:CPWindowBelow relativeTo:_columnDragView];
+
+    [[animatedHeader subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:YES];
+    [animatedHeader setThemeState:CPThemeStateVertical];
+
+    if (aFromIndex < aToIndex)
+        destinationX = CGRectGetMinX([_tableView rectOfColumn:aFromIndex]);
+    else
+        destinationX = animatedOrigin.x + CGRectGetWidth([_tableView rectOfColumn:aFromIndex]);
+
+    [CPAnimationContext beginGrouping];
+
+    var context = [CPAnimationContext currentContext];
+
+    [context setDuration:aDuration];
+    [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+    [context setCompletionHandler:function()
+    {
+        [animatedView removeFromSuperview];
+
+        [self _finalize_moveColumn:aFromIndex toColumn:aToIndex];
+
+        [animatedHeader unsetThemeState:CPThemeStateVertical];
+        [[animatedHeader subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:NO];
+
+        if ([animatedView isSelected])
+        {
+            [animatedHeader setThemeState:CPThemeStateSelected];
+
+            // The animated column was selected, so it is selected again.
+            [[_tableView selectedColumnIndexes] addIndex:aFromIndex];
+        }
+
+        var columnVisRect = CGRectIntersection([_tableView rectOfColumn:aFromIndex], [_tableView visibleRect]),
+            rowsIndexes = [CPIndexSet indexSetWithIndexesInRange:[_tableView rowsInRect:columnVisRect]],
+            columnsIndexes = [CPIndexSet indexSetWithIndex:aFromIndex];
+
+        [_tableView _loadDataViewsInRows:rowsIndexes columns:columnsIndexes];
+        [_tableView _updateDataViewsFocusState];
+        [_tableView _layoutViewsForRowIndexes:rowsIndexes columnIndexes:columnsIndexes];
+    }];
+
+    [[animatedView animator] setFrameOrigin:CGPointMake(destinationX, animatedOrigin.y)];
+
+    [CPAnimationContext endGrouping];
 }
 
 - (void)_finalize_moveColumn:(CPInteger)aFromIndex toColumn:(CPInteger)aToIndex
@@ -854,36 +864,40 @@ var CPTableHeaderViewResizeZone = 3.0,
 
 - (void)_stopDraggingTableColumn:(CPInteger)aColumnIndex
 {
-    var returnAnimation = [self currentValueForThemeAttribute:@"return-animation"];
+    var duration = [self _columnAnimationDuration];
 
-    if (returnAnimation)
-    {
-        _isAnimating = YES;
-
-        // There's a theme defined animation function, just use it
-        objj_eval("("+returnAnimation+")")(self, aColumnIndex, _columnDragView);
-
-//        var animatedColumn       = [[_tableView tableColumns] objectAtIndex:aColumnIndex],
-//            animatedHeader       = [animatedColumn headerView],
-//            animatedHeaderOrigin = [animatedHeader frameOrigin];
-//
-//        [CPAnimationContext beginGrouping];
-//
-//        var context = [CPAnimationContext currentContext];
-//
-//        [context setDuration:0.15];
-//        [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-//        [context setCompletionHandler:function() {
-//
-//            [self _finalize_stopDraggingTableColumn:aColumnIndex];
-//        }];
-//
-//        [[_columnDragView animator] setFrameOrigin:CGPointMake(animatedHeaderOrigin.x, 0)];
-//
-//        [CPAnimationContext endGrouping];
-    }
+    if (duration > 0)
+        [self _animateReturnOfColumn:aColumnIndex duration:duration];
     else
         [self _finalize_stopDraggingTableColumn:aColumnIndex];
+}
+
+/*
+    Slides the dragged column back into its place, then ends the drag.
+*/
+- (void)_animateReturnOfColumn:(CPInteger)aColumnIndex duration:(float)aDuration
+{
+    var animatedColumn = [[_tableView tableColumns] objectAtIndex:aColumnIndex],
+        animatedHeaderOrigin = [[animatedColumn headerView] frameOrigin];
+
+    _isAnimating = YES;
+
+    [_tableView _updateDataViewsFocusState];
+    [CPAnimationContext beginGrouping];
+
+    var context = [CPAnimationContext currentContext];
+
+    [context setDuration:aDuration];
+    [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+    [context setCompletionHandler:function()
+    {
+        [self _finalize_stopDraggingTableColumn:aColumnIndex];
+        [_tableView _updateDataViewsFocusState];
+    }];
+
+    [[_columnDragView animator] setFrameOrigin:CGPointMake(animatedHeaderOrigin.x, 0)];
+
+    [CPAnimationContext endGrouping];
 }
 
 - (void)_finalize_stopDraggingTableColumn:(CPInteger)aColumnIndex

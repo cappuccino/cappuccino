@@ -7230,97 +7230,10 @@ var themedButtonValues                      = nil,
                                                    @"box-sizing": @"border-box"
                                                    }],
 
-    animateSwapFunction = "" + function(s, aFromIndex, aToIndex, _columnDragClipView, _columnDragView) {
-
-        var theTableView         = [s tableView],
-            animatedColumn       = [[theTableView tableColumns] objectAtIndex:aToIndex],
-            animatedHeader       = [animatedColumn headerView],
-            animatedHeaderOrigin = [animatedHeader frameOrigin],
-
-            destinationX,
-            draggedHeader        = [[[theTableView tableColumns] objectAtIndex:aFromIndex] headerView],
-
-            scrollView = [s enclosingScrollView],
-            animatedView = [theTableView _animationViewForColumn:aToIndex],
-            animatedOrigin = [animatedView frameOrigin];
-
-        [_columnDragClipView addSubview:animatedView positioned:CPWindowBelow relativeTo:_columnDragView];
-
-        [[animatedHeader subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:YES];
-        [animatedHeader setThemeState:CPThemeStateVertical];
-
-        if (aFromIndex < aToIndex)
-            destinationX = CGRectGetMinX([theTableView rectOfColumn:aFromIndex]);
-        else
-            destinationX = animatedOrigin.x + CGRectGetWidth([theTableView rectOfColumn:aFromIndex]);
-
-        [CPAnimationContext beginGrouping];
-
-        var context = [CPAnimationContext currentContext];
-
-        [context setDuration:0.15];
-        [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-        [context setCompletionHandler:function() {
-
-            [animatedView removeFromSuperview];
-
-            [s _finalize_moveColumn:aFromIndex toColumn:aToIndex];
-
-            [animatedHeader unsetThemeState:CPThemeStateVertical];
-            [[animatedHeader subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:NO];
-
-            if ([animatedView isSelected])
-            {
-                [animatedHeader setThemeState:CPThemeStateSelected];
-
-                // We have to reselect the animated column
-                [[theTableView selectedColumnIndexes] addIndex:aFromIndex];
-            }
-
-            // Reload animated column
-            var columnVisRect  = CGRectIntersection([theTableView rectOfColumn:aFromIndex], [theTableView visibleRect]),
-                rowsIndexes    = [CPIndexSet indexSetWithIndexesInRange:[theTableView rowsInRect:columnVisRect]],
-                columnsIndexes = [CPIndexSet indexSetWithIndex:aFromIndex];
-
-            [theTableView _loadDataViewsInRows:rowsIndexes columns:columnsIndexes];
-            [theTableView _updateDataViewsFocusState];
-            [theTableView _layoutViewsForRowIndexes:rowsIndexes columnIndexes:columnsIndexes];
-        }];
-
-        [[animatedView animator] setFrameOrigin:CGPointMake(destinationX, animatedOrigin.y)];
-
-        [CPAnimationContext endGrouping];
-    },
-
-    animateReturnFunction = "" + function(s, aColumnIndex, _columnDragView) {
-
-        var animatedColumn       = [[[s tableView] tableColumns] objectAtIndex:aColumnIndex],
-            animatedHeader       = [animatedColumn headerView],
-            animatedHeaderOrigin = [animatedHeader frameOrigin];
-
-        [[s tableView] _updateDataViewsFocusState];
-        [CPAnimationContext beginGrouping];
-
-        var context = [CPAnimationContext currentContext];
-
-        [context setDuration:0.15];
-        [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-        [context setCompletionHandler:function() {
-
-            [s _finalize_stopDraggingTableColumn:aColumnIndex];
-            [[s tableView] _updateDataViewsFocusState];
-        }];
-
-        [[_columnDragView animator] setFrameOrigin:CGPointMake(animatedHeaderOrigin.x, 0)];
-
-        [CPAnimationContext endGrouping];
-    },
-
     themeValues = [
         [@"background-color",   background],
         [@"background-color",   hudBackground,          CPThemeStateHUD],
-        [@"swap-animation",     animateSwapFunction],
-        [@"return-animation",   animateReturnFunction]
+        [@"column-animation-duration",  0.15]
     ];
 
     [self registerThemeValues:themeValues forView:header];
