@@ -263,6 +263,20 @@
     [self assertAccent:@"other class" ofView:view];
 }
 
+/*
+    A value set on one view is held apart from the values it inherits, so a change of
+    theme class must keep it, as a change of theme does. This fails today:
+    -setThemeClass: calls -_loadThemeAttributes, which replaces the view's attributes
+    with the set shared by every view of the class, and the view's own value is lost.
+*/
+- (void)testAPerViewValueSurvivesAThemeClassChange
+{
+    [view setValue:@"own" forThemeAttribute:@"accent"];
+    [view setThemeClass:@"other-class"];
+
+    [self assertAccent:@"own" ofView:view];
+}
+
 - (void)testSettingAThemeClassQueuesLayout
 {
     [view setThemeClass:@"other-class"];

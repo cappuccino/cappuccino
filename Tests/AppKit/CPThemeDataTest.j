@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/AppKit.j>
+@import "BuiltThemes.j"
 
 /*
     A theme holds values: colours, images, metrics, fonts and flags. It holds no
@@ -32,9 +32,6 @@
     a function, or a string holding a function's source. They read the build, so
     they need the themes built first, as `npx jake build` does.
 */
-var fs = require("fs"),
-    path = require("path");
-
 var CPThemeDataTestCodePattern = /^\s*\(?\s*(async\s+)?function\b|^\s*\(?[\w\s,]*\)?\s*=>/;
 
 @implementation CPThemeDataTest : OJTestCase
@@ -45,56 +42,6 @@ var CPThemeDataTestCodePattern = /^\s*\(?\s*(async\s+)?function\b|^\s*\(?[\w\s,]
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
-
-/*
-    Returns the directory of the built blends: Debug if it exists, otherwise Release.
-*/
-- (CPString)buildDirectory
-{
-    var buildPath = process.env.CAPP_BUILD || process.env.BUILD_PATH || "Build",
-        configurations = ["Debug", "Release"];
-
-    for (var i = 0; i < configurations.length; i++)
-    {
-        var directory = path.resolve(buildPath, configurations[i]);
-
-        if (fs.existsSync(directory) && fs.readdirSync(directory).some(function(aName) { return /\.blend$/.test(aName); }))
-            return directory;
-    }
-
-    return nil;
-}
-
-/*
-    Returns the keyed theme archives in a blend's static file, as an array of
-    { path, text } objects. A static file is a sequence of records, each a type
-    letter, a length and that many characters: a "p" record names a file, and the
-    "t" record after it holds the file's text.
-*/
-- (CPArray)keyedThemesInStaticFile:(CPString)aStaticFile
-{
-    var contents = fs.readFileSync(aStaticFile, { encoding: "utf8" }),
-        themes = [],
-        index = contents.indexOf(";", contents.indexOf(";") + 1) + 1,
-        currentPath = nil;
-
-    while (index < contents.length)
-    {
-        var type = contents.charAt(index),
-            lengthEnd = contents.indexOf(";", index + 2),
-            length = parseInt(contents.substring(index + 2, lengthEnd), 10),
-            text = contents.substr(lengthEnd + 1, length);
-
-        if (type === "p")
-            currentPath = text;
-        else if (type === "t" && currentPath && /\.keyedtheme$/.test(currentPath))
-            themes.push({ path: currentPath, text: text });
-
-        index = lengthEnd + 1 + length;
-    }
-
-    return themes;
 }
 
 /*
@@ -139,57 +86,36 @@ var CPThemeDataTestCodePattern = /^\s*\(?\s*(async\s+)?function\b|^\s*\(?[\w\s,]
 
 - (void)testThemeValuesAreData
 {
-    var buildDirectory = [self buildDirectory];
-
-    [self assertTrue:buildDirectory !== nil message:@"No built blends were found. Build the themes first."];
-
-    var blends = fs.readdirSync(buildDirectory).filter(function(aName) { return /\.blend$/.test(aName); }).sort(),
-        themeCount = 0,
+    var themes = BuiltThemes(),
         violations = [];
 
-    for (var i = 0; i < blends.length; i++)
+    [self assertTrue:themes.length > 0 message:@"No themes were found in the built blends. Build the themes first."];
+
+    for (var j = 0; j < themes.length; j++)
     {
-        var blendPath = path.join(buildDirectory, blends[i]),
-            staticFile = path.join(blendPath, "CommonJS.environment", blends[i] + ".sj");
+        var theme = themes[j],
+            classNames = [[theme classNames] sortedArrayUsingSelector:@selector(compare:)];
 
-        if (!fs.existsSync(staticFile))
-            continue;
-
-        var bundle = [CPBundle bundleWithPath:blendPath],
-            keyedThemes = [self keyedThemesInStaticFile:staticFile];
-
-        for (var j = 0; j < keyedThemes.length; j++)
+        for (var k = 0; k < classNames.length; k++)
         {
-            var unarchiver = [[_CPThemeKeyedUnarchiver alloc] initForReadingWithData:[CPData dataWithRawString:keyedThemes[j].text] bundle:bundle],
-                theme = [unarchiver decodeObjectForKey:@"root"];
+            var attributes = [theme attributesForClass:classNames[k]],
+                names = [[attributes allKeys] sortedArrayUsingSelector:@selector(compare:)];
 
-            [unarchiver finishDecoding];
-            themeCount++;
-
-            var classNames = [[theme classNames] sortedArrayUsingSelector:@selector(compare:)];
-
-            for (var k = 0; k < classNames.length; k++)
+            for (var m = 0; m < names.length; m++)
             {
-                var attributes = [theme attributesForClass:classNames[k]],
-                    names = [[attributes allKeys] sortedArrayUsingSelector:@selector(compare:)];
+                var attribute = [attributes objectForKey:names[m]],
+                    location = [theme name] + " " + classNames[k] + " " + names[m],
+                    values = [attribute values],
+                    states = [values allKeys];
 
-                for (var m = 0; m < names.length; m++)
-                {
-                    var attribute = [attributes objectForKey:names[m]],
-                        location = [theme name] + " " + classNames[k] + " " + names[m],
-                        values = [attribute values],
-                        states = [values allKeys];
+                [self collectCodeIn:[attribute defaultValue] at:location + " (default)" into:violations];
 
-                    [self collectCodeIn:[attribute defaultValue] at:location + " (default)" into:violations];
-
-                    for (var n = 0; n < states.length; n++)
-                        [self collectCodeIn:[values objectForKey:states[n]] at:location + " (" + states[n] + ")" into:violations];
-                }
+                for (var n = 0; n < states.length; n++)
+                    [self collectCodeIn:[values objectForKey:states[n]] at:location + " (" + states[n] + ")" into:violations];
             }
         }
     }
 
-    [self assertTrue:themeCount > 0 message:@"No themes were found in the built blends."];
     [self assertTrue:violations.length === 0 message:@"Theme values must be data, not code:\n" + violations.join("\n")];
 }
 
