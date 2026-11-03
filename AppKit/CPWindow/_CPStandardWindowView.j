@@ -210,7 +210,22 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
             [self addSubview:_closeButton];
         }
 
-        if (_styleMask & CPMiniaturizableWindowMask)
+        /*
+            In the browser a window has only a close button. Outside the browser a
+            miniaturizable window also has a minimize button. A minimize button in the
+            browser and a zoom button for every resizable window were added under every
+            theme, but neither works in the browser: the platform window's -miniaturize:
+            does nothing, so the window stays on screen but counts as minimized, and no
+            class implements -performZoom:. Under a theme without zoom images, the zoom
+            button was also invisible but clickable.
+
+            The code below that places, highlights and hides _zoomButton remains, and does
+            nothing while it is nil. It belongs to the window buttons that are to follow
+            Apple's guidance: all three standard buttons shown, the unavailable ones
+            disabled, with the Windows button order as a platform variant. That work
+            replaces it and the minimize button below.
+        */
+        if (_styleMask & CPMiniaturizableWindowMask && ![CPPlatform isBrowser])
         {
             _minimizeButton = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
 
@@ -218,16 +233,6 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
             [_minimizeButton setBordered:NO];
 
             [self addSubview:_minimizeButton];
-        }
-
-        if (_styleMask & CPResizableWindowMask)
-        {
-            _zoomButton = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
-
-            [_zoomButton setButtonType:CPMomentaryChangeButton];
-            [_zoomButton setBordered:NO];
-
-            [self addSubview:_zoomButton];
         }
 
         [self _updateWindowButtons:YES];
@@ -253,9 +258,6 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
     [_minimizeButton setTarget:[self window]];
     [_minimizeButton setAction:@selector(performMiniaturize:)];
-
-    [_zoomButton setTarget:[self window]];
-    [_zoomButton setAction:@selector(performZoom:)];
 }
 
 - (CGSize)toolbarOffset
