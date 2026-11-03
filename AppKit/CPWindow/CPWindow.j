@@ -4574,9 +4574,17 @@ var interpolate = function(fromValue, toValue, progress)
 
 @implementation CPWindow (CSSTheming)
 
+/*
+    The walk starts at the window view, so that a theme change reaches the window's own
+    frame: the title bar, the title, the window buttons and the toolbar, as well as the
+    content view below them. It started at the content view, so the frame kept the old
+    theme. The shadow view is drawn behind the window view but is not one of its
+    subviews, so it is reached separately.
+*/
 - (void)_setThemeIncludingDescendants:(CPTheme)aTheme
 {
-    [[self contentView] _setThemeIncludingDescendants:aTheme];
+    [_windowView _setThemeIncludingDescendants:aTheme];
+    [_shadowView _setThemeIncludingDescendants:aTheme];
 }
 
 @end
