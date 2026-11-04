@@ -26,8 +26,10 @@ var ENV = process.env,
     fs = require("fs"),
     path = require("path");
 
-// The frameworks an application's Frameworks directory links to, in the layout
-// capp gen creates: release builds directly inside, debug builds in Debug/.
+/*
+ * The frameworks configure copies into each manual test application.  The
+ * comment on configure explains why they are copies.
+ */
 var ConfiguredFrameworks = ["Objective-J", "Foundation", "AppKit", "BlendKit"];
 
 /*
@@ -52,19 +54,43 @@ task ("release", ["default"]);
  */
 
 /*
- * Gives every manual test application the Frameworks layout capp gen creates:
- * Frameworks/<Name> links to the release build in Build/Release, and
- * Frameworks/Debug links to the debug build in Build/Debug, so index.html loads
- * release frameworks and index-debug.html loads debug frameworks.  An existing
- * Frameworks link, or a Frameworks directory holding only links, is replaced;
- * a Frameworks directory holding real files is left untouched.
+ * Gives manual test applications the frameworks built in this repository, so
+ * that an application runs without being built itself: index.html loads the
+ * release frameworks and index-debug.html the debug frameworks.  The layout is
+ * the one capp gen creates:
+ *
+ *     Frameworks/<Name>          from Build/Release/<Name>
+ *     Frameworks/Debug/<Name>    from Build/Debug/<Name>
+ *
+ * Copies, not links.  The applications are meant to be opened directly in
+ * Safari over file://, with no server.  Safari reliably reads only files inside
+ * the application's directory.  A link that leads out of it, into Build, fails
+ * with "Cannot open file" once Safari has been restarted, and keeps failing
+ * until a file at the link's target has been opened directly.  This applies to
+ * the script tag that loads Objective-J.js and to every file the loader then
+ * requests from the frameworks, so all of them are copied.
+ *
+ * APFS clones.  Each copy is made as an APFS clone where the volume supports
+ * it: a separate file that shares its data with the build until either one
+ * changes, so the copies take almost no disk space.  Other volumes get plain
+ * copies.
+ *
+ * Consequences.  A copy does not follow a rebuild the way a link does, so run
+ * configure again after every framework build.  Each application receives
+ * thousands of files, so name the applications under test, by their path in
+ * this directory:
+ *
+ *     npx jake configure CSVImportTest TableTest/DataView
+ *
+ * Without names, every application is configured.  clobber removes what
+ * configure made, and leaves any other entry in Frameworks in place.
  */
 task ("configure", function()
 {
     var manualDir = __dirname;
 
     provisionFrameworks(
-        manualDir,
+        requestedApplicationDirectories(manualDir, "configure"),
         path.resolve(manualDir, "../../Build/Release"),
         path.resolve(manualDir, "../../Build/Debug"),
         "build the frameworks in both configurations first"
@@ -72,10 +98,10 @@ task ("configure", function()
 });
 
 /*
- * Gives every manual test application the same Frameworks layout as configure,
- * linked to the capp-build package in Build/modern/Frameworks instead of the
- * legacy builds.  capp-build produces a single build, so Frameworks/Debug links
- * to the same package.
+ * Gives manual test applications the same Frameworks layout as configure, copied
+ * from the capp-build package in Build/modern/Frameworks instead of the legacy
+ * builds.  capp-build produces a single build, so Frameworks/Debug uses the same
+ * package.  Applications are named as for configure.
  */
 task ("configure-modern", function()
 {
@@ -83,7 +109,7 @@ task ("configure-modern", function()
         modernPath = path.resolve(manualDir, "../../Build/modern/Frameworks");
 
     provisionFrameworks(
-        manualDir,
+        requestedApplicationDirectories(manualDir, "configure-modern"),
         modernPath,
         modernPath,
         "build the package with capp-build first (capp-build build . at the repository root)"
@@ -91,12 +117,12 @@ task ("configure-modern", function()
 });
 
 /*
- * Links Frameworks/<Name> to releasePath/<Name> and Frameworks/Debug to
- * debugPath in every manual test application, after checking that both hold
- * every framework.  An existing Frameworks link, or a Frameworks directory
- * holding only links, is replaced; one holding real files is left untouched.
+ * Fills Frameworks from releasePath and Frameworks/Debug from debugPath in each
+ * application in appDirs, after checking that both hold every framework.  The
+ * entries configure made before are replaced, and any other entry in Frameworks
+ * is left in place.
  */
-function provisionFrameworks(manualDir, releasePath, debugPath, missingHint)
+function provisionFrameworks(appDirs, releasePath, debugPath, missingHint)
 {
     [releasePath, debugPath].forEach(function(buildPath)
     {
@@ -107,26 +133,29 @@ function provisionFrameworks(manualDir, releasePath, debugPath, missingHint)
         });
     });
 
-    manualApplicationDirectories(manualDir).forEach(function(appDir)
+    appDirs.forEach(function(appDir)
     {
-        var name = path.basename(appDir),
-            frameworksPath = path.join(appDir, "Frameworks");
+        var frameworksPath = path.join(appDir, "Frameworks");
 
-        if (!removeConfiguredFrameworks(appDir))
-        {
-            console.log("Skipping " + name + ": Frameworks contains files that are not links");
-            return;
-        }
+        console.log("Configuring " + path.basename(appDir));
 
-        console.log("Configuring " + name);
-        fs.mkdirSync(frameworksPath);
+        removeConfiguredFrameworks(appDir);
+        fillFrameworksDirectory(frameworksPath, releasePath);
+        fillFrameworksDirectory(path.join(frameworksPath, "Debug"), debugPath);
+    });
+}
 
-        ConfiguredFrameworks.forEach(function(framework)
-        {
-            fs.symlinkSync(path.join(releasePath, framework), path.join(frameworksPath, framework));
-        });
+/*
+ * Copies each configured framework from buildPath into aDirectory, as an APFS
+ * clone where the volume supports it.
+ */
+function fillFrameworksDirectory(aDirectory, buildPath)
+{
+    fs.mkdirSync(aDirectory, { recursive: true });
 
-        fs.symlinkSync(debugPath, path.join(frameworksPath, "Debug"));
+    ConfiguredFrameworks.forEach(function(framework)
+    {
+        fs.cpSync(path.join(buildPath, framework), path.join(aDirectory, framework), { recursive: true, mode: fs.constants.COPYFILE_FICLONE });
     });
 }
 
@@ -141,20 +170,52 @@ task ("clean", function()
 });
 
 /*
- * Removes the Frameworks layout configure created from every manual test
- * application, after delegating Build directory removal to clean.  A Frameworks
- * directory holding real files is left untouched.
+ * Removes the Frameworks entries configure made from every manual test
+ * application, after delegating Build directory removal to clean.  Any other
+ * entry in Frameworks is left in place.
  */
 task ("clobber", ["clean"], function()
 {
     var manualDir = __dirname;
 
-    manualApplicationDirectories(manualDir).forEach(function(appDir)
-    {
-        if (!removeConfiguredFrameworks(appDir))
-            console.log("Skipping " + path.basename(appDir) + ": Frameworks contains files that are not links");
-    });
+    manualApplicationDirectories(manualDir).forEach(removeConfiguredFrameworks);
 });
+
+/*
+ * Returns the absolute paths of the manual test applications named on the
+ * command line after taskName, or of every application when none is named.  A
+ * name is the application's path in this directory; a trailing slash is
+ * allowed.  Jake runs each word on the command line as a task, so each name is
+ * also declared as an empty task, which Jake then runs without effect.  Words of
+ * the form NAME=value are Jake's environment settings, not names.
+ */
+function requestedApplicationDirectories(manualDir, taskName)
+{
+    var allDirectories = manualApplicationDirectories(manualDir),
+        taskIndex = process.argv.indexOf(taskName),
+        names = taskIndex < 0 ? [] : process.argv.slice(taskIndex + 1).filter(function(word)
+        {
+            return !/^\w+=/.test(word);
+        });
+
+    if (names.length === 0)
+        return allDirectories;
+
+    return names.map(function(name)
+    {
+        var appDir = path.resolve(manualDir, name.replace(/\/+$/, ""));
+
+        if (JAKE.application().lookup(name))
+            throw new Error(name + " is a task in this Jakefile, not an application");
+
+        if (allDirectories.indexOf(appDir) < 0)
+            throw new Error(name + " is not a manual test application in " + manualDir);
+
+        JAKE.task(name);
+
+        return appDir;
+    });
+}
 
 /*
  * Returns the absolute paths of the manual test applications: every directory
@@ -162,7 +223,11 @@ task ("clobber", ["clean"], function()
  */
 function manualApplicationDirectories(manualDir)
 {
-    var jakefiles = cp.execSync("find . -mindepth 2 -iname 'jakefile'", { cwd: manualDir, encoding: "utf8" });
+    /*
+        Frameworks holds copies of the frameworks, and Build holds build products,
+        so neither is searched.
+    */
+    var jakefiles = cp.execSync("find . -mindepth 2 \\( -name Frameworks -o -name Build \\) -prune -o -iname 'jakefile' -print", { cwd: manualDir, encoding: "utf8" });
 
     return jakefiles.split("\n").filter(Boolean).map(function(jakefile)
     {
@@ -171,59 +236,63 @@ function manualApplicationDirectories(manualDir)
 }
 
 /*
- * Removes an application's Frameworks link, or its Frameworks directory when
- * that holds only links and directories, and returns true; returns false and
- * leaves it in place when it holds any real file.  Links are removed, never
- * followed.
+ * Removes what configure made in an application's Frameworks: a Frameworks
+ * link, or the entries named after the configured frameworks and Debug, whether
+ * they are links or directories.  Any other entry is left in place, and so is a
+ * directory that still holds one.  Links are removed, never followed.
  */
 function removeConfiguredFrameworks(appDir)
 {
     var frameworksPath = path.join(appDir, "Frameworks"),
-        stat;
+        stat = fs.lstatSync(frameworksPath, { throwIfNoEntry: false });
 
-    try
-    {
-        stat = fs.lstatSync(frameworksPath);
-    }
-    catch (anError)
-    {
-        return true;
-    }
-
-    if (stat.isSymbolicLink())
+    if (stat && stat.isSymbolicLink())
     {
         fs.unlinkSync(frameworksPath);
-        return true;
+        return;
     }
 
-    if (stat.isDirectory() && containsOnlyLinks(frameworksPath))
-    {
-        fs.rmSync(frameworksPath, { recursive: true });
-        return true;
-    }
+    if (!stat || !stat.isDirectory())
+        return;
 
-    return false;
+    removeConfiguredEntries(path.join(frameworksPath, "Debug"));
+    removeConfiguredEntries(frameworksPath);
 }
 
 /*
- * Returns true when aPath is a directory tree holding only symbolic links and
- * directories.
+ * Removes aPath when it is a link.  When it is a directory, removes its entries
+ * named after the configured frameworks, then removes the directory if it is
+ * empty.
  */
-function containsOnlyLinks(aPath)
+function removeConfiguredEntries(aPath)
 {
-    return fs.readdirSync(aPath).every(function(name)
+    var stat = fs.lstatSync(aPath, { throwIfNoEntry: false });
+
+    if (!stat)
+        return;
+
+    if (stat.isSymbolicLink())
     {
-        var entry = path.join(aPath, name),
-            stat = fs.lstatSync(entry);
+        fs.unlinkSync(aPath);
+        return;
+    }
 
-        if (stat.isSymbolicLink())
-            return true;
+    if (!stat.isDirectory())
+        return;
 
-        if (stat.isDirectory())
-            return containsOnlyLinks(entry);
+    ConfiguredFrameworks.forEach(function(framework)
+    {
+        var entry = path.join(aPath, framework),
+            entryStat = fs.lstatSync(entry, { throwIfNoEntry: false });
 
-        return false;
+        if (entryStat && entryStat.isSymbolicLink())
+            fs.unlinkSync(entry);
+        else if (entryStat)
+            fs.rmSync(entry, { recursive: true });
     });
+
+    if (fs.readdirSync(aPath).length === 0)
+        fs.rmdirSync(aPath);
 }
 
 /*
