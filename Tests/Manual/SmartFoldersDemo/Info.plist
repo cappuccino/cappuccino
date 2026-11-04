@@ -7,7 +7,7 @@
 	<key>CPBundleIdentifier</key>
 	<string>com.yourorganization.SmartFoldersDemo</string>
 	<key>CPDefaultTheme</key>
-	<string>Aristo2</string>
+	<string>Aristo3</string>
 	<key>CPApplicationDelegateClass</key>
 	<string>AppController</string>
 	<key>CPBundleName</key>

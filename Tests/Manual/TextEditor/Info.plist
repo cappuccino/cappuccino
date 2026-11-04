@@ -10,6 +10,8 @@
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
 	<string>TextEditor</string>
+	<key>CPDefaultTheme</key>
+	<string>Aristo3</string>
 	<key>CPBundleDocumentTypes</key>
 	<array>
 		<dict>

@@ -6,6 +6,8 @@
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
 	<string>CappDoc</string>
+	<key>CPDefaultTheme</key>
+	<string>Aristo3</string>
 	<key>CPBundleDocumentTypes</key>
 	<array>
 		<dict>

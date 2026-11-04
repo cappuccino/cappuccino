@@ -6,9 +6,10 @@
  * Copyright 2016, Your Company All rights reserved.
  */
 
-var ENV = process.env, cp = require("child_process"), fs = require("fs"), path = require("path");,
-    FILE = require("file"),
-    JAKE = require("jake"),
+var ENV = process.env,
+    cp = require("child_process"),
+    fs = require("fs"),
+    path = require("path"),
     task = JAKE.task,
     FileList = JAKE.FileList,
     app = CAPPUCCINO.Jake.applicationtask.app,
@@ -93,7 +94,7 @@ function updateApplicationSize()
 {
     console.log("Calculating application file sizes...");
 
-    var contents = FILE.read(path.join("Build", configuration, projectName, "Info.plist"), { charset:"UTF-8" }),
+    var contents = fs.readFileSync(path.join("Build", configuration, projectName, "Info.plist"), { encoding: "utf8" }),
         format = CFPropertyList.sniffedFormatOfString(contents),
         plist = CFPropertyList.propertyListFromString(contents),
         totalBytes = {executable:0, data:0, mhtml:0};
@@ -104,7 +105,7 @@ function updateApplicationSize()
     if (configuration === "Debug")
         frameworksDir = path.join(frameworksDir, "Debug");
 
-    var frameworks = FILE.list(frameworksDir);
+    var frameworks = fs.existsSync(frameworksDir) ? fs.readdirSync(frameworksDir) : [];
 
     frameworks.forEach(function(framework)
     {
@@ -121,7 +122,7 @@ function updateApplicationSize()
     else
         themePath = path.join("Frameworks", "Resources", themeName + ".blend");
 
-    if (FILE.isDirectory(themePath))
+    if (fs.existsSync(themePath) && fs.lstatSync(themePath).isDirectory())
         addBundleFileSizes(themePath, totalBytes);
 
     // Add sizes for the app
@@ -137,37 +138,37 @@ function updateApplicationSize()
 
     plist.setValueForKey("CPApplicationSize", dict);
 
-    FILE.write(path.join("Build", configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { charset:"UTF-8" });
+    fs.writeFileSync(path.join("Build", configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { encoding: "utf8" });
 }
 
 function addBundleFileSizes(bundlePath, totalBytes)
 {
-    var bundleName = FILE.basename(bundlePath),
+    var bundleName = path.basename(bundlePath),
         environment = bundleName === "Foundation" ? "Objj" : "Browser",
         bundlePath = path.join(bundlePath, environment + ".environment");
 
-    if (FILE.isDirectory(bundlePath))
+    if (fs.existsSync(bundlePath) && fs.lstatSync(bundlePath).isDirectory())
     {
         var filename = bundleName + ".sj",
-            filePath = new FILE.Path(path.join(bundlePath, filename));
+            filePath = path.join(bundlePath, filename);
 
-        if (filePath.exists())
-            totalBytes.executable += filePath.size();
+        if (fs.existsSync(filePath))
+            totalBytes.executable += fs.lstatSync(filePath).size;
 
-        filePath = new FILE.Path(path.join(bundlePath, "dataURLs.txt"));
+        filePath = path.join(bundlePath, "dataURLs.txt");
 
-        if (filePath.exists())
-            totalBytes.data += filePath.size();
+        if (fs.existsSync(filePath))
+            totalBytes.data += fs.lstatSync(filePath).size;
 
-        filePath = new FILE.Path(path.join(bundlePath, "MHTMLData.txt"));
+        filePath = path.join(bundlePath, "MHTMLData.txt");
 
-        if (filePath.exists())
-            totalBytes.mhtml += filePath.size();
+        if (fs.existsSync(filePath))
+            totalBytes.mhtml += fs.lstatSync(filePath).size;
 
-        filePath = new FILE.Path(path.join(bundlePath, "MHTMLPaths.txt"));
+        filePath = path.join(bundlePath, "MHTMLPaths.txt");
 
-        if (filePath.exists())
-            totalBytes.mhtml += filePath.size();
+        if (fs.existsSync(filePath))
+            totalBytes.mhtml += fs.lstatSync(filePath).size;
     }
 }
 
@@ -179,4 +180,54 @@ task ("clean", function()
 task ("clobber", ["clean"], function()
 {
     cp.execSync("rm -rf Frameworks", { stdio: "inherit" });
+});
+
+/*
+    Sets the theme this application uses, for example:
+
+        npx jake theme Aristo2
+        npx jake theme "Aristo3 Dark"
+
+    The name is written to CPDefaultTheme in Info.plist as given, with its case
+    kept and &, < and > escaped. Empty the browser cache afterwards, because the
+    browser keeps the old Info.plist.
+
+    Jake runs each word on the command line as a task, in order, and looks a task
+    up only when it reaches it. So this task declares the theme name as an empty
+    task, which Jake then runs without effect. A name that is already a task is
+    refused, because Jake would run that task after this one. So is a name that
+    starts with ^ or jake:, which Jake reads as a task scope.
+*/
+JAKE.task ("theme", function()
+{
+    var fs = require("fs"),
+        path = require("path"),
+        themeName = process.argv[process.argv.indexOf("theme") + 1],
+        plistPath = path.join(__dirname, "Info.plist"),
+        themeKey = /(<key>CPDefaultTheme<\/key>\s*<string>)[^<]*(<\/string>)/;
+
+    if (!themeName || !themeName.trim())
+        throw new Error("Give a theme name, for example: npx jake theme \"Aristo3 Dark\"");
+
+    if (/^(\^|jake:)/.test(themeName))
+        throw new Error("A theme name cannot start with ^ or jake:, which Jake reads as a task scope");
+
+    if (JAKE.application().lookup(themeName))
+        throw new Error(themeName + " is a task in this Jakefile, not a theme name");
+
+    var plist = fs.readFileSync(plistPath, "utf8"),
+        plistValue = themeName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    if (!themeKey.test(plist))
+        throw new Error("No CPDefaultTheme key in " + plistPath);
+
+    plist = plist.replace(themeKey, function(match, head, tail)
+    {
+        return head + plistValue + tail;
+    });
+
+    fs.writeFileSync(plistPath, plist);
+    JAKE.task(themeName);
+
+    console.log("Theme set to " + themeName + " in " + plistPath);
 });
