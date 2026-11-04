@@ -102,3 +102,53 @@ task ("clobber", ["clean"], function()
 {
     cp.execSync("rm -rf Frameworks", { stdio: "inherit" });
 });
+
+/*
+    Sets the theme this application uses, for example:
+
+        npx jake theme Aristo2
+        npx jake theme "Aristo3 Dark"
+
+    The name is written to CPDefaultTheme in Info.plist as given, with its case
+    kept and &, < and > escaped. Empty the browser cache afterwards, because the
+    browser keeps the old Info.plist.
+
+    Jake runs each word on the command line as a task, in order, and looks a task
+    up only when it reaches it. So this task declares the theme name as an empty
+    task, which Jake then runs without effect. A name that is already a task is
+    refused, because Jake would run that task after this one. So is a name that
+    starts with ^ or jake:, which Jake reads as a task scope.
+*/
+JAKE.task ("theme", function()
+{
+    var fs = require("fs"),
+        path = require("path"),
+        themeName = process.argv[process.argv.indexOf("theme") + 1],
+        plistPath = path.join(__dirname, "Info.plist"),
+        themeKey = /(<key>CPDefaultTheme<\/key>\s*<string>)[^<]*(<\/string>)/;
+
+    if (!themeName || !themeName.trim())
+        throw new Error("Give a theme name, for example: npx jake theme \"Aristo3 Dark\"");
+
+    if (/^(\^|jake:)/.test(themeName))
+        throw new Error("A theme name cannot start with ^ or jake:, which Jake reads as a task scope");
+
+    if (JAKE.application().lookup(themeName))
+        throw new Error(themeName + " is a task in this Jakefile, not a theme name");
+
+    var plist = fs.readFileSync(plistPath, "utf8"),
+        plistValue = themeName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    if (!themeKey.test(plist))
+        throw new Error("No CPDefaultTheme key in " + plistPath);
+
+    plist = plist.replace(themeKey, function(match, head, tail)
+    {
+        return head + plistValue + tail;
+    });
+
+    fs.writeFileSync(plistPath, plist);
+    JAKE.task(themeName);
+
+    console.log("Theme set to " + themeName + " in " + plistPath);
+});

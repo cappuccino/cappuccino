@@ -6,6 +6,8 @@
 	<string>AppController</string>
 	<key>CPBundleName</key>
 	<string>CPPopUpButtonTest</string>
+	<key>CPDefaultTheme</key>
+	<string>Aristo3</string>
 	<key>CPPrincipalClass</key>
 	<string>CPApplication</string>
 </dict>

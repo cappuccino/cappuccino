@@ -6,6 +6,8 @@
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
 	<string>CPVisualEffectViewTest</string>
+	<key>CPDefaultTheme</key>
+	<string>Aristo3</string>
     <key>CPBundleVersion</key>
     <string>1.0</string>
     <key>CPHumanReadableCopyright</key>
