@@ -124,6 +124,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     CPTrackingArea              _zoomButtonTrackingArea;
 
     int                         _buttonsWidth;
+    BOOL                        _isPointerOverButtons;
 }
 
 + (CPString)defaultThemeClass
@@ -205,40 +206,20 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
         [self setResizeIndicatorOffset:CGSizeMake(2.0, 2.0)];
 
-        if (_styleMask & CPClosableWindowMask)
-        {
-            _closeButton = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
-
-            [_closeButton setButtonType:CPMomentaryChangeButton];
-            [_closeButton setBordered:NO];
-
-            [self addSubview:_closeButton];
-        }
-
         /*
-            In the browser a window has only a close button. Outside the browser a
-            miniaturizable window also has a minimize button. A minimize button in the
-            browser and a zoom button for every resizable window were added under every
-            theme, but neither works in the browser: the platform window's -miniaturize:
-            does nothing, so the window stays on screen but counts as minimized, and no
-            class implements -performZoom:. Under a theme without zoom images, the zoom
-            button was also invisible but clickable.
-
-            The code below that places, highlights and hides _zoomButton remains, and does
-            nothing while it is nil. It belongs to the window buttons that are to follow
-            Apple's guidance: all three standard buttons shown, the unavailable ones
-            disabled, with the Windows button order as a platform variant. That work
-            replaces it and the minimize button below.
+            A standard titled window shows close, minimize and zoom, and enables each only
+            when it is available, as Apple's guidelines ask. Only the available buttons
+            were shown, so an unavailable control was hidden instead of disabled. Minimize
+            is never available, because a page cannot minimize its browser window. No
+            class implements zooming yet, so zoom is not available either.
         */
-        if (_styleMask & CPMiniaturizableWindowMask && ![CPPlatform isBrowser])
-        {
-            _minimizeButton = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+        _closeButton = [self _windowButton];
+        _minimizeButton = [self _windowButton];
+        _zoomButton = [self _windowButton];
 
-            [_minimizeButton setButtonType:CPMomentaryChangeButton];
-            [_minimizeButton setBordered:NO];
-
-            [self addSubview:_minimizeButton];
-        }
+        [_closeButton setEnabled:!!(_styleMask & CPClosableWindowMask)];
+        [_minimizeButton setEnabled:NO];
+        [_zoomButton setEnabled:NO];
 
         [self _updateWindowButtons];
         [self updateTrackingAreas];
@@ -246,6 +227,21 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     }
 
     return self;
+}
+
+/*
+    Makes one of the window buttons: an image without a bezel, which shows its alternate
+    image while it is pressed.
+*/
+- (CPButton)_windowButton
+{
+    var button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+
+    [button setButtonType:CPMomentaryChangeButton];
+    [button setBordered:NO];
+    [self addSubview:button];
+
+    return button;
 }
 
 - (void)viewDidMoveToWindow
@@ -304,57 +300,49 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 */
 - (void)_updateWindowButtons
 {
-    var closeOrigin    = CGPointMakeCopy([self currentValueForThemeAttribute:@"close-image-origin"]    || CGPointMake(8.0, 8.0)),
-        minimizeOrigin = CGPointMakeCopy([self currentValueForThemeAttribute:@"minimize-image-origin"] || CGPointMake(27.0, 7.0)),
-        zoomOrigin     = CGPointMakeCopy([self currentValueForThemeAttribute:@"zoom-image-origin"]     || CGPointMake(46.0, 8.0)),
-        delta1         = minimizeOrigin.x - closeOrigin.x,
-        delta2         = zoomOrigin.x - minimizeOrigin.x;
+    var closeOrigin    = [self currentValueForThemeAttribute:@"close-image-origin"]    || CGPointMake(8.0, 8.0),
+        minimizeOrigin = [self currentValueForThemeAttribute:@"minimize-image-origin"] || CGPointMake(27.0, 8.0),
+        zoomOrigin     = [self currentValueForThemeAttribute:@"zoom-image-origin"]     || CGPointMake(46.0, 8.0),
+        closeSize      = [self currentValueForThemeAttribute:@"close-image-size"]      || CGSizeMake(16.0, 16.0),
+        minimizeSize   = [self currentValueForThemeAttribute:@"minimize-image-size"]   || CGSizeMake(16.0, 16.0),
+        zoomSize       = [self currentValueForThemeAttribute:@"zoom-image-size"]       || CGSizeMake(16.0, 16.0);
 
-    _buttonsWidth = 0;
+    [_closeButton setFrame:CGRectMake(closeOrigin.x, closeOrigin.y, closeSize.width, closeSize.height)];
+    [_minimizeButton setFrame:CGRectMake(minimizeOrigin.x, minimizeOrigin.y, minimizeSize.width, minimizeSize.height)];
+    [_zoomButton setFrame:CGRectMake(zoomOrigin.x, zoomOrigin.y, zoomSize.width, zoomSize.height)];
 
-    if (_styleMask & CPClosableWindowMask)
-    {
-        var closeSize = [self currentValueForThemeAttribute:@"close-image-size"] || CGSizeMake(16.0, 16.0);
+    _buttonsWidth = zoomOrigin.x + zoomSize.width + closeOrigin.x;
 
-        [_closeButton setFrame:CGRectMake(closeOrigin.x, closeOrigin.y, closeSize.width, closeSize.height)];
+    [self _updateWindowButtonImages];
+}
 
-        _buttonsWidth = closeOrigin.x + closeSize.width;
-    }
-    else
-    {
-        minimizeOrigin.x -= delta1;
-        zoomOrigin.x     -= delta1;
-    }
+/*
+    Sets each button's image for the window's state. A disabled button takes the theme's
+    disabled value. While the pointer is over the buttons, the enabled ones take their
+    hovered value, so that an inactive window shows their colours.
+*/
+- (void)_updateWindowButtonImages
+{
+    var closeName = _isDocumentEdited ? @"unsaved-image" : @"close-image";
 
-    if (_styleMask & CPMiniaturizableWindowMask)
-    {
-        var minimizeSize = [self currentValueForThemeAttribute:@"minimize-image-size"] || CGSizeMake(16.0, 16.0);
-
-        [_minimizeButton setFrame:CGRectMake(minimizeOrigin.x, minimizeOrigin.y, minimizeSize.width, minimizeSize.height)];
-
-        _buttonsWidth = minimizeOrigin.x + minimizeSize.width;
-    }
-    else
-        zoomOrigin.x -= delta2;
-
-    if (_styleMask & CPResizableWindowMask)
-    {
-        var zoomSize = [self currentValueForThemeAttribute:@"zoom-image-size"] || CGSizeMake(16.0, 16.0);
-
-        [_zoomButton setFrame:CGRectMake(zoomOrigin.x, zoomOrigin.y, zoomSize.width, zoomSize.height)];
-
-        _buttonsWidth = zoomOrigin.x + zoomSize.width;
-    }
-
-    if (_buttonsWidth > 0)
-        _buttonsWidth += closeOrigin.x;
-
-    [self _updateCloseButton];
-
-    [_minimizeButton setImage:[self currentValueForThemeAttribute:@"minimize-image-button"]];
+    [_closeButton setImage:[self _imageForWindowButton:_closeButton attribute:closeName + @"-button"]];
+    [_closeButton setAlternateImage:[self currentValueForThemeAttribute:closeName + @"-highlighted-button"]];
+    [_minimizeButton setImage:[self _imageForWindowButton:_minimizeButton attribute:@"minimize-image-button"]];
     [_minimizeButton setAlternateImage:[self currentValueForThemeAttribute:@"minimize-image-highlighted-button"]];
-    [_zoomButton setImage:[self currentValueForThemeAttribute:@"zoom-image-button"]];
+    [_zoomButton setImage:[self _imageForWindowButton:_zoomButton attribute:@"zoom-image-button"]];
     [_zoomButton setAlternateImage:[self currentValueForThemeAttribute:@"zoom-image-highlighted-button"]];
+}
+
+- (CPImage)_imageForWindowButton:(CPButton)aButton attribute:(CPString)anAttributeName
+{
+    var state = [self themeState];
+
+    if (![aButton isEnabled])
+        state = state.and(CPThemeStateDisabled);
+    else if (_isPointerOverButtons)
+        state = state.and(CPThemeStateHovered);
+
+    return [self valueForThemeAttribute:anAttributeName inState:state];
 }
 
 /*
@@ -380,25 +368,11 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     [_titleField setFrame:CGRectMake(_buttonsWidth, 0, titleWidth, _titleBarHeight)];
 }
 
-- (void)_updateCloseButton
-{
-    if (_isDocumentEdited)
-    {
-        [_closeButton setImage:[self currentValueForThemeAttribute:@"unsaved-image-button"]];
-        [_closeButton setAlternateImage:[self valueForThemeAttribute:@"unsaved-image-highlighted-button"]];
-    }
-    else
-    {
-        [_closeButton setImage:[self currentValueForThemeAttribute:@"close-image-button"]];
-        [_closeButton setAlternateImage:[self currentValueForThemeAttribute:@"close-image-highlighted-button"]];
-    }
-}
-
 - (void)setDocumentEdited:(BOOL)isEdited
 {
     _isDocumentEdited = isEdited;
 
-    [self _updateCloseButton];
+    [self _updateWindowButtonImages];
 }
 
 - (BOOL)couldBeMoveEvent:(CPEvent)anEvent
@@ -545,47 +519,38 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     [super updateTrackingAreas];
 }
 
+/*
+    The pointer entering any of the buttons shows the hovered images of the whole group,
+    and leaving it restores them. Each button showed only its own hovered image, without
+    the window's state.
+*/
 - (void)mouseEntered:(CPEvent)anEvent
 {
-    var triggeredButton = [[anEvent trackingArea] userInfo],
-        state           = CPThemeStateHovered;
+    if (![self _isWindowButton:[[anEvent trackingArea] userInfo]])
+    {
+        [super mouseEntered:anEvent];
+        return;
+    }
 
-    if (triggeredButton === _closeButton)
-    {
-        if (_isDocumentEdited)
-            [_closeButton setImage:[self valueForThemeAttribute:@"unsaved-image-button" inState:state]];
-        else
-            [_closeButton setImage:[self valueForThemeAttribute:@"close-image-button" inState:state]];
-    }
-    else if (triggeredButton === _minimizeButton)
-    {
-        [_minimizeButton setImage:[self valueForThemeAttribute:@"minimize-image-button" inState:state]];
-    }
-    else if (triggeredButton === _zoomButton)
-    {
-        [_zoomButton setImage:[self valueForThemeAttribute:@"zoom-image-button" inState:state]];
-    }
+    _isPointerOverButtons = YES;
+    [self _updateWindowButtonImages];
 }
 
 - (void)mouseExited:(CPEvent)anEvent
 {
-    var triggeredButton = [[anEvent trackingArea] userInfo];
+    if (![self _isWindowButton:[[anEvent trackingArea] userInfo]])
+    {
+        [super mouseExited:anEvent];
+        return;
+    }
 
-    if (triggeredButton === _closeButton)
-    {
-        if (_isDocumentEdited)
-            [_closeButton setImage:[self currentValueForThemeAttribute:@"unsaved-image-button"]];
-        else
-            [_closeButton setImage:[self currentValueForThemeAttribute:@"close-image-button"]];
-    }
-    else if (triggeredButton === _minimizeButton)
-    {
-        [_minimizeButton setImage:[self currentValueForThemeAttribute:@"minimize-image-button"]];
-    }
-    else if (triggeredButton === _zoomButton)
-    {
-        [_zoomButton setImage:[self currentValueForThemeAttribute:@"zoom-image-button"]];
-    }
+    _isPointerOverButtons = NO;
+    [self _updateWindowButtonImages];
+}
+
+- (BOOL)_isWindowButton:(id)anObject
+{
+    return anObject === _closeButton || anObject === _minimizeButton || anObject === _zoomButton;
 }
 
 @end

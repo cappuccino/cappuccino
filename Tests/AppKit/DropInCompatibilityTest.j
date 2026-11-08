@@ -22,6 +22,14 @@
 
 @import <AppKit/AppKit.j>
 
+function DropInWindowButton(aStyleMask, aName)
+{
+    var aWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 400.0, 400.0) styleMask:aStyleMask],
+        windowView = [aWindow _windowView];
+
+    return windowView[aName];
+}
+
 /*
     Defaults that existing applications rely on. An application that updates its
     frameworks must keep these without any change of its own.
@@ -40,19 +48,35 @@
     [self assert:@"Aristo2" equals:[CPApplication defaultThemeName]];
 }
 
-- (void)testResizableWindowHasOnlyACloseButton
+/*
+    Window buttons follow Apple's guidelines under every theme, as a deliberate change
+    to the drop-in contract: a standard titled window shows close, minimize and zoom,
+    and enables each only when its style mask allows it. Until 2026-11, a window showed
+    only the buttons its style mask allowed.
+*/
+- (void)testStandardTitledWindowShowsCloseMinimizeAndZoom
 {
-    var aWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 400.0, 400.0)
-                                              styleMask:CPClosableWindowMask | CPResizableWindowMask],
-        subviews = [[aWindow _windowView] subviews],
-        count = [subviews count],
-        buttonCount = 0;
+    [CPTitledWindowMask,
+     CPTitledWindowMask | CPClosableWindowMask,
+     CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask,
+     CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask].forEach(function(aStyleMask)
+    {
+        [@"_closeButton", @"_minimizeButton", @"_zoomButton"].forEach(function(aName)
+        {
+            [self assertNotNull:DropInWindowButton(aStyleMask, aName) message:aName + ", style mask " + aStyleMask];
+        });
+    });
+}
 
-    while (count--)
-        if ([subviews[count] isKindOfClass:[CPButton class]])
-            buttonCount++;
+- (void)testCloseButtonIsEnabledOnlyForAClosableWindow
+{
+    [self assertTrue:[DropInWindowButton(CPTitledWindowMask | CPClosableWindowMask, @"_closeButton") isEnabled]];
+    [self assertFalse:[DropInWindowButton(CPTitledWindowMask, @"_closeButton") isEnabled]];
+}
 
-    [self assert:1 equals:buttonCount];
+- (void)testMinimizeButtonIsNeverEnabled
+{
+    [self assertFalse:[DropInWindowButton(CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask, @"_minimizeButton") isEnabled]];
 }
 
 - (void)testPopUpButtonKeepsTheDefaultButtonBezelStyle

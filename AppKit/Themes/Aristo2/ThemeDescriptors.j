@@ -2801,6 +2801,11 @@ var themedButtonValues = nil,
         unsavedButtonImageHighlighted =     PatternImage(@"window-standard-close-button-unsaved-highlighted.png", 16, 16),
         minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png", 16, 16),
         minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png", 16, 16),
+        zoomButtonImage =                   PatternImage(@"window-standard-maximize-button.png", 16, 16),
+        zoomButtonImageHighlighted =        PatternImage(@"window-standard-maximize-button-highlighted.png", 16, 16),
+
+        // The toolbar area of an inactive window matches the bottom of the inactive head image.
+        inactiveSolidColor = [CPColor colorWithWhite:240.0 / 255.0 alpha:1.0],
 
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
@@ -2811,7 +2816,9 @@ var themedButtonValues = nil,
             [@"bezel-head-color",           bezelHeadColor["@"], CPThemeStateKeyWindow],
             [@"bezel-head-color",           bezelHeadColor["@"], CPThemeStateMainWindow],
             [@"bezel-head-sheet-color",     bezelSheetHeadColor],
-            [@"solid-color",                solidColor],
+            [@"solid-color",                inactiveSolidColor, CPThemeStateNormal],
+            [@"solid-color",                solidColor, CPThemeStateKeyWindow],
+            [@"solid-color",                solidColor, CPThemeStateMainWindow],
 
             [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],
             [@"title-text-color",           [CPColor colorWithHexString:@"848484"]],
@@ -2837,9 +2844,15 @@ var themedButtonValues = nil,
             [@"close-image-highlighted-button",     closeButtonImageHighlighted],
             [@"minimize-image-button",              minimizeButtonImage],
             [@"minimize-image-highlighted-button",  minimizeButtonImageHighlighted],
+            [@"zoom-image-button",                  zoomButtonImage],
+            [@"zoom-image-highlighted-button",      zoomButtonImageHighlighted],
 
             [@"close-image-size",               CGSizeMake(16.0, 16.0)],
             [@"close-image-origin",             CGPointMake(8.0, 10.0)],
+            [@"minimize-image-size",            CGSizeMake(16.0, 16.0)],
+            [@"minimize-image-origin",          CGPointMake(27.0, 10.0)],
+            [@"zoom-image-size",                CGSizeMake(16.0, 16.0)],
+            [@"zoom-image-origin",              CGPointMake(46.0, 10.0)],
 
             [@"resize-indicator",               resizeIndicator],
             [@"size-indicator",                 CGSizeMake(12, 12)]

@@ -9153,7 +9153,7 @@ var themedButtonValues                      = nil,
 
     // --- Colors ---
     bezelHeadCssColor = [CPColor colorWithCSSDictionary:@{
-        @"background-color": A3ColorWindowHeadActive,
+        @"background-color": A3ColorBackgroundHighlighted,
         @"border-top-color": A3ColorWindowBorder,
         @"border-top-style": @"solid",
         @"border-top-width": @"1px",
@@ -9189,6 +9189,8 @@ var themedButtonValues                      = nil,
     }],
 
     solidCssColor = [CPColor colorWithCSSDictionary:@{ @"background-color": A3ColorBackgroundHighlighted }],
+
+    inactiveSolidCssColor = [CPColor colorWithCSSDictionary:@{ @"background-color": A3ColorWindowHeadInactive }],
 
     bezelCssColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": A3ColorBackground,
@@ -9231,6 +9233,44 @@ var themedButtonValues                      = nil,
         @"transition": @"background-color 0.15s ease-in-out"
     } size:CGSizeMake(12,12)],
 
+    // --- BUTTON IMAGES (Inactive window or disabled button) ---
+
+    inactiveButtonImage = [CPImage imageWithCSSDictionary:@{
+        @"background-color": A3ColorBorderDark,
+        @"border-radius": @"50%",
+        @"width": @"12px",
+        @"height": @"12px",
+        @"transition": @"background-color 0.15s ease-in-out"
+    } size:CGSizeMake(12,12)],
+
+    // --- BUTTON IMAGES (Unsaved document: a dot in the close button) ---
+
+    unsavedButtonImage = [CPImage imageWithCSSDictionary:@{
+        @"background-color": A3ColorWindowButtonClose,
+        @"background-image": @"radial-gradient(circle, rgba(0,0,0,0.5) 0, rgba(0,0,0,0.5) 2px, transparent 2.5px)",
+        @"border-radius": @"50%",
+        @"width": @"12px",
+        @"height": @"12px",
+        @"transition": @"background-color 0.15s ease-in-out"
+    } size:CGSizeMake(12,12)],
+
+    inactiveUnsavedButtonImage = [CPImage imageWithCSSDictionary:@{
+        @"background-color": A3ColorBorderDark,
+        @"background-image": @"radial-gradient(circle, rgba(0,0,0,0.5) 0, rgba(0,0,0,0.5) 2px, transparent 2.5px)",
+        @"border-radius": @"50%",
+        @"width": @"12px",
+        @"height": @"12px",
+        @"transition": @"background-color 0.15s ease-in-out"
+    } size:CGSizeMake(12,12)],
+
+    unsavedButtonImageHighlighted = [CPImage imageWithCSSDictionary:@{
+        @"background-color": A3ColorWindowButtonCloseDark,
+        @"background-image": @"radial-gradient(circle, rgba(0,0,0,0.5) 0, rgba(0,0,0,0.5) 2px, transparent 2.5px)",
+        @"border-radius": @"50%",
+        @"width": @"12px",
+        @"height": @"12px"
+    } size:CGSizeMake(12,12)],
+
     // --- BUTTON IMAGES (Active/Highlighted) ---
     
     closeButtonImageHighlighted = [CPImage imageWithCSSDictionary:@{
@@ -9267,7 +9307,9 @@ var themedButtonValues                      = nil,
      [@"bezel-head-color",           bezelHeadCssColor, CPThemeStateKeyWindow],
      [@"bezel-head-color",           bezelHeadCssColor, CPThemeStateMainWindow],
      [@"bezel-head-sheet-color",     [CPColor redColor]],
-     [@"solid-color",                solidCssColor],
+     [@"solid-color",                inactiveSolidCssColor, CPThemeStateNormal],
+     [@"solid-color",                solidCssColor, CPThemeStateKeyWindow],
+     [@"solid-color",                solidCssColor, CPThemeStateMainWindow],
 
      [@"title-font",                 [CPFont systemFontOfSize:CPFontCurrentSystemSize+1]],
      [@"title-text-color",           A3CPColorInactiveText],
@@ -9287,14 +9329,44 @@ var themedButtonValues                      = nil,
 
      // --- REGISTER BUTTON IMAGES ---
      
-     // 1. Normal State
-     [@"close-image-button",                    closeButtonImage],
-     [@"minimize-image-button",                 minimizeButtonImage],
-     [@"zoom-image-button",                     zoomButtonImage],
+     // 1. Grey in an inactive window and for a disabled button; coloured in the key and
+     //    main windows, and in any window while the pointer is over the buttons
+     [@"close-image-button",                    inactiveButtonImage,            CPThemeStateNormal],
+     [@"close-image-button",                    closeButtonImage,               CPThemeStateKeyWindow],
+     [@"close-image-button",                    closeButtonImage,               CPThemeStateMainWindow],
+     [@"close-image-button",                    closeButtonImage,               CPThemeStateHovered],
+     [@"close-image-button",                    inactiveButtonImage,            CPThemeStateDisabled],
+     [@"close-image-button",                    inactiveButtonImage,            [CPThemeStateKeyWindow, CPThemeStateDisabled]],
+     [@"close-image-button",                    inactiveButtonImage,            [CPThemeStateMainWindow, CPThemeStateDisabled]],
+
+     [@"unsaved-image-button",                  inactiveUnsavedButtonImage,     CPThemeStateNormal],
+     [@"unsaved-image-button",                  unsavedButtonImage,             CPThemeStateKeyWindow],
+     [@"unsaved-image-button",                  unsavedButtonImage,             CPThemeStateMainWindow],
+     [@"unsaved-image-button",                  unsavedButtonImage,             CPThemeStateHovered],
+     [@"unsaved-image-button",                  inactiveUnsavedButtonImage,     CPThemeStateDisabled],
+     [@"unsaved-image-button",                  inactiveUnsavedButtonImage,     [CPThemeStateKeyWindow, CPThemeStateDisabled]],
+     [@"unsaved-image-button",                  inactiveUnsavedButtonImage,     [CPThemeStateMainWindow, CPThemeStateDisabled]],
+
+     [@"minimize-image-button",                 inactiveButtonImage,            CPThemeStateNormal],
+     [@"minimize-image-button",                 minimizeButtonImage,            CPThemeStateKeyWindow],
+     [@"minimize-image-button",                 minimizeButtonImage,            CPThemeStateMainWindow],
+     [@"minimize-image-button",                 minimizeButtonImage,            CPThemeStateHovered],
+     [@"minimize-image-button",                 inactiveButtonImage,            CPThemeStateDisabled],
+     [@"minimize-image-button",                 inactiveButtonImage,            [CPThemeStateKeyWindow, CPThemeStateDisabled]],
+     [@"minimize-image-button",                 inactiveButtonImage,            [CPThemeStateMainWindow, CPThemeStateDisabled]],
+
+     [@"zoom-image-button",                     inactiveButtonImage,            CPThemeStateNormal],
+     [@"zoom-image-button",                     zoomButtonImage,                CPThemeStateKeyWindow],
+     [@"zoom-image-button",                     zoomButtonImage,                CPThemeStateMainWindow],
+     [@"zoom-image-button",                     zoomButtonImage,                CPThemeStateHovered],
+     [@"zoom-image-button",                     inactiveButtonImage,            CPThemeStateDisabled],
+     [@"zoom-image-button",                     inactiveButtonImage,            [CPThemeStateKeyWindow, CPThemeStateDisabled]],
+     [@"zoom-image-button",                     inactiveButtonImage,            [CPThemeStateMainWindow, CPThemeStateDisabled]],
 
      // 2. Highlighted (Pressed) State
      // Use the specific keys defined in _CPStandardWindowView source
      [@"close-image-highlighted-button",        closeButtonImageHighlighted],
+     [@"unsaved-image-highlighted-button",      unsavedButtonImageHighlighted],
      [@"minimize-image-highlighted-button",     minimizeButtonImageHighlighted],
      [@"zoom-image-highlighted-button",         zoomButtonImageHighlighted],
 

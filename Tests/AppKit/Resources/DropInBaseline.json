@@ -8059,42 +8059,6 @@
   "borderless": [
    "CPView"
   ],
-  "titled": [
-   "CPTextField",
-   "CPView",
-   "CPView",
-   "CPView"
-  ],
-  "closable": [
-   "CPButton",
-   "CPTextField",
-   "CPView",
-   "CPView",
-   "CPView"
-  ],
-  "resizable": [
-   "CPButton",
-   "CPTextField",
-   "CPView",
-   "CPView",
-   "CPView"
-  ],
-  "miniaturizable": [
-   "CPButton",
-   "CPButton",
-   "CPTextField",
-   "CPView",
-   "CPView",
-   "CPView"
-  ],
-  "full": [
-   "CPButton",
-   "CPButton",
-   "CPTextField",
-   "CPView",
-   "CPView",
-   "CPView"
-  ],
   "hud": [
    "CPTextField",
    "CPView"

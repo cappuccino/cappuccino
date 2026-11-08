@@ -2478,13 +2478,16 @@ CPTexturedBackgroundWindowMask
 // Minimizing Windows
 
 /*!
-    Simulates the user minimizing the window, then minimizes the window.
+    Simulates the user clicking the minimize button. A page cannot minimize its browser
+    window, so the minimize button is always disabled and this method does nothing.
     @param aSender the object making this request
 */
 - (void)performMiniaturize:(id)aSender
 {
-    //FIXME show stuff
-    [self miniaturize:aSender];
+    /*
+        It called -miniaturize:, whose platform window does nothing in the browser, so the
+        window stayed on screen but counted as minimized.
+    */
 }
 
 /*!
@@ -2845,7 +2848,8 @@ CPTexturedBackgroundWindowMask
     For \c -toggleToolbarShown:, the item's title becomes "Hide Toolbar" or "Show Toolbar"
     to reflect the toolbar's visibility, and the item is enabled only when the window has
     a toolbar. \c -undo: and \c -redo: are enabled only when the window's undo manager has a
-    change to undo or redo. Every other item is enabled.
+    change to undo or redo. \c -performMiniaturize: and \c -performZoom: are disabled,
+    because the window can neither minimize nor zoom. Every other item is enabled.
     @param anItem the item to validate
     @return \c YES if the item should be enabled
 */
@@ -2858,6 +2862,13 @@ CPTexturedBackgroundWindowMask
 
     if (action === @selector(redo:))
         return [[self undoManager] canRedo];
+
+    /*
+        The Minimize and Zoom items agree with the window's buttons. Minimize was enabled,
+        and left the window on screen but counted as minimized.
+    */
+    if (action === @selector(performMiniaturize:) || action === @selector(performZoom:))
+        return NO;
 
     if (action !== @selector(toggleToolbarShown:))
         return YES;

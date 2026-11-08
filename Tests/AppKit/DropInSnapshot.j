@@ -50,13 +50,12 @@ var DropInConstructionGetters = [
     @"verticalAlignment"
 ],
 
+/*
+    The standard titled styles are not recorded: their buttons follow Apple's guidelines
+    by a deliberate change to the drop-in contract, which DropInCompatibilityTest covers.
+*/
 DropInWindowStyles = {
     @"borderless":      CPBorderlessWindowMask,
-    @"titled":          CPTitledWindowMask,
-    @"closable":        CPClosableWindowMask,
-    @"resizable":       CPClosableWindowMask | CPResizableWindowMask,
-    @"miniaturizable":  CPClosableWindowMask | CPMiniaturizableWindowMask,
-    @"full":            CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask,
     @"hud":             CPHUDBackgroundWindowMask,
     @"hudClosable":     CPHUDBackgroundWindowMask | CPClosableWindowMask
 };
