@@ -64,6 +64,8 @@
 
 @optional
 - (BOOL)windowShouldClose:(CPWindow)aWindow;
+- (BOOL)windowShouldZoom:(CPWindow)aWindow toFrame:(CGRect)aNewFrame;
+- (CGRect)windowWillUseStandardFrame:(CPWindow)aWindow defaultFrame:(CGRect)aNewFrame;
 - (CGSize)windowWillResize:(CPWindow)sender toSize:(CGSize)aSize;
 - (CPUndoManager)windowWillReturnUndoManager:(CPWindow)window;
 - (void)windowDidBecomeKey:(CPNotification)aNotification;
@@ -84,7 +86,9 @@
 var CPWindowDelegate_windowShouldClose_             = 1 << 1,
     CPWindowDelegate_windowWillReturnUndoManager_   = 1 << 2,
     CPWindowDelegate_windowWillClose_               = 1 << 3,
-    CPWindowDelegate_windowWillResize_toSize_       = 1 << 4;
+    CPWindowDelegate_windowWillResize_toSize_       = 1 << 4,
+    CPWindowDelegate_windowShouldZoom_toFrame_      = 1 << 5,
+    CPWindowDelegate_windowWillUseStandardFrame_defaultFrame_ = 1 << 6;
 
 
 var CPWindowSaveImage       = nil,
@@ -93,7 +97,13 @@ var CPWindowSaveImage       = nil,
     CPWindowResizeStyleGlobalChangeNotification = @"CPWindowResizeStyleGlobalChangeNotification",
 
     CPWindowMinVisibleHorizontalMargin = 40,
-    CPWindowMinVisibleVerticalMargin = 2;
+    CPWindowMinVisibleVerticalMargin = 2,
+
+    /*
+        A window shows its standard frame when its frame lies within this many points of
+        it, as in Cocoa, where a frame within a few pixels of the standard frame matches.
+    */
+    _CPWindowZoomTolerance = 4.0;
 
 /*
     Keys for which action messages will be sent by default when unhandled, e.g. complete:.
@@ -177,6 +187,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isVisible;
     BOOL                                _hasBeenOrderedIn @accessors;
     BOOL                                _isMiniaturized;
+    CGRect                              _userStateFrame;
     BOOL                                _isExcludedFromWindowsMenu;
     BOOL                                _isAnimating @accessors(setter=_setAnimating:);
     BOOL                                _hasShadow;
@@ -1563,6 +1574,12 @@ CPTexturedBackgroundWindowMask
     if ([_delegate respondsToSelector:@selector(windowWillResize:toSize:)])
         _implementedDelegateMethods |= CPWindowDelegate_windowWillResize_toSize_;
 
+    if ([_delegate respondsToSelector:@selector(windowShouldZoom:toFrame:)])
+        _implementedDelegateMethods |= CPWindowDelegate_windowShouldZoom_toFrame_;
+
+    if ([_delegate respondsToSelector:@selector(windowWillUseStandardFrame:defaultFrame:)])
+        _implementedDelegateMethods |= CPWindowDelegate_windowWillUseStandardFrame_defaultFrame_;
+
     if ([_delegate respondsToSelector:@selector(windowDidResignKey:)])
         [defaultCenter
             addObserver:_delegate
@@ -2531,6 +2548,92 @@ CPTexturedBackgroundWindowMask
     return _isMiniaturized;
 }
 
+// Zooming Windows
+
+/*!
+    Simulates the user clicking the zoom button. Zooms the window when its zoom button is
+    enabled, and does nothing otherwise. The zoom button is enabled when the window is
+    resizable and is neither a sheet nor a full platform window.
+    @param aSender the object making this request
+*/
+- (void)performZoom:(id)aSender
+{
+    if ([self _canZoom])
+        [self zoom:aSender];
+}
+
+/*!
+    Toggles the window between its standard frame and its user frame.
+
+    The standard frame is the frame that the delegate returns from
+    \c -windowWillUseStandardFrame:defaultFrame:. The default frame passed to that method
+    is the usable area of the browser window. When neither the delegate nor the window
+    implements the method, the default frame is the standard frame. The standard frame
+    keeps within the window's minimum and maximum sizes and within the usable area.
+
+    When the window shows its standard frame, it returns to the user frame, which is the
+    frame it had before it last zoomed. Without a user frame, the window does not change.
+    When the window shows any other frame, it saves that frame as the user frame and takes
+    its standard frame. The delegate can refuse either change through
+    \c -windowShouldZoom:toFrame:.
+    @param aSender the object making this request
+*/
+- (void)zoom:(id)aSender
+{
+    var standardFrame = [self _standardFrame],
+        isZoomed = [self _frameMatchesStandardFrame:standardFrame],
+        newFrame = isZoomed ? _userStateFrame : standardFrame;
+
+    if (!newFrame || ![self _sendDelegateWindowShouldZoomToFrame:newFrame])
+        return;
+
+    if (!isZoomed)
+        _userStateFrame = CGRectMakeCopy(_frame);
+
+    [self _setFrame:newFrame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
+}
+
+/*!
+    Returns \c YES if the window shows its standard frame, as \c -zoom: determines it.
+*/
+- (BOOL)isZoomed
+{
+    return [self _frameMatchesStandardFrame:[self _standardFrame]];
+}
+
+/*
+    The window can zoom when it shows an enabled zoom button.
+*/
+- (BOOL)_canZoom
+{
+    return !!(_styleMask & CPResizableWindowMask) && !_isSheet && !_isFullPlatformWindow;
+}
+
+/*
+    Returns the frame that -zoom: gives the window in its standard state.
+*/
+- (CGRect)_standardFrame
+{
+    var frame = CGRectMakeCopy([self _sendDelegateWindowWillUseStandardFrame:[_platformWindow usableContentFrame]]);
+
+    frame.size.width = MIN(MAX(frame.size.width, _minSize.width), _maxSize.width);
+    frame.size.height = MIN(MAX(frame.size.height, _minSize.height), _maxSize.height);
+
+    return [self _constrainFrame:frame toUsableScreenWidth:YES andHeight:YES];
+}
+
+/*
+    Returns YES if the window's frame lies within the zoom tolerance of aFrame. Setting a
+    frame rounds it to whole points, so a fractional standard frame never matches exactly.
+*/
+- (BOOL)_frameMatchesStandardFrame:(CGRect)aFrame
+{
+    return ABS(CGRectGetMinX(_frame) - CGRectGetMinX(aFrame)) <= _CPWindowZoomTolerance &&
+           ABS(CGRectGetMinY(_frame) - CGRectGetMinY(aFrame)) <= _CPWindowZoomTolerance &&
+           ABS(CGRectGetWidth(_frame) - CGRectGetWidth(aFrame)) <= _CPWindowZoomTolerance &&
+           ABS(CGRectGetHeight(_frame) - CGRectGetHeight(aFrame)) <= _CPWindowZoomTolerance;
+}
+
 // Closing Windows
 
 /*!
@@ -2848,8 +2951,9 @@ CPTexturedBackgroundWindowMask
     For \c -toggleToolbarShown:, the item's title becomes "Hide Toolbar" or "Show Toolbar"
     to reflect the toolbar's visibility, and the item is enabled only when the window has
     a toolbar. \c -undo: and \c -redo: are enabled only when the window's undo manager has a
-    change to undo or redo. \c -performMiniaturize: and \c -performZoom: are disabled,
-    because the window can neither minimize nor zoom. Every other item is enabled.
+    change to undo or redo. \c -performMiniaturize: is disabled, because a page cannot
+    minimize its browser window. \c -performZoom: and \c -zoom: are enabled only when the
+    window's zoom button is enabled. Every other item is enabled.
     @param anItem the item to validate
     @return \c YES if the item should be enabled
 */
@@ -2867,8 +2971,11 @@ CPTexturedBackgroundWindowMask
         The Minimize and Zoom items agree with the window's buttons. Minimize was enabled,
         and left the window on screen but counted as minimized.
     */
-    if (action === @selector(performMiniaturize:) || action === @selector(performZoom:))
+    if (action === @selector(performMiniaturize:))
         return NO;
+
+    if (action === @selector(performZoom:) || action === @selector(zoom:))
+        return [self _canZoom];
 
     if (action !== @selector(toggleToolbarShown:))
         return YES;
@@ -3764,6 +3871,38 @@ var keyViewComparator = function(lhs, rhs, context)
         return aSize;
 
     return [_delegate windowWillResize:self toSize:aSize];
+}
+
+/*!
+    @ignore
+    Call the delegate windowWillUseStandardFrame:defaultFrame:, or the window's own
+    implementation when the delegate has none, as in Cocoa.
+*/
+- (CGRect)_sendDelegateWindowWillUseStandardFrame:(CGRect)aFrame
+{
+    if (_implementedDelegateMethods & CPWindowDelegate_windowWillUseStandardFrame_defaultFrame_)
+        return [_delegate windowWillUseStandardFrame:self defaultFrame:aFrame];
+
+    if ([self respondsToSelector:@selector(windowWillUseStandardFrame:defaultFrame:)])
+        return [self windowWillUseStandardFrame:self defaultFrame:aFrame];
+
+    return aFrame;
+}
+
+/*!
+    @ignore
+    Call the delegate windowShouldZoom:toFrame:, or the window's own implementation when
+    the delegate has none, as in Cocoa.
+*/
+- (BOOL)_sendDelegateWindowShouldZoomToFrame:(CGRect)aFrame
+{
+    if (_implementedDelegateMethods & CPWindowDelegate_windowShouldZoom_toFrame_)
+        return [_delegate windowShouldZoom:self toFrame:aFrame];
+
+    if ([self respondsToSelector:@selector(windowShouldZoom:toFrame:)])
+        return [self windowShouldZoom:self toFrame:aFrame];
+
+    return YES;
 }
 
 @end

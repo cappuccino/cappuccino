@@ -79,6 +79,12 @@ function DropInWindowButton(aStyleMask, aName)
     [self assertFalse:[DropInWindowButton(CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask, @"_minimizeButton") isEnabled]];
 }
 
+- (void)testZoomButtonIsEnabledOnlyForAResizableWindow
+{
+    [self assertTrue:[DropInWindowButton(CPTitledWindowMask | CPResizableWindowMask, @"_zoomButton") isEnabled]];
+    [self assertFalse:[DropInWindowButton(CPTitledWindowMask | CPClosableWindowMask, @"_zoomButton") isEnabled]];
+}
+
 - (void)testPopUpButtonKeepsTheDefaultButtonBezelStyle
 {
     var frame = CGRectMake(0.0, 0.0, 100.0, 24.0),

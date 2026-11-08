@@ -1,4 +1,5 @@
 @import <AppKit/CPWindow.j>
+@import <AppKit/CPMenuItem.j>
 @import <AppKit/_CPBorderlessWindowView.j>
 @import <Foundation/CPURL.j>
 
@@ -134,6 +135,232 @@
     [_window orderBack:self];
     [_window orderFront:self];
     [_window orderOut:self];
+}
+
+/*
+    The zoom tests supply the standard frame through the delegate. Outside a browser,
+    each window has its own platform window, whose usable area follows the window.
+*/
+- (CPWindow)resizableWindow
+{
+    return [[CPWindow alloc] initWithContentRect:CGRectMake(100.0, 100.0, 400.0, 300.0)
+                                       styleMask:CPTitledWindowMask | CPResizableWindowMask];
+}
+
+- (void)assertWindow:(CPWindow)aWindow hasFrame:(CGRect)aFrame
+{
+    [self assertTrue:CGRectEqualToRect([aWindow frame], aFrame)
+             message:@"expected " + CPStringFromRect(aFrame) + " but was " + CPStringFromRect([aWindow frame])];
+}
+
+- (void)testZoomTogglesBetweenTheStandardFrameAndTheUserFrame
+{
+    var window = [self resizableWindow],
+        standardFrame = CGRectMake(20.0, 30.0, 640.0, 480.0),
+        delegate = [[CPWindowTestZoomDelegate alloc] initWithStandardFrame:standardFrame],
+        userFrame = [window frame];
+
+    [window setDelegate:delegate];
+
+    [window zoom:self];
+    [self assertWindow:window hasFrame:standardFrame];
+    [self assertTrue:[window isZoomed]];
+
+    [window zoom:self];
+    [self assertWindow:window hasFrame:userFrame];
+    [self assertFalse:[window isZoomed]];
+}
+
+- (void)testZoomPassesTheUsableAreaAsTheDefaultFrame
+{
+    var window = [self resizableWindow],
+        delegate = [[CPWindowTestZoomDelegate alloc] initWithStandardFrame:CGRectMake(20.0, 30.0, 640.0, 480.0)],
+        usableFrame = [[window platformWindow] usableContentFrame];
+
+    [window setDelegate:delegate];
+    [window zoom:self];
+
+    [self assertTrue:CGRectEqualToRect([delegate defaultFrame], usableFrame)
+             message:@"expected " + CPStringFromRect(usableFrame) + " but was " + CPStringFromRect([delegate defaultFrame])];
+}
+
+- (void)testWindowShouldZoomCanRefuseTheStandardFrame
+{
+    var window = [self resizableWindow],
+        standardFrame = CGRectMake(20.0, 30.0, 640.0, 480.0),
+        delegate = [[CPWindowTestZoomDelegate alloc] initWithStandardFrame:standardFrame],
+        userFrame = [window frame];
+
+    [delegate setShouldZoom:NO];
+    [window setDelegate:delegate];
+    [window zoom:self];
+
+    [self assertWindow:window hasFrame:userFrame];
+    [self assertTrue:CGRectEqualToRect([delegate proposedFrame], standardFrame)];
+}
+
+- (void)testZoomKeepsTheStandardFrameWithinTheMaximumSize
+{
+    var window = [self resizableWindow];
+
+    [window setMaxSize:CGSizeMake(500.0, 400.0)];
+    [window setDelegate:[[CPWindowTestZoomDelegate alloc] initWithStandardFrame:CGRectMake(20.0, 30.0, 640.0, 480.0)]];
+    [window zoom:self];
+
+    [self assertWindow:window hasFrame:CGRectMake(20.0, 30.0, 500.0, 400.0)];
+}
+
+- (void)testZoomWithoutAUserFrameLeavesTheStandardFrame
+{
+    var window = [self resizableWindow],
+        standardFrame = [window frame];
+
+    [window setDelegate:[[CPWindowTestZoomDelegate alloc] initWithStandardFrame:standardFrame]];
+    [window zoom:self];
+
+    [self assertWindow:window hasFrame:standardFrame];
+    [self assertTrue:[window isZoomed]];
+}
+
+- (void)testAWindowSubclassCanSupplyTheStandardFrame
+{
+    var window = [[CPWindowTestZoomingWindow alloc] initWithContentRect:CGRectMake(100.0, 100.0, 400.0, 300.0)
+                                                              styleMask:CPTitledWindowMask | CPResizableWindowMask];
+
+    [window zoom:self];
+
+    [self assertWindow:window hasFrame:CPWindowTestZoomingWindowStandardFrame];
+}
+
+- (void)testPerformZoomZoomsOnlyAResizableWindow
+{
+    var standardFrame = CGRectMake(20.0, 30.0, 640.0, 480.0),
+        resizableWindow = [self resizableWindow],
+        fixedWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(100.0, 100.0, 400.0, 300.0) styleMask:CPTitledWindowMask],
+        fixedFrame = [fixedWindow frame];
+
+    [resizableWindow setDelegate:[[CPWindowTestZoomDelegate alloc] initWithStandardFrame:standardFrame]];
+    [fixedWindow setDelegate:[[CPWindowTestZoomDelegate alloc] initWithStandardFrame:standardFrame]];
+
+    [resizableWindow performZoom:self];
+    [fixedWindow performZoom:self];
+
+    [self assertWindow:resizableWindow hasFrame:standardFrame];
+    [self assertWindow:fixedWindow hasFrame:fixedFrame];
+}
+
+- (void)testZoomItemsAreEnabledOnlyForAResizableWindow
+{
+    var resizableWindow = [self resizableWindow],
+        fixedWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(100.0, 100.0, 400.0, 300.0) styleMask:CPTitledWindowMask];
+
+    [@selector(performZoom:), @selector(zoom:)].forEach(function(anAction)
+    {
+        var item = [[CPMenuItem alloc] initWithTitle:@"Zoom" action:anAction keyEquivalent:@""];
+
+        [self assertTrue:[resizableWindow validateUserInterfaceItem:item] message:CPStringFromSelector(anAction) + " in a resizable window"];
+        [self assertFalse:[fixedWindow validateUserInterfaceItem:item] message:CPStringFromSelector(anAction) + " in a window that cannot resize"];
+    });
+}
+
+/*
+    The title bar height comes from the default theme. This theme fixes it, so that the
+    test does not depend on the theme that another test leaves as the default.
+*/
+- (CPTheme)themeWithTitleBarHeight:(float)aHeight
+{
+    var theme = [[CPTheme alloc] initWithName:@"CPWindowTestTitleBar"],
+        template = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 300.0) styleMask:CPTitledWindowMask];
+
+    [template setValue:aHeight forThemeAttribute:@"title-bar-height"];
+    [theme takeThemeFromObject:template];
+
+    return theme;
+}
+
+- (void)testDoubleClickInTheTitleBarZoomsTheWindow
+{
+    var defaultTheme = [CPTheme defaultTheme];
+
+    [CPTheme setDefaultTheme:[self themeWithTitleBarHeight:32.0]];
+
+    try
+    {
+        var window = [self resizableWindow],
+            standardFrame = CGRectMake(20.0, 30.0, 640.0, 480.0),
+            event = [CPEvent mouseEventWithType:CPLeftMouseDown
+                                       location:CGPointMake(200.0, 16.0)
+                                  modifierFlags:0
+                                      timestamp:0
+                                   windowNumber:[window windowNumber]
+                                        context:nil
+                                    eventNumber:0
+                                     clickCount:2
+                                       pressure:0];
+
+        [window setDelegate:[[CPWindowTestZoomDelegate alloc] initWithStandardFrame:standardFrame]];
+        [[window _windowView] mouseDown:event];
+
+        [self assertWindow:window hasFrame:standardFrame];
+    }
+    finally
+    {
+        [CPTheme setDefaultTheme:defaultTheme];
+    }
+}
+
+@end
+
+/*
+    Supplies a fixed standard frame and records the frames the window passes to it.
+*/
+@implementation CPWindowTestZoomDelegate : CPObject
+{
+    CGRect  _standardFrame;
+    CGRect  _defaultFrame   @accessors(readonly, property=defaultFrame);
+    CGRect  _proposedFrame  @accessors(readonly, property=proposedFrame);
+    BOOL    _shouldZoom     @accessors(property=shouldZoom);
+}
+
+- (id)initWithStandardFrame:(CGRect)aFrame
+{
+    self = [super init];
+
+    if (self)
+    {
+        _standardFrame = CGRectMakeCopy(aFrame);
+        _shouldZoom = YES;
+    }
+
+    return self;
+}
+
+- (CGRect)windowWillUseStandardFrame:(CPWindow)aWindow defaultFrame:(CGRect)aFrame
+{
+    _defaultFrame = CGRectMakeCopy(aFrame);
+
+    return CGRectMakeCopy(_standardFrame);
+}
+
+- (BOOL)windowShouldZoom:(CPWindow)aWindow toFrame:(CGRect)aFrame
+{
+    _proposedFrame = CGRectMakeCopy(aFrame);
+
+    return _shouldZoom;
+}
+
+@end
+
+var CPWindowTestZoomingWindowStandardFrame = CGRectMake(40.0, 50.0, 600.0, 450.0);
+
+/*
+    Supplies its own standard frame, as a window subclass may in Cocoa.
+*/
+@implementation CPWindowTestZoomingWindow : CPWindow
+
+- (CGRect)windowWillUseStandardFrame:(CPWindow)aWindow defaultFrame:(CGRect)aFrame
+{
+    return CGRectMakeCopy(CPWindowTestZoomingWindowStandardFrame);
 }
 
 @end

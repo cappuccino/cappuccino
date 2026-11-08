@@ -210,8 +210,8 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
             A standard titled window shows close, minimize and zoom, and enables each only
             when it is available, as Apple's guidelines ask. Only the available buttons
             were shown, so an unavailable control was hidden instead of disabled. Minimize
-            is never available, because a page cannot minimize its browser window. No
-            class implements zooming yet, so zoom is not available either.
+            is never available, because a page cannot minimize its browser window. Zoom
+            is available when the window is resizable, as in macOS.
         */
         _closeButton = [self _windowButton];
         _minimizeButton = [self _windowButton];
@@ -219,7 +219,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
         [_closeButton setEnabled:!!(_styleMask & CPClosableWindowMask)];
         [_minimizeButton setEnabled:NO];
-        [_zoomButton setEnabled:NO];
+        [_zoomButton setEnabled:!!(_styleMask & CPResizableWindowMask)];
 
         [self _updateWindowButtons];
         [self updateTrackingAreas];
@@ -251,6 +251,9 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
     [_minimizeButton setTarget:[self window]];
     [_minimizeButton setAction:@selector(performMiniaturize:)];
+
+    [_zoomButton setTarget:[self window]];
+    [_zoomButton setAction:@selector(zoom:)];
 }
 
 - (CGSize)toolbarOffset

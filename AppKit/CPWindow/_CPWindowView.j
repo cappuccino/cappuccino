@@ -260,7 +260,16 @@ _CPWindowViewResizeSlop = 3;
     }
 
     if ([self couldBeMoveEvent:anEvent])
+    {
+        /*
+            A double-click where a drag moves the window zooms it, as the default macOS
+            setting does. The second click began another move, so a double-click did nothing.
+        */
+        if ([anEvent clickCount] === 2)
+            return [theWindow performZoom:self];
+
         [self trackMoveWithEvent:anEvent];
+    }
     else
         [super mouseDown:anEvent];
 }
