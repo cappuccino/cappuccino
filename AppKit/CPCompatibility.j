@@ -355,6 +355,14 @@ function CPBrowserIsOperatingSystem(anOperatingSystem)
     return OPERATING_SYSTEM === anOperatingSystem;
 }
 
+/*
+    Returns the host operating system, as detected when this file loads.
+*/
+function _CPBrowserOperatingSystem()
+{
+    return OPERATING_SYSTEM;
+}
+
 OPERATING_SYSTEM = CPOtherOperatingSystem;
 
 if (USER_AGENT.indexOf("Mac") !== -1)

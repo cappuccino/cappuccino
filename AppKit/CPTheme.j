@@ -291,6 +291,18 @@ var CPThemesByName          = { },
 
 @end
 
+/*
+    Returns the variant of a theme for an appearance and a host platform. The variants
+    of one theme share its metrics. They differ in colours and images, and in the place
+    of decoration such as the window buttons and the title. This function selects no
+    variant yet: it returns the base theme for every appearance and every host, so
+    every host has the base theme's look.
+*/
+function _CPThemeVariant(aBaseTheme, anAppearance, aPlatform)
+{
+    return aBaseTheme;
+}
+
 var CPThemeNameKey          = @"CPThemeNameKey",
     CPThemeAttributesKey    = @"CPThemeAttributesKey";
 
@@ -817,7 +829,7 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
 CPThemeStateControlSizeLarge    = CPThemeState("controlSizeLarge");
 CPThemeStateAlternateState      = CPThemeState("alternate");
 CPThemeStateComposedControl     = CPThemeState("composed");
-CPThemeStateWindowsPlatform     = CPThemeState("windowsPlatform");
+
 CPThemeStateNormalString        = String(CPThemeStateNormal);
 CPThemeStateHUD                 = CPThemeState("hud");
 

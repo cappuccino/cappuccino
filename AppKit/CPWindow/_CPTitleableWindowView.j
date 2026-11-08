@@ -29,7 +29,6 @@
     CPTextField _titleField;
     int         _minimumTitleFieldSize;
     int         _titleBarHeight;
-    int         _titleMargin;
 }
 
 + (int)titleBarHeight
@@ -67,7 +66,8 @@
     {
         // We cache some values for optimization
         _titleBarHeight = [[self class] titleBarHeight];
-        _titleMargin    = [self currentValueForThemeAttribute:@"title-margin"];
+
+        var titleMargin = [self currentValueForThemeAttribute:@"title-margin"];
 
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
@@ -77,7 +77,7 @@
         [_titleField setAutoresizingMask:CPViewWidthSizable];
         [self setTitle:@""];
 
-        [_titleField setFrame:CGRectMake(_titleMargin, 3.0, CGRectGetWidth([self bounds]) - 2 * _titleMargin, CGRectGetHeight([_titleField frame]))];
+        [_titleField setFrame:CGRectMake(titleMargin, 3.0, CGRectGetWidth([self bounds]) - 2 * titleMargin, CGRectGetHeight([_titleField frame]))];
 
         [self addSubview:_titleField];
 
@@ -100,11 +100,18 @@
 
     var theWindow = [self window],
         bounds = [self bounds],
-        width = CGRectGetWidth(bounds);
+        width = CGRectGetWidth(bounds),
+        titleMargin = [self currentValueForThemeAttribute:@"title-margin"];
 
-    // The vertical alignment of the title is set by the theme, so just give it all available space. By default
-    // the title will vertically centre within.
-    [_titleField setFrame:CGRectMake(_titleMargin, 0, width - 2 * _titleMargin, _titleBarHeight)];
+    /*
+        The title margin is read from the theme at each tile, so the title follows a
+        change of theme. It was copied when the view was made, so the title kept the
+        old theme's margin.
+
+        The vertical alignment of the title is set by the theme, so just give it all
+        available space. By default the title will vertically centre within.
+    */
+    [_titleField setFrame:CGRectMake(titleMargin, 0, width - 2 * titleMargin, _titleBarHeight)];
 }
 
 - (void)layoutSubviews

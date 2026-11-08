@@ -22,7 +22,6 @@
 
 @import "CPButton.j"
 @import "_CPTitleableWindowView.j"
-@import "CPApplication_Constants.j"
 
 @class _CPDocModalWindowView
 
@@ -68,13 +67,18 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     return self;
 }
 
+/*
+    The head view draws with the theme values of its window view, in the window view's
+    current state, so it follows the window's theme. It read them from the default
+    theme, so under any other theme it drew the default theme's height and colours.
+*/
 - (void)layoutSubviews
 {
     [super layoutSubviews];
 
-    var gradientHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView],
+    var gradientHeight = [_parentView valueForThemeAttribute:@"gradient-height"],
         bounds = [self bounds],
-        bezelHeadColor = [[CPTheme defaultTheme] valueForAttributeWithName:_isSheet ? @"bezel-head-sheet-color" : @"bezel-head-color" inState:[_parentView themeState] forClass:_CPStandardWindowView];
+        bezelHeadColor = [_parentView currentValueForThemeAttribute:_isSheet ? @"bezel-head-sheet-color" : @"bezel-head-color"];
 
     // Apply the border/background color to self (the container) so borders are drawn on the outside
     [self setBackgroundColor:bezelHeadColor];
@@ -84,18 +88,19 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     
     // Set x=0.0 to avoid 1px gap. Width is reduced by 2.0.
     [_solidView setFrame:CGRectMake(0.0, gradientHeight, CGRectGetWidth(bounds) - 2.0, CGRectGetHeight(bounds) - gradientHeight)];
-    [_solidView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"solid-color" forClass:_CPStandardWindowView]];
+    [_solidView setBackgroundColor:[_parentView currentValueForThemeAttribute:@"solid-color"]];
 }
 
 - (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
     var bounds = [self bounds],
-        width = CGRectGetWidth(bounds) - 2.0; // Account for border inset
+        width = CGRectGetWidth(bounds) - 2.0, // Account for border inset
+        gradientHeight = [_parentView valueForThemeAttribute:@"gradient-height"];
 
     if (width < 0) width = 0;
 
-    [_gradientView setFrameSize:CGSizeMake(width, [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
-    [_solidView setFrameSize:CGSizeMake(width, CGRectGetHeight(bounds) - [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
+    [_gradientView setFrameSize:CGSizeMake(width, gradientHeight)];
+    [_solidView setFrameSize:CGSizeMake(width, CGRectGetHeight(bounds) - gradientHeight)];
 }
 
 @end
@@ -235,20 +240,12 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
             [self addSubview:_minimizeButton];
         }
 
-        [self _updateWindowButtons:YES];
+        [self _updateWindowButtons];
+        [self updateTrackingAreas];
         [self tile];
-
-        // Observe CPApplicationOSBehaviorDidChangeNotification
-        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_osBehaviorDidChange:) name:CPApplicationOSBehaviorDidChangeNotification object:CPApp];
     }
 
     return self;
-}
-
-// This will be called by CPWindow -close so the observer can be removed
-- (void)_close
-{
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPApplicationOSBehaviorDidChangeNotification object:CPApp];
 }
 
 - (void)viewDidMoveToWindow
@@ -293,168 +290,64 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
     [_bodyView setFrame:CGRectMake(0.0, dividerMinY, width, CGRectGetHeight(bounds) - dividerMinY)];
 
-    [_titleField setFrame:CGRectMake(_buttonsWidth, 0, width - _buttonsWidth * 2.0, _titleBarHeight)];
+    [self _layoutTitleField];
 
     var contentFrame = [_bodyView frame];
     [[theWindow contentView] setFrame:CGRectInset(contentFrame, 1.0, 1.0)];
 }
 
-- (void)_updateWindowButtons:(BOOL)shouldRefreshLayout
+/*
+    The buttons are placed from the theme values on every layout, so a change of theme
+    moves them. They were placed only when the view was made, so the window kept the
+    old theme's positions. The positions come from the theme alone, with no branch for
+    the host platform. A theme without positions gets fixed defaults.
+*/
+- (void)_updateWindowButtons
 {
-    if (shouldRefreshLayout)
+    var closeOrigin    = CGPointMakeCopy([self currentValueForThemeAttribute:@"close-image-origin"]    || CGPointMake(8.0, 8.0)),
+        minimizeOrigin = CGPointMakeCopy([self currentValueForThemeAttribute:@"minimize-image-origin"] || CGPointMake(27.0, 7.0)),
+        zoomOrigin     = CGPointMakeCopy([self currentValueForThemeAttribute:@"zoom-image-origin"]     || CGPointMake(46.0, 8.0)),
+        delta1         = minimizeOrigin.x - closeOrigin.x,
+        delta2         = zoomOrigin.x - minimizeOrigin.x;
+
+    _buttonsWidth = 0;
+
+    if (_styleMask & CPClosableWindowMask)
     {
-        var mimicWindows = [CPApp shouldMimicWindows];
+        var closeSize = [self currentValueForThemeAttribute:@"close-image-size"] || CGSizeMake(16.0, 16.0);
 
-        if (mimicWindows)
-            [self setThemeState:CPThemeStateWindowsPlatform];
-        else
-            [self unsetThemeState:CPThemeStateWindowsPlatform];
+        [_closeButton setFrame:CGRectMake(closeOrigin.x, closeOrigin.y, closeSize.width, closeSize.height)];
 
-        // Remember that on Cappuccino, buttons are (left to right) : close - minimize - zoom
-        // and that on Windows, (also left to right) : minimize - zoom - close
-
-        var offset,
-            mask,
-            closeThemeOrigin    = CGPointMakeCopy([self currentValueForThemeAttribute:@"close-image-origin"]    || CGPointMakeZero()),
-            minimizeThemeOrigin = CGPointMakeCopy([self currentValueForThemeAttribute:@"minimize-image-origin"] || CGPointMakeZero()),
-            zoomThemeOrigin     = CGPointMakeCopy([self currentValueForThemeAttribute:@"zoom-image-origin"]     || CGPointMakeZero()),
-            closeThemeSize      = CGSizeMakeZero(),
-            minimizeThemeSize   = CGSizeMakeZero(),
-            zoomThemeSize       = CGSizeMakeZero(),
-            delta1,
-            delta2;
-
-        // For retro-compatibility
-        if (![self isCSSBased])
-        {
-            if (mimicWindows)
-            {
-                // There's no zoom button in Aristo2
-                closeThemeOrigin    = CGPointMake(-24.0, 8.0);
-                minimizeThemeOrigin = CGPointMake(-43.0, 8.0);
-
-                // FIXME: if someone designs a zoom button in Aristo2 one day, use those values
-                // closeThemeOrigin    = CGPointMake(-24.0, 8.0);
-                // minimizeThemeOrigin = CGPointMake(-62.0, 8.0);
-                // zoomThemeOrigin     = CGPointMake(-43.0, 8.0);
-            }
-            else
-            {
-                closeThemeOrigin    = CGPointMake(8.0, 8.0);
-                minimizeThemeOrigin = CGPointMake(27.0, 8.0);
-                zoomThemeOrigin     = CGPointMake(46.0, 8.0);
-            }
-        }
-
-        if (mimicWindows)
-        {
-            offset = [self bounds].size.width;
-            mask   = CPViewMinXMargin;
-            delta1 = zoomThemeOrigin.x - closeThemeOrigin.x;
-            delta2 = minimizeThemeOrigin.x - zoomThemeOrigin.x;
-        }
-        else
-        {
-            offset = 0;
-            mask   = CPViewMaxXMargin;
-            delta1 = minimizeThemeOrigin.x - closeThemeOrigin.x;
-            delta2 = zoomThemeOrigin.x - minimizeThemeOrigin.x;
-        }
-
-        _buttonsWidth = 0;
-
-        if (_styleMask & CPClosableWindowMask)
-        {
-            closeThemeSize = [self currentValueForThemeAttribute:@"close-image-size"];
-
-            // For retro-compatibility:
-            if (!closeThemeSize)
-                closeThemeSize = CGSizeMake(16.0, 16.0);
-
-            [_closeButton setFrame:CGRectMake(closeThemeOrigin.x + offset, closeThemeOrigin.y, closeThemeSize.width, closeThemeSize.height)];
-            [_closeButton setAutoresizingMask:mask];
-
-            _buttonsWidth = ABS(closeThemeOrigin.x) + (mimicWindows ? 0 : closeThemeSize.width);
-        }
-        else
-        {
-            minimizeThemeOrigin.x -= delta1;
-            zoomThemeOrigin.x     -= delta1;
-        }
-
-        if (mimicWindows)
-        {
-            if (_styleMask & CPResizableWindowMask)
-            {
-                zoomThemeSize = [self currentValueForThemeAttribute:@"zoom-image-size"];
-
-                // For retro-compatibility:
-                if (!zoomThemeSize)
-                    zoomThemeSize = CGSizeMake(16.0, 16.0);
-
-                [_zoomButton setFrame:CGRectMake(zoomThemeOrigin.x + offset, zoomThemeOrigin.y, zoomThemeSize.width, zoomThemeSize.height)];
-                [_zoomButton setAutoresizingMask:mask];
-
-                _buttonsWidth = ABS(zoomThemeOrigin.x);
-            }
-            else
-                minimizeThemeOrigin.x -= delta2;
-
-            if (_styleMask & CPMiniaturizableWindowMask)
-            {
-                minimizeThemeSize = [self currentValueForThemeAttribute:@"minimize-image-size"];
-
-                // For retro-compatibility:
-                if (!minimizeThemeSize)
-                    minimizeThemeSize = CGSizeMake(16.0, 16.0);
-
-                [_minimizeButton setFrame:CGRectMake(minimizeThemeOrigin.x + offset, minimizeThemeOrigin.y, minimizeThemeSize.width, minimizeThemeSize.height)];
-                [_minimizeButton setAutoresizingMask:mask];
-
-                _buttonsWidth = ABS(minimizeThemeOrigin.x);
-            }
-
-            if (_buttonsWidth > 0)
-                _buttonsWidth += ABS(closeThemeOrigin.x) - closeThemeSize.width;
-        }
-        else // not win
-        {
-            if (_styleMask & CPMiniaturizableWindowMask)
-            {
-                minimizeThemeSize = [self currentValueForThemeAttribute:@"minimize-image-size"];
-
-                // For retro-compatibility:
-                if (!minimizeThemeSize)
-                    minimizeThemeSize = CGSizeMake(16.0, 16.0);
-
-                [_minimizeButton setFrame:CGRectMake(minimizeThemeOrigin.x + offset, minimizeThemeOrigin.y, minimizeThemeSize.width, minimizeThemeSize.height)];
-                [_minimizeButton setAutoresizingMask:mask];
-
-                _buttonsWidth = minimizeThemeOrigin.x + minimizeThemeSize.width;
-            }
-            else
-                zoomThemeOrigin.x -= delta2;
-
-            if (_styleMask & CPResizableWindowMask)
-            {
-                zoomThemeSize = [self currentValueForThemeAttribute:@"zoom-image-size"];
-
-                // For retro-compatibility:
-                if (!zoomThemeSize)
-                    zoomThemeSize = CGSizeMake(16.0, 16.0);
-
-                [_zoomButton setFrame:CGRectMake(zoomThemeOrigin.x + offset, zoomThemeOrigin.y, zoomThemeSize.width, zoomThemeSize.height)];
-                [_zoomButton setAutoresizingMask:mask];
-
-                _buttonsWidth = zoomThemeOrigin.x + zoomThemeSize.width;
-            }
-
-            if (_buttonsWidth > 0)
-                _buttonsWidth += closeThemeOrigin.x;
-        }
-
-        [self updateTrackingAreas];
+        _buttonsWidth = closeOrigin.x + closeSize.width;
     }
+    else
+    {
+        minimizeOrigin.x -= delta1;
+        zoomOrigin.x     -= delta1;
+    }
+
+    if (_styleMask & CPMiniaturizableWindowMask)
+    {
+        var minimizeSize = [self currentValueForThemeAttribute:@"minimize-image-size"] || CGSizeMake(16.0, 16.0);
+
+        [_minimizeButton setFrame:CGRectMake(minimizeOrigin.x, minimizeOrigin.y, minimizeSize.width, minimizeSize.height)];
+
+        _buttonsWidth = minimizeOrigin.x + minimizeSize.width;
+    }
+    else
+        zoomOrigin.x -= delta2;
+
+    if (_styleMask & CPResizableWindowMask)
+    {
+        var zoomSize = [self currentValueForThemeAttribute:@"zoom-image-size"] || CGSizeMake(16.0, 16.0);
+
+        [_zoomButton setFrame:CGRectMake(zoomOrigin.x, zoomOrigin.y, zoomSize.width, zoomSize.height)];
+
+        _buttonsWidth = zoomOrigin.x + zoomSize.width;
+    }
+
+    if (_buttonsWidth > 0)
+        _buttonsWidth += closeOrigin.x;
 
     [self _updateCloseButton];
 
@@ -462,6 +355,29 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     [_minimizeButton setAlternateImage:[self currentValueForThemeAttribute:@"minimize-image-highlighted-button"]];
     [_zoomButton setImage:[self currentValueForThemeAttribute:@"zoom-image-button"]];
     [_zoomButton setAlternateImage:[self currentValueForThemeAttribute:@"zoom-image-highlighted-button"]];
+}
+
+/*
+    The title fills the space between the buttons and the same width on the other side.
+    When that is too narrow for the title, the title gives up the space on the other
+    side first. The title margin is read from the theme here, so a change of theme
+    moves the title.
+*/
+- (void)_layoutTitleField
+{
+    var width       = CGRectGetWidth([self bounds]),
+        titleMargin = [self currentValueForThemeAttribute:@"title-margin"],
+        titleWidth  = width - 2.0 * _buttonsWidth;
+
+    if (titleWidth < _minimumTitleFieldSize)
+    {
+        if (width - _buttonsWidth - titleMargin < _minimumTitleFieldSize)
+            titleWidth = width - _buttonsWidth - titleMargin;
+        else
+            titleWidth = _minimumTitleFieldSize;
+    }
+
+    [_titleField setFrame:CGRectMake(_buttonsWidth, 0, titleWidth, _titleBarHeight)];
 }
 
 - (void)_updateCloseButton
@@ -476,11 +392,6 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
         [_closeButton setImage:[self currentValueForThemeAttribute:@"close-image-button"]];
         [_closeButton setAlternateImage:[self currentValueForThemeAttribute:@"close-image-highlighted-button"]];
     }
-}
-
-- (void)_osBehaviorDidChange:(id)application
-{
-    [self _updateWindowButtons:YES];
 }
 
 - (void)setDocumentEdited:(BOOL)isEdited
@@ -526,7 +437,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
     if (enable)
     {
-        [_bodyView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"body-color" forClass:_CPDocModalWindowView]];
+        [_bodyView setBackgroundColor:[[self actualTheme] valueForAttributeWithName:@"body-color" forClass:_CPDocModalWindowView]];
 
         // Move the shadow view down so it is inside the content border
         var shadowFrame = [_sheetShadowView frame];
@@ -542,7 +453,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
         dy = [self toolbarMaxY] + dividerHeight;
 
     if (_toolbarView && [self showsToolbar])
-        dy = [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView];
+        dy = [self valueForThemeAttribute:@"gradient-height"];
 
     if (enable)
         dy = -dy;
@@ -562,26 +473,15 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
 - (void)layoutSubviews
 {
-    var width        = [self bounds].size.width,
-        mimicWindows = [CPApp shouldMimicWindows];
-
     [super layoutSubviews];
 
-    if (_closeButton || _minimizeButton || _zoomButton)
-        [self _updateWindowButtons:NO];
+    [self _updateWindowButtons];
+    [self _layoutTitleField];
 
     [_dividerView setBackgroundColor:[self valueForThemeAttribute:@"divider-color"]];
     [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
     [_headView setNeedsLayout];
-
-    if (width - 2 * _buttonsWidth < _minimumTitleFieldSize)
-    {
-        if (width - _buttonsWidth - _titleMargin < _minimumTitleFieldSize)
-            [_titleField setFrame:CGRectMake((mimicWindows ? _titleMargin : _buttonsWidth), 0, width - _buttonsWidth - _titleMargin, _titleBarHeight)];
-        else
-            [_titleField setFrame:CGRectMake((mimicWindows ? width - _buttonsWidth - _minimumTitleFieldSize : _buttonsWidth), 0, _minimumTitleFieldSize, _titleBarHeight)];
-    }
 }
 
 - (CGSize)_minimumResizeSize
@@ -649,9 +549,6 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 {
     var triggeredButton = [[anEvent trackingArea] userInfo],
         state           = CPThemeStateHovered;
-
-    if ([CPApp shouldMimicWindows])
-        state = state.and(CPThemeStateWindowsPlatform);
 
     if (triggeredButton === _closeButton)
     {
