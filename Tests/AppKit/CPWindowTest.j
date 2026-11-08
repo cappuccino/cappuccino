@@ -309,6 +309,117 @@
     }
 }
 
+/*
+    There is no DOM in the test runner, so ordering a window in or out does not change its
+    visibility. The minimize tests start from a window marked visible.
+*/
+- (CPWindow)visibleWindowWithStyleMask:(unsigned)aStyleMask
+{
+    var window = [[CPWindow alloc] initWithContentRect:CGRectMake(100.0, 100.0, 400.0, 300.0) styleMask:aStyleMask];
+
+    window._isVisible = YES;
+
+    return window;
+}
+
+- (void)testDeminiaturizeRestoresAMinimizedWindow
+{
+    var window = [self visibleWindowWithStyleMask:CPTitledWindowMask | CPMiniaturizableWindowMask];
+
+    [window miniaturize:self];
+    [self assertTrue:[window isMiniaturized]];
+
+    [window deminiaturize:self];
+    [self assertFalse:[window isMiniaturized]];
+}
+
+- (void)testMinimizingAndRestoringPostNotificationsInOrder
+{
+    var window = [self visibleWindowWithStyleMask:CPTitledWindowMask | CPMiniaturizableWindowMask],
+        center = [CPNotificationCenter defaultCenter],
+        names = [],
+        record = function(aNotification) { names.push([aNotification name]); },
+        observers = [CPWindowWillMiniaturizeNotification, CPWindowDidMiniaturizeNotification, CPWindowDidDeminiaturizeNotification].map(function(aName)
+        {
+            return [center addObserverForName:aName object:window queue:nil usingBlock:record];
+        });
+
+    [window miniaturize:self];
+    [window miniaturize:self];
+    [window deminiaturize:self];
+
+    observers.forEach(function(anObserver) { [center removeObserver:anObserver]; });
+
+    [self assert:[CPWindowWillMiniaturizeNotification, CPWindowDidMiniaturizeNotification, CPWindowDidDeminiaturizeNotification] equals:names];
+}
+
+- (void)testRestoringAMinimizedWindowRestoresItsFirstResponder
+{
+    var window = [self visibleWindowWithStyleMask:CPTitledWindowMask | CPMiniaturizableWindowMask],
+        responder = [[CPWindowTestResponderView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
+
+    /*
+        The window is key before it is minimized, so that restoring it does not make it key
+        for the first time, which would choose a first responder of its own.
+    */
+    [[window contentView] addSubview:responder];
+    [window makeFirstResponder:responder];
+    [window makeKeyWindow];
+
+    [window miniaturize:self];
+    [window deminiaturize:self];
+
+    [self assert:responder equals:[window firstResponder]];
+}
+
+- (void)testPerformMiniaturizeMinimizesOnlyAMiniaturizableWindow
+{
+    var miniaturizableWindow = [self visibleWindowWithStyleMask:CPTitledWindowMask | CPMiniaturizableWindowMask],
+        fixedWindow = [self visibleWindowWithStyleMask:CPTitledWindowMask];
+
+    [miniaturizableWindow performMiniaturize:self];
+    [fixedWindow performMiniaturize:self];
+
+    [self assertTrue:[miniaturizableWindow isMiniaturized]];
+    [self assertFalse:[fixedWindow isMiniaturized]];
+}
+
+- (void)testMinimizeButtonMinimizesTheWindow
+{
+    var window = [self visibleWindowWithStyleMask:CPTitledWindowMask | CPMiniaturizableWindowMask],
+        button = [window _windowView]._minimizeButton;
+
+    [button sendAction:[button action] to:[button target]];
+
+    [self assertTrue:[window isMiniaturized]];
+}
+
+- (void)testMinimizeItemsAreEnabledOnlyForAMiniaturizableWindow
+{
+    var miniaturizableWindow = [self visibleWindowWithStyleMask:CPTitledWindowMask | CPMiniaturizableWindowMask],
+        fixedWindow = [self visibleWindowWithStyleMask:CPTitledWindowMask];
+
+    [@selector(performMiniaturize:), @selector(miniaturize:)].forEach(function(anAction)
+    {
+        var item = [[CPMenuItem alloc] initWithTitle:@"Minimize" action:anAction keyEquivalent:@""];
+
+        [self assertTrue:[miniaturizableWindow validateUserInterfaceItem:item] message:CPStringFromSelector(anAction) + " in a miniaturizable window"];
+        [self assertFalse:[fixedWindow validateUserInterfaceItem:item] message:CPStringFromSelector(anAction) + " in a window that cannot minimize"];
+    });
+}
+
+@end
+
+/*
+    A view that accepts first responder status.
+*/
+@implementation CPWindowTestResponderView : CPView
+
+- (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
 @end
 
 /*

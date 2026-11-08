@@ -74,9 +74,10 @@ function DropInWindowButton(aStyleMask, aName)
     [self assertFalse:[DropInWindowButton(CPTitledWindowMask, @"_closeButton") isEnabled]];
 }
 
-- (void)testMinimizeButtonIsNeverEnabled
+- (void)testMinimizeButtonIsEnabledOnlyForAMiniaturizableWindow
 {
-    [self assertFalse:[DropInWindowButton(CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask, @"_minimizeButton") isEnabled]];
+    [self assertTrue:[DropInWindowButton(CPTitledWindowMask | CPMiniaturizableWindowMask, @"_minimizeButton") isEnabled]];
+    [self assertFalse:[DropInWindowButton(CPTitledWindowMask | CPClosableWindowMask, @"_minimizeButton") isEnabled]];
 }
 
 - (void)testZoomButtonIsEnabledOnlyForAResizableWindow

@@ -157,6 +157,34 @@
     [self assert:@"Report" equals:[[windowsMenu itemAtIndex:2] title]];
 }
 
+- (void)testMinimizedWindowStaysListedInTheMixedState
+{
+    var aWindow = [self visibleWindowWithTitle:@"Report"];
+
+    [aWindow makeMainWindow];
+    [aWindow miniaturize:self];
+
+    var item = [windowsMenu itemAtIndex:2];
+
+    [self assert:aWindow equals:[item target]];
+    [self assert:CPMixedState equals:[item state]];
+}
+
+- (void)testChoosingAMinimizedWindowRestoresIt
+{
+    var aWindow = [self visibleWindowWithTitle:@"Report"];
+
+    [aWindow makeMainWindow];
+    [aWindow miniaturize:self];
+
+    var item = [windowsMenu itemAtIndex:2];
+
+    [[item target] performSelector:[item action] withObject:item];
+
+    [self assertFalse:[aWindow isMiniaturized]];
+    [self assert:CPOnState equals:[item state]];
+}
+
 - (void)testSetWindowsMenuMovesWindowItems
 {
     var aWindow = [self visibleWindowWithTitle:@"Report"],

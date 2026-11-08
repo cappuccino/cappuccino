@@ -187,6 +187,8 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isVisible;
     BOOL                                _hasBeenOrderedIn @accessors;
     BOOL                                _isMiniaturized;
+    CPResponder                         _miniaturizedFirstResponder;
+    CPArray                             _miniaturizedChildWindows;
     CGRect                              _userStateFrame;
     BOOL                                _isExcludedFromWindowsMenu;
     BOOL                                _isAnimating @accessors(setter=_setAnimating:);
@@ -997,6 +999,14 @@ CPTexturedBackgroundWindowMask
 
 - (void)_orderFront
 {
+    /*
+        Ordering a minimized window front restores it, so choosing it in the Windows menu,
+        which sends makeKeyAndOrderFront:, brings it back. The minimized state stayed set, so
+        a window ordered front still counted as minimized.
+    */
+    var wasMiniaturized = _isMiniaturized;
+
+    _isMiniaturized = NO;
 
     if (CPDOMAvailable)
     {
@@ -1018,6 +1028,9 @@ CPTexturedBackgroundWindowMask
             [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
     }
 
+    if (wasMiniaturized)
+        [self _restoreMiniaturizedState];
+
     if (!CPApp._keyWindow)
         [self makeKeyWindow];
 
@@ -1031,6 +1044,9 @@ CPTexturedBackgroundWindowMask
 
     if ([self attachedSheet])
         [_platformWindow order:CPWindowAbove window:[self attachedSheet] relativeTo:nil];
+
+    if (wasMiniaturized)
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidDeminiaturizeNotification object:self];
 }
 
 /*
@@ -2495,49 +2511,97 @@ CPTexturedBackgroundWindowMask
 // Minimizing Windows
 
 /*!
-    Simulates the user clicking the minimize button. A page cannot minimize its browser
-    window, so the minimize button is always disabled and this method does nothing.
+    Simulates the user clicking the minimize button. Minimizes the window when its minimize
+    button is enabled, and does nothing otherwise. The minimize button is enabled when the
+    window is miniaturizable and is neither a sheet nor a full platform window.
     @param aSender the object making this request
 */
 - (void)performMiniaturize:(id)aSender
 {
-    /*
-        It called -miniaturize:, whose platform window does nothing in the browser, so the
-        window stayed on screen but counted as minimized.
-    */
+    if ([self _canMiniaturize])
+        [self miniaturize:aSender];
 }
 
 /*!
-    Minimizes the window. Posts a \c CPWindowWillMiniaturizeNotification to the
-    notification center before minimizing the window.
+    Minimizes the window. The window leaves the screen with its attached sheet and its
+    visible child windows, and stays in the Windows menu, from which the user restores it.
+    Posts \c CPWindowWillMiniaturizeNotification before the window leaves the screen and
+    \c CPWindowDidMiniaturizeNotification after.
+    @param sender the object making this request
 */
 - (void)miniaturize:(id)sender
 {
+    if (_isMiniaturized)
+        return;
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillMiniaturizeNotification object:self];
 
-    [[self platformWindow] miniaturize:sender];
+    /*
+        The window leaves the screen and keeps its first responder and visible child windows
+        for the restore. It called the platform window's miniaturize:, which does nothing in
+        the browser, so the window stayed on screen but counted as minimized.
+    */
+    _isMiniaturized = YES;
+    _miniaturizedFirstResponder = _firstResponder;
+    _miniaturizedChildWindows = _childWindows.filter(function(aChildWindow)
+    {
+        return [aChildWindow isVisible];
+    });
 
-    [self _updateMainAndKeyWindows];
+    var sheet = [self attachedSheet];
+
+    if (sheet)
+    {
+        [_platformWindow order:CPWindowOut window:sheet relativeTo:nil];
+        [sheet _updateMainAndKeyWindows];
+    }
+
+    [self _orderOutRecursively:YES];
+    [self _updateWindowsMenuItem];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMiniaturizeNotification object:self];
-
-    _isMiniaturized = YES;
-
-    [self _updateWindowsMenuItem];
 }
 
 /*!
-    Restores a minimized window to it's original size.
+    Restores a minimized window: orders it front with its attached sheet and the child
+    windows it took off the screen, and makes it the key and main window. Ordering a
+    minimized window front restores it in the same way, which is how the Windows menu
+    restores it.
+    @param sender the object making this request
 */
 - (void)deminiaturize:(id)sender
 {
-    [[self platformWindow] deminiaturize:sender];
+    if (_isMiniaturized)
+        [self makeKeyAndOrderFront:sender];
+}
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidDeminiaturizeNotification object:self];
+/*
+    The window can minimize when it shows an enabled minimize button.
+*/
+- (BOOL)_canMiniaturize
+{
+    return !!(_styleMask & CPMiniaturizableWindowMask) && !_isSheet && !_isFullPlatformWindow;
+}
 
-    _isMiniaturized = NO;
+/*
+    Restores the first responder and the child windows that the window had when it was
+    minimized.
+*/
+- (void)_restoreMiniaturizedState
+{
+    if (_miniaturizedFirstResponder && _miniaturizedFirstResponder !== self)
+        [self makeFirstResponder:_miniaturizedFirstResponder];
 
-    [self _updateWindowsMenuItem];
+    for (var i = 0, count = [_miniaturizedChildWindows count]; i < count; i++)
+    {
+        var childWindow = _miniaturizedChildWindows[i];
+
+        if ([childWindow parentWindow] === self)
+            [childWindow orderWindow:[childWindow childOrdering] relativeTo:_windowNumber];
+    }
+
+    _miniaturizedFirstResponder = nil;
+    _miniaturizedChildWindows = nil;
 }
 
 /*!
@@ -2951,9 +3015,9 @@ CPTexturedBackgroundWindowMask
     For \c -toggleToolbarShown:, the item's title becomes "Hide Toolbar" or "Show Toolbar"
     to reflect the toolbar's visibility, and the item is enabled only when the window has
     a toolbar. \c -undo: and \c -redo: are enabled only when the window's undo manager has a
-    change to undo or redo. \c -performMiniaturize: is disabled, because a page cannot
-    minimize its browser window. \c -performZoom: and \c -zoom: are enabled only when the
-    window's zoom button is enabled. Every other item is enabled.
+    change to undo or redo. \c -performMiniaturize: and \c -miniaturize: are enabled only
+    when the window's minimize button is enabled, and \c -performZoom: and \c -zoom: only
+    when its zoom button is enabled. Every other item is enabled.
     @param anItem the item to validate
     @return \c YES if the item should be enabled
 */
@@ -2968,11 +3032,11 @@ CPTexturedBackgroundWindowMask
         return [[self undoManager] canRedo];
 
     /*
-        The Minimize and Zoom items agree with the window's buttons. Minimize was enabled,
-        and left the window on screen but counted as minimized.
+        The Minimize and Zoom items agree with the window's buttons. Minimize was enabled
+        for every window, including a window that cannot minimize.
     */
-    if (action === @selector(performMiniaturize:))
-        return NO;
+    if (action === @selector(performMiniaturize:) || action === @selector(miniaturize:))
+        return [self _canMiniaturize];
 
     if (action === @selector(performZoom:) || action === @selector(zoom:))
         return [self _canZoom];
