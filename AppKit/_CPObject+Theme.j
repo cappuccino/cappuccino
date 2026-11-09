@@ -20,9 +20,17 @@
  */
 
 @import <Foundation/Foundation.j>
-@import "CPResponder.j"
 
 @import "CPTheme.j"
+
+/*
+    The build failed with "Cannot find protocol declaration for 'CPTheme'" in CPImage.j. This file
+    imported CPResponder.j, which imports CPCursor.j and through it CPImage.j. CPImage adopts the
+    CPTheme protocol and uses the theming instance variables, which this file declares. When the
+    compiler reached this file first, it compiled CPImage before they existed. This file uses
+    CPResponder only at run time, so a forward declaration replaces the import.
+*/
+@class CPResponder
 
 var CPViewThemeClassKey             = @"CPViewThemeClassKey",
     CPViewThemeStateKey             = @"CPViewThemeStateKey";

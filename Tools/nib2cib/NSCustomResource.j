@@ -47,14 +47,34 @@ function imagesize(path) {
 var FILE = require("file"),
     imageSize = require("cappuccino/imagesize").imagesize
 */
-var supportedTemplateImages = {
-        "NSAddTemplate": "CPAddTemplate",
-        "NSRemoveTemplate": "CPRemoveTemplate",
-        "NSActionTemplate": "CPActionTemplate",
-        "NSToolbarShowColors": "CPImageNameColorPanel",
+/*
+    IB names a built-in image by its AppKit name. nib2cib maps it to the name with CP in place of
+    NS when CPImage has a system image of that name (see +[CPImage imageNamed:]). These IB names
+    map otherwise: NSColorPanel and NSToolbarShowColors (the image of the Colors toolbar item)
+    map to CPImageNameColorPanel, which keeps its earlier string; NSMenuCheckmark and
+    NSMenuMixedState (the default state images of a menu item) map to names that the cib loader
+    resolves to nil, so that the menu item theme draws them.
+*/
+var builtInImageAliases = {
+        "NSColorPanel": CPImageNameColorPanel,
+        "NSToolbarShowColors": CPImageNameColorPanel,
         "NSMenuCheckmark": "CPMenuCheckmark",
         "NSMenuMixedState": "CPMenuMixedState"
     };
+
+/*
+    Returns the CP name for the built-in image that IB names aName, or nil when Cappuccino has no
+    such image.
+*/
+function CPNameForBuiltInImage(aName)
+{
+    if (builtInImageAliases.hasOwnProperty(aName))
+        return builtInImageAliases[aName];
+
+    var name = "CP" + aName.substring(2);
+
+    return _CPImageIsSystemImageName(name) ? name : nil;
+}
 
 @implementation _CPCibCustomResource (NSCoding)
 
@@ -75,11 +95,14 @@ var supportedTemplateImages = {
             return nil;
         else if (/^NS[A-Z][A-Za-z]+$/.test(_resourceName))
         {
-            if (supportedTemplateImages[_resourceName])
-            {
-                // Defer resolving this path until runtime.
-                _resourceName = supportedTemplateImages[_resourceName];
-            }
+            var builtInImageName = CPNameForBuiltInImage(_resourceName);
+
+            /*
+                The cib keeps the name, and the cib loader resolves it to the system image at
+                run time.
+            */
+            if (builtInImageName)
+                _resourceName = builtInImageName;
             else
                 [CPException raise:Nib2CibException format:@"The built in image “%@” is not supported.", _resourceName];
         }

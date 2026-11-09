@@ -170,34 +170,17 @@ function _CPThemeAttributeForSystemColorName(aName)
 }
 
 /*
-    Returns the value of the system colour aName for anAppearance. The current theme's value
-    for the closest appearance comes first, in the order of
-    -[CPAppearance bestMatchFromAppearancesWithNames:]; then the theme's value for every
-    appearance; then the value in _CPSystemColorDefaults.
+    Returns the value of the system colour aName for anAppearance: the current theme's value for
+    anAppearance (see _CPThemeAttributeValueForAppearance), then the value in
+    _CPSystemColorDefaults.
 */
 function _CPSystemColorValue(aName, anAppearance)
 {
     var attribute = [[CPTheme defaultTheme] attributeWithName:_CPThemeAttributeForSystemColorName(aName) forClass:[CPColor defaultThemeClass]],
-        values = [attribute values];
+        themeValue = _CPThemeAttributeValueForAppearance(attribute, anAppearance);
 
-    if (values)
-    {
-        var matchingNames = _CPAppearanceMatchingNames([anAppearance name]);
-
-        for (var i = 0, count = matchingNames.length; i < count; i++)
-        {
-            var state = _CPThemeStateForAppearanceName(matchingNames[i]),
-                value = state ? [values objectForKey:String(state)] : nil;
-
-            if (value)
-                return value;
-        }
-
-        var normalValue = [values objectForKey:String(CPThemeStateNormal)];
-
-        if (normalValue)
-            return normalValue;
-    }
+    if (themeValue)
+        return themeValue;
 
     var defaultValue = _CPSystemColorDefaultValues[aName];
 

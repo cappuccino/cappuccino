@@ -151,6 +151,33 @@ function _CPThemeStateForAppearanceName(aName)
     }
 }
 
+/*
+    Returns the value that the theme attribute anAttribute holds for anAppearance: the value for
+    the closest appearance, in the order of -bestMatchFromAppearancesWithNames:; then the value
+    for every appearance; or nil when anAttribute holds neither. System colours and system
+    images take their theme values this way.
+*/
+function _CPThemeAttributeValueForAppearance(anAttribute, anAppearance)
+{
+    var values = [anAttribute values];
+
+    if (!values)
+        return nil;
+
+    var matchingNames = _CPAppearanceMatchingNames([anAppearance name]);
+
+    for (var i = 0, count = matchingNames.length; i < count; i++)
+    {
+        var state = _CPThemeStateForAppearanceName(matchingNames[i]),
+            value = state ? [values objectForKey:String(state)] : nil;
+
+        if (value)
+            return value;
+    }
+
+    return [values objectForKey:String(CPThemeStateNormal)];
+}
+
 
 /*!
     @ingroup appkit

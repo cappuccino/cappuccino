@@ -77,6 +77,25 @@ var themedButtonValues = nil,
 
     placeholderColor = regularDisabledTextColor;
 
+/*
+    The images of the button bar's buttons. The theme also gives them as its add, remove and
+    action system images (see +themedImage).
+*/
+function ButtonBarImagePlus()
+{
+    return PatternImage("buttonbar-image-plus.png", 11.0, 12.0);
+}
+
+function ButtonBarImageMinus()
+{
+    return PatternImage("buttonbar-image-minus.png", 11.0, 4.0);
+}
+
+function ButtonBarImageAction()
+{
+    return PatternImage("buttonbar-image-action.png", 22.0, 14.0);
+}
+
 @implementation Aristo2ThemeDescriptor : BKThemeDescriptor
 
 + (CPString)themeName
@@ -98,7 +117,8 @@ var themedButtonValues = nil,
             "themedTableDataView",
             "themedCornerview",
             "themedTokenFieldTokenCloseButton",
-            "themedColor"];
+            "themedColor",
+            "themedImage"];
 }
 
 + (CPColor)themedColor
@@ -115,6 +135,25 @@ var themedButtonValues = nil,
     [self registerThemeValues:themedColorValues forObject:color];
 
     return color;
+}
+
+/*
+    The system images that this theme gives (see +[CPImage imageNamed:]): the images of the
+    button bar's buttons.
+*/
++ (CPImage)themedImage
+{
+    var image = [[CPImage alloc] init],
+        themedImageValues =
+    [
+        [@"add-template",       ButtonBarImagePlus()],
+        [@"remove-template",    ButtonBarImageMinus()],
+        [@"action-template",    ButtonBarImageAction()]
+    ];
+
+    [self registerThemeValues:themedImageValues forObject:image];
+
+    return image;
 }
 
 + (CPButton)makeButton
@@ -1985,9 +2024,9 @@ var themedButtonValues = nil,
                 orientation: PatternIsHorizontal
             }),
 
-        buttonImagePlus = PatternImage("buttonbar-image-plus.png", 11.0, 12.0),
-        buttonImageMinus = PatternImage("buttonbar-image-minus.png", 11.0, 4.0),
-        buttonImageAction = PatternImage("buttonbar-image-action.png", 22.0, 14.0),
+        buttonImagePlus = ButtonBarImagePlus(),
+        buttonImageMinus = ButtonBarImageMinus(),
+        buttonImageAction = ButtonBarImageAction(),
 
         themedButtonBarValues =
         [

@@ -29,11 +29,15 @@
 @import <Foundation/CPKeyedArchiver.j>
 @import <Foundation/CPKeyedUnarchiver.j>
 
+@import "_CPObject+Theme.j"
 @import "CGGeometry.j"
+@import "CPAppearance.j"
 @import "CPCompatibility.j"
 @import "CPGraphicsContext.j"
+@import "CPTheme.j"
 
 @class CPColor
+@class _CPSystemImage
 @global document
 
 @protocol CPImageDelegate <CPObject>
@@ -59,16 +63,154 @@ CPImageLoadStatusReadError      = 6;
 
 CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
 
-// Image Names
-CPImageNameColorPanel               = @"CPImageNameColorPanel";
-CPImageNameColorPanelHighlighted    = @"CPImageNameColorPanelHighlighted";
+/*
+    System image names. Each constant has the name of an AppKit NSImageName constant with CP in
+    place of NS, and AppKit's string with CP in place of NS, so that nib2cib maps an image name
+    in a XIB by replacing the prefix. CPImageNameColorPanel keeps the string that it had before
+    Cappuccino took AppKit's names, because existing cibs hold that string; nib2cib maps
+    NSColorPanel to it. CPImageNameColorPanelHighlighted is Cappuccino's own name, for the
+    highlighted image of the Colors toolbar item. AppKit's Touch Bar names are absent, because
+    Cappuccino has no touch bar.
+*/
+CPImageNameActionTemplate                       = @"CPActionTemplate";
+CPImageNameAddTemplate                          = @"CPAddTemplate";
+CPImageNameAdvanced                             = @"CPAdvanced";
+CPImageNameApplicationIcon                      = @"CPApplicationIcon";
+CPImageNameBluetoothTemplate                    = @"CPBluetoothTemplate";
+CPImageNameBonjour                              = @"CPBonjour";
+CPImageNameBookmarksTemplate                    = @"CPBookmarksTemplate";
+CPImageNameCaution                              = @"CPCaution";
+CPImageNameColumnViewTemplate                   = @"CPColumnViewTemplate";
+CPImageNameComputer                             = @"CPComputer";
+CPImageNameDotMac                               = @"CPDotMac";
+CPImageNameEnterFullScreenTemplate              = @"CPEnterFullScreenTemplate";
+CPImageNameEveryone                             = @"CPEveryone";
+CPImageNameExitFullScreenTemplate               = @"CPExitFullScreenTemplate";
+CPImageNameFlowViewTemplate                     = @"CPFlowViewTemplate";
+CPImageNameFolder                               = @"CPFolder";
+CPImageNameFolderBurnable                       = @"CPFolderBurnable";
+CPImageNameFolderSmart                          = @"CPFolderSmart";
+CPImageNameFollowLinkFreestandingTemplate       = @"CPFollowLinkFreestandingTemplate";
+CPImageNameFontPanel                            = @"CPFontPanel";
+CPImageNameGoBackTemplate                       = @"CPGoBackTemplate";
+CPImageNameGoForwardTemplate                    = @"CPGoForwardTemplate";
+CPImageNameGoLeftTemplate                       = @"CPGoLeftTemplate";
+CPImageNameGoRightTemplate                      = @"CPGoRightTemplate";
+CPImageNameHomeTemplate                         = @"CPHomeTemplate";
+CPImageNameIChatTheaterTemplate                 = @"CPIChatTheaterTemplate";
+CPImageNameIconViewTemplate                     = @"CPIconViewTemplate";
+CPImageNameInfo                                 = @"CPInfo";
+CPImageNameInvalidDataFreestandingTemplate      = @"CPInvalidDataFreestandingTemplate";
+CPImageNameLeftFacingTriangleTemplate           = @"CPLeftFacingTriangleTemplate";
+CPImageNameListViewTemplate                     = @"CPListViewTemplate";
+CPImageNameLockLockedTemplate                   = @"CPLockLockedTemplate";
+CPImageNameLockUnlockedTemplate                 = @"CPLockUnlockedTemplate";
+CPImageNameMenuMixedStateTemplate               = @"CPMenuMixedStateTemplate";
+CPImageNameMenuOnStateTemplate                  = @"CPMenuOnStateTemplate";
+CPImageNameMobileMe                             = @"CPMobileMe";
+CPImageNameMultipleDocuments                    = @"CPMultipleDocuments";
+CPImageNameNetwork                              = @"CPNetwork";
+CPImageNamePathTemplate                         = @"CPPathTemplate";
+CPImageNamePreferencesGeneral                   = @"CPPreferencesGeneral";
+CPImageNameQuickLookTemplate                    = @"CPQuickLookTemplate";
+CPImageNameRefreshFreestandingTemplate          = @"CPRefreshFreestandingTemplate";
+CPImageNameRefreshTemplate                      = @"CPRefreshTemplate";
+CPImageNameRemoveTemplate                       = @"CPRemoveTemplate";
+CPImageNameRevealFreestandingTemplate           = @"CPRevealFreestandingTemplate";
+CPImageNameRightFacingTriangleTemplate          = @"CPRightFacingTriangleTemplate";
+CPImageNameShareTemplate                        = @"CPShareTemplate";
+CPImageNameSlideshowTemplate                    = @"CPSlideshowTemplate";
+CPImageNameSmartBadgeTemplate                   = @"CPSmartBadgeTemplate";
+CPImageNameStatusAvailable                      = @"CPStatusAvailable";
+CPImageNameStatusNone                           = @"CPStatusNone";
+CPImageNameStatusPartiallyAvailable             = @"CPStatusPartiallyAvailable";
+CPImageNameStatusUnavailable                    = @"CPStatusUnavailable";
+CPImageNameStopProgressFreestandingTemplate     = @"CPStopProgressFreestandingTemplate";
+CPImageNameStopProgressTemplate                 = @"CPStopProgressTemplate";
+CPImageNameTrashEmpty                           = @"CPTrashEmpty";
+CPImageNameTrashFull                            = @"CPTrashFull";
+CPImageNameUser                                 = @"CPUser";
+CPImageNameUserAccounts                         = @"CPUserAccounts";
+CPImageNameUserGroup                            = @"CPUserGroup";
+CPImageNameUserGuest                            = @"CPUserGuest";
+CPImageNameColorPanel                           = @"CPImageNameColorPanel";
+CPImageNameColorPanelHighlighted                = @"CPImageNameColorPanelHighlighted";
 
 var imagesForNames = { },
-    AppKitImageForNames = { },
-    ImageDescriptionFormat = "%s {\n   filename: \"%s\",\n   size: { width:%f, height:%f }\n}";
+    ImageDescriptionFormat = "%s {\n   filename: \"%s\",\n   size: { width:%f, height:%f }\n}",
+    CPImageSystemImageNameKey = @"CPImageSystemImageNameKey",
 
-AppKitImageForNames[CPImageNameColorPanel]              = CGSizeMake(26.0, 29.0);
-AppKitImageForNames[CPImageNameColorPanelHighlighted]   = CGSizeMake(26.0, 29.0);
+    /*
+        The system image names, each with its default image: the AppKit resource that holds the
+        image, with its size, or null when only a theme gives the image.
+    */
+    _CPSystemImageDefaults = {
+        "CPActionTemplate":                        null,
+        "CPAddTemplate":                           null,
+        "CPAdvanced":                              null,
+        "CPApplicationIcon":                       null,
+        "CPBluetoothTemplate":                     null,
+        "CPBonjour":                               null,
+        "CPBookmarksTemplate":                     null,
+        "CPCaution":                               null,
+        "CPColumnViewTemplate":                    null,
+        "CPComputer":                              null,
+        "CPDotMac":                                null,
+        "CPEnterFullScreenTemplate":               null,
+        "CPEveryone":                              null,
+        "CPExitFullScreenTemplate":                null,
+        "CPFlowViewTemplate":                      null,
+        "CPFolder":                                null,
+        "CPFolderBurnable":                        null,
+        "CPFolderSmart":                           null,
+        "CPFollowLinkFreestandingTemplate":        null,
+        "CPFontPanel":                             null,
+        "CPGoBackTemplate":                        null,
+        "CPGoForwardTemplate":                     null,
+        "CPGoLeftTemplate":                        null,
+        "CPGoRightTemplate":                       null,
+        "CPHomeTemplate":                          null,
+        "CPIChatTheaterTemplate":                  null,
+        "CPIconViewTemplate":                      null,
+        "CPInfo":                                  null,
+        "CPInvalidDataFreestandingTemplate":       null,
+        "CPLeftFacingTriangleTemplate":            null,
+        "CPListViewTemplate":                      null,
+        "CPLockLockedTemplate":                    null,
+        "CPLockUnlockedTemplate":                  null,
+        "CPMenuMixedStateTemplate":                null,
+        "CPMenuOnStateTemplate":                   null,
+        "CPMobileMe":                              null,
+        "CPMultipleDocuments":                     null,
+        "CPNetwork":                               null,
+        "CPPathTemplate":                          null,
+        "CPPreferencesGeneral":                    null,
+        "CPQuickLookTemplate":                     null,
+        "CPRefreshFreestandingTemplate":           null,
+        "CPRefreshTemplate":                       null,
+        "CPRemoveTemplate":                        null,
+        "CPRevealFreestandingTemplate":            null,
+        "CPRightFacingTriangleTemplate":           null,
+        "CPShareTemplate":                         null,
+        "CPSlideshowTemplate":                     null,
+        "CPSmartBadgeTemplate":                    null,
+        "CPStatusAvailable":                       null,
+        "CPStatusNone":                            null,
+        "CPStatusPartiallyAvailable":              null,
+        "CPStatusUnavailable":                     null,
+        "CPStopProgressFreestandingTemplate":      null,
+        "CPStopProgressTemplate":                  null,
+        "CPTrashEmpty":                            null,
+        "CPTrashFull":                             null,
+        "CPUser":                                  null,
+        "CPUserAccounts":                          null,
+        "CPUserGroup":                             null,
+        "CPUserGuest":                             null,
+        "CPImageNameColorPanel":                   ["CPImage/CPImageNameColorPanel.png", 26.0, 29.0],
+        "CPImageNameColorPanelHighlighted":        ["CPImage/CPImageNameColorPanelHighlighted.png", 26.0, 29.0]
+    },
+    _CPSystemImages = {},
+    _CPSystemImageDefaultValues = {};
 
 /*!
     Returns a resource image with a relative path and size
@@ -113,6 +255,52 @@ function CPAppKitImage(aFilename, aSize)
     return CPImageInBundle(aFilename, aSize, [CPBundle bundleForClass:[CPView class]]);
 }
 
+/// @cond IGNORE
+
+/*
+    Returns YES when aName is the name of a system image.
+*/
+function _CPImageIsSystemImageName(aName)
+{
+    return _CPSystemImageDefaults.hasOwnProperty(aName);
+}
+
+/*
+    Returns the theme attribute of CPImage that holds a theme's values for the system image
+    aName: the name without CP, in lower case with words joined by hyphens (CPAddTemplate is
+    "add-template"). Cappuccino's own names also drop ImageName (CPImageNameColorPanel is
+    "color-panel").
+*/
+function _CPThemeAttributeForSystemImageName(aName)
+{
+    return aName.replace(/^CP(ImageName)?/, "").replace(/([A-Z])/g, "-$1").toLowerCase().substring(1);
+}
+
+/*
+    Returns the image for the system image aName in anAppearance: the current theme's value for
+    anAppearance (see _CPThemeAttributeValueForAppearance), then the default image in
+    _CPSystemImageDefaults, or nil when the system image has no default.
+*/
+function _CPSystemImageValue(aName, anAppearance)
+{
+    var attribute = [[CPTheme defaultTheme] attributeWithName:_CPThemeAttributeForSystemImageName(aName) forClass:[CPImage defaultThemeClass]],
+        themeValue = _CPThemeAttributeValueForAppearance(attribute, anAppearance);
+
+    if (themeValue)
+        return themeValue;
+
+    if (!_CPSystemImageDefaultValues.hasOwnProperty(aName))
+    {
+        var resource = _CPSystemImageDefaults[aName];
+
+        _CPSystemImageDefaultValues[aName] = resource ? CPAppKitImage(resource[0], CGSizeMake(resource[1], resource[2])) : nil;
+    }
+
+    return _CPSystemImageDefaultValues[aName];
+}
+
+/// @endcond
+
 /*!
     @ingroup appkit
     @class CPImage
@@ -134,7 +322,7 @@ function CPAppKitImage(aFilename, aSize)
     Called when the image loading was aborted.
     @param image the image that was aborted
 */
-@implementation CPImage : CPObject
+@implementation CPImage : CPObject <CPTheme>
 {
     CGSize                  _size;
     CPString                _filename;
@@ -145,6 +333,28 @@ function CPAppKitImage(aFilename, aSize)
     unsigned                _implementedDelegateMethods;
 
     Image                   _image;
+}
+
+// MARK: -
+// MARK: Theming
+
++ (CPString)defaultThemeClass
+{
+    return "image";
+}
+
+/*
+    CPImage has one theme attribute for each system image, which holds the theme's values for
+    that image (see _CPSystemImageValue).
+*/
++ (CPDictionary)themeAttributes
+{
+    var attributes = @{};
+
+    for (var imageName in _CPSystemImageDefaults)
+        [attributes setObject:[CPNull null] forKey:_CPThemeAttributeForSystemImageName(imageName)];
+
+    return attributes;
 }
 
 - (id)init
@@ -174,9 +384,24 @@ function CPAppKitImage(aFilename, aSize)
         _size = CGSizeMakeCopy(aSize);
         _filename = aFilename;
         _loadStatus = CPImageLoadStatusInitialized;
+
+        [self _initTheming];
     }
 
     return self;
+}
+
+/*
+    Setting a theme value on a CPImage raised "CPImage does not contain theme attribute", because
+    an object that is not a view loads its theme attributes only when its initialiser asks for
+    them. A theme records its system images on a CPImage (see +themeAttributes), so each CPImage
+    initialiser loads them, as the initialisers of CPColor and CPFont do.
+*/
+- (void)_initTheming
+{
+    _theme = [CPTheme defaultTheme];
+    _themeState = CPThemeStateNormal;
+    [self _loadThemeAttributes];
 }
 
 /*!
@@ -281,6 +506,15 @@ function CPAppKitImage(aFilename, aSize)
     return CGSizeMakeCopy(_size);
 }
 
+/*!
+    Returns the image with the name \c aName: an image registered under that name with
+    -setName:, or else the system image of that name, such as CPImageNameAddTemplate. A system
+    image takes its picture from the current theme and the drawing appearance each time it is
+    used, so it follows a theme switch. +imageNamed: returns one shared instance for each
+    system image.
+    @param aName the name of the image
+    @return the image, or \c nil when no image has that name
+*/
 + (id)imageNamed:(CPString)aName
 {
     var image = imagesForNames[aName];
@@ -288,21 +522,24 @@ function CPAppKitImage(aFilename, aSize)
     if (image)
         return image;
 
-    var imageOrSize = AppKitImageForNames[aName];
+    return [self _systemImageNamed:aName];
+}
 
-    if (!imageOrSize)
+/*
+    Returns the shared system image with the name aName, or nil when aName is not a system
+    image name.
+*/
++ (CPImage)_systemImageNamed:(CPString)aName
+{
+    if (!_CPImageIsSystemImageName(aName))
         return nil;
 
-    if (!imageOrSize.isa)
-    {
-        imageOrSize = CPAppKitImage("CPImage/" + aName + ".png", imageOrSize);
+    var image = _CPSystemImages[aName];
 
-        [imageOrSize setName:aName];
+    if (!image)
+        image = _CPSystemImages[aName] = [[_CPSystemImage alloc] _initWithSystemImageName:aName];
 
-        AppKitImageForNames[aName] = imageOrSize;
-    }
-
-    return imageOrSize;
+    return image;
 }
 
 - (BOOL)setName:(CPString)aName
@@ -607,6 +844,8 @@ function CPAppKitImage(aFilename, aSize)
 
     if (self)
     {
+        [self _initTheming];
+
         _size = CGSizeMakeCopy(aSize);
         _filename = @"CSS image";
         _loadStatus = CPImageLoadStatusCompleted;
@@ -749,6 +988,9 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
+    if ([aCoder containsValueForKey:CPImageSystemImageNameKey])
+        return [CPImage _systemImageNamed:[aCoder decodeObjectForKey:CPImageSystemImageNameKey]];
+
     if ([aCoder containsValueForKey:CPImageCSSDictionaryKey])
         return [self initWithCSSDictionary:[aCoder decodeObjectForKey:CPImageCSSDictionaryKey] beforeDictionary:[aCoder decodeObjectForKey:CPImageCSSBeforeDictionaryKey] afterDictionary:[aCoder decodeObjectForKey:CPImageCSSAfterDictionaryKey] size:[aCoder decodeSizeForKey:@"CPSize"]];
     else
@@ -1123,6 +1365,247 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
 - (CPImage)duplicate
 {
     return [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:self]];
+}
+
+@end
+
+// MARK: -
+
+/*
+    A system image keeps its name and resolves to an image each time it is used: the current
+    theme's image for the drawing appearance, or the default image (see _CPSystemImageValue). So
+    it follows a theme switch and the appearance in which a view draws. Each CPImage method
+    forwards to the resolved image; the methods of CPImage subclasses forward through
+    -forwardingTargetForSelector:. When there is no image, a system image is an empty, loaded
+    image of size zero.
+*/
+@implementation _CPSystemImage : CPImage
+{
+    CPString    _systemImageName;
+    CGSize      _sizeOverride;
+    CPImage     _observedImage;
+}
+
+- (id)_initWithSystemImageName:(CPString)aName
+{
+    self = [super initByReferencingFile:@"" size:CGSizeMakeZero()];
+
+    if (self)
+        _systemImageName = aName;
+
+    return self;
+}
+
+- (CPImage)_resolvedImage
+{
+    return _CPSystemImageValue(_systemImageName, [CPAppearance currentDrawingAppearance]);
+}
+
+// MARK: Name
+
+- (CPString)name
+{
+    return _systemImageName;
+}
+
+/*
+    The name of a system image is fixed.
+*/
+- (BOOL)setName:(CPString)aName
+{
+    return aName === _systemImageName;
+}
+
+// MARK: Forwarding
+
+- (CPString)filename
+{
+    var resolvedImage = [self _resolvedImage];
+
+    return resolvedImage ? [resolvedImage filename] : @"";
+}
+
+- (CPData)data
+{
+    return [[self _resolvedImage] data];
+}
+
+/*
+    A size set with -setSize: replaces the size of the resolved image, as for any shared named
+    image.
+*/
+- (void)setSize:(CGSize)aSize
+{
+    _sizeOverride = CGSizeMakeCopy(aSize);
+}
+
+- (CGSize)size
+{
+    if (_sizeOverride)
+        return CGSizeMakeCopy(_sizeOverride);
+
+    var resolvedImage = [self _resolvedImage];
+
+    return resolvedImage ? [resolvedImage size] : CGSizeMakeZero();
+}
+
+- (Image)image
+{
+    return [[self _resolvedImage] image];
+}
+
+- (unsigned)loadStatus
+{
+    var resolvedImage = [self _resolvedImage];
+
+    if (!resolvedImage)
+        return CPImageLoadStatusCompleted;
+
+    [self _observeImage:resolvedImage];
+
+    return [resolvedImage loadStatus];
+}
+
+- (void)load
+{
+    var resolvedImage = [self _resolvedImage];
+
+    [self _observeImage:resolvedImage];
+    [resolvedImage load];
+}
+
+- (BOOL)isSingleImage
+{
+    var resolvedImage = [self _resolvedImage];
+
+    return resolvedImage ? [resolvedImage isSingleImage] : YES;
+}
+
+- (BOOL)isThreePartImage
+{
+    return !![[self _resolvedImage] isThreePartImage];
+}
+
+- (BOOL)isNinePartImage
+{
+    return !![[self _resolvedImage] isNinePartImage];
+}
+
+- (BOOL)isMaterialIconImage
+{
+    return !![[self _resolvedImage] isMaterialIconImage];
+}
+
+- (BOOL)isCSSBased
+{
+    return !![[self _resolvedImage] isCSSBased];
+}
+
+- (BOOL)hasCSSDictionary
+{
+    return !![[self _resolvedImage] hasCSSDictionary];
+}
+
+- (BOOL)hasCSSBeforeDictionary
+{
+    return !![[self _resolvedImage] hasCSSBeforeDictionary];
+}
+
+- (BOOL)hasCSSAfterDictionary
+{
+    return !![[self _resolvedImage] hasCSSAfterDictionary];
+}
+
+- (CPDictionary)cssDictionary
+{
+    return [[self _resolvedImage] cssDictionary];
+}
+
+- (CPDictionary)cssBeforeDictionary
+{
+    return [[self _resolvedImage] cssBeforeDictionary];
+}
+
+- (CPDictionary)cssAfterDictionary
+{
+    return [[self _resolvedImage] cssAfterDictionary];
+}
+
+- (DOMElement)applyCSSImageForView:(CPView)aView onDOMElement:(DOMElement)aDOMElement styleNode:(DOMElement)aStyleNode previousState:(CPArrayRef)aPreviousStateRef
+{
+    return [[self _resolvedImage] applyCSSImageForView:aView onDOMElement:aDOMElement styleNode:aStyleNode previousState:aPreviousStateRef];
+}
+
+- (BOOL)_shouldBeResized
+{
+    return !![[self _resolvedImage] _shouldBeResized];
+}
+
+- (void)drawAtPoint:(CGPoint)point fromRect:(CPRect)fromRect operation:(CGBlendMode)op fraction:(float)delta
+{
+    [[self _resolvedImage] drawAtPoint:point fromRect:fromRect operation:op fraction:delta];
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector
+{
+    return [super respondsToSelector:aSelector] || [[self _resolvedImage] respondsToSelector:aSelector];
+}
+
+- (id)forwardingTargetForSelector:(SEL)aSelector
+{
+    var resolvedImage = [self _resolvedImage];
+
+    return [resolvedImage respondsToSelector:aSelector] ? resolvedImage : [super forwardingTargetForSelector:aSelector];
+}
+
+- (CPString)description
+{
+    return [CPString stringWithFormat:@"System image %@: %@", _systemImageName, [[self _resolvedImage] description]];
+}
+
+// MARK: Loading
+
+/*
+    A view that finds the image not yet loaded waits for CPImageDidLoadNotification from the
+    system image, so the system image posts it when the resolved image loads.
+*/
+- (void)_observeImage:(CPImage)anImage
+{
+    if (!anImage || anImage === _observedImage || [anImage loadStatus] === CPImageLoadStatusCompleted)
+        return;
+
+    var center = [CPNotificationCenter defaultCenter];
+
+    if (_observedImage)
+        [center removeObserver:self name:CPImageDidLoadNotification object:_observedImage];
+
+    _observedImage = anImage;
+
+    [center addObserver:self selector:@selector(_observedImageDidLoad:) name:CPImageDidLoadNotification object:anImage];
+}
+
+- (void)_observedImageDidLoad:(CPNotification)aNotification
+{
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_observedImage];
+
+    _observedImage = nil;
+
+    [self _imageDidLoad];
+}
+
+// MARK: Coding
+
+- (Class)classForKeyedArchiver
+{
+    return [CPImage class];
+}
+
+/*
+    A system image is archived by its name, so that it decodes to the shared system image.
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_systemImageName forKey:CPImageSystemImageNameKey];
 }
 
 @end

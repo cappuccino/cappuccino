@@ -113,6 +113,26 @@ var themedButtonValues                      = nil,
 
     placeholderColor                = regularDisabledTextColor;
 
+/*
+    Returns an icon of 16 by 16 points that fills the shape of the mask image aMaskImage (a CSS
+    url) with the colour aColor (a CSS colour).
+*/
+function A3MaskIcon(aMaskImage, aColor)
+{
+    return [CPImage imageWithCSSDictionary:@{
+                                             "-webkit-mask-image": aMaskImage,
+                                             "mask-image": aMaskImage,
+                                             "background-color": aColor,
+                                             "-webkit-mask-size": "contain",
+                                             "mask-size": "contain",
+                                             "-webkit-mask-repeat": "no-repeat",
+                                             "mask-repeat": "no-repeat",
+                                             "-webkit-mask-position": "center",
+                                             "mask-position": "center"
+                                            }
+                                     size:CGSizeMake(16,16)];
+}
+
 @implementation Aristo3ThemeDescriptor : BKThemeDescriptor
 
 + (CPString)themeName
@@ -136,6 +156,7 @@ var themedButtonValues                      = nil,
             "themedCornerview",
             "themedTokenFieldTokenCloseButton",
             "themedColor",
+            "themedImage",
             "themedView",
             "themedFont"
             ];
@@ -230,6 +251,25 @@ var themedButtonValues                      = nil,
     [self registerThemeValues:themedColorValues forObject:color];
 
     return color;
+}
+
+/*
+    The system images that this theme gives (see +[CPImage imageNamed:]): the icons of the
+    button bar's buttons.
+*/
++ (CPImage)themedImage
+{
+    var image = [[CPImage alloc] init],
+        themedImageValues =
+    [
+     [@"add-template",       A3MaskIcon(svgPlus, A3ColorActiveText)],
+     [@"remove-template",    A3MaskIcon(svgMinus, A3ColorActiveText)],
+     [@"action-template",    A3MaskIcon(svgGear, A3ColorActiveText)]
+    ];
+
+    [self registerThemeValues:themedImageValues forObject:image];
+
+    return image;
 }
 
 + (CPButton)makeButton
@@ -6723,111 +6763,16 @@ var themedButtonValues                      = nil,
                                                         }],
 
     // --- ICONS (Standard) ---
-    plusIcon = [CPImage imageWithCSSDictionary:@{
-                                                 "-webkit-mask-image": svgPlus,
-                                                 "mask-image": svgPlus,
-                                                 "background-color": A3ColorActiveText,
-                                                 "-webkit-mask-size": "contain",
-                                                 "mask-size": "contain",
-                                                 "-webkit-mask-repeat": "no-repeat",
-                                                 "mask-repeat": "no-repeat",
-                                                 "-webkit-mask-position": "center",
-                                                 "mask-position": "center"
-                                                }
-                                         size:CGSizeMake(16,16)],
-
-    minusIcon =  [CPImage imageWithCSSDictionary:@{
-                                                   "-webkit-mask-image": svgMinus,
-                                                   "mask-image": svgMinus,
-                                                   "background-color": A3ColorActiveText,
-                                                   "-webkit-mask-size": "contain",
-                                                   "mask-size": "contain",
-                                                   "-webkit-mask-repeat": "no-repeat",
-                                                   "mask-repeat": "no-repeat",
-                                                   "-webkit-mask-position": "center",
-                                                   "mask-position": "center"
-                                                  }
-                                             size:CGSizeMake(16,16)],
-
-    actionIcon = [CPImage imageWithCSSDictionary:@{
-                                                   "-webkit-mask-image": svgGear,
-                                                   "mask-image": svgGear,
-                                                   "background-color": A3ColorActiveText,
-                                                   "-webkit-mask-size": "contain",
-                                                   "mask-size": "contain",
-                                                   "-webkit-mask-repeat": "no-repeat",
-                                                   "mask-repeat": "no-repeat",
-                                                   "-webkit-mask-position": "center",
-                                                   "mask-position": "center"
-                                                  }
-                                             size:CGSizeMake(16,16)],
-
-     actionIconHighlighted = [CPImage imageWithCSSDictionary:@{
-                                                   "-webkit-mask-image": svgGear2,
-                                                   "mask-image": svgGear2,
-                                                   "background-color": A3ColorActiveText,
-                                                   "-webkit-mask-size": "contain",
-                                                   "mask-size": "contain",
-                                                   "-webkit-mask-repeat": "no-repeat",
-                                                   "mask-repeat": "no-repeat",
-                                                   "-webkit-mask-position": "center",
-                                                   "mask-position": "center"
-                                                  }
-                                                size:CGSizeMake(16,16)],
+    plusIcon = A3MaskIcon(svgPlus, A3ColorActiveText),
+    minusIcon = A3MaskIcon(svgMinus, A3ColorActiveText),
+    actionIcon = A3MaskIcon(svgGear, A3ColorActiveText),
+    actionIconHighlighted = A3MaskIcon(svgGear2, A3ColorActiveText),
 
     // --- HUD ICONS (White) ---
-    plusIconHUD = [CPImage imageWithCSSDictionary:@{
-                                                 "-webkit-mask-image": svgPlus,
-                                                 "mask-image": svgPlus,
-                                                 "background-color": @"#FFFFFF",
-                                                 "-webkit-mask-size": "contain",
-                                                 "mask-size": "contain",
-                                                 "-webkit-mask-repeat": "no-repeat",
-                                                 "mask-repeat": "no-repeat",
-                                                 "-webkit-mask-position": "center",
-                                                 "mask-position": "center"
-                                                }
-                                         size:CGSizeMake(16,16)],
-
-    minusIconHUD =  [CPImage imageWithCSSDictionary:@{
-                                                   "-webkit-mask-image": svgMinus,
-                                                   "mask-image": svgMinus,
-                                                   "background-color": @"#FFFFFF",
-                                                   "-webkit-mask-size": "contain",
-                                                   "mask-size": "contain",
-                                                   "-webkit-mask-repeat": "no-repeat",
-                                                   "mask-repeat": "no-repeat",
-                                                   "-webkit-mask-position": "center",
-                                                   "mask-position": "center"
-                                                  }
-                                             size:CGSizeMake(16,16)],
-
-    actionIconHUD = [CPImage imageWithCSSDictionary:@{
-                                                   "-webkit-mask-image": svgGear,
-                                                   "mask-image": svgGear,
-                                                   "background-color": @"#FFFFFF",
-                                                   "-webkit-mask-size": "contain",
-                                                   "mask-size": "contain",
-                                                   "-webkit-mask-repeat": "no-repeat",
-                                                   "mask-repeat": "no-repeat",
-                                                   "-webkit-mask-position": "center",
-                                                   "mask-position": "center"
-                                                  }
-                                             size:CGSizeMake(16,16)],
-
-     actionIconHighlightedHUD = [CPImage imageWithCSSDictionary:@{
-                                                   "-webkit-mask-image": svgGear2, 
-                                                   "mask-image": svgGear2,
-                                                   "background-color": @"#FFFFFF",
-                                                   "-webkit-mask-size": "contain",
-                                                   "mask-size": "contain",
-                                                   "-webkit-mask-repeat": "no-repeat",
-                                                   "mask-repeat": "no-repeat",
-                                                   "-webkit-mask-position": "center",
-                                                   "mask-position": "center"
-                                                  }
-                                                size:CGSizeMake(16,16)],
-
+    plusIconHUD = A3MaskIcon(svgPlus, @"#FFFFFF"),
+    minusIconHUD = A3MaskIcon(svgMinus, @"#FFFFFF"),
+    actionIconHUD = A3MaskIcon(svgGear, @"#FFFFFF"),
+    actionIconHighlightedHUD = A3MaskIcon(svgGear2, @"#FFFFFF"),
 
     themedButtonBarValues =
     [

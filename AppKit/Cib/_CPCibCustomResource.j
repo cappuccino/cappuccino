@@ -28,16 +28,12 @@
 
 @import "CPCompatibility.j"
 @import "CPImage.j"
-@import "CPTheme.j"
 
-@class CPButtonBar
 @class CPView
 
 var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     _CPCibCustomResourceResourceNameKey = @"_CPCibCustomResourceResourceNameKey",
-    _CPCibCustomResourcePropertiesKey   = @"_CPCibCustomResourcePropertiesKey",
-
-    _CPCibCustomResourceTemplateImageMap = nil;
+    _CPCibCustomResourcePropertiesKey   = @"_CPCibCustomResourcePropertiesKey";
 
 
 @implementation _CPCibCustomResource : CPObject
@@ -48,19 +44,6 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     CPBundle        _bundle;
 }
 
-+ (void)initialize
-{
-    if (self !== [_CPCibCustomResource class])
-        return;
-
-    _CPCibCustomResourceTemplateImageMap = @{
-        "CPAddTemplate":    "button-image-plus",
-        "CPRemoveTemplate": "button-image-minus",
-        "CPActionTemplate": "button-image-action",
-        "CPMenuCheckmark":  [CPNull null],
-        "CPMenuMixedState": [CPNull null]
-    };
-}
 + (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize
 {
     return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:@{ @"size": aSize }];
@@ -127,18 +110,20 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
                 return [CPImage imageWithMaterialIconNamed:iconName size:CGSizeMake(16,16)];
             }
 
-            var templateImage = [_CPCibCustomResourceTemplateImageMap objectForKey:_resourceName];
-
-            // Default checkmarks are handled by the theme so just let it be nil
-            if (templateImage !== [CPNull null])
-            {
-                if (templateImage)
-                    return [[CPTheme defaultTheme] valueForAttributeWithName:templateImage forClass:[CPButtonBar class]];
-                else
-                    return [self imageFromCoder:aCoder];
-            }
-            else
+            /*
+                nib2cib writes CPMenuCheckmark and CPMenuMixedState for the default state images
+                of a menu item (NSMenuCheckmark and NSMenuMixedState in the XIB). The menu item
+                theme draws the default state images, so these names give nil.
+            */
+            if (_resourceName === @"CPMenuCheckmark" || _resourceName === @"CPMenuMixedState")
                 return nil;
+
+            var systemImage = [CPImage _systemImageNamed:_resourceName];
+
+            if (systemImage)
+                return systemImage;
+
+            return [self imageFromCoder:aCoder];
         }
 
     return self;

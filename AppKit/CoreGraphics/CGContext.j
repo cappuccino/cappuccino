@@ -1332,7 +1332,12 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
 
 function CGContextDrawImage(aContext, aRect, anImage)
 {
-    aContext.drawImage(anImage._image, CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+    /*
+        The image element comes from -image, not from the _image instance variable. A system
+        image (_CPSystemImage) has no element of its own, so _image drew nothing for it; -image
+        returns the element of the image that the system image resolves to.
+    */
+    aContext.drawImage([anImage image], CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
     aContext.hasPath = NO;
 }
 
