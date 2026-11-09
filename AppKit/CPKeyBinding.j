@@ -23,19 +23,15 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPArray.j>
 
+@import "CPCompatibility.j"
 @import "CPEvent_Constants.j"
 @import "CPText.j"
 
-// TODO: These are the macOS standard key bindings and are applied on every
-// platform. "@" is always Command, and the Emacs-style Control bindings
-// (^a, ^e, ^k, ^v, ^y, ...) and arrow/Home/End behaviour conflict with
-// Windows and Linux conventions. Provide per-platform tables keyed off
-// CPBrowserIsOperatingSystem, mapping the primary modifier through
-// CPPlatformActionKeyMask.
-CPStandardKeyBindings = {
-    @"@.": @"cancelOperation:",
+var isMac = CPBrowserIsOperatingSystem(CPMacOperatingSystem),
+    actionModifier = CPPlatformActionKeyMask === CPCommandKeyMask ? @"@" : @"^";
 
-    @"@a": @"selectAll:",
+CPStandardKeyBindings = isMac ? {
+    @"@.": @"cancelOperation:",
     @"@~$v": @"pasteAsPlainText:",
     @"^a": @"moveToBeginningOfParagraph:",
     @"^$a": @"moveToBeginningOfParagraphAndModifySelection:",
@@ -62,91 +58,132 @@ CPStandardKeyBindings = {
     @"^v": @"pageDown:",
     @"^$v": @"pageDownAndModifySelection:",
     @"^y": @"yank:"
+} : {
+    @"^v": @"paste:",
+    @"^$v": @"pasteAsPlainText:",
+    @"^y": @"redo:"
 };
+
+CPStandardKeyBindings[actionModifier + @"a"] = @"selectAll:";
 
 CPStandardKeyBindings[CPNewlineCharacter] = @"insertNewline:";
 CPStandardKeyBindings[CPCarriageReturnCharacter] = @"insertNewline:";
 CPStandardKeyBindings[CPEnterCharacter] = @"insertNewline:";
-CPStandardKeyBindings[@"~" + CPNewlineCharacter] = @"insertNewlineIgnoringFieldEditor:";
-CPStandardKeyBindings[@"~" + CPCarriageReturnCharacter] = @"insertNewlineIgnoringFieldEditor:";
-CPStandardKeyBindings[@"~" + CPEnterCharacter] = @"insertNewlineIgnoringFieldEditor:";
 CPStandardKeyBindings[@"^" + CPNewlineCharacter] = @"insertLineBreak:";
 CPStandardKeyBindings[@"^" + CPCarriageReturnCharacter] = @"insertLineBreak:";
 CPStandardKeyBindings[@"^" + CPEnterCharacter] = @"insertLineBreak:";
 
 CPStandardKeyBindings[CPBackspaceCharacter] = @"deleteBackward:";
-CPStandardKeyBindings[@"~" + CPBackspaceCharacter] = @"deleteWordBackward:";
 CPStandardKeyBindings[CPDeleteCharacter] = @"deleteBackward:";
-CPStandardKeyBindings[@"@" + CPDeleteCharacter] = @"deleteToBeginningOfLine:";
-CPStandardKeyBindings[@"~" + CPDeleteCharacter] = @"deleteWordBackward:";
-CPStandardKeyBindings[@"^" + CPDeleteCharacter] = @"deleteBackwardByDecomposingPreviousCharacter:";
-CPStandardKeyBindings[@"^~" + CPDeleteCharacter] = @"deleteWordBackward:";
-
 CPStandardKeyBindings[CPDeleteFunctionKey] = @"deleteForward:";
-CPStandardKeyBindings[@"~" + CPDeleteFunctionKey] = @"deleteWordForward:";
 
 CPStandardKeyBindings[CPTabCharacter] = @"insertTab:";
-CPStandardKeyBindings[@"~" + CPTabCharacter] = @"insertTabIgnoringFieldEditor:";
 CPStandardKeyBindings[@"^" + CPTabCharacter] = @"selectNextKeyView:";
 CPStandardKeyBindings[@"$" + CPTabCharacter] = @"insertBacktab:";
 CPStandardKeyBindings[CPBackTabCharacter] = @"insertBacktab:";
 CPStandardKeyBindings[@"^" + CPBackTabCharacter] = @"selectPreviousKeyView:";
 
 CPStandardKeyBindings[CPEscapeFunctionKey] = @"cancelOperation:";
-CPStandardKeyBindings[@"~" + CPEscapeFunctionKey] = @"complete:";
-CPStandardKeyBindings[CPF5FunctionKey] = @"complete:";
 
 CPStandardKeyBindings[CPLeftArrowFunctionKey] = @"moveLeft:";
-CPStandardKeyBindings[@"~" + CPLeftArrowFunctionKey] = @"moveWordLeft:";
-CPStandardKeyBindings[@"^" + CPLeftArrowFunctionKey] = @"moveToLeftEndOfLine:";
-CPStandardKeyBindings[@"@" + CPLeftArrowFunctionKey] = @"moveToLeftEndOfLine:";
 CPStandardKeyBindings[@"$" + CPLeftArrowFunctionKey] = @"moveLeftAndModifySelection:";
-CPStandardKeyBindings[@"$~" + CPLeftArrowFunctionKey] = @"moveWordLeftAndModifySelection:";
-CPStandardKeyBindings[@"$^" + CPLeftArrowFunctionKey] = @"moveToLeftEndOfLineAndModifySelection:";
-CPStandardKeyBindings[@"$@" + CPLeftArrowFunctionKey] = @"moveToLeftEndOfLineAndModifySelection:";
-CPStandardKeyBindings[@"@^" + CPLeftArrowFunctionKey] = @"makeBaseWritingDirectionRightToLeft:";
-CPStandardKeyBindings[@"@^~" + CPLeftArrowFunctionKey] = @"makeTextWritingDirectionRightToLeft:";
 
 CPStandardKeyBindings[CPRightArrowFunctionKey] = @"moveRight:";
-CPStandardKeyBindings[@"~" + CPRightArrowFunctionKey] = @"moveWordRight:";
-CPStandardKeyBindings[@"^" + CPRightArrowFunctionKey] = @"moveToRightEndOfLine:";
-CPStandardKeyBindings[@"@" + CPRightArrowFunctionKey] = @"moveToRightEndOfLine:";
 CPStandardKeyBindings[@"$" + CPRightArrowFunctionKey] = @"moveRightAndModifySelection:";
-CPStandardKeyBindings[@"$~" + CPRightArrowFunctionKey] = @"moveWordRightAndModifySelection:";
-CPStandardKeyBindings[@"$^" + CPRightArrowFunctionKey] = @"moveToRightEndOfLineAndModifySelection:";
-CPStandardKeyBindings[@"$@" + CPRightArrowFunctionKey] = @"moveToRightEndOfLineAndModifySelection:";
-CPStandardKeyBindings[@"@^" + CPRightArrowFunctionKey] = @"makeBaseWritingDirectionLeftToRight:";
-CPStandardKeyBindings[@"@^~" + CPRightArrowFunctionKey] = @"makeTextWritingDirectionLeftToRight:";
 
 CPStandardKeyBindings[CPUpArrowFunctionKey] = @"moveUp:";
-CPStandardKeyBindings[@"~" + CPUpArrowFunctionKey] = [@"moveBackward:", @"moveToBeginningOfParagraph:"];
-CPStandardKeyBindings[@"^" + CPUpArrowFunctionKey] = @"scrollPageUp:";
-CPStandardKeyBindings[@"@" + CPUpArrowFunctionKey] = @"moveToBeginningOfDocument:";
 CPStandardKeyBindings[@"$" + CPUpArrowFunctionKey] = @"moveUpAndModifySelection:";
-CPStandardKeyBindings[@"$~" + CPUpArrowFunctionKey] = @"moveParagraphBackwardAndModifySelection:";
-CPStandardKeyBindings[@"$@" + CPUpArrowFunctionKey] = @"moveToBeginningOfDocumentAndModifySelection:";
 
 CPStandardKeyBindings[CPDownArrowFunctionKey] = @"moveDown:";
-CPStandardKeyBindings[@"~" + CPDownArrowFunctionKey] = [@"moveForward:", @"moveToEndOfParagraph:"];
-CPStandardKeyBindings[@"^" + CPDownArrowFunctionKey] = @"scrollPageDown:";
-CPStandardKeyBindings[@"@" + CPDownArrowFunctionKey] = @"moveToEndOfDocument:";
 CPStandardKeyBindings[@"$" + CPDownArrowFunctionKey] = @"moveDownAndModifySelection:";
-CPStandardKeyBindings[@"$~" + CPDownArrowFunctionKey] = @"moveParagraphForwardAndModifySelection:";
-CPStandardKeyBindings[@"$@" + CPDownArrowFunctionKey] = @"moveToEndOfDocumentAndModifySelection:";
-CPStandardKeyBindings[@"@^" + CPDownArrowFunctionKey] = @"makeBaseWritingDirectionNatural:";
-CPStandardKeyBindings[@"@^~" + CPDownArrowFunctionKey] = @"makeTextWritingDirectionNatural:";
-
-CPStandardKeyBindings[CPHomeFunctionKey] = @"scrollToBeginningOfDocument:";
-CPStandardKeyBindings[@"$" + CPHomeFunctionKey] = @"moveToBeginningOfDocumentAndModifySelection:";
-CPStandardKeyBindings[CPEndFunctionKey] = @"scrollToEndOfDocument:";
-CPStandardKeyBindings[@"$" + CPEndFunctionKey] = @"moveToEndOfDocumentAndModifySelection:";
 
 CPStandardKeyBindings[CPPageUpFunctionKey] = @"scrollPageUp:";
-CPStandardKeyBindings[@"~" + CPPageUpFunctionKey] = @"pageUp:";
 CPStandardKeyBindings[@"$" + CPPageUpFunctionKey] = @"pageUpAndModifySelection:";
+
 CPStandardKeyBindings[CPPageDownFunctionKey] = @"scrollPageDown:";
-CPStandardKeyBindings[@"~" + CPPageDownFunctionKey] = @"pageDown:";
 CPStandardKeyBindings[@"$" + CPPageDownFunctionKey] = @"pageDownAndModifySelection:";
+
+if (isMac)
+{
+    CPStandardKeyBindings[@"~" + CPNewlineCharacter] = @"insertNewlineIgnoringFieldEditor:";
+    CPStandardKeyBindings[@"~" + CPCarriageReturnCharacter] = @"insertNewlineIgnoringFieldEditor:";
+    CPStandardKeyBindings[@"~" + CPEnterCharacter] = @"insertNewlineIgnoringFieldEditor:";
+
+    CPStandardKeyBindings[@"~" + CPBackspaceCharacter] = @"deleteWordBackward:";
+    CPStandardKeyBindings[@"@" + CPDeleteCharacter] = @"deleteToBeginningOfLine:";
+    CPStandardKeyBindings[@"~" + CPDeleteCharacter] = @"deleteWordBackward:";
+    CPStandardKeyBindings[@"^" + CPDeleteCharacter] = @"deleteBackwardByDecomposingPreviousCharacter:";
+    CPStandardKeyBindings[@"^~" + CPDeleteCharacter] = @"deleteWordBackward:";
+    CPStandardKeyBindings[@"~" + CPDeleteFunctionKey] = @"deleteWordForward:";
+
+    CPStandardKeyBindings[@"~" + CPTabCharacter] = @"insertTabIgnoringFieldEditor:";
+
+    CPStandardKeyBindings[@"~" + CPEscapeFunctionKey] = @"complete:";
+
+    CPStandardKeyBindings[CPF5FunctionKey] = @"complete:";
+
+    CPStandardKeyBindings[@"~" + CPLeftArrowFunctionKey] = @"moveWordLeft:";
+    CPStandardKeyBindings[@"^" + CPLeftArrowFunctionKey] = @"moveToLeftEndOfLine:";
+    CPStandardKeyBindings[@"@" + CPLeftArrowFunctionKey] = @"moveToLeftEndOfLine:";
+    CPStandardKeyBindings[@"$~" + CPLeftArrowFunctionKey] = @"moveWordLeftAndModifySelection:";
+    CPStandardKeyBindings[@"$^" + CPLeftArrowFunctionKey] = @"moveToLeftEndOfLineAndModifySelection:";
+    CPStandardKeyBindings[@"$@" + CPLeftArrowFunctionKey] = @"moveToLeftEndOfLineAndModifySelection:";
+    CPStandardKeyBindings[@"@^" + CPLeftArrowFunctionKey] = @"makeBaseWritingDirectionRightToLeft:";
+    CPStandardKeyBindings[@"@^~" + CPLeftArrowFunctionKey] = @"makeTextWritingDirectionRightToLeft:";
+
+    CPStandardKeyBindings[@"~" + CPRightArrowFunctionKey] = @"moveWordRight:";
+    CPStandardKeyBindings[@"^" + CPRightArrowFunctionKey] = @"moveToRightEndOfLine:";
+    CPStandardKeyBindings[@"@" + CPRightArrowFunctionKey] = @"moveToRightEndOfLine:";
+    CPStandardKeyBindings[@"$~" + CPRightArrowFunctionKey] = @"moveWordRightAndModifySelection:";
+    CPStandardKeyBindings[@"$^" + CPRightArrowFunctionKey] = @"moveToRightEndOfLineAndModifySelection:";
+    CPStandardKeyBindings[@"$@" + CPRightArrowFunctionKey] = @"moveToRightEndOfLineAndModifySelection:";
+    CPStandardKeyBindings[@"@^" + CPRightArrowFunctionKey] = @"makeBaseWritingDirectionLeftToRight:";
+    CPStandardKeyBindings[@"@^~" + CPRightArrowFunctionKey] = @"makeTextWritingDirectionLeftToRight:";
+
+    CPStandardKeyBindings[@"~" + CPUpArrowFunctionKey] = [@"moveBackward:", @"moveToBeginningOfParagraph:"];
+    CPStandardKeyBindings[@"^" + CPUpArrowFunctionKey] = @"scrollPageUp:";
+    CPStandardKeyBindings[@"@" + CPUpArrowFunctionKey] = @"moveToBeginningOfDocument:";
+    CPStandardKeyBindings[@"$~" + CPUpArrowFunctionKey] = @"moveParagraphBackwardAndModifySelection:";
+    CPStandardKeyBindings[@"$@" + CPUpArrowFunctionKey] = @"moveToBeginningOfDocumentAndModifySelection:";
+
+    CPStandardKeyBindings[@"~" + CPDownArrowFunctionKey] = [@"moveForward:", @"moveToEndOfParagraph:"];
+    CPStandardKeyBindings[@"^" + CPDownArrowFunctionKey] = @"scrollPageDown:";
+    CPStandardKeyBindings[@"@" + CPDownArrowFunctionKey] = @"moveToEndOfDocument:";
+    CPStandardKeyBindings[@"$~" + CPDownArrowFunctionKey] = @"moveParagraphForwardAndModifySelection:";
+    CPStandardKeyBindings[@"$@" + CPDownArrowFunctionKey] = @"moveToEndOfDocumentAndModifySelection:";
+    CPStandardKeyBindings[@"@^" + CPDownArrowFunctionKey] = @"makeBaseWritingDirectionNatural:";
+    CPStandardKeyBindings[@"@^~" + CPDownArrowFunctionKey] = @"makeTextWritingDirectionNatural:";
+
+    CPStandardKeyBindings[CPHomeFunctionKey] = @"scrollToBeginningOfDocument:";
+    CPStandardKeyBindings[@"$" + CPHomeFunctionKey] = @"moveToBeginningOfDocumentAndModifySelection:";
+
+    CPStandardKeyBindings[CPEndFunctionKey] = @"scrollToEndOfDocument:";
+    CPStandardKeyBindings[@"$" + CPEndFunctionKey] = @"moveToEndOfDocumentAndModifySelection:";
+
+    CPStandardKeyBindings[@"~" + CPPageUpFunctionKey] = @"pageUp:";
+
+    CPStandardKeyBindings[@"~" + CPPageDownFunctionKey] = @"pageDown:";
+}
+else
+{
+    CPStandardKeyBindings[@"^" + CPBackspaceCharacter] = @"deleteWordBackward:";
+    CPStandardKeyBindings[@"^" + CPDeleteCharacter] = @"deleteWordBackward:";
+    CPStandardKeyBindings[@"^" + CPDeleteFunctionKey] = @"deleteWordForward:";
+
+    CPStandardKeyBindings[@"^" + CPLeftArrowFunctionKey] = @"moveWordLeft:";
+    CPStandardKeyBindings[@"^$" + CPLeftArrowFunctionKey] = @"moveWordLeftAndModifySelection:";
+    CPStandardKeyBindings[@"^" + CPRightArrowFunctionKey] = @"moveWordRight:";
+    CPStandardKeyBindings[@"^$" + CPRightArrowFunctionKey] = @"moveWordRightAndModifySelection:";
+
+    CPStandardKeyBindings[CPHomeFunctionKey] = @"moveToLeftEndOfLine:";
+    CPStandardKeyBindings[@"$" + CPHomeFunctionKey] = @"moveToLeftEndOfLineAndModifySelection:";
+    CPStandardKeyBindings[@"^" + CPHomeFunctionKey] = @"moveToBeginningOfDocument:";
+    CPStandardKeyBindings[@"^$" + CPHomeFunctionKey] = @"moveToBeginningOfDocumentAndModifySelection:";
+    CPStandardKeyBindings[CPEndFunctionKey] = @"moveToRightEndOfLine:";
+    CPStandardKeyBindings[@"$" + CPEndFunctionKey] = @"moveToRightEndOfLineAndModifySelection:";
+    CPStandardKeyBindings[@"^" + CPEndFunctionKey] = @"moveToEndOfDocument:";
+    CPStandardKeyBindings[@"^$" + CPEndFunctionKey] = @"moveToEndOfDocumentAndModifySelection:";
+}
 
 var CPKeyBindingCache = {};
 
