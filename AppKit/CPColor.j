@@ -29,6 +29,9 @@
 @import "CPAppearance.j"
 @import "CPCompatibility.j"
 @import "CPImage.j"
+@import "_CPAssetCatalog.j"
+
+@global _CPRaiseInvalidAbstractInvocation
 
 
 /*!
@@ -635,6 +638,32 @@ function _CPSystemColorValue(aName, anAppearance)
         color = _CPSystemColors[aColorName] = [[_CPCatalogColor alloc] _initWithCatalogName:_CPColorSystemCatalogName colorName:aColorName];
 
     return color;
+}
+
+/*!
+    Returns the colour named \c aName in the main bundle's asset catalog, or \c nil if there
+    is none (see +colorNamed:bundle:).
+    @param aName the name of the colour
+    @return the named colour, or \c nil
+*/
++ (CPColor)colorNamed:(CPString)aName
+{
+    return [self colorNamed:aName bundle:nil];
+}
+
+/*!
+    Returns the colour named \c aName in the asset catalog of \c aBundle, or \c nil if there
+    is none. A \c nil bundle means the main bundle. The asset catalog comes from the
+    bundle's \c .xcassets directories, which the build compiles. An asset colour keeps its
+    name and resolves to the catalog's value for the current drawing appearance (see
+    +[CPAppearance currentDrawingAppearance]) whenever it is used.
+    @param aName the name of the colour
+    @param aBundle the bundle that holds the asset catalog, or \c nil for the main bundle
+    @return the named colour, or \c nil
+*/
++ (CPColor)colorNamed:(CPString)aName bundle:(CPBundle)aBundle
+{
+    return [[_CPAssetCatalog catalogForBundle:aBundle] colorNamed:aName];
 }
 
 /*
@@ -1598,7 +1627,9 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
     CPColorCssAfterDictionaryKey    = @"CPColorCssAfterDictionaryKey",
     CPColorCatalogNameKey           = @"CPColorCatalogNameKey",
     CPColorNameKey                  = @"CPColorNameKey",
-    CPColorCatalogAlphaKey          = @"CPColorCatalogAlphaKey";
+    CPColorCatalogAlphaKey          = @"CPColorCatalogAlphaKey",
+    CPColorAssetNameKey             = @"CPColorAssetNameKey",
+    CPColorAssetBundlePathKey       = @"CPColorAssetBundlePathKey";
 /// @endcond
 
 @implementation CPColor (CPCoding)
@@ -1618,6 +1649,18 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
             catalogColor = [catalogColor colorWithAlphaComponent:[aCoder decodeFloatForKey:CPColorCatalogAlphaKey]];
 
         return catalogColor;
+    }
+
+    if ([aCoder containsValueForKey:CPColorAssetNameKey])
+    {
+        var bundlePath = [aCoder decodeObjectForKey:CPColorAssetBundlePathKey],
+            bundle = bundlePath ? [CPBundle bundleWithPath:bundlePath] : [CPBundle mainBundle],
+            assetColor = [CPColor colorNamed:[aCoder decodeObjectForKey:CPColorAssetNameKey] bundle:bundle];
+
+        if (assetColor && [aCoder containsValueForKey:CPColorCatalogAlphaKey])
+            assetColor = [assetColor colorWithAlphaComponent:[aCoder decodeFloatForKey:CPColorCatalogAlphaKey]];
+
+        return assetColor;
     }
 
     if ([aCoder containsValueForKey:CPColorPatternImageKey])
@@ -1658,51 +1701,52 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
 
 
 /*
-    A colour of a catalog, such as the System catalog. It keeps its catalog name and colour
-    name and resolves to a value whenever it is used, so that it follows the current theme and
-    the current drawing appearance. Every method that reads the colour's value reads the
-    resolved colour. A colour made with -colorWithAlphaComponent: stays a catalog colour and
-    replaces the alpha of the resolved colour.
+    A colour whose value depends on the drawing appearance. It holds no value of its own and
+    resolves to a colour whenever it is used (see -_resolvedColor), so that it follows the
+    current theme and the current drawing appearance. Every method that reads the colour's
+    value reads the resolved colour. A colour made with -colorWithAlphaComponent: stays
+    dynamic and replaces the alpha of the resolved colour. Subclasses implement
+    -_valueInAppearance: and -_dynamicCopy.
 */
-@implementation _CPCatalogColor : CPColor
+@implementation _CPDynamicColor : CPColor
 {
-    CPString    _catalogName;
-    CPString    _colorName;
     float       _alphaOverride;
 }
 
-- (id)_initWithCatalogName:(CPString)aCatalogName colorName:(CPString)aColorName
+- (id)_initDynamicColor
 {
     self = [super init];
 
     if (self)
-    {
-        _catalogName = aCatalogName;
-        _colorName = aColorName;
         _alphaOverride = nil;
-    }
 
     return self;
 }
 
+/*
+    Returns the colour's value in anAppearance, before any alpha override.
+*/
+- (CPColor)_valueInAppearance:(CPAppearance)anAppearance
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+}
+
+/*
+    Returns a new colour of the receiver's kind and name, without alpha override.
+*/
+- (_CPDynamicColor)_dynamicCopy
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+}
+
 - (CPColor)_resolvedColor
 {
-    var color = _CPSystemColorValue(_colorName, [CPAppearance currentDrawingAppearance]);
+    var color = [self _valueInAppearance:[CPAppearance currentDrawingAppearance]];
 
     if (_alphaOverride !== nil)
         color = [color colorWithAlphaComponent:_alphaOverride];
 
     return color;
-}
-
-- (CPString)catalogNameComponent
-{
-    return _catalogName;
-}
-
-- (CPString)colorNameComponent
-{
-    return _colorName;
 }
 
 - (CPImage)patternImage
@@ -1747,7 +1791,7 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
 
 - (CPColor)colorWithAlphaComponent:(float)anAlphaComponent
 {
-    var color = [[_CPCatalogColor alloc] _initWithCatalogName:_catalogName colorName:_colorName];
+    var color = [self _dynamicCopy];
 
     color._alphaOverride = anAlphaComponent;
 
@@ -1815,6 +1859,63 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
     [[self _resolvedColor] setStroke];
 }
 
+- (Class)classForKeyedArchiver
+{
+    return [CPColor class];
+}
+
+- (void)_encodeAlphaOverrideWithCoder:(CPCoder)aCoder
+{
+    if (_alphaOverride !== nil)
+        [aCoder encodeFloat:_alphaOverride forKey:CPColorCatalogAlphaKey];
+}
+
+@end
+
+
+/*
+    A colour of a catalog, such as the System catalog. It keeps its catalog name and colour
+    name and takes its value from the current theme (see _CPSystemColorValue).
+*/
+@implementation _CPCatalogColor : _CPDynamicColor
+{
+    CPString    _catalogName;
+    CPString    _colorName;
+}
+
+- (id)_initWithCatalogName:(CPString)aCatalogName colorName:(CPString)aColorName
+{
+    self = [super _initDynamicColor];
+
+    if (self)
+    {
+        _catalogName = aCatalogName;
+        _colorName = aColorName;
+    }
+
+    return self;
+}
+
+- (CPColor)_valueInAppearance:(CPAppearance)anAppearance
+{
+    return _CPSystemColorValue(_colorName, anAppearance);
+}
+
+- (_CPDynamicColor)_dynamicCopy
+{
+    return [[_CPCatalogColor alloc] _initWithCatalogName:_catalogName colorName:_colorName];
+}
+
+- (CPString)catalogNameComponent
+{
+    return _catalogName;
+}
+
+- (CPString)colorNameComponent
+{
+    return _colorName;
+}
+
 /*
     Two catalog colours are equal when they name the same colour with the same alpha. A
     catalog colour and a colour of fixed value are equal when the catalog colour resolves
@@ -1836,18 +1937,81 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
     return @"Catalog color: " + _catalogName + @" " + _colorName + (_alphaOverride !== nil ? @", alpha " + _alphaOverride : @"");
 }
 
-- (Class)classForKeyedArchiver
-{
-    return [CPColor class];
-}
-
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_catalogName forKey:CPColorCatalogNameKey];
     [aCoder encodeObject:_colorName forKey:CPColorNameKey];
+    [self _encodeAlphaOverrideWithCoder:aCoder];
+}
 
-    if (_alphaOverride !== nil)
-        [aCoder encodeFloat:_alphaOverride forKey:CPColorCatalogAlphaKey];
+@end
+
+
+/*
+    A colour of a bundle's asset catalog (see +colorNamed:bundle:). It keeps its name and
+    catalog and takes its value from the catalog's entry for the appearance. It is archived by
+    its name and, outside the main bundle, its bundle path.
+*/
+@implementation _CPAssetColor : _CPDynamicColor
+{
+    CPString            _assetName;
+    _CPAssetCatalog     _catalog;
+}
+
+- (id)_initWithAssetName:(CPString)aName catalog:(_CPAssetCatalog)aCatalog
+{
+    self = [super _initDynamicColor];
+
+    if (self)
+    {
+        _assetName = aName;
+        _catalog = aCatalog;
+    }
+
+    return self;
+}
+
+- (CPColor)_valueInAppearance:(CPAppearance)anAppearance
+{
+    return [_catalog _colorValueForAssetNamed:_assetName appearance:anAppearance];
+}
+
+- (_CPDynamicColor)_dynamicCopy
+{
+    return [[_CPAssetColor alloc] _initWithAssetName:_assetName catalog:_catalog];
+}
+
+/*
+    Two asset colours are equal when they name the same asset of the same catalog with the
+    same alpha. An asset colour and a colour of fixed value are equal when the asset colour
+    resolves to that value.
+*/
+- (BOOL)isEqual:(CPColor)aColor
+{
+    if (aColor === self)
+        return YES;
+
+    if ([aColor isKindOfClass:[_CPAssetColor class]])
+        return _assetName === aColor._assetName && _catalog === aColor._catalog && _alphaOverride === aColor._alphaOverride;
+
+    return [[self _resolvedColor] isEqual:aColor];
+}
+
+- (CPString)description
+{
+    return @"Asset color: " + _assetName + (_alphaOverride !== nil ? @", alpha " + _alphaOverride : @"");
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    var bundle = [_catalog bundle];
+
+    [aCoder encodeObject:_assetName forKey:CPColorAssetNameKey];
+
+    if (bundle !== [CPBundle mainBundle])
+        [aCoder encodeObject:[bundle bundlePath] forKey:CPColorAssetBundlePathKey];
+
+    [self _encodeAlphaOverrideWithCoder:aCoder];
 }
 
 @end

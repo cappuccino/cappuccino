@@ -36,9 +36,12 @@
 @import "CPGraphicsContext.j"
 @import "CPTheme.j"
 
+@import "_CPAssetCatalog.j"
+
 @class CPColor
 @class _CPSystemImage
 @global document
+@global _CPRaiseInvalidAbstractInvocation
 
 @protocol CPImageDelegate <CPObject>
 
@@ -139,6 +142,8 @@ CPImageNameColorPanelHighlighted                = @"CPImageNameColorPanelHighlig
 var imagesForNames = { },
     ImageDescriptionFormat = "%s {\n   filename: \"%s\",\n   size: { width:%f, height:%f }\n}",
     CPImageSystemImageNameKey = @"CPImageSystemImageNameKey",
+    CPImageAssetNameKey = @"CPImageAssetNameKey",
+    CPImageAssetBundlePathKey = @"CPImageAssetBundlePathKey",
 
     /*
         The system image names, each with its default image: the AppKit resource that holds the
@@ -508,16 +513,22 @@ function _CPSystemImageValue(aName, anAppearance)
 
 /*!
     Returns the image with the name \c aName: an image registered under that name with
-    -setName:, or else the system image of that name, such as CPImageNameAddTemplate. A system
-    image takes its picture from the current theme and the drawing appearance each time it is
-    used, so it follows a theme switch. +imageNamed: returns one shared instance for each
-    system image.
+    -setName:, else the image of that name in the main bundle's asset catalog, else the system
+    image of that name, such as CPImageNameAddTemplate. An asset image or a system image takes
+    its picture from the asset catalog or the current theme, for the drawing appearance, each
+    time it is used, so it follows the appearance and a theme switch. +imageNamed: returns one
+    shared instance for each asset image and each system image.
     @param aName the name of the image
     @return the image, or \c nil when no image has that name
 */
 + (id)imageNamed:(CPString)aName
 {
     var image = imagesForNames[aName];
+
+    if (image)
+        return image;
+
+    image = [[_CPAssetCatalog catalogForBundle:[CPBundle mainBundle]] imageNamed:aName];
 
     if (image)
         return image;
@@ -537,7 +548,7 @@ function _CPSystemImageValue(aName, anAppearance)
     var image = _CPSystemImages[aName];
 
     if (!image)
-        image = _CPSystemImages[aName] = [[_CPSystemImage alloc] _initWithSystemImageName:aName];
+        image = _CPSystemImages[aName] = [[_CPSystemImage alloc] _initWithDynamicImageName:aName];
 
     return image;
 }
@@ -991,6 +1002,14 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
     if ([aCoder containsValueForKey:CPImageSystemImageNameKey])
         return [CPImage _systemImageNamed:[aCoder decodeObjectForKey:CPImageSystemImageNameKey]];
 
+    if ([aCoder containsValueForKey:CPImageAssetNameKey])
+    {
+        var bundlePath = [aCoder decodeObjectForKey:CPImageAssetBundlePathKey],
+            bundle = bundlePath ? [CPBundle bundleWithPath:bundlePath] : [CPBundle mainBundle];
+
+        return [[_CPAssetCatalog catalogForBundle:bundle] imageNamed:[aCoder decodeObjectForKey:CPImageAssetNameKey]];
+    }
+
     if ([aCoder containsValueForKey:CPImageCSSDictionaryKey])
         return [self initWithCSSDictionary:[aCoder decodeObjectForKey:CPImageCSSDictionaryKey] beforeDictionary:[aCoder decodeObjectForKey:CPImageCSSBeforeDictionaryKey] afterDictionary:[aCoder decodeObjectForKey:CPImageCSSAfterDictionaryKey] size:[aCoder decodeSizeForKey:@"CPSize"]];
     else
@@ -1372,48 +1391,45 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
 // MARK: -
 
 /*
-    A system image keeps its name and resolves to an image each time it is used: the current
-    theme's image for the drawing appearance, or the default image (see _CPSystemImageValue). So
-    it follows a theme switch and the appearance in which a view draws. Each CPImage method
-    forwards to the resolved image; the methods of CPImage subclasses forward through
-    -forwardingTargetForSelector:. When there is no image, a system image is an empty, loaded
-    image of size zero.
+    A dynamic image holds no picture of its own and resolves to an image each time it is used
+    (see -_resolvedImage), so that it follows a theme switch and the appearance in which a view
+    draws. Each CPImage method forwards to the resolved image; the methods of CPImage
+    subclasses forward through -forwardingTargetForSelector:. When there is no image, a dynamic
+    image is an empty, loaded image of size zero. Subclasses implement -_resolvedImage and
+    -encodeWithCoder:.
 */
-@implementation _CPSystemImage : CPImage
+@implementation _CPDynamicImage : CPImage
 {
-    CPString    _systemImageName;
     CGSize      _sizeOverride;
     CPImage     _observedImage;
 }
 
-- (id)_initWithSystemImageName:(CPString)aName
+- (id)_initWithDynamicImageName:(CPString)aName
 {
     self = [super initByReferencingFile:@"" size:CGSizeMakeZero()];
 
     if (self)
-        _systemImageName = aName;
+        _name = aName;
 
     return self;
 }
 
+/*
+    Returns the image that the receiver stands for in the current drawing appearance, or nil.
+*/
 - (CPImage)_resolvedImage
 {
-    return _CPSystemImageValue(_systemImageName, [CPAppearance currentDrawingAppearance]);
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 // MARK: Name
 
-- (CPString)name
-{
-    return _systemImageName;
-}
-
 /*
-    The name of a system image is fixed.
+    The name of a dynamic image is fixed.
 */
 - (BOOL)setName:(CPString)aName
 {
-    return aName === _systemImageName;
+    return aName === _name;
 }
 
 // MARK: Forwarding
@@ -1558,10 +1574,6 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
     return [resolvedImage respondsToSelector:aSelector] ? resolvedImage : [super forwardingTargetForSelector:aSelector];
 }
 
-- (CPString)description
-{
-    return [CPString stringWithFormat:@"System image %@: %@", _systemImageName, [[self _resolvedImage] description]];
-}
 
 // MARK: Loading
 
@@ -1600,12 +1612,110 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
     return [CPImage class];
 }
 
+@end
+
+
 /*
-    A system image is archived by its name, so that it decodes to the shared system image.
+    A system image resolves to the current theme's image for the drawing appearance, or to the
+    default image (see _CPSystemImageValue). It is archived by its name, so that it decodes to
+    the shared system image.
 */
+@implementation _CPSystemImage : _CPDynamicImage
+
+- (CPImage)_resolvedImage
+{
+    return _CPSystemImageValue(_name, [CPAppearance currentDrawingAppearance]);
+}
+
+- (CPString)description
+{
+    return [CPString stringWithFormat:@"System image %@: %@", _name, [[self _resolvedImage] description]];
+}
+
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_systemImageName forKey:CPImageSystemImageNameKey];
+    [aCoder encodeObject:_name forKey:CPImageSystemImageNameKey];
+}
+
+@end
+
+
+/*
+    An image of a bundle's asset catalog (see +imageNamed:). It resolves to the catalog's image
+    for the drawing appearance and the display scale. It is archived by its name and, outside
+    the main bundle, its bundle path.
+*/
+@implementation _CPAssetImage : _CPDynamicImage
+{
+    _CPAssetCatalog     _catalog;
+}
+
+- (id)_initWithAssetName:(CPString)aName catalog:(_CPAssetCatalog)aCatalog
+{
+    self = [super _initWithDynamicImageName:aName];
+
+    if (self)
+        _catalog = aCatalog;
+
+    return self;
+}
+
+- (CPImage)_resolvedImage
+{
+    return [_catalog _imageValueForAssetNamed:_name appearance:[CPAppearance currentDrawingAppearance]];
+}
+
+- (CPString)description
+{
+    return [CPString stringWithFormat:@"Asset image %@: %@", _name, [[self _resolvedImage] description]];
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    var bundle = [_catalog bundle];
+
+    [aCoder encodeObject:_name forKey:CPImageAssetNameKey];
+
+    if (bundle !== [CPBundle mainBundle])
+        [aCoder encodeObject:[bundle bundlePath] forKey:CPImageAssetBundlePathKey];
+}
+
+@end
+
+
+/*
+    An image file of an asset catalog. Its size is its pixel size divided by its scale, as an
+    image of scale 2x covers the area of half its pixel size.
+*/
+@implementation _CPScaledImage : CPImage
+{
+    float   _scale;
+}
+
+- (id)_initWithContentsOfFile:(CPString)aFilename scale:(float)aScale
+{
+    self = [self initByReferencingFile:aFilename size:CGSizeMake(-1, -1)];
+
+    if (self)
+    {
+        _scale = aScale;
+        [self load];
+    }
+
+    return self;
+}
+
+- (float)_scale
+{
+    return _scale;
+}
+
+- (void)_imageDidLoad
+{
+    if (_scale !== 1.0 && (!_size || (_size.width == -1 && _size.height == -1)))
+        _size = CGSizeMake(_image.width / _scale, _image.height / _scale);
+
+    [super _imageDidLoad];
 }
 
 @end
