@@ -101,6 +101,56 @@ CPThemeStateAppearanceLightContent     = CPThemeState("appearance-light-content"
 CPThemeStateAppearanceVibrantLight     = CPThemeState("appearance-vibrant-light");
 CPThemeStateAppearanceVibrantDark      = CPThemeState("appearance-vibrant-dark");
 
+/*
+    These states key the value that a theme gives a named colour for an appearance (see
+    CPColor.j). A view takes only the four appearance states above as its own state.
+*/
+CPThemeStateAppearanceDarkAqua                              = CPThemeState("appearance-dark-aqua");
+CPThemeStateAppearanceAccessibilityHighContrastAqua         = CPThemeState("appearance-accessibility-high-contrast-aqua");
+CPThemeStateAppearanceAccessibilityHighContrastDarkAqua     = CPThemeState("appearance-accessibility-high-contrast-dark-aqua");
+CPThemeStateAppearanceAccessibilityHighContrastVibrantLight = CPThemeState("appearance-accessibility-high-contrast-vibrant-light");
+CPThemeStateAppearanceAccessibilityHighContrastVibrantDark  = CPThemeState("appearance-accessibility-high-contrast-vibrant-dark");
+
+/*
+    Returns the theme state that keys a theme's values for the appearance named aName, or
+    nil for a name without one.
+*/
+function _CPThemeStateForAppearanceName(aName)
+{
+    switch (aName)
+    {
+        case CPAppearanceNameAqua:
+            return CPThemeStateAppearanceAqua;
+
+        case CPAppearanceNameDarkAqua:
+            return CPThemeStateAppearanceDarkAqua;
+
+        case CPAppearanceNameLightContent:
+            return CPThemeStateAppearanceLightContent;
+
+        case CPAppearanceNameVibrantLight:
+            return CPThemeStateAppearanceVibrantLight;
+
+        case CPAppearanceNameVibrantDark:
+            return CPThemeStateAppearanceVibrantDark;
+
+        case CPAppearanceNameAccessibilityHighContrastAqua:
+            return CPThemeStateAppearanceAccessibilityHighContrastAqua;
+
+        case CPAppearanceNameAccessibilityHighContrastDarkAqua:
+            return CPThemeStateAppearanceAccessibilityHighContrastDarkAqua;
+
+        case CPAppearanceNameAccessibilityHighContrastVibrantLight:
+            return CPThemeStateAppearanceAccessibilityHighContrastVibrantLight;
+
+        case CPAppearanceNameAccessibilityHighContrastVibrantDark:
+            return CPThemeStateAppearanceAccessibilityHighContrastVibrantDark;
+
+        default:
+            return nil;
+    }
+}
+
 
 /*!
     @ingroup appkit

@@ -26,6 +26,7 @@
 @import "CGColor.j"
 
 @import "_CPObject+Theme.j"
+@import "CPAppearance.j"
 @import "CPCompatibility.j"
 @import "CPImage.j"
 
@@ -65,11 +66,150 @@ var cachedBlackColor,
     cachedMagentaColor,
     cachedOrangeColor,
     cachedPurpleColor,
-    cachedShadowColor,
     cachedClearColor,
     cachedThemeColor;
 
+/*
+    The catalog that holds the system colours, as in AppKit.
+*/
+var _CPColorSystemCatalogName = @"System";
+
+/*
+    The colours of the System catalog, with each colour's value when the current theme gives
+    it none. These are the names that Interface Builder writes into a XIB and that AppKit
+    resolves, including older names that it still resolves and one private name. Where
+    Cappuccino already produced a value, the entry keeps it: the four colours that CPColor
+    and Aristo2 already defined, and the three that nib2cib maps (controlColor,
+    controlBackgroundColor, gridColor). Every other entry is AppKit's value for the Aqua
+    appearance on macOS 27, in sRGB.
+*/
+var _CPSystemColorDefaults = {
+        "_sourceListBackgroundColor":                   [0.9647, 0.9647, 0.9647, 0.8],
+        "alternateSelectedControlColor":                [0.22, 0.46, 0.84, 1.0],
+        "alternateSelectedControlTextColor":            [1.0, 1.0, 1.0, 1.0],
+        "alternatingContentBackgroundColor":            [0.9569, 0.9608, 0.9608, 1.0],
+        "controlAccentColor":                           [0.0, 0.4784, 1.0, 1.0],
+        "controlBackgroundColor":                       [1.0, 1.0, 1.0, 1.0],
+        "controlColor":                                 [175.0 / 255.0, 175.0 / 255.0, 175.0 / 255.0, 1.0],
+        "controlDarkShadowColor":                       [0.0, 0.0, 0.0, 1.0],
+        "controlHighlightColor":                        [1.0, 1.0, 1.0, 1.0],
+        "controlLightHighlightColor":                   [1.0, 1.0, 1.0, 1.0],
+        "controlShadowColor":                           [0.0, 0.0, 0.0, 0.2667],
+        "controlTextColor":                             [0.0, 0.0, 0.0, 0.8471],
+        "disabledControlTextColor":                     [0.0, 0.0, 0.0, 0.2471],
+        "findHighlightColor":                           [1.0, 1.0, 0.0, 1.0],
+        "gridColor":                                    [204.0 / 255.0, 204.0 / 255.0, 204.0 / 255.0, 1.0],
+        "headerColor":                                  [0.6667, 0.6667, 0.6667, 1.0],
+        "headerTextColor":                              [0.0, 0.0, 0.0, 0.8471],
+        "highlightColor":                               [1.0, 1.0, 1.0, 1.0],
+        "keyboardFocusIndicatorColor":                  [0.0, 0.4039, 0.9569, 0.498],
+        "knobColor":                                    [0.6, 0.6, 0.7333, 1.0],
+        "labelColor":                                   [0.0, 0.0, 0.0, 0.8471],
+        "linkColor":                                    [0.0, 0.4078, 0.8549, 1.0],
+        "placeholderTextColor":                         [0.0, 0.0, 0.0, 0.498],
+        "quaternaryLabelColor":                         [0.0, 0.0, 0.0, 0.098],
+        "quaternarySystemFillColor":                    [0.0, 0.0, 0.0, 0.0275],
+        "quinaryLabelColor":                            [0.0, 0.0, 0.0, 0.0471],
+        "quinarySystemFillColor":                       [0.0, 0.0, 0.0, 0.0078],
+        "scrollBarColor":                               [0.6667, 0.6667, 0.6667, 1.0],
+        "secondaryLabelColor":                          [0.0, 0.0, 0.0, 0.498],
+        "secondarySelectedControlColor":                [0.83, 0.83, 0.83, 1.0],
+        "secondarySystemFillColor":                     [0.0, 0.0, 0.0, 0.0784],
+        "selectedContentBackgroundColor":               [0.0, 0.3922, 0.8824, 1.0],
+        "selectedControlColor":                         [0.702, 0.702, 0.702, 1.0],
+        "selectedControlTextColor":                     [0.0, 0.0, 0.0, 0.8471],
+        "selectedKnobColor":                            [0.4, 0.4, 0.6, 1.0],
+        "selectedMenuItemColor":                        [0.2588, 0.4667, 0.9569, 1.0],
+        "selectedMenuItemTextColor":                    [1.0, 1.0, 1.0, 1.0],
+        "selectedTextBackgroundColor":                  [0.6, 0.8, 1.0, 1.0],
+        "selectedTextColor":                            [1.0, 1.0, 1.0, 1.0],
+        "separatorColor":                               [0.0, 0.0, 0.0, 0.1],
+        "shadowColor":                                  [0.0, 0.0, 0.0, 1.0 / 3.0],
+        "systemBlueColor":                              [0.0, 0.5333, 1.0, 1.0],
+        "systemBrownColor":                             [0.6745, 0.498, 0.3686, 1.0],
+        "systemCyanColor":                              [0.0, 0.7529, 0.9098, 1.0],
+        "systemFillColor":                              [0.0, 0.0, 0.0, 0.098],
+        "systemGrayColor":                              [0.5569, 0.5569, 0.5765, 1.0],
+        "systemGreenColor":                             [0.2039, 0.7804, 0.349, 1.0],
+        "systemIndigoColor":                            [0.3804, 0.3333, 0.9608, 1.0],
+        "systemMintColor":                              [0.0, 0.7843, 0.702, 1.0],
+        "systemOrangeColor":                            [1.0, 0.5529, 0.1569, 1.0],
+        "systemPinkColor":                              [1.0, 0.1765, 0.3333, 1.0],
+        "systemPurpleColor":                            [0.7961, 0.1882, 0.8784, 1.0],
+        "systemRedColor":                               [1.0, 0.2196, 0.2353, 1.0],
+        "systemTealColor":                              [0.0, 0.7647, 0.8157, 1.0],
+        "systemYellowColor":                            [1.0, 0.8, 0.0, 1.0],
+        "tertiaryLabelColor":                           [0.0, 0.0, 0.0, 0.2588],
+        "tertiarySystemFillColor":                      [0.0, 0.0, 0.0, 0.0471],
+        "textBackgroundColor":                          [1.0, 1.0, 1.0, 1.0],
+        "textColor":                                    [0.0, 0.0, 0.0, 1.0],
+        "textInsertionPointColor":                      [0.0, 0.0, 0.0, 1.0],
+        "underPageBackgroundColor":                     [0.9647, 0.9647, 0.9647, 1.0],
+        "unemphasizedSelectedContentBackgroundColor":   [0.8627, 0.8627, 0.8627, 1.0],
+        "unemphasizedSelectedTextBackgroundColor":      [0.8627, 0.8627, 0.8627, 1.0],
+        "unemphasizedSelectedTextColor":                [0.0, 0.0, 0.0, 1.0],
+        "windowBackgroundColor":                        [1.0, 1.0, 1.0, 1.0],
+        "windowFrameColor":                             [0.6667, 0.6667, 0.6667, 1.0],
+        "windowFrameTextColor":                         [0.0, 0.0, 0.0, 0.8471]
+    },
+    _CPSystemColors = {},
+    _CPSystemColorDefaultValues = {};
+
+/*
+    Returns the theme attribute of CPColor that holds a theme's values for the system colour
+    aName: the name in lower case with words joined by hyphens, as the attributes that CPColor
+    already had (alternateSelectedControlColor is "alternate-selected-control-color"). A
+    private name keeps its leading underscore.
+*/
+function _CPThemeAttributeForSystemColorName(aName)
+{
+    var isPrivate = aName.charAt(0) === "_",
+        baseName = isPrivate ? aName.substring(1) : aName;
+
+    return (isPrivate ? "_" : "") + baseName.replace(/([A-Z])/g, "-$1").toLowerCase();
+}
+
+/*
+    Returns the value of the system colour aName for anAppearance. The current theme's value
+    for the closest appearance comes first, in the order of
+    -[CPAppearance bestMatchFromAppearancesWithNames:]; then the theme's value for every
+    appearance; then the value in _CPSystemColorDefaults.
+*/
+function _CPSystemColorValue(aName, anAppearance)
+{
+    var attribute = [[CPTheme defaultTheme] attributeWithName:_CPThemeAttributeForSystemColorName(aName) forClass:[CPColor defaultThemeClass]],
+        values = [attribute values];
+
+    if (values)
+    {
+        var matchingNames = _CPAppearanceMatchingNames([anAppearance name]);
+
+        for (var i = 0, count = matchingNames.length; i < count; i++)
+        {
+            var state = _CPThemeStateForAppearanceName(matchingNames[i]),
+                value = state ? [values objectForKey:String(state)] : nil;
+
+            if (value)
+                return value;
+        }
+
+        var normalValue = [values objectForKey:String(CPThemeStateNormal)];
+
+        if (normalValue)
+            return normalValue;
+    }
+
+    var defaultValue = _CPSystemColorDefaultValues[aName];
+
+    if (!defaultValue)
+        defaultValue = _CPSystemColorDefaultValues[aName] = [[CPColor alloc] _initWithRGBA:_CPSystemColorDefaults[aName].slice()];
+
+    return defaultValue;
+}
+
 /// @endcond
+
+@class _CPCatalogColor
 
 /*!
     @ingroup appkit
@@ -97,15 +237,29 @@ var cachedBlackColor,
     return "color";
 }
 
+/*
+    Besides its own attributes, CPColor has one attribute for each system colour, which holds
+    the theme's values for that colour (see _CPSystemColorValue).
+*/
 + (CPDictionary)themeAttributes
 {
-    return @{
+    var attributes = @{
             @"alternate-selected-control-color":        [CPNull null],
             @"secondary-selected-control-color":        [CPNull null],
             @"selected-text-background-color":          [CPNull null],
             @"selected-text-inactive-background-color": [CPNull null],
             @"css-based":                               NO
         };
+
+    for (var colorName in _CPSystemColorDefaults)
+    {
+        var attributeName = _CPThemeAttributeForSystemColorName(colorName);
+
+        if (![attributes containsKey:attributeName])
+            [attributes setObject:[CPNull null] forKey:attributeName];
+    }
+
+    return attributes;
 }
 
 
@@ -439,15 +593,12 @@ var cachedBlackColor,
 }
 
 /*!
-    Returns a shadow looking color (RGBA=[0.0, 0.0, 0.0, 0.33])
+    Returns the shadow colour of the System catalog. Unless the theme gives it another value,
+    it is black with an alpha of 1/3 (RGBA=[0.0, 0.0, 0.0, 0.33]).
 */
-
 + (CPColor)shadowColor
 {
-    if (!cachedShadowColor)
-        cachedShadowColor = [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 0.0, 1.0 / 3.0]];
-
-    return cachedShadowColor;
+    return [self _systemColorNamed:@"shadowColor"];
 }
 
 /*!
@@ -470,14 +621,380 @@ var cachedBlackColor,
     return cachedThemeColor;
 }
 
+// MARK: -
+// MARK: System Colors
+
+/*!
+    Returns the colour named \c aColorName in the catalog named \c aCatalogName, or \c nil if
+    there is none. The System catalog holds the system colours, such as \c labelColor and
+    \c windowBackgroundColor, which Interface Builder writes into a XIB by name. A catalog
+    colour keeps its name and resolves to a value whenever it is used: the current theme's
+    value for the current drawing appearance (see
+    +[CPAppearance currentDrawingAppearance]), or the colour's default when the theme gives
+    none.
+    @param aCatalogName the name of the catalog
+    @param aColorName the name of the colour
+    @return the named colour, or \c nil
+*/
++ (CPColor)colorWithCatalogName:(CPString)aCatalogName colorName:(CPString)aColorName
+{
+    if (aCatalogName !== _CPColorSystemCatalogName || !_CPSystemColorDefaults.hasOwnProperty(aColorName))
+        return nil;
+
+    return [self _systemColorNamed:aColorName];
+}
+
++ (CPColor)_systemColorNamed:(CPString)aColorName
+{
+    var color = _CPSystemColors[aColorName];
+
+    if (!color)
+        color = _CPSystemColors[aColorName] = [[_CPCatalogColor alloc] _initWithCatalogName:_CPColorSystemCatalogName colorName:aColorName];
+
+    return color;
+}
+
+/*
+    The system colours. Each method returns the colour of that name in the System catalog,
+    which resolves against the current theme and the current drawing appearance (see
+    +colorWithCatalogName:colorName:).
+*/
 + (CPColor)alternateSelectedControlColor
 {
-    return [[self _cachedThemeColor] valueForThemeAttribute:@"alternate-selected-control-color"];
+    return [self _systemColorNamed:@"alternateSelectedControlColor"];
+}
+
++ (CPColor)alternateSelectedControlTextColor
+{
+    return [self _systemColorNamed:@"alternateSelectedControlTextColor"];
+}
+
++ (CPColor)alternatingContentBackgroundColor
+{
+    return [self _systemColorNamed:@"alternatingContentBackgroundColor"];
+}
+
++ (CPColor)controlAccentColor
+{
+    return [self _systemColorNamed:@"controlAccentColor"];
+}
+
++ (CPColor)controlBackgroundColor
+{
+    return [self _systemColorNamed:@"controlBackgroundColor"];
+}
+
++ (CPColor)controlColor
+{
+    return [self _systemColorNamed:@"controlColor"];
+}
+
++ (CPColor)controlDarkShadowColor
+{
+    return [self _systemColorNamed:@"controlDarkShadowColor"];
+}
+
++ (CPColor)controlHighlightColor
+{
+    return [self _systemColorNamed:@"controlHighlightColor"];
+}
+
++ (CPColor)controlLightHighlightColor
+{
+    return [self _systemColorNamed:@"controlLightHighlightColor"];
+}
+
++ (CPColor)controlShadowColor
+{
+    return [self _systemColorNamed:@"controlShadowColor"];
+}
+
++ (CPColor)controlTextColor
+{
+    return [self _systemColorNamed:@"controlTextColor"];
+}
+
++ (CPColor)disabledControlTextColor
+{
+    return [self _systemColorNamed:@"disabledControlTextColor"];
+}
+
++ (CPColor)findHighlightColor
+{
+    return [self _systemColorNamed:@"findHighlightColor"];
+}
+
++ (CPColor)gridColor
+{
+    return [self _systemColorNamed:@"gridColor"];
+}
+
++ (CPColor)headerColor
+{
+    return [self _systemColorNamed:@"headerColor"];
+}
+
++ (CPColor)headerTextColor
+{
+    return [self _systemColorNamed:@"headerTextColor"];
+}
+
++ (CPColor)highlightColor
+{
+    return [self _systemColorNamed:@"highlightColor"];
+}
+
++ (CPColor)keyboardFocusIndicatorColor
+{
+    return [self _systemColorNamed:@"keyboardFocusIndicatorColor"];
+}
+
++ (CPColor)knobColor
+{
+    return [self _systemColorNamed:@"knobColor"];
+}
+
++ (CPColor)labelColor
+{
+    return [self _systemColorNamed:@"labelColor"];
+}
+
++ (CPColor)linkColor
+{
+    return [self _systemColorNamed:@"linkColor"];
+}
+
++ (CPColor)placeholderTextColor
+{
+    return [self _systemColorNamed:@"placeholderTextColor"];
+}
+
++ (CPColor)quaternaryLabelColor
+{
+    return [self _systemColorNamed:@"quaternaryLabelColor"];
+}
+
++ (CPColor)quaternarySystemFillColor
+{
+    return [self _systemColorNamed:@"quaternarySystemFillColor"];
+}
+
++ (CPColor)quinaryLabelColor
+{
+    return [self _systemColorNamed:@"quinaryLabelColor"];
+}
+
++ (CPColor)quinarySystemFillColor
+{
+    return [self _systemColorNamed:@"quinarySystemFillColor"];
+}
+
++ (CPColor)scrollBarColor
+{
+    return [self _systemColorNamed:@"scrollBarColor"];
+}
+
++ (CPColor)secondaryLabelColor
+{
+    return [self _systemColorNamed:@"secondaryLabelColor"];
 }
 
 + (CPColor)secondarySelectedControlColor
 {
-    return [[self _cachedThemeColor] valueForThemeAttribute:@"secondary-selected-control-color"];
+    return [self _systemColorNamed:@"secondarySelectedControlColor"];
+}
+
++ (CPColor)secondarySystemFillColor
+{
+    return [self _systemColorNamed:@"secondarySystemFillColor"];
+}
+
++ (CPColor)selectedContentBackgroundColor
+{
+    return [self _systemColorNamed:@"selectedContentBackgroundColor"];
+}
+
++ (CPColor)selectedControlColor
+{
+    return [self _systemColorNamed:@"selectedControlColor"];
+}
+
++ (CPColor)selectedControlTextColor
+{
+    return [self _systemColorNamed:@"selectedControlTextColor"];
+}
+
++ (CPColor)selectedKnobColor
+{
+    return [self _systemColorNamed:@"selectedKnobColor"];
+}
+
++ (CPColor)selectedMenuItemColor
+{
+    return [self _systemColorNamed:@"selectedMenuItemColor"];
+}
+
++ (CPColor)selectedMenuItemTextColor
+{
+    return [self _systemColorNamed:@"selectedMenuItemTextColor"];
+}
+
++ (CPColor)selectedTextColor
+{
+    return [self _systemColorNamed:@"selectedTextColor"];
+}
+
++ (CPColor)separatorColor
+{
+    return [self _systemColorNamed:@"separatorColor"];
+}
+
++ (CPColor)systemBlueColor
+{
+    return [self _systemColorNamed:@"systemBlueColor"];
+}
+
++ (CPColor)systemBrownColor
+{
+    return [self _systemColorNamed:@"systemBrownColor"];
+}
+
++ (CPColor)systemCyanColor
+{
+    return [self _systemColorNamed:@"systemCyanColor"];
+}
+
++ (CPColor)systemFillColor
+{
+    return [self _systemColorNamed:@"systemFillColor"];
+}
+
++ (CPColor)systemGrayColor
+{
+    return [self _systemColorNamed:@"systemGrayColor"];
+}
+
++ (CPColor)systemGreenColor
+{
+    return [self _systemColorNamed:@"systemGreenColor"];
+}
+
++ (CPColor)systemIndigoColor
+{
+    return [self _systemColorNamed:@"systemIndigoColor"];
+}
+
++ (CPColor)systemMintColor
+{
+    return [self _systemColorNamed:@"systemMintColor"];
+}
+
++ (CPColor)systemOrangeColor
+{
+    return [self _systemColorNamed:@"systemOrangeColor"];
+}
+
++ (CPColor)systemPinkColor
+{
+    return [self _systemColorNamed:@"systemPinkColor"];
+}
+
++ (CPColor)systemPurpleColor
+{
+    return [self _systemColorNamed:@"systemPurpleColor"];
+}
+
++ (CPColor)systemRedColor
+{
+    return [self _systemColorNamed:@"systemRedColor"];
+}
+
++ (CPColor)systemTealColor
+{
+    return [self _systemColorNamed:@"systemTealColor"];
+}
+
++ (CPColor)systemYellowColor
+{
+    return [self _systemColorNamed:@"systemYellowColor"];
+}
+
++ (CPColor)tertiaryLabelColor
+{
+    return [self _systemColorNamed:@"tertiaryLabelColor"];
+}
+
++ (CPColor)tertiarySystemFillColor
+{
+    return [self _systemColorNamed:@"tertiarySystemFillColor"];
+}
+
++ (CPColor)textBackgroundColor
+{
+    return [self _systemColorNamed:@"textBackgroundColor"];
+}
+
++ (CPColor)textColor
+{
+    return [self _systemColorNamed:@"textColor"];
+}
+
++ (CPColor)textInsertionPointColor
+{
+    return [self _systemColorNamed:@"textInsertionPointColor"];
+}
+
++ (CPColor)underPageBackgroundColor
+{
+    return [self _systemColorNamed:@"underPageBackgroundColor"];
+}
+
++ (CPColor)unemphasizedSelectedContentBackgroundColor
+{
+    return [self _systemColorNamed:@"unemphasizedSelectedContentBackgroundColor"];
+}
+
++ (CPColor)unemphasizedSelectedTextBackgroundColor
+{
+    return [self _systemColorNamed:@"unemphasizedSelectedTextBackgroundColor"];
+}
+
++ (CPColor)unemphasizedSelectedTextColor
+{
+    return [self _systemColorNamed:@"unemphasizedSelectedTextColor"];
+}
+
++ (CPColor)windowBackgroundColor
+{
+    return [self _systemColorNamed:@"windowBackgroundColor"];
+}
+
++ (CPColor)windowFrameColor
+{
+    return [self _systemColorNamed:@"windowFrameColor"];
+}
+
++ (CPColor)windowFrameTextColor
+{
+    return [self _systemColorNamed:@"windowFrameTextColor"];
+}
+
+/*!
+    Raises an exception: only a catalog colour has a catalog name, as in AppKit (see
+    +colorWithCatalogName:colorName:).
+*/
+- (CPString)catalogNameComponent
+{
+    [CPException raise:CPInvalidArgumentException reason:@"*** -catalogNameComponent is not valid for a color that is not a catalog color"];
+}
+
+/*!
+    Raises an exception: only a catalog colour has a colour name, as in AppKit (see
+    +colorWithCatalogName:colorName:).
+*/
+- (CPString)colorNameComponent
+{
+    [CPException raise:CPInvalidArgumentException reason:@"*** -colorNameComponent is not valid for a color that is not a catalog color"];
 }
 
 /*!
@@ -503,7 +1020,7 @@ var cachedBlackColor,
 
 + (CPColor)selectedTextBackgroundColor
 {
-    return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-background-color"] || [CPColor colorWithHexString:"99CCFF"];
+    return [self _systemColorNamed:@"selectedTextBackgroundColor"];
 }
 
 + (CPColor)_selectedTextBackgroundColorUnfocussed
@@ -1095,7 +1612,10 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
     CPColorPatternImageKey          = @"CPColorPatternImageKey",
     CPColorCssDictionaryKey         = @"CPColorCssDictionaryKey",
     CPColorCssBeforeDictionaryKey   = @"CPColorCssBeforeDictionaryKey",
-    CPColorCssAfterDictionaryKey    = @"CPColorCssAfterDictionaryKey";
+    CPColorCssAfterDictionaryKey    = @"CPColorCssAfterDictionaryKey",
+    CPColorCatalogNameKey           = @"CPColorCatalogNameKey",
+    CPColorNameKey                  = @"CPColorNameKey",
+    CPColorCatalogAlphaKey          = @"CPColorCatalogAlphaKey";
 /// @endcond
 
 @implementation CPColor (CPCoding)
@@ -1106,6 +1626,17 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
+    if ([aCoder containsValueForKey:CPColorCatalogNameKey])
+    {
+        var catalogColor = [CPColor colorWithCatalogName:[aCoder decodeObjectForKey:CPColorCatalogNameKey]
+                                               colorName:[aCoder decodeObjectForKey:CPColorNameKey]];
+
+        if (catalogColor && [aCoder containsValueForKey:CPColorCatalogAlphaKey])
+            catalogColor = [catalogColor colorWithAlphaComponent:[aCoder decodeFloatForKey:CPColorCatalogAlphaKey]];
+
+        return catalogColor;
+    }
+
     if ([aCoder containsValueForKey:CPColorPatternImageKey])
         self = [self _initWithPatternImage:[aCoder decodeObjectForKey:CPColorPatternImageKey]];
     else if ([aCoder containsValueForKey:CPColorCssDictionaryKey])
@@ -1138,6 +1669,202 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
         [aCoder encodeObject:_components forKey:CPColorComponentsKey];
 
     [self _encodeThemeObjectsWithCoder:aCoder];
+}
+
+@end
+
+
+/*
+    A colour of a catalog, such as the System catalog. It keeps its catalog name and colour
+    name and resolves to a value whenever it is used, so that it follows the current theme and
+    the current drawing appearance. Every method that reads the colour's value reads the
+    resolved colour. A colour made with -colorWithAlphaComponent: stays a catalog colour and
+    replaces the alpha of the resolved colour.
+*/
+@implementation _CPCatalogColor : CPColor
+{
+    CPString    _catalogName;
+    CPString    _colorName;
+    float       _alphaOverride;
+}
+
+- (id)_initWithCatalogName:(CPString)aCatalogName colorName:(CPString)aColorName
+{
+    self = [super init];
+
+    if (self)
+    {
+        _catalogName = aCatalogName;
+        _colorName = aColorName;
+        _alphaOverride = nil;
+    }
+
+    return self;
+}
+
+- (CPColor)_resolvedColor
+{
+    var color = _CPSystemColorValue(_colorName, [CPAppearance currentDrawingAppearance]);
+
+    if (_alphaOverride !== nil)
+        color = [color colorWithAlphaComponent:_alphaOverride];
+
+    return color;
+}
+
+- (CPString)catalogNameComponent
+{
+    return _catalogName;
+}
+
+- (CPString)colorNameComponent
+{
+    return _colorName;
+}
+
+- (CPImage)patternImage
+{
+    return [[self _resolvedColor] patternImage];
+}
+
+- (float)alphaComponent
+{
+    return [[self _resolvedColor] alphaComponent];
+}
+
+- (float)blueComponent
+{
+    return [[self _resolvedColor] blueComponent];
+}
+
+- (float)greenComponent
+{
+    return [[self _resolvedColor] greenComponent];
+}
+
+- (float)redComponent
+{
+    return [[self _resolvedColor] redComponent];
+}
+
+- (CPArray)components
+{
+    return [[self _resolvedColor] components];
+}
+
+- (CPArray)hsbComponents
+{
+    return [[self _resolvedColor] hsbComponents];
+}
+
+- (CPString)cssString
+{
+    return [[self _resolvedColor] cssString];
+}
+
+- (CPColor)colorWithAlphaComponent:(float)anAlphaComponent
+{
+    var color = [[_CPCatalogColor alloc] _initWithCatalogName:_catalogName colorName:_colorName];
+
+    color._alphaOverride = anAlphaComponent;
+
+    return color;
+}
+
+/*
+    Returns the resolved colour, as AppKit converts a catalog colour to a colour space.
+*/
+- (CPColor)colorUsingColorSpaceName:(id)aColorSpaceName
+{
+    return [self _resolvedColor];
+}
+
+- (BOOL)isCSSBased
+{
+    return [[self _resolvedColor] isCSSBased];
+}
+
+- (BOOL)hasCSSDictionary
+{
+    return [[self _resolvedColor] hasCSSDictionary];
+}
+
+- (BOOL)hasCSSBeforeDictionary
+{
+    return [[self _resolvedColor] hasCSSBeforeDictionary];
+}
+
+- (BOOL)hasCSSAfterDictionary
+{
+    return [[self _resolvedColor] hasCSSAfterDictionary];
+}
+
+- (CPDictionary)cssDictionary
+{
+    return [[self _resolvedColor] cssDictionary];
+}
+
+- (CPDictionary)cssBeforeDictionary
+{
+    return [[self _resolvedColor] cssBeforeDictionary];
+}
+
+- (CPDictionary)cssAfterDictionary
+{
+    return [[self _resolvedColor] cssAfterDictionary];
+}
+
+- (DOMElement)applyCSSColorForView:(CPView)aView onDOMElement:(DOMElement)aDOMElement styleNode:(DOMElement)aStyleNode previousState:(CPArrayRef)aPreviousStateRef
+{
+    return [[self _resolvedColor] applyCSSColorForView:aView onDOMElement:aDOMElement styleNode:aStyleNode previousState:aPreviousStateRef];
+}
+
+/*
+    Draws with the colour that the receiver has in the current drawing appearance.
+*/
+- (void)setFill
+{
+    [[self _resolvedColor] setFill];
+}
+
+- (void)setStroke
+{
+    [[self _resolvedColor] setStroke];
+}
+
+/*
+    Two catalog colours are equal when they name the same colour with the same alpha. A
+    catalog colour and a colour of fixed value are equal when the catalog colour resolves
+    to that value, as a system colour method returned a fixed colour before.
+*/
+- (BOOL)isEqual:(CPColor)aColor
+{
+    if (aColor === self)
+        return YES;
+
+    if ([aColor isKindOfClass:[_CPCatalogColor class]])
+        return _catalogName === aColor._catalogName && _colorName === aColor._colorName && _alphaOverride === aColor._alphaOverride;
+
+    return [[self _resolvedColor] isEqual:aColor];
+}
+
+- (CPString)description
+{
+    return @"Catalog color: " + _catalogName + @" " + _colorName + (_alphaOverride !== nil ? @", alpha " + _alphaOverride : @"");
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPColor class];
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_catalogName forKey:CPColorCatalogNameKey];
+    [aCoder encodeObject:_colorName forKey:CPColorNameKey];
+
+    if (_alphaOverride !== nil)
+        [aCoder encodeFloat:_alphaOverride forKey:CPColorCatalogAlphaKey];
 }
 
 @end
