@@ -400,9 +400,18 @@ function _CPAssetDisplayGamut()
     if (!resourceName)
         return nil;
 
-    var data = [[CPURL URLWithString:[aBundle pathForResource:resourceName]] staticResourceData];
+    var data = nil;
 
-    if (!data)
+    /*
+        A bundle whose static file lacks the table raised an exception into the caller of
+        +colorNamed: or +imageNamed:, since -staticResourceData throws for a resource that the
+        static file does not hold; it never returns nil. The bundle now has no catalog instead.
+    */
+    try
+    {
+        data = [[CPURL URLWithString:[aBundle pathForResource:resourceName]] staticResourceData];
+    }
+    catch (anException)
     {
         CPLog.warn("Asset catalog: bundle " + [aBundle bundlePath] + " names \"" + resourceName + "\", which is not in its static file");
         return nil;

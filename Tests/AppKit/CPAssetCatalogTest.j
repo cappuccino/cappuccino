@@ -79,6 +79,18 @@ function CPAssetCatalogTestContents()
     };
 }
 
+/*
+    A bundle whose Info.plist names an asset table that its static file does not hold.
+*/
+@implementation CPAssetCatalogTestUnbuiltBundle : CPBundle
+
+- (id)objectForInfoDictionaryKey:(CPString)aKey
+{
+    return aKey === @"CPAssetCatalog" ? @"Assets.json" : nil;
+}
+
+@end
+
 @implementation CPAssetCatalogTest : OJTestCase
 
 /*
@@ -131,6 +143,13 @@ function CPAssetCatalogTestContents()
 - (void)testABundleWithoutCatalogGivesNoColor
 {
     [self assertNull:[CPColor colorNamed:@"Background" bundle:[CPBundle bundleWithPath:@"CPAssetCatalogTestMissing.bundle"]]];
+}
+
+- (void)testABundleWhoseStaticFileLacksTheTableGivesNoColor
+{
+    var bundle = [[CPAssetCatalogTestUnbuiltBundle alloc] initWithPath:@"CPAssetCatalogTestUnbuilt.bundle"];
+
+    [self assertNull:[CPColor colorNamed:@"Background" bundle:bundle]];
 }
 
 - (void)testAnAssetColorTakesTheEntryForTheDrawingAppearance
