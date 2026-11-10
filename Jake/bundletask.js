@@ -31,6 +31,7 @@ const utilsFile = ObjectiveJ.utils.file;
 
 // Internal modules
 const environment = require("./environment");
+const assetCatalog = require("./assetcatalog");
 
 var task = JAKE.task;
 var Task = JAKE.Task;
@@ -312,6 +313,7 @@ BundleTask.prototype.buildProductDataURLPathForEnvironment = function(anEnvironm
 BundleTask.prototype.defineTasks = function()
 {
     this.defineResourceTasks();
+    this.defineAssetCatalogTasks();
     this.defineSourceTasks();
     this.defineInfoPlistTask();
     this.defineLicenseTask();
@@ -354,6 +356,8 @@ BundleTask.prototype.infoPlist = function()
     var principalClass = this.principalClass();
     if (principalClass)
         infoPlist.setValueForKey("CPPrincipalClass", principalClass);
+    if (this._assetCatalog)
+        infoPlist.setValueForKey("CPAssetCatalog", assetCatalog.AssetCatalogResourceName);
     return infoPlist;
 };
 BundleTask.prototype.defineInfoPlistTask = function()
@@ -373,6 +377,8 @@ BundleTask.prototype.defineInfoPlistTask = function()
             return;
         filedir(infoPlistProductPath, this.buildProductStaticPathForEnvironment(anEnvironment));
     }, this);
+    if (this._assetCatalogTablePaths && this._assetCatalogTablePaths.length)
+        filedir(infoPlistProductPath, this._assetCatalogTablePaths);
     this.enhance([infoPlistProductPath]);
 };
 BundleTask.License = {LGPL_v2_1: "LGPL_v2_1", MIT: "MIT"};
@@ -496,9 +502,125 @@ BundleTask.prototype.defineResourceTasks = function()
         return;
     var basePathLength = (directoryInCommon(resources)).length,
         resourcesPath = this.resourcesPath();
+    this._assetCatalogPaths = [];
+    this._resourcesBasePathLength = basePathLength;
+    var visitedResourcePaths = new Set();
     resources.forEach(    function(aResourcePath)
     {
-        this.defineResourceTask(aResourcePath, path.join(resourcesPath, aResourcePath.substring(basePathLength)));
+        this.defineResourceTasksOutsideAssetCatalogs(aResourcePath, basePathLength, resourcesPath, visitedResourcePaths);
+    }, this);
+};
+/*
+    Defines the resource task of aResourcePath, unless the path belongs to an asset catalog (an
+    .xcassets directory). The files of a catalog are no resources of their own:
+    defineAssetCatalogTasks compiles each catalog into the bundle's asset table and copies the
+    image files that the catalog names. A directory that holds a catalog at any depth is not
+    copied as a whole, since the copy would take the catalog's source files into the product;
+    its entries become resources one by one instead.
+*/
+BundleTask.prototype.defineResourceTasksOutsideAssetCatalogs = function(aResourcePath, basePathLength, resourcesPath, visitedResourcePaths)
+{
+    if (visitedResourcePaths.has(aResourcePath))
+        return;
+    visitedResourcePaths.add(aResourcePath);
+    var assetCatalogPath = assetCatalog.assetCatalogPathOf(aResourcePath);
+    if (assetCatalogPath)
+    {
+        if (this._assetCatalogPaths.indexOf(assetCatalogPath) === -1)
+            this._assetCatalogPaths.push(assetCatalogPath);
+        return;
+    }
+    if (fs.existsSync(aResourcePath) && fs.lstatSync(aResourcePath).isDirectory() && assetCatalog.containsAssetCatalog(aResourcePath))
+    {
+        fs.readdirSync(aResourcePath).sort().forEach(function(anEntryName)
+        {
+            this.defineResourceTasksOutsideAssetCatalogs(path.join(aResourcePath, anEntryName), basePathLength, resourcesPath, visitedResourcePaths);
+        }, this);
+        return;
+    }
+    this.defineResourceTask(aResourcePath, path.join(resourcesPath, aResourcePath.substring(basePathLength)));
+};
+/*
+    Returns the path of the asset table in the intermediate Resources directory of anEnvironment,
+    which the static file of the environment takes in.
+*/
+BundleTask.prototype.assetCatalogTablePathForEnvironment = function(anEnvironment)
+{
+    return path.join(this.buildIntermediatesProductPath(), anEnvironment.name() + ".environment", "Resources", assetCatalog.AssetCatalogResourceName);
+};
+/*
+    Removes the asset table of a bundle that no longer has an asset catalog. Jake rebuilds a file
+    only when a prerequisite is newer, so after the removal of the last catalog the static file
+    kept the table and Info.plist kept the key CPAssetCatalog. Removing both products makes Jake
+    build them again without the table.
+*/
+BundleTask.prototype.removeStaleAssetCatalogTables = function()
+{
+    var tableWasRemoved = false;
+    (this.environments()).forEach(function(anEnvironment)
+    {
+        var tablePath = this.assetCatalogTablePathForEnvironment(anEnvironment),
+            staticPath = this.buildProductStaticPathForEnvironment(anEnvironment);
+        if (!fs.existsSync(tablePath))
+            return;
+        fs.rmSync(tablePath);
+        if (fs.existsSync(staticPath))
+            fs.rmSync(staticPath);
+        tableWasRemoved = true;
+    }, this);
+    var infoPlistProductPath = path.join(this.buildProductPath(), "Info.plist");
+    if (tableWasRemoved && fs.existsSync(infoPlistProductPath))
+        fs.rmSync(infoPlistProductPath);
+};
+/*
+    Compiles the bundle's asset catalogs into one asset table, which the static file of each
+    environment holds as Resources/Assets.json and the Info.plist key CPAssetCatalog names (see
+    AppKit/_CPAssetCatalog.j and assetcatalog.js). The image files of the catalogs become
+    resources at their relative paths.
+*/
+BundleTask.prototype.defineAssetCatalogTasks = function()
+{
+    var assetCatalogPaths = this._assetCatalogPaths || [];
+    this._assetCatalog = null;
+    this._assetCatalogTablePaths = [];
+    if (assetCatalogPaths.length === 0)
+    {
+        this.removeStaleAssetCatalogTables();
+        return;
+    }
+    var basePathLength = this._resourcesBasePathLength,
+        resourcesPath = this.resourcesPath(),
+        compilation = assetCatalog.compileAssetCatalogs(assetCatalogPaths, function(anImagePath)
+        {
+            return anImagePath.substring(basePathLength).replace(/^[\\/]+/, "");
+        }),
+        tableContents = JSON.stringify(compilation.table),
+        staticEntry = "t;" + tableContents.length + ";" + tableContents;
+    compilation.warnings.forEach(function(aWarning)
+    {
+        term.stream.print("\0yellow(" + aWarning + "\0)");
+    });
+    compilation.imageFiles.forEach(function(anImagePath)
+    {
+        this.defineResourceTask(anImagePath, path.join(resourcesPath, anImagePath.substring(basePathLength)));
+    }, this);
+    this._assetCatalog = compilation;
+    (this.environments()).forEach(function(anEnvironment)
+    {
+        var tablePath = this.assetCatalogTablePathForEnvironment(anEnvironment);
+        /*
+            Jake rebuilds a file only when a prerequisite is newer, so a removed asset left the
+            table unchanged. Removing a table that differs from the new one makes Jake rebuild it.
+        */
+        if (fs.existsSync(tablePath) && fs.readFileSync(tablePath, { encoding: "utf8" }) !== staticEntry)
+            fs.rmSync(tablePath);
+        filedir(tablePath, compilation.sourceFiles, function()
+        {
+            fs.mkdirSync(path.dirname(tablePath), { recursive: true });
+            fs.writeFileSync(tablePath, staticEntry, { encoding: "utf8" });
+        });
+        filedir(this.buildProductStaticPathForEnvironment(anEnvironment), [tablePath]);
+        this._assetCatalogTablePaths.push(tablePath);
     }, this);
 };
 var RESOURCES_PATH = path.join(path.resolve(path.dirname(module.path)), "Jake/RESOURCES"),
