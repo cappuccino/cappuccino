@@ -26,6 +26,7 @@
 
 @import "CGGeometry.j"
 @import "CPAnimation.j"
+@import "CPAppearance.j"
 @import "CPCursor.j"
 @import "CPDragServer.j"
 @import "CPEvent.j"
@@ -176,7 +177,7 @@ var CPWindowActionMessageKeys = [
     delegate's window has been animated out and is no longer visible.
     @param notification contains information about the event
 */
-@implementation CPWindow : CPResponder
+@implementation CPWindow : CPResponder <CPAppearanceCustomization>
 {
     CPPlatformWindow                    _platformWindow;
 
@@ -273,6 +274,9 @@ var CPWindowActionMessageKeys = [
     CPDictionary                        _sheetContext;
     CPWindow                            _parentView;
     BOOL                                _isSheet;
+
+    CPAppearance                        _appearance;
+    CPAppearance                        _appliedAppearance;
     _CPWindowFrameAnimation             _frameAnimation;
     _CPWindowFrameAnimationDelegate     _frameAnimationDelegate;
 
@@ -447,6 +451,8 @@ CPTexturedBackgroundWindowMask
                                  selector:@selector(_didReceiveResizeStyleChange:)
                                      name:CPWindowResizeStyleGlobalChangeNotification
                                    object:nil];
+
+        [self _updateEffectiveAppearance];
     }
 
     return self;
@@ -590,6 +596,7 @@ CPTexturedBackgroundWindowMask
     if (oldWindowView)
     {
         [oldWindowView _setWindow:nil];
+        [oldWindowView _recomputeAppearanceWithSuperviewEffectiveAppearance:[oldWindowView _inheritedEffectiveAppearance]];
         [oldWindowView noteToolbarChanged];
 
         if (CPDOMAvailable)
@@ -610,6 +617,7 @@ CPTexturedBackgroundWindowMask
         contentRect.origin = [self convertBaseToGlobal:contentRect.origin];
 
         [_windowView _setWindow:self];
+        [_windowView _recomputeAppearanceWithSuperviewEffectiveAppearance:[self effectiveAppearance]];
         [_windowView setNextResponder:self];
         [_windowView addSubview:_contentView];
         [_windowView setTitle:_title];
@@ -1499,8 +1507,9 @@ CPTexturedBackgroundWindowMask
         if (_hasShadow && !_shadowView)
         {
             _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
-            
+
             [_shadowView setWindowView:_windowView];
+            [_shadowView _recomputeAppearanceWithSuperviewEffectiveAppearance:[self effectiveAppearance]];
             [_shadowView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
             [_shadowView setNeedsLayout];
             
@@ -3140,6 +3149,109 @@ CPTexturedBackgroundWindowMask
 - (CPWindow)setParentWindow:(CPWindow)parentWindow
 {
     _parentWindow = parentWindow;
+
+    [self _updateEffectiveAppearance];
+}
+
+// MARK: Appearance
+
+/*!
+    Returns the appearance set on the window, or \c nil when the window follows its
+    appearance parent.
+*/
+- (CPAppearance)appearance
+{
+    return _appearance;
+}
+
+/*!
+    Returns the appearance that the window uses: its own appearance, else the effective
+    appearance of its appearance parent. It is never \c nil. Views without an appearance of
+    their own take it.
+*/
+- (CPAppearance)effectiveAppearance
+{
+    if (_appearance)
+        return _appearance;
+
+    var parent = [self _appearanceParent];
+
+    return parent ? [parent effectiveAppearance] : _CPAppearanceForApplication();
+}
+
+/*!
+    Sets the window's appearance. \c nil makes the window follow its appearance parent. Every
+    view whose effective appearance changes applies the new one, and so do the window's child
+    windows and its sheet.
+    @param anAppearance the appearance, or \c nil
+*/
+- (void)setAppearance:(CPAppearance)anAppearance
+{
+    if (_appearance === anAppearance || [_appearance isEqual:anAppearance])
+        return;
+
+    [self willChangeValueForKey:@"appearance"];
+    _appearance = anAppearance;
+    [self didChangeValueForKey:@"appearance"];
+
+    [self _updateEffectiveAppearance];
+}
+
+/*
+    Returns the object whose effective appearance the window takes when it has no appearance
+    of its own: for an attached sheet, the window it is attached to; for a child window, its
+    parent window; else the application. A sheet and a child window are visually part of their
+    parent. AppKit's counterpart is the public appearanceSource.
+*/
+- (id)_appearanceParent
+{
+    if (_isSheet && _parentView)
+        return _parentView;
+
+    if (_parentWindow)
+        return _parentWindow;
+
+    return (typeof CPApp !== "undefined") ? CPApp : nil;
+}
+
+/*
+    Applies the window's effective appearance when its name differs from the one applied
+    before: to the window's root views, then to its child windows and its sheet. Every walk
+    from the application or the window reaches every view in it, so a window can stop at an
+    unchanged name.
+*/
+- (void)_updateEffectiveAppearance
+{
+    var appearance = [self effectiveAppearance];
+
+    if (_appliedAppearance && [_appliedAppearance name] === [appearance name])
+        return;
+
+    [self willChangeValueForKey:@"effectiveAppearance"];
+    _appliedAppearance = appearance;
+    [self didChangeValueForKey:@"effectiveAppearance"];
+
+    [self _recomputeViewAppearances];
+
+    for (var i = 0, count = [_childWindows count]; i < count; i++)
+        [_childWindows[i] _updateEffectiveAppearance];
+
+    var sheet = _sheetContext ? _sheetContext["sheet"] : nil;
+
+    if (sheet && sheet._parentView === self)
+        [sheet _updateEffectiveAppearance];
+}
+
+/*
+    Applies the window's effective appearance to its root views: the window view and the
+    shadow view, which lies outside the window view's subtree.
+*/
+- (void)_recomputeViewAppearances
+{
+    var appearance = [self effectiveAppearance];
+
+    [_windowView _recomputeAppearanceWithSuperviewEffectiveAppearance:appearance];
+    [_shadowView _recomputeAppearanceWithSuperviewEffectiveAppearance:appearance];
 }
 
 - (void)_setFrame:(CGRect)aFrame delegate:(id)delegate duration:(int)duration curve:(CPAnimationCurve)curve
@@ -3314,6 +3426,7 @@ CPTexturedBackgroundWindowMask
         // Context must be destroyed, since didEnd might want to attach another sheet
         _sheetContext = nil;
         sheet._parentView = nil;
+        [sheet _updateEffectiveAppearance];
 
         if (delegate != null)
             delegate.isa.objj_msgSend3(delegate, selector, sheet, returnCode, contextInfo);
@@ -3322,6 +3435,7 @@ CPTexturedBackgroundWindowMask
     {
         _sheetContext = nil;
         sheet._parentView = nil;
+        [sheet _updateEffectiveAppearance];
     }
 }
 
@@ -3349,6 +3463,7 @@ CPTexturedBackgroundWindowMask
     var sheet = _sheetContext["sheet"];
     sheet._isSheet = YES;
     sheet._parentView = self;
+    [sheet _updateEffectiveAppearance];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
 

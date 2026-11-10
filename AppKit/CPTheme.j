@@ -834,6 +834,37 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
 CPThemeStateHUD                 = CPThemeState("hud");
 
 
+/*
+    The fallback appearance states of each appearance state, closest first, keyed by the
+    state's string. CPAppearance.j registers them at load, in the order of
+    -[CPAppearance bestMatchFromAppearancesWithNames:].
+*/
+var _CPThemeAppearanceStateFallbacks = {};
+
+function _CPThemeRegisterAppearanceStateFallbacks(aMap)
+{
+    _CPThemeAppearanceStateFallbacks = aMap || {};
+}
+
+/*
+    Returns the appearance state that aState holds and that has fallback states, or nil.
+*/
+function _CPThemeAppearanceStateWithFallbacksInState(aState)
+{
+    var stateNames = aState._stateNames;
+
+    for (var stateName in stateNames)
+    {
+        if (!stateNames.hasOwnProperty(stateName) || !_CPThemeAppearanceStateFallbacks.hasOwnProperty(stateName))
+            continue;
+
+        if (_CPThemeAppearanceStateFallbacks[stateName].length)
+            return CPThemeState(stateName);
+    }
+
+    return nil;
+}
+
 @implementation _CPThemeAttribute : CPObject
 {
     CPString            _name;
@@ -923,11 +954,23 @@ CPThemeStateHUD                 = CPThemeState("hud");
     if (value !== undefined)
         return value;
 
-    // Not in cache. OK, search in values.
-    value = [_values objectForKey:stateName];
+    value = [self _uncachedValueForState:aState];
+
+    var appearanceState = _CPThemeAppearanceStateWithFallbacksInState(aState);
+
+    if (appearanceState)
+        value = [self _valueForState:aState appearanceState:appearanceState valueWithoutFallback:value];
+
+    return _cache[stateName] = value;
+}
+
+- (id)_uncachedValueForState:(ThemeState)aState
+{
+    // Search in values.
+    var value = [_values objectForKey:String(aState)];
 
     if (value != nil)
-        return _cache[stateName] = value;
+        return value;
 
     // No direct match in values.
     // If this is a composite state, find the closest partial subset match.
@@ -936,20 +979,20 @@ CPThemeStateHUD                 = CPThemeState("hud");
         var largestThemeState = [self largestThemeStateMatchForState:aState returnedValue:@ref(value)];
 
         if ((value !== undefined) && (value !== nil))
-            return _cache[stateName] = value;
+            return value;
     }
 
     // Still don't have a value? OK, let's use the normal value.
     value = [_values objectForKey:String(CPThemeStateNormal)];
 
     if (value != nil)
-        return _cache[stateName] = value;
+        return value;
 
     // No normal value, try asking _themeDefaultAttribute
     value = [_themeDefaultAttribute valueForState:aState];
 
     if (value != nil)
-        return _cache[stateName] = value;
+        return value;
 
     // Well, last option, use default value
     value = _defaultValue;
@@ -959,7 +1002,77 @@ CPThemeStateHUD                 = CPThemeState("hud");
     if (value === [CPNull null])
         value = nil;
 
-    return _cache[stateName] = value;
+    return value;
+}
+
+/*
+    Returns the value for aState, which holds anAppearanceState. aValue is the result of the
+    search without the fallback. When a key that holds anAppearanceState matches aState, in
+    the receiver or in its default attributes, aValue stands. Else each fallback appearance
+    state takes the place of anAppearanceState in turn, and the first match by a key that
+    holds the fallback state gives the value. Without such a match, aValue stands.
+
+    Without the fallback, a view in high-contrast DarkAqua took the light value of an
+    attribute that has a DarkAqua value, because the subset search ignores a key with another
+    appearance state. System colours and images fall back in the same order (see
+    _CPThemeAttributeValueForAppearance).
+*/
+- (id)_valueForState:(ThemeState)aState appearanceState:(ThemeState)anAppearanceState valueWithoutFallback:(id)aValue
+{
+    var value;
+
+    if ([self _largestThemeStateMatchForState:aState holdingState:anAppearanceState returnedValue:@ref(value)] > 0)
+        return aValue;
+
+    var fallbacks = _CPThemeAppearanceStateFallbacks[String(anAppearanceState)],
+        stateWithoutAppearance = aState.without(anAppearanceState);
+
+    for (var i = 0, count = fallbacks.length; i < count; i++)
+    {
+        var fallbackState = fallbacks[i];
+
+        if ([self _largestThemeStateMatchForState:stateWithoutAppearance.and(fallbackState) holdingState:fallbackState returnedValue:@ref(value)] > 0)
+            return value;
+    }
+
+    return aValue;
+}
+
+/*
+    Returns the size of the largest key that holds aRequiredState and is a subset of aState,
+    in the receiver and in its default attributes, or 0 when there is none. The value of that
+    key goes to valueRef. On a tie the receiver's own key wins. The exact key is the largest
+    possible match, so it comes first.
+*/
+- (CPInteger)_largestThemeStateMatchForState:(ThemeState)aState holdingState:(ThemeState)aRequiredState returnedValue:(id)valueRef
+{
+    var value,
+        states = [_values allKeys],
+        count = states ? states.length : 0,
+        largestThemeState = 0;
+
+    while (count--)
+    {
+        var stateObject = CPThemeState(states[count]);
+
+        if (stateObject._stateNameCount > largestThemeState && stateObject.hasThemeState(aRequiredState) && stateObject.isSubsetOf(aState))
+        {
+            value = [_values objectForKey:states[count]];
+            largestThemeState = stateObject._stateNameCount;
+        }
+    }
+
+    var defaultAttributeFoundValue,
+        defaultAttributeMatchLength = [_themeDefaultAttribute _largestThemeStateMatchForState:aState holdingState:aRequiredState returnedValue:@ref(defaultAttributeFoundValue)];
+
+    if (defaultAttributeMatchLength > largestThemeState)
+    {
+        value = defaultAttributeFoundValue;
+        largestThemeState = defaultAttributeMatchLength;
+    }
+
+    @deref(valueRef) = value;
+    return largestThemeState;
 }
 
 - (CPInteger)largestThemeStateMatchForState:(ThemeState)aState returnedValue:(id)valueRef

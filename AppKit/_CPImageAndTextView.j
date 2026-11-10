@@ -52,6 +52,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     CPLineBreakMode         _lineBreakMode;
     CPColor                 _textColor;
+    CPString                _textColorCSSString;
     CPFont                  _font;
     BOOL                    _textUnderline;
 
@@ -242,22 +243,46 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     }
 }
 
+/*
+    The early return compared only the object. A dynamic colour is the same object in every
+    appearance, so a control that set it again after a change of appearance kept the CSS of
+    the old one. The CSS string now takes part in the comparison.
+*/
 - (void)setTextColor:(CPColor)aTextColor
 {
-    if (_textColor === aTextColor)
+    var cssString = [aTextColor cssString];
+
+    if (_textColor === aTextColor && _textColorCSSString === cssString)
         return;
 
     _textColor = aTextColor;
+    _textColorCSSString = cssString;
 
     if (CPDOMAvailable)
-    {
-        _DOMElement.style.color = [_textColor cssString];
-    }
+        _DOMElement.style.color = cssString;
 }
 
 - (CPColor)textColor
 {
     return _textColor;
+}
+
+/*
+    Writes the text colour again and marks the text shadow and the image as changed, so that
+    the next layout resolves them in the new appearance.
+*/
+- (void)_effectiveAppearanceDidChange
+{
+    [super _effectiveAppearanceDidChange];
+
+    _textColorCSSString = [_textColor cssString];
+
+    if (CPDOMAvailable)
+        _DOMElement.style.color = _textColorCSSString;
+
+    _flags |= _CPImageAndTextViewTextShadowColorChangedFlag | _CPImageAndTextViewImageChangedFlag;
+
+    [self setNeedsLayout];
 }
 
 - (void)setFont:(CPFont)aFont

@@ -801,7 +801,12 @@ var updateTrackingAreasCalls,
     [self assert:nil equals:[view appearance]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantDark]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantLight]];
-    [self assert:nil equals:[view effectiveAppearance]];
+
+    /*
+        2026-11-10: the effective appearance is never nil. A view outside any hierarchy takes
+        the application's effective appearance, the end of every appearance chain.
+    */
+    [self assert:[CPApp effectiveAppearance] equals:[view effectiveAppearance]];
 }
 
 - (void)testAppearanceWithVibrantDark
@@ -833,7 +838,12 @@ var updateTrackingAreasCalls,
     [view setAppearance:nil];
 
     [self assert:nil equals:[view appearance]];
-    [self assert:nil equals:[view effectiveAppearance]];
+
+    /*
+        2026-11-10: the effective appearance is never nil. Without its own appearance, a view
+        outside any hierarchy takes the application's effective appearance.
+    */
+    [self assert:[CPApp effectiveAppearance] equals:[view effectiveAppearance]];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantLight]];
@@ -906,7 +916,12 @@ var updateTrackingAreasCalls,
     [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight] equals:[view effectiveAppearance]];
 
     [view removeFromSuperview];
-    [self assert:nil equals:[view effectiveAppearance]];
+
+    /*
+        2026-11-10: the effective appearance is never nil. A view removed from its superview
+        takes the application's effective appearance.
+    */
+    [self assert:[CPApp effectiveAppearance] equals:[view effectiveAppearance]];
 }
 
 - (void)testViewDidHideDidUnhide

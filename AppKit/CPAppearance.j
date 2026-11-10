@@ -22,6 +22,9 @@
 
 @import <Foundation/Foundation.j>
 @import "CPTheme.j"
+@import "_CPAppearanceManager.j"
+
+@global CPApp
 
 /*
     Each name has AppKit's string with the CP prefix in place of NS, so that nib2cib maps an
@@ -92,6 +95,12 @@ function _CPAppearanceMatchingNames(aName)
 - (CPAppearance)appearance;
 - (void)setAppearance:(CPAppearance)appearance;
 - (CPAppearance)effectiveAppearance;
+
+@optional
+/*
+    Deprecated: the effective appearance derives from the chain of view, superviews, window,
+    application and system, so no class implements a setter for it.
+*/
 - (void)setEffectiveAppearance:(CPAppearance)appearance;
 
 @end
@@ -102,8 +111,9 @@ CPThemeStateAppearanceVibrantLight     = CPThemeState("appearance-vibrant-light"
 CPThemeStateAppearanceVibrantDark      = CPThemeState("appearance-vibrant-dark");
 
 /*
-    These states key the value that a theme gives a named colour for an appearance (see
-    CPColor.j). A view takes only the four appearance states above as its own state.
+    Each of the nine appearances has a theme state. A view holds the state of its effective
+    appearance (see -[CPView _applyEffectiveAppearance:]). The states also key the value that
+    a theme gives a named colour or image for an appearance (see CPColor.j and CPImage.j).
 */
 CPThemeStateAppearanceDarkAqua                              = CPThemeState("appearance-dark-aqua");
 CPThemeStateAppearanceAccessibilityHighContrastAqua         = CPThemeState("appearance-accessibility-high-contrast-aqua");
@@ -152,6 +162,87 @@ function _CPThemeStateForAppearanceName(aName)
 }
 
 /*
+    The names of the nine appearances that have a theme state.
+*/
+var _CPAppearanceNamesWithState = [
+        CPAppearanceNameAqua,
+        CPAppearanceNameDarkAqua,
+        CPAppearanceNameLightContent,
+        CPAppearanceNameVibrantLight,
+        CPAppearanceNameVibrantDark,
+        CPAppearanceNameAccessibilityHighContrastAqua,
+        CPAppearanceNameAccessibilityHighContrastDarkAqua,
+        CPAppearanceNameAccessibilityHighContrastVibrantLight,
+        CPAppearanceNameAccessibilityHighContrastVibrantDark
+    ];
+
+/*
+    The composite of the nine appearance states. A view unsets it, apart from its own state,
+    when it applies an appearance, and the archive of a theme state leaves it out.
+*/
+_CPThemeStateAppearanceAll = CPThemeState.apply(nil, _CPAppearanceNamesWithState.map(_CPThemeStateForAppearanceName));
+
+/*
+    Gives CPTheme the fallback order of each appearance state, so that a theme attribute value
+    keyed by one appearance serves the appearances that fall back to it, in the order of
+    -bestMatchFromAppearancesWithNames: (see -[_CPThemeAttribute valueForState:]).
+*/
+function _CPAppearanceRegisterThemeStateFallbacks()
+{
+    var fallbacks = {};
+
+    for (var i = 0, count = _CPAppearanceNamesWithState.length; i < count; i++)
+    {
+        var name = _CPAppearanceNamesWithState[i],
+            matchingNames = _CPAppearanceMatchingNames(name),
+            states = [];
+
+        for (var j = 1, matchCount = matchingNames.length; j < matchCount; j++)
+            states.push(_CPThemeStateForAppearanceName(matchingNames[j]));
+
+        fallbacks[String(_CPThemeStateForAppearanceName(name))] = states;
+    }
+
+    _CPThemeRegisterAppearanceStateFallbacks(fallbacks);
+}
+
+_CPAppearanceRegisterThemeStateFallbacks();
+
+/*
+    Returns the application's effective appearance, or the system appearance before the
+    application exists. This is the end of every appearance chain, and the current drawing
+    appearance outside layout and drawing.
+*/
+function _CPAppearanceForApplication()
+{
+    if (typeof CPApp !== "undefined" && CPApp)
+        return [CPApp effectiveAppearance];
+
+    return [[_CPAppearanceManager sharedManager] systemAppearance];
+}
+
+/*
+    Makes anAppearance the current drawing appearance and returns the previous raw value of
+    the slot, nil included, for _CPAppearanceEndDrawing(). Calls nest in any order.
+*/
+function _CPAppearanceBeginDrawing(anAppearance)
+{
+    var previous = _CPAppearanceCurrent;
+
+    _CPAppearanceCurrent = anAppearance;
+
+    return previous;
+}
+
+/*
+    Restores the value that _CPAppearanceBeginDrawing() returned.
+*/
+function _CPAppearanceEndDrawing(aPreviousValue)
+{
+    _CPAppearanceCurrent = aPreviousValue;
+}
+
+/*
     Returns the value that the theme attribute anAttribute holds for anAppearance: the value for
     the closest appearance, in the order of -bestMatchFromAppearancesWithNames:; then the value
     for every appearance; or nil when anAttribute holds neither. System colours and system
@@ -197,18 +288,24 @@ function _CPThemeAttributeValueForAppearance(anAttribute, anAppearance)
 // MARK: -
 // MARK: Class Methods
 
-/*! Returns the current default CPAppearance
+/*!
+    Returns the current appearance, which is the current drawing appearance. AppKit deprecates
+    this method in favour of +currentDrawingAppearance and -performAsCurrentDrawingAppearance:.
 */
 + (CPAppearance)currentAppearance
 {
-    if (!_CPAppearanceCurrent)
-        _CPAppearanceCurrent = [CPAppearance appearanceNamed:CPAppearanceNameAqua];
-
-    return _CPAppearanceCurrent;
+    /*
+        The slot stays empty for the default. Storing the default here made it permanent:
+        the first read stored Aqua, so the default never followed a change of the
+        application's or the system's appearance.
+    */
+    return _CPAppearanceCurrent || _CPAppearanceForApplication();
 }
 
-/*! Sets the current default CPAppearance
-    @param appearance the new current appearance
+/*!
+    Sets the current appearance. \c nil selects the default, the application's effective
+    appearance.
+    @param anAppearance the new current appearance, or \c nil
 */
 + (void)setCurrentAppearance:(CPAppearance)anAppearance
 {
@@ -216,9 +313,10 @@ function _CPThemeAttributeValueForAppearance(anAttribute, anAppearance)
 }
 
 /*!
-    Returns the appearance used to resolve colours and images while drawing. It is the
-    current appearance: Aqua, unless +setCurrentAppearance: or
-    -performAsCurrentDrawingAppearance: has set another.
+    Returns the appearance used to resolve colours and images while drawing. A view lays out
+    and draws with its effective appearance as the current drawing appearance. Outside layout
+    and drawing it is the application's effective appearance, unless +setCurrentAppearance:
+    or -performAsCurrentDrawingAppearance: has set another.
 */
 + (CPAppearance)currentDrawingAppearance
 {
@@ -299,9 +397,7 @@ function _CPThemeAttributeValueForAppearance(anAttribute, anAppearance)
 */
 - (void)performAsCurrentDrawingAppearance:(Function)aBlock
 {
-    var previousAppearance = _CPAppearanceCurrent;
-
-    _CPAppearanceCurrent = self;
+    var previousAppearance = _CPAppearanceBeginDrawing(self);
 
     try
     {
@@ -309,7 +405,7 @@ function _CPThemeAttributeValueForAppearance(anAttribute, anAppearance)
     }
     finally
     {
-        _CPAppearanceCurrent = previousAppearance;
+        _CPAppearanceEndDrawing(previousAppearance);
     }
 }
 
@@ -330,15 +426,19 @@ function _CPThemeAttributeValueForAppearance(anAttribute, anAppearance)
 // MARK: -
 // MARK: CPCoding
 
+/*
+    A decoded appearance was a second instance beside the shared one of its name. A view
+    compared appearances by identity, so a view whose appearance came from an archive or a
+    cib never took an appearance state. Decoding now returns the shared instance.
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    if (self = [super init])
-    {
-        _name           = [aCoder decodeObjectForKey:@"_name"];
-        _allowsVibrancy = [aCoder decodeBoolForKey:@"_allowsVibrancy"];
-    }
+    var name = [aCoder decodeObjectForKey:@"_name"];
 
-    return self;
+    if (!name)
+        return nil;
+
+    return [CPAppearance appearanceNamed:name];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder

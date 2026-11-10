@@ -548,7 +548,7 @@
 {
     [super viewDidMoveToWindow];
     [self _updateButtonImages];
-    [self layoutSubviews];
+    [self _layoutSubviewsInEffectiveAppearance];
 }
 
 - (void)setThemeState:(CPThemeState)aState

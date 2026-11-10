@@ -46,6 +46,17 @@
     return @{};
 }
 
+/*
+    The shadow view is a root of its own, outside the window view's subtree, and has no
+    window. It takes the appearance of the window that its window view belongs to.
+*/
+- (CPAppearance)_inheritedEffectiveAppearance
+{
+    var window = [_windowView window];
+
+    return window ? [window effectiveAppearance] : [super _inheritedEffectiveAppearance];
+}
+
 - (void)layoutSubviews
 {
     [super layoutSubviews];

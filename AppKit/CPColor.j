@@ -1298,6 +1298,15 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     return _cssString;
 }
 
+/*
+    Returns the colour that the receiver gives in the current drawing appearance. A plain
+    colour gives itself. _CPDynamicColor gives the colour of its name in that appearance.
+*/
+- (CPColor)_resolvedColor
+{
+    return self;
+}
+
 /*!
     Returns a 6 character long hex string of this color.
 */

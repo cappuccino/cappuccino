@@ -855,7 +855,7 @@ CPTokenFieldDeleteButtonType     = 1;
         {
             [self _removeSelectedTokens:self];
             // Make sure the editor is placed so it can capture the characters we're overwriting with.
-            [self layoutSubviews];
+            [self _layoutSubviewsInEffectiveAppearance];
         }
 
         // If we didn't handle it, allow _propagateCurrentDOMEvent the input field to receive

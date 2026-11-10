@@ -30,6 +30,7 @@
 @import "CPView.j"
 @import "CPViewController.j"
 @import "_CPPopoverWindow.j"
+@import "CPAppearance.j"
 
 @protocol CPPopoverDelegate <CPObject>
 
@@ -53,6 +54,14 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     CPPopoverDelegate_popover_didClose_     = 1 << 4;
 
 
+/*
+    Returns YES when aValue is a CPAppearance, NO for nil and for the legacy integers.
+*/
+function _CPPopoverValueIsAppearance(aValue)
+{
+    return !!aValue && typeof aValue === "object" && [aValue isKindOfClass:CPAppearance];
+}
+
 /*! @ingroup appkit
     @class CPPopover
 
@@ -69,13 +78,13 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     – popoverDidClose:(CPPopover)aPopOver
     @endcode
 */
-@implementation CPPopover : CPResponder
+@implementation CPPopover : CPResponder <CPAppearanceCustomization>
 {
     @outlet CPViewController        _contentViewController  @accessors(property=contentViewController);
     @outlet id <CPPopoverDelegate>  _delegate               @accessors(getter=delegate);
 
     BOOL                            _animates               @accessors(getter=animates);
-    int                             _appearance             @accessors(property=appearance);
+    id                              _appearance;
     int                             _behavior               @accessors(getter=behavior);
 
     _CPPopoverWindow                _popoverWindow;
@@ -107,6 +116,49 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
 // MARK: -
 // MARK: Getters / Setters
+
+/*!
+    Returns the appearance in the form it was set: a CPAppearance, \c nil, or one of
+    CPPopoverAppearanceMinimal (the default) and CPPopoverAppearanceHUD.
+*/
+- (id)appearance
+{
+    return _appearance;
+}
+
+/*!
+    Sets the popover's appearance: a CPAppearance, \c nil, or one of the legacy values
+    CPPopoverAppearanceMinimal and CPPopoverAppearanceHUD. \c nil and
+    CPPopoverAppearanceMinimal give the default look.
+    @param anAppearance the appearance
+*/
+- (void)setAppearance:(id)anAppearance
+{
+    if (_appearance === anAppearance)
+        return;
+
+    _appearance = anAppearance;
+
+    if (_popoverWindow)
+        [_popoverWindow setAppearance:[self effectiveAppearance]];
+}
+
+/*!
+    Returns the appearance that the popover gives its window: the CPAppearance set; else
+    VibrantDark for CPPopoverAppearanceHUD; else VibrantLight.
+*/
+- (CPAppearance)effectiveAppearance
+{
+    if (_CPPopoverValueIsAppearance(_appearance))
+        return _appearance;
+
+    return [CPAppearance appearanceNamed:_appearance == CPPopoverAppearanceHUD ? CPAppearanceNameVibrantDark : CPAppearanceNameVibrantLight];
+}
+
++ (CPSet)keyPathsForValuesAffectingEffectiveAppearance
+{
+    return [CPSet setWithObject:@"appearance"];
+}
 
 /*!
     Returns the current rect of the popover
@@ -248,7 +300,7 @@ Set the behavior of the CPPopover. It can be:
         _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self _styleMaskForBehavior]];
 
     [_popoverWindow setPlatformWindow:[[positioningView window] platformWindow]];
-    [_popoverWindow setAppearance:_appearance];
+    [_popoverWindow setAppearance:[self effectiveAppearance]];
     [_popoverWindow setAnimates:_animates];
     [_popoverWindow setDelegate:self];
     [_popoverWindow setMovableByWindowBackground:NO];
@@ -384,6 +436,7 @@ Set the behavior of the CPPopover. It can be:
 
 var CPPopoverNeedsNewPopoverWindowKey = @"CPPopoverNeedsNewPopoverWindowKey",
     CPPopoverAppearanceKey = @"CPPopoverAppearanceKey",
+    CPPopoverAppearanceObjectKey = @"CPPopoverAppearanceObjectKey",
     CPPopoverAnimatesKey = @"CPPopoverAnimatesKey",
     CPPopoverContentViewControllerKey = @"CPPopoverContentViewControllerKey",
     CPPopoverDelegateKey = @"CPPopoverDelegateKey",
@@ -397,7 +450,10 @@ var CPPopoverNeedsNewPopoverWindowKey = @"CPPopoverNeedsNewPopoverWindowKey",
 
     if (self)
     {
-        _appearance = [aCoder decodeIntForKey:CPPopoverAppearanceKey];
+        if ([aCoder containsValueForKey:CPPopoverAppearanceObjectKey])
+            _appearance = [aCoder decodeObjectForKey:CPPopoverAppearanceObjectKey];
+        else
+            _appearance = [aCoder decodeIntForKey:CPPopoverAppearanceKey];
         _animates = [aCoder decodeBoolForKey:CPPopoverAnimatesKey];
         _contentViewController = [aCoder decodeObjectForKey:CPPopoverContentViewControllerKey];
         [self setDelegate:[aCoder decodeObjectForKey:CPPopoverDelegateKey]];
@@ -410,7 +466,14 @@ var CPPopoverNeedsNewPopoverWindowKey = @"CPPopoverNeedsNewPopoverWindowKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeInt:_appearance forKey:CPPopoverAppearanceKey];
+    /*
+        The legacy integer keeps its key, so that existing archives and their readers stay
+        unchanged. A CPAppearance takes a key of its own, written only when one is set.
+    */
+    if (_CPPopoverValueIsAppearance(_appearance))
+        [aCoder encodeObject:_appearance forKey:CPPopoverAppearanceObjectKey];
+    else if (_appearance != nil)
+        [aCoder encodeInt:_appearance forKey:CPPopoverAppearanceKey];
     [aCoder encodeBool:_animates forKey:CPPopoverAnimatesKey];
     [aCoder encodeObject:_contentViewController forKey:CPPopoverContentViewControllerKey];
     [aCoder encodeObject:_delegate forKey:CPPopoverDelegateKey];

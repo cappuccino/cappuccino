@@ -47,6 +47,8 @@
 
     BOOL        _windowAutorecalculatesKeyViewLoop;
     BOOL        _windowIsFullPlatformWindow;
+
+    CPAppearance _windowAppearance;
 }
 
 - (id)init
@@ -97,6 +99,13 @@
 
     var theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
 
+    /*
+        Set the appearance before the content view, so that the insertion of the content view
+        applies the window's appearance in one walk.
+    */
+    if (_windowAppearance)
+        [theWindow setAppearance:_windowAppearance];
+
     if (_minSize)
         [theWindow setMinSize:_minSize];
 
@@ -140,7 +149,8 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
     _CPCibWindowTemplateWindowViewKey                       = @"_CPCibWindowTemplateWindowViewKey",
 
     _CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop   = @"_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop",
-    _CPCibWindowTemplateWindowIsFullPlatformWindowKey       = @"_CPCibWindowTemplateWindowIsFullPlatformWindowKey";
+    _CPCibWindowTemplateWindowIsFullPlatformWindowKey       = @"_CPCibWindowTemplateWindowIsFullPlatformWindowKey",
+    _CPCibWindowTemplateWindowAppearanceKey                 = @"_CPCibWindowTemplateWindowAppearanceKey";
 
 @implementation _CPCibWindowTemplate (Coding)
 
@@ -168,6 +178,7 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
 
         _windowAutorecalculatesKeyViewLoop = [aCoder decodeBoolForKey:_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop];
         _windowIsFullPlatformWindow = [aCoder decodeBoolForKey:_CPCibWindowTemplateWindowIsFullPlatformWindowKey];
+        _windowAppearance = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowAppearanceKey];
     }
 
     return self;
@@ -196,6 +207,9 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
 
     if (_windowIsFullPlatformWindow)
         [aCoder encodeObject:_windowIsFullPlatformWindow forKey:_CPCibWindowTemplateWindowIsFullPlatformWindowKey];
+
+    if (_windowAppearance)
+        [aCoder encodeObject:_windowAppearance forKey:_CPCibWindowTemplateWindowAppearanceKey];
 }
 
 @end

@@ -1,0 +1,245 @@
+/*
+ * Jakefile
+ * CPAppearanceTest
+ *
+ * Created by David Richardson on 2026-11-10.
+ * Copyright David Richardson 2026.
+ */
+
+var ENV = process.env,
+    cp = require("child_process"),
+    fs = require("fs"),
+    path = require("path"),
+    task = JAKE.task,
+    FileList = JAKE.FileList,
+    app = CAPPUCCINO.Jake.applicationtask.app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
+    OS = require("os"),
+    projectName = "CPAppearanceTest";
+
+app (projectName, function(task)
+{
+    ENV["OBJJ_INCLUDE_PATHS"] = "Frameworks";
+
+    if (configuration === "Debug")
+        ENV["OBJJ_INCLUDE_PATHS"] = path.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
+
+    task.setBuildIntermediatesPath(path.join("Build", "CPAppearanceTest.build", configuration));
+    task.setBuildPath(path.join("Build", configuration));
+
+    task.setProductName("CPAppearanceTest");
+    task.setIdentifier("com.yourcompany.CPAppearanceTest");
+    task.setVersion("1.0");
+    task.setAuthor("Your Company");
+    task.setEmail("feedback @nospam@ yourcompany.com");
+    task.setSummary("CPAppearanceTest");
+    task.setSources(new FileList("**/*.j").exclude(path.join("Build", "**")).exclude(path.join("Frameworks", "Source", "**")));
+    task.setResources(new FileList("Resources/**"));
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g");
+    else
+        task.setCompilerFlags("-O");
+});
+
+task ("default", [projectName], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"], function()
+{
+    updateApplicationSize();
+});
+
+task ("debug", function()
+{
+    configuration = ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    configuration = ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("run", ["debug"], function()
+{
+    cp.execSync(["open", path.join("Build", "Debug", projectName, "index.html")].join(" "), { stdio: "inherit" });
+});
+
+task ("run-release", ["release"], function()
+{
+    cp.execSync(["open", path.join("Build", "Release", projectName, "index.html")].join(" "), { stdio: "inherit" });
+});
+
+task ("deploy", ["release"], function()
+{
+    fs.mkdirSync(path.join("Build", "Deployment", projectName), { recursive: true });
+    cp.execSync(["press", "-f", path.join("Build", "Release", projectName), path.join("Build", "Deployment", projectName)].join(" "), { stdio: "inherit" });
+    printResults("Deployment")
+});
+
+task ("desktop", ["release"], function()
+{
+    fs.mkdirSync(path.join("Build", "Desktop", projectName), { recursive: true });
+    require("@objj/nativehost").buildNativeHost(path.join("Build", "Release", projectName), path.join("Build", "Desktop", projectName, "CPAppearanceTest.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    cp.execSync([path.join("Build", "Desktop", projectName, "CPAppearanceTest.app", "Contents", "MacOS", "NativeHost"), "-i"].join(" "), { stdio: "inherit" });
+});
+
+function printResults(configuration)
+{
+    console.log("----------------------------");
+    console.log(configuration+" app built at path: "+path.join("Build", configuration, projectName));
+    console.log("----------------------------");
+}
+
+function updateApplicationSize()
+{
+    console.log("Calculating application file sizes...");
+
+    var contents = fs.readFileSync(path.join("Build", configuration, projectName, "Info.plist"), { encoding: "utf8" }),
+        format = CFPropertyList.sniffedFormatOfString(contents),
+        plist = CFPropertyList.propertyListFromString(contents),
+        totalBytes = {executable:0, data:0, mhtml:0};
+
+    // Get the size of all framework executables and sprite data
+    var frameworksDir = "Frameworks";
+
+    if (configuration === "Debug")
+        frameworksDir = path.join(frameworksDir, "Debug");
+
+    var frameworks = fs.existsSync(frameworksDir) ? fs.readdirSync(frameworksDir) : [];
+
+    frameworks.forEach(function(framework)
+    {
+        if (framework !== "Source")
+            addBundleFileSizes(path.join(frameworksDir, framework), totalBytes);
+    });
+
+    // Read in the default theme name, and attempt to get its size
+    var themeName = plist.valueForKey("CPDefaultTheme") || "Aristo2",
+        themePath = nil;
+
+    if (themeName === "Aristo" || themeName === "Aristo2")
+        themePath = path.join(frameworksDir, "AppKit", "Resources", themeName + ".blend");
+    else
+        themePath = path.join("Frameworks", "Resources", themeName + ".blend");
+
+    if (fs.existsSync(themePath) && fs.lstatSync(themePath).isDirectory())
+        addBundleFileSizes(themePath, totalBytes);
+
+    // Add sizes for the app
+    addBundleFileSizes(path.join("Build", configuration, projectName), totalBytes);
+
+    console.log("Executables: " + totalBytes.executable + ", sprite data: " + totalBytes.data + ", total: " + (totalBytes.executable + totalBytes.data));
+
+    var dict = new CFMutableDictionary();
+
+    dict.setValueForKey("executable", totalBytes.executable);
+    dict.setValueForKey("data", totalBytes.data);
+    dict.setValueForKey("mhtml", totalBytes.mhtml);
+
+    plist.setValueForKey("CPApplicationSize", dict);
+
+    fs.writeFileSync(path.join("Build", configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { encoding: "utf8" });
+}
+
+function addBundleFileSizes(bundlePath, totalBytes)
+{
+    var bundleName = path.basename(bundlePath),
+        environment = bundleName === "Foundation" ? "Objj" : "Browser",
+        bundlePath = path.join(bundlePath, environment + ".environment");
+
+    if (fs.existsSync(bundlePath) && fs.lstatSync(bundlePath).isDirectory())
+    {
+        var filename = bundleName + ".sj",
+            filePath = path.join(bundlePath, filename);
+
+        if (fs.existsSync(filePath))
+            totalBytes.executable += fs.lstatSync(filePath).size;
+
+        filePath = path.join(bundlePath, "dataURLs.txt");
+
+        if (fs.existsSync(filePath))
+            totalBytes.data += fs.lstatSync(filePath).size;
+
+        filePath = path.join(bundlePath, "MHTMLData.txt");
+
+        if (fs.existsSync(filePath))
+            totalBytes.mhtml += fs.lstatSync(filePath).size;
+
+        filePath = path.join(bundlePath, "MHTMLPaths.txt");
+
+        if (fs.existsSync(filePath))
+            totalBytes.mhtml += fs.lstatSync(filePath).size;
+    }
+}
+
+task ("clean", function()
+{
+    cp.execSync("rm -rf Build", { stdio: "inherit" });
+});
+
+task ("clobber", ["clean"], function()
+{
+    cp.execSync("rm -rf Frameworks", { stdio: "inherit" });
+});
+
+/*
+    Sets the theme this application uses, for example:
+
+        npx jake theme Aristo2
+        npx jake theme "Aristo3 Dark"
+
+    The name is written to CPDefaultTheme in Info.plist as given, with its case
+    kept and &, < and > escaped. Empty the browser cache afterwards, because the
+    browser keeps the old Info.plist.
+
+    Jake runs each word on the command line as a task, in order, and looks a task
+    up only when it reaches it. So this task declares the theme name as an empty
+    task, which Jake then runs without effect. A name that is already a task is
+    refused, because Jake would run that task after this one. So is a name that
+    starts with ^ or jake:, which Jake reads as a task scope.
+*/
+JAKE.task ("theme", function()
+{
+    var fs = require("fs"),
+        path = require("path"),
+        themeName = process.argv[process.argv.indexOf("theme") + 1],
+        plistPath = path.join(__dirname, "Info.plist"),
+        themeKey = /(<key>CPDefaultTheme<\/key>\s*<string>)[^<]*(<\/string>)/;
+
+    if (!themeName || !themeName.trim())
+        throw new Error("Give a theme name, for example: npx jake theme \"Aristo3 Dark\"");
+
+    if (/^(\^|jake:)/.test(themeName))
+        throw new Error("A theme name cannot start with ^ or jake:, which Jake reads as a task scope");
+
+    if (JAKE.application().lookup(themeName))
+        throw new Error(themeName + " is a task in this Jakefile, not a theme name");
+
+    var plist = fs.readFileSync(plistPath, "utf8"),
+        plistValue = themeName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    if (!themeKey.test(plist))
+        throw new Error("No CPDefaultTheme key in " + plistPath);
+
+    plist = plist.replace(themeKey, function(match, head, tail)
+    {
+        return head + plistValue + tail;
+    });
+
+    fs.writeFileSync(plistPath, plist);
+    JAKE.task(themeName);
+
+    console.log("Theme set to " + themeName + " in " + plistPath);
+});

@@ -528,7 +528,7 @@ var CPStackViewSpacingUseDefault = 3.40282347e+38; // FLT_MAX
 
 - (void)resizeSubviewsWithOldSize:(CGSize)oldSize
 {
-    [self layoutSubviews];
+    [self _layoutSubviewsInEffectiveAppearance];
 }
 
 - (void)layoutSubviews

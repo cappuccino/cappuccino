@@ -798,7 +798,7 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 
     [self _maybePostDidResizeNotification];
 
-    [self layoutSubviews];
+    [self _layoutSubviewsInEffectiveAppearance];
 }
 
 - (void)layoutSubviews

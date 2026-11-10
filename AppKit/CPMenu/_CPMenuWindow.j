@@ -476,6 +476,16 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
     [_menuView tile];
 }
 
+/*
+    The menu view is not always in the window view's subtree, so the appearance walk reaches
+    it here, as the theme walk does above.
+*/
+- (void)_recomputeViewAppearances
+{
+    [super _recomputeViewAppearances];
+    [_menuView _recomputeAppearanceWithSuperviewEffectiveAppearance:[self effectiveAppearance]];
+}
+
 @end
 
 // MARK: -
@@ -675,6 +685,29 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
     for (var i = 0, items = [[self menu] itemArray], count = [items count]; i < count; i++)
         [[items[i] _menuItemView] _setThemeIncludingDescendants:aTheme];
+}
+
+/*
+    The menu item views are not always in a superview chain, so the appearance walk reaches
+    them here, as the theme walk does above. Each takes the appearance of its own chain: a
+    view outside any chain takes the application's.
+*/
+- (void)_recomputeAppearanceWithSuperviewEffectiveAppearance:(CPAppearance)anInheritedAppearance
+{
+    [super _recomputeAppearanceWithSuperviewEffectiveAppearance:anInheritedAppearance];
+
+    var views = _menuItemViews ? [_menuItemViews copy] : [];
+
+    for (var i = 0, items = [[self menu] itemArray], count = [items count]; i < count; i++)
+    {
+        var itemView = [items[i] _menuItemView];
+
+        if (itemView)
+            views.push(itemView);
+    }
+
+    for (var i = 0, count = views.length; i < count; i++)
+        [views[i] _recomputeAppearanceWithSuperviewEffectiveAppearance:[views[i] _inheritedEffectiveAppearance]];
 }
 
 @end

@@ -45,6 +45,32 @@ CPImageAlignRight       = 8;
 
 var CPImageViewEmptyPlaceholderImage = nil;
 
+/*
+    Returns a record of what the image gives in the current drawing appearance: its file name
+    and its CSS dictionaries. A dynamic image gives other values in another appearance.
+*/
+function _CPImageViewRecordForImage(anImage)
+{
+    var image = anImage || CPImageViewEmptyPlaceholderImage,
+        isCSSBased = [image isCSSBased];
+
+    return {
+        filename: isCSSBased ? nil : [image filename],
+        cssDictionary: isCSSBased ? [image cssDictionary] : nil,
+        cssBeforeDictionary: isCSSBased ? [image cssBeforeDictionary] : nil,
+        cssAfterDictionary: isCSSBased ? [image cssAfterDictionary] : nil
+    };
+}
+
+function _CPImageViewRecordsAreSame(aRecord, anotherRecord)
+{
+    return aRecord && anotherRecord &&
+           aRecord.filename === anotherRecord.filename &&
+           aRecord.cssDictionary === anotherRecord.cssDictionary &&
+           aRecord.cssBeforeDictionary === anotherRecord.cssBeforeDictionary &&
+           aRecord.cssAfterDictionary === anotherRecord.cssAfterDictionary;
+}
+
 /*!
     @ingroup appkit
     @class CPImageView
@@ -62,6 +88,8 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
     CGRect              _imageRect;
     CPImageAlignment    _imageAlignment;
+
+    JSObject            _appliedImageRecord;
 }
 
 + (void)initialize
@@ -169,12 +197,41 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
     [super setObjectValue:anImage];
 
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
     if (oldImage)
-        [defaultCenter removeObserver:self name:CPImageDidLoadNotification object:oldImage];
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:oldImage];
 
-    var newImage = [self objectValue];
+    [self _applyImage];
+}
+
+/*
+    Writes the image into the DOM, resolved under the receiver's effective appearance, and
+    records what it wrote.
+
+    -setObjectValue: often runs outside layout, where the current drawing appearance is the
+    application's. A dynamic image then gave the picture of the application's appearance to a
+    view below another appearance. The bracket resolves it as -setBackgroundColor: resolves a
+    dynamic colour.
+*/
+- (void)_applyImage
+{
+    var previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
+
+    try
+    {
+        [self _applyImageInCurrentAppearance];
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
+}
+
+- (void)_applyImageInCurrentAppearance
+{
+    var defaultCenter = [CPNotificationCenter defaultCenter],
+        newImage = [self objectValue];
+
+    _appliedImageRecord = _CPImageViewRecordForImage(newImage);
 
     if (CPDOMAvailable)
     {
@@ -193,6 +250,8 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
     if (size && size.width === -1 && size.height === -1)
     {
+        // A second application after a change of appearance must not observe the image twice.
+        [defaultCenter removeObserver:self name:CPImageDidLoadNotification object:newImage];
         [defaultCenter addObserver:self selector:@selector(imageDidLoad:) name:CPImageDidLoadNotification object:newImage];
 
         if (CPDOMAvailable)
@@ -209,6 +268,18 @@ var CPImageViewEmptyPlaceholderImage = nil;
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
     }
+}
+
+/*
+    Applies the image again when it gives another file name or other CSS in the new
+    appearance. A plain image gives the same values, so nothing is written again.
+*/
+- (void)_effectiveAppearanceDidChange
+{
+    [super _effectiveAppearanceDidChange];
+
+    if (!_CPImageViewRecordsAreSame(_appliedImageRecord, _CPImageViewRecordForImage([self objectValue])))
+        [self _applyImageInCurrentAppearance];
 }
 
 - (void)imageDidLoad:(CPNotification)aNotification

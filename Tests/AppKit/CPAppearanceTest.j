@@ -21,6 +21,7 @@
  */
 
 @import <AppKit/CPAppearance.j>
+@import <AppKit/CPApplication.j>
 
 /*
     The expected matches for appearances of normal contrast are the results of AppKit's
@@ -33,6 +34,9 @@
 - (void)tearDown
 {
     [CPAppearance setCurrentAppearance:nil];
+
+    if (typeof CPApp !== "undefined" && CPApp)
+        [CPApp setAppearance:nil];
 }
 
 - (CPString)match:(CPString)aName in:(CPArray)someNames
@@ -179,6 +183,34 @@
     }];
 
     [self assert:[CPAppearance appearanceNamed:CPAppearanceNameAqua] equals:[CPAppearance currentDrawingAppearance]];
+}
+
+- (void)testSettingNilReturnsTheCurrentAppearanceToTheApplicationAppearance
+{
+    var vibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibrantDark],
+        darkAqua = [CPAppearance appearanceNamed:CPAppearanceNameDarkAqua];
+
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
+    [CPAppearance setCurrentAppearance:vibrantDark];
+    [self assert:vibrantDark same:[CPAppearance currentAppearance]];
+
+    [CPAppearance setCurrentAppearance:nil];
+    [self assert:[CPApp effectiveAppearance] same:[CPAppearance currentAppearance]];
+
+    [CPApp setAppearance:darkAqua];
+    [self assert:darkAqua same:[CPAppearance currentAppearance]];
+}
+
+// MARK: Archiving
+
+- (void)testADecodedAppearanceIsTheSharedInstance
+{
+    var darkAqua = [CPAppearance appearanceNamed:CPAppearanceNameDarkAqua],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:darkAqua]];
+
+    [self assert:darkAqua same:decoded];
 }
 
 @end

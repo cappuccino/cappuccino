@@ -784,7 +784,7 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
 
     if (_animates && addedCount > 0)
     {
-        [self layoutSubviews]; // Force views to spawn so we can animate them
+        [self _layoutSubviewsInEffectiveAppearance]; // Force views to spawn so we can animate them
         [self _animateExpandFromIndex:parentIndex addedCount:addedCount];
     }
 }
@@ -860,7 +860,7 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
     // Trigger Animation
     if (_animates && collapseRange.length > 0)
     {
-        [self layoutSubviews]; 
+        [self _layoutSubviewsInEffectiveAppearance]; 
         [self _animateCollapseFromIndex:collapseTopIndex removedCount:collapseRange.length ghosts:ghosts];
     }
 

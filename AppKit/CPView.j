@@ -137,6 +137,26 @@ var CPViewFlags                     = { },
 
 var CPViewHighDPIDrawingEnabled = YES;
 
+/*
+    Returns YES when the resolved colours aColor and anotherColor give the same output, so that
+    a setter can skip its DOM write. -[CPColor isEqual:] compares components and pattern images
+    but not CSS dictionaries, so a CSS-based colour or a pattern colour counts as unchanged
+    only when it is the same object.
+*/
+function _CPViewResolvedColorsAreSame(aColor, anotherColor)
+{
+    if (aColor === anotherColor)
+        return YES;
+
+    if (!aColor || !anotherColor)
+        return NO;
+
+    if ([aColor isCSSBased] || [anotherColor isCSSBased] || [aColor patternImage] || [anotherColor patternImage])
+        return NO;
+
+    return [aColor isEqual:anotherColor];
+}
+
 /*!
     @ingroup appkit
     @class CPView
@@ -153,6 +173,11 @@ var CPViewHighDPIDrawingEnabled = YES;
     <p>Subclasses can override \c -drawRect: in order to implement their
     appearance. Other methods of CPView and CPResponder can
     also be overridden to handle user generated events.
+*/
+/*
+    CPView also implements CPAppearanceCustomization. It declares only CPTheme because the
+    Objective-J parser rejects a list of protocols: it expects a comma token type that does
+    not exist.
 */
 @implementation CPView : CPResponder <CPTheme>
 {
@@ -201,6 +226,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     float               _opacity;
     CPColor             _backgroundColor;
+    CPColor             _backgroundColorResolved;
 
     BOOL                _autoresizesSubviews;
     unsigned            _autoresizingMask;
@@ -244,7 +270,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     BOOL                _allowsVibrancy         @accessors(property=allowsVibrancy);
     CPAppearance        _appearance             @accessors(getter=appearance);
-    CPAppearance        _currentAppearance;
+    CPAppearance        _appliedAppearance;
 
     CPMutableArray      _trackingAreas          @accessors(getter=trackingAreas, copy);
 
@@ -420,9 +446,6 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         _animator = nil;
         _animationsDictionary = @{};
-
-        // Set the current appearance to something that can't be the correct one so it will recalculate it at the first layout.
-        _currentAppearance = aFrame;
 
         [self _setupViewFlags];
         [self _loadThemeAttributes];
@@ -679,6 +702,8 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (!_window && lastWindow)
         [aSubview _setWindow:nil];
 
+    [aSubview _recomputeAppearanceWithSuperviewEffectiveAppearance:[self effectiveAppearance]];
+
     if (isNewAddOrMove)
         [aSubview _postViewDidAppearNotification];
 
@@ -721,7 +746,10 @@ var CPViewHighDPIDrawingEnabled = YES;
     [self viewDidMoveToSuperview];
 
     if (superview)
+    {
         [self _setWindow:nil];
+        [self _recomputeAppearanceWithSuperviewEffectiveAppearance:[self _inheritedEffectiveAppearance]];
+    }
 }
 
 - (void)_removeFromSuperview
@@ -1216,7 +1244,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         }
         else
         {
-            var images = [[_backgroundColor patternImage] imageSlices],
+            var images = [[_backgroundColorResolved patternImage] imageSlices],
                 partIndex = 0,
                 frameSize = aSize;
 
@@ -2026,29 +2054,89 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)setBackgroundColor:(CPColor)aColor
 {
-    if (_backgroundColor === aColor)
-        return;
-
     if (aColor === [CPNull null])
         aColor = nil;
 
+    /*
+        The setter returned early whenever it received the same object. A dynamic colour is
+        one shared object whose value depends on the appearance, so a layout that set it again
+        after an appearance change left the old value in the DOM. The setter now skips only
+        when the object and its resolved value are both unchanged.
+    */
+    var resolvedColor = [self _resolvedBackgroundColor:aColor];
+
+    if (_backgroundColor === aColor && _CPViewResolvedColorsAreSame(resolvedColor, _backgroundColorResolved))
+        return;
+
     _backgroundColor = aColor;
+    _backgroundColorResolved = resolvedColor;
 
     if (!CPDOMAvailable)
         return;
 
+    [self _applyBackgroundColor];
+}
+
+/*
+    Returns aColor resolved for the receiver: a dynamic colour resolves under the receiver's
+    effective appearance, whatever the current drawing appearance is.
+*/
+- (CPColor)_resolvedBackgroundColor:(CPColor)aColor
+{
+    if (!aColor)
+        return nil;
+
+    if (![aColor isKindOfClass:_CPDynamicColor])
+        return aColor;
+
+    var previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
+
+    try
+    {
+        return [aColor _resolvedColor];
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
+}
+
+/*
+    Applies the background colour again when the receiver's appearance gives it another
+    resolved value.
+*/
+- (void)_reapplyBackgroundColorIfNeeded
+{
+    var resolvedColor = [self _resolvedBackgroundColor:_backgroundColor];
+
+    if (_CPViewResolvedColorsAreSame(resolvedColor, _backgroundColorResolved))
+        return;
+
+    _backgroundColorResolved = resolvedColor;
+
+    if (CPDOMAvailable)
+        [self _applyBackgroundColor];
+}
+
+/*
+    Writes the resolved background colour into the DOM.
+*/
+- (void)_applyBackgroundColor
+{
+    var color = _backgroundColorResolved;
+
     if (_backgroundType === BackgroundCSSStyling)
         [CPColor restorePreviousCSSState:@ref(_cssStylePreviousState) forDOMElement:_DOMElement];
 
-    var patternImage = [_backgroundColor patternImage],
-        colorExists = _backgroundColor && ([_backgroundColor patternImage] || [_backgroundColor alphaComponent] > 0.0),
-        colorHasAlpha = colorExists && [_backgroundColor alphaComponent] < 1.0,
+    var patternImage = [color patternImage],
+        colorExists = color && ([color patternImage] || [color alphaComponent] > 0.0),
+        colorHasAlpha = colorExists && [color alphaComponent] < 1.0,
         supportsRGBA = CPFeatureIsCompatible(CPCSSRGBAFeature),
         colorNeedsDOMElement = colorHasAlpha && !supportsRGBA,
         amount = 0,
         slices,
         // For CSS theming
-        isCSSBasedColor = [_backgroundColor isCSSBased];
+        isCSSBasedColor = [color isCSSBased];
 
     if (isCSSBasedColor)
     {
@@ -2120,27 +2208,27 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     if (_backgroundType === BackgroundCSSStyling)
     {
-        _cssStyleNode = [_backgroundColor applyCSSColorForView:self
+        _cssStyleNode = [color applyCSSColorForView:self
                                                   onDOMElement:_DOMElement
                                                      styleNode:_cssStyleNode
                                                  previousState:@ref(_cssStylePreviousState)];
     }
     else if (_backgroundType === BackgroundTrivialColor || _backgroundType === BackgroundTransparentColor)
     {
-        var colorCSS = colorExists ? [_backgroundColor cssString] : "";
+        var colorCSS = colorExists ? [color cssString] : "";
 
         if (colorNeedsDOMElement)
         {
             _DOMElement.style.background = "";
-            _DOMImageParts[0].style.background = [_backgroundColor cssString];
+            _DOMImageParts[0].style.background = [color cssString];
 
             if (patternImage)
                 CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[0], [patternImage size].width + "px", [patternImage size].height + "px");
 
             if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
-                _DOMImageParts[0].style.filter = "alpha(opacity=" + [_backgroundColor alphaComponent] * 100 + ")";
+                _DOMImageParts[0].style.filter = "alpha(opacity=" + [color alphaComponent] * 100 + ")";
             else
-                _DOMImageParts[0].style.opacity = [_backgroundColor alphaComponent];
+                _DOMImageParts[0].style.opacity = [color alphaComponent];
 
             var size = [self bounds].size;
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], size.width, size.height);
@@ -2751,9 +2839,22 @@ setBoundsOrigin:
 */
 - (void)displayRect:(CGRect)aRect
 {
-    [self viewWillDraw];
+    /*
+        A view draws with its effective appearance as the current drawing appearance, so that
+        dynamic colours and images resolve for this view.
+    */
+    var previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
 
-    [self displayRectIgnoringOpacity:aRect inContext:nil];
+    try
+    {
+        [self viewWillDraw];
+
+        [self displayRectIgnoringOpacity:aRect inContext:nil];
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
 
     _dirtyRect = NULL;
 }
@@ -2866,13 +2967,46 @@ setBoundsOrigin:
 {
     _needsLayout = NO;
 
-    if (_viewClassFlags & CPViewHasCustomViewWillLayout)
-        [self viewWillLayout];
+    /*
+        A view lays out with its effective appearance as the current drawing appearance, so
+        that dynamic colours and images resolve for this view.
+    */
+    var previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
 
-    if (_viewClassFlags & CPViewHasCustomLayoutSubviews)
+    try
+    {
+        if (_viewClassFlags & CPViewHasCustomViewWillLayout)
+            [self viewWillLayout];
+
+        if (_viewClassFlags & CPViewHasCustomLayoutSubviews)
+            [self layoutSubviews];
+
+        [self viewDidLayout];
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
+}
+
+/*
+    Calls -layoutSubviews with the receiver's effective appearance as the current drawing
+    appearance. Code that lays out subviews outside -layout calls this in place of
+    -layoutSubviews: a direct call skipped the appearance of -layout, so a view with an
+    appearance of its own laid out with the application's.
+*/
+- (void)_layoutSubviewsInEffectiveAppearance
+{
+    var previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
+
+    try
+    {
         [self layoutSubviews];
-
-    [self viewDidLayout];
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
 }
 
 - (void)layoutIfNeeded
@@ -2894,7 +3028,6 @@ setBoundsOrigin:
 */
 - (void)viewDidLayout
 {
-    [self _recomputeAppearanceWithSuperviewEffectiveAppearance:[self effectiveAppearance]];
 }
 
 - (void)layoutSubviews
@@ -3626,90 +3759,149 @@ setBoundsOrigin:
 
 @implementation CPView (Appearance)
 
-/*! Returns the receiver's appearance if any, or ask the superview and returns it.
+/*!
+    Returns the appearance that the receiver uses: its own appearance, else the effective
+    appearance of its superview, else of its window, else of the application. It is never
+    \c nil.
 */
 - (CPAppearance)effectiveAppearance
 {
-    if (_appearance)
-        return _appearance;
-
-    return [_superview effectiveAppearance];
+    return _appearance || [self _inheritedEffectiveAppearance];
 }
 
+/*
+    Returns the effective appearance that the receiver inherits: its superview's, else its
+    window's, else the application's.
+*/
+- (CPAppearance)_inheritedEffectiveAppearance
+{
+    if (_superview)
+        return [_superview effectiveAppearance];
+
+    if (_window)
+        return [_window effectiveAppearance];
+
+    return _CPAppearanceForApplication();
+}
+
+/*!
+    Sets the receiver's appearance. \c nil makes the receiver inherit its appearance. The
+    receiver and every subview whose effective appearance changes apply the new one at once.
+    @param anAppearance the appearance, or \c nil
+*/
 - (void)setAppearance:(CPAppearance)anAppearance
 {
-    if ([_appearance isEqual:anAppearance])
+    if (_appearance === anAppearance || [_appearance isEqual:anAppearance])
         return;
 
     [self willChangeValueForKey:@"appearance"];
     _appearance = anAppearance;
     [self didChangeValueForKey:@"appearance"];
 
-    [self setNeedsLayout:YES];
+    [self _recomputeAppearanceWithSuperviewEffectiveAppearance:[self _inheritedEffectiveAppearance]];
 }
 
-var CPAppearanceAqua = [CPAppearance appearanceNamed:CPAppearanceNameAqua];
-var CPAppearanceLightContent = [CPAppearance appearanceNamed:CPAppearanceNameLightContent];
-var CPAppearanceVibrantLight = [CPAppearance appearanceNamed:CPAppearanceNameVibrantLight];
-var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibrantDark];
+/*!
+    Called when the receiver's effective appearance changes, after the receiver applied the
+    new one: \c -effectiveAppearance returns it, and it is the current drawing appearance.
+    The receiver is already marked for layout and display. Override this to update values that
+    the receiver keeps outside layout and drawing; the default does nothing.
 
-/*! @ignore
+    The method can run while a cib loads, before \c -awakeFromNib, when outlets may not yet be
+    connected: a window whose appearance in the cib differs from the application's applies it
+    to its views then.
 */
-- (void)_recomputeAppearanceWithSuperviewEffectiveAppearance:(CPAppearance)superviewEffectiveAppearance
+- (void)viewDidChangeEffectiveAppearance
 {
-    var effectiveAppearance = _appearance || superviewEffectiveAppearance;
+}
 
-    // Only reset the themestates if it is different from the current one so we get good performance.
-    if (effectiveAppearance != _currentAppearance) {
-        switch (effectiveAppearance) {
-            case CPAppearanceAqua:
-                [self setThemeState:CPThemeStateAppearanceAqua];
-                [self unsetThemeState:CPThemeStateAppearanceLightContent];
-                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
-                break;
-            case CPAppearanceLightContent:
-                [self unsetThemeState:CPThemeStateAppearanceAqua];
-                [self setThemeState:CPThemeStateAppearanceLightContent];
-                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
-                break;
-            case CPAppearanceVibrantLight:
-                [self unsetThemeState:CPThemeStateAppearanceAqua];
-                [self unsetThemeState:CPThemeStateAppearanceLightContent];
-                [self setThemeState:CPThemeStateAppearanceVibrantLight];
-                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
-                break;
-            case CPAppearanceVibrantDark:
-                [self unsetThemeState:CPThemeStateAppearanceAqua];
-                [self unsetThemeState:CPThemeStateAppearanceLightContent];
-                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-                [self setThemeState:CPThemeStateAppearanceVibrantDark];
-                break;
-            default:
-                [self unsetThemeState:CPThemeStateAppearanceAqua];
-                [self unsetThemeState:CPThemeStateAppearanceLightContent];
-                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
-        }
+/*
+    Called before -viewDidChangeEffectiveAppearance, for AppKit's own work, so that an
+    override of the public method without a call to super cannot disable it. CPView applies
+    its background colour again.
+*/
+- (void)_effectiveAppearanceDidChange
+{
+    [self _reapplyBackgroundColorIfNeeded];
+}
 
-        _currentAppearance = effectiveAppearance;
-    }
+/*
+    Applies the receiver's effective appearance and then visits every subview.
+    The walk does not stop at an unchanged view: a view outside a window can hold
+    an old record, and a view below it a new one.
 
-//    var start = [CPDate new];
+    The appearance was applied from -viewDidLayout, a public hook that a subclass could
+    override without a call to super. It compared appearances by identity, so a decoded
+    appearance never matched, and it knew only four of the nine appearances. Every layout
+    walked the whole subtree, and every change cost a second layout pass. The walk now runs
+    once, at the change.
+*/
+- (void)_recomputeAppearanceWithSuperviewEffectiveAppearance:(CPAppearance)anInheritedAppearance
+{
+    var appearance = _appearance || anInheritedAppearance;
 
-    for (var i = 0, size = [_subviews count]; i < size; i++)
+    [self _applyEffectiveAppearance:appearance];
+
+    var subviews = [_subviews copy];
+
+    for (var i = 0, count = subviews.length; i < count; i++)
+        [subviews[i] _recomputeAppearanceWithSuperviewEffectiveAppearance:appearance];
+}
+
+/*
+    Records anAppearance as the receiver's applied appearance and holds its theme state. When
+    the name differs from the one applied before, the receiver posts KVO for
+    effectiveAppearance, marks itself for layout and display, and calls the two hooks with
+    anAppearance as the current drawing appearance. A view that has applied none counts as
+    having the application's appearance.
+*/
+- (void)_applyEffectiveAppearance:(CPAppearance)anAppearance
+{
+    // A view that is not yet fully decoded has no theme state, and its decoding applies none.
+    if (!_themeState)
+        return;
+
+    var name = [anAppearance name],
+        previousName = [(_appliedAppearance || _CPAppearanceForApplication()) name],
+        changes = name !== previousName,
+        state = _CPThemeStateForAppearanceName(name);
+
+    if (changes)
+        [self willChangeValueForKey:@"effectiveAppearance"];
+
+    _appliedAppearance = anAppearance;
+
+    /*
+        Unset the other appearance states, never the new one: both calls then do nothing when
+        the state is already right, so a walk over an unchanged view schedules no layout and no
+        display. A view decoded from an older archive can hold a state without a record, so
+        this does not rely on the record.
+    */
+    [self unsetThemeState:_CPThemeStateAppearanceAll.without(state)];
+
+    if (state)
+        [self setThemeState:state];
+
+    if (!changes)
+        return;
+
+    [self didChangeValueForKey:@"effectiveAppearance"];
+
+    [self setNeedsLayout:YES];
+    [self setNeedsDisplay:YES];
+
+    var previousAppearance = _CPAppearanceBeginDrawing(anAppearance);
+
+    try
     {
-        [[_subviews objectAtIndex:i] _recomputeAppearanceWithSuperviewEffectiveAppearance:effectiveAppearance];
+        [self _effectiveAppearanceDidChange];
+        [self viewDidChangeEffectiveAppearance];
     }
-//    [_subviews makeObjectsPerformSelector:@selector(_recomputeAppearance)];
-
-/*    var now = [CPDate new];
-    var elapsedSeconds = [now timeIntervalSinceReferenceDate] - [start timeIntervalSinceReferenceDate];
-
-    CPLog.trace(@"_recomputeAppearance " + [_subviews count] + " subviews in " + elapsedSeconds + @" seconds");
-*/}
-
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
+}
 
 @end
 
@@ -3905,7 +4097,13 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey] || @[];
 
     [self _decodeThemeObjectsWithCoder:aCoder];
-    [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
+
+    /*
+        Assign the appearance directly. A setter call here walked a view that was not fully
+        decoded and ran its hooks before its subviews existed. The walk at insertion into a
+        window applies the appearance.
+    */
+    _appearance = [aCoder decodeObjectForKey:CPViewAppearanceKey];
 
     self = [super initWithCoder:aCoder];
 
@@ -3982,10 +4180,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             [self setWantsLayer:[aCoder decodeBoolForKey:CPViewWantsLayerKey]];
 
         [self _setupViewFlags];
-
-        [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
-        // Set the current appearance to something that can't be the correct one so it will recalculate it at the first layout.
-        _currentAppearance = _frame;
 
         [self updateTrackingAreas];
         [self setNeedsDisplay:YES];

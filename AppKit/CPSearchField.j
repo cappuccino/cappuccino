@@ -877,16 +877,31 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     grannyImplementation(self, @selector(setBackgroundColor:), aColor);
 }
 
+/*
+    The callers run outside -layout, in event handlers and first responder changes, where the
+    current drawing appearance is the application's. A search field with an appearance of its
+    own then laid out with the application's. The body now runs in the receiver's effective
+    appearance, as -layout runs layoutSubviews.
+*/
 - (void)_layoutSubviews
 {
-    var themedLayoutFunction = [self currentValueForThemeAttribute:@"layout-function"];
+    var previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
 
-    if (themedLayoutFunction)
-        // There's a theme defined layout function, just use it
-        objj_eval("("+themedLayoutFunction+")")(self);
-    else
-        // Call directly the completion handler
-        [self themedLayoutFunctionCompletionHandler];
+    try
+    {
+        var themedLayoutFunction = [self currentValueForThemeAttribute:@"layout-function"];
+
+        if (themedLayoutFunction)
+            // There's a theme defined layout function, just use it
+            objj_eval("("+themedLayoutFunction+")")(self);
+        else
+            // Call directly the completion handler
+            [self themedLayoutFunctionCompletionHandler];
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
 }
 
 - (void)updateSearchButton
@@ -907,11 +922,11 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         // For some (unknown yet) reason, input field doesn't focus and text field visual state is not updated
         var element = [self _inputElement];
         element.focus();
-        [self layoutSubviews];
+        [self _layoutSubviewsInEffectiveAppearance];
         [CALayer runLoopUpdateLayers]; // Thank you @daboe01 for suggesting adding this
     }
     else
-        [self layoutSubviews];
+        [self _layoutSubviewsInEffectiveAppearance];
 }
 
 // We override CPTextField method in order to delay the display of the input element until the end of the animation

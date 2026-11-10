@@ -23,6 +23,8 @@
 @import <Foundation/CPBundle.j>
 
 @import "CPApplication_Constants.j"
+@import "CPAppearance.j"
+@import "_CPAppearanceManager.j"
 @import "CPCompatibility.j"
 @import "CPColorPanel.j"
 @import "CPCursor.j"
@@ -90,8 +92,10 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     Sent from the notification center before the app is initialized.
     @param aNotification contains information about the event
 */
-@implementation CPApplication : CPResponder
+@implementation CPApplication : CPResponder <CPAppearanceCustomization>
 {
+    CPAppearance                _appearance;
+
     CPArray                     _eventListeners;
     int                         _eventListenerInsertionIndex;
 
@@ -727,6 +731,76 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 {
     // Return all windows, but not the CPNull placeholder in _windows[0].
     return [_windows subarrayWithRange:CPMakeRange(1, [_windows count] - 1)];
+}
+
+// MARK: Appearance
+
+/*!
+    Returns the appearance set on the application, or \c nil when the application follows the
+    system appearance.
+*/
+- (CPAppearance)appearance
+{
+    return _appearance;
+}
+
+/*!
+    Returns the appearance that the application uses: its own appearance, else the system
+    appearance. It is never \c nil. Windows without an appearance of their own take it.
+*/
+- (CPAppearance)effectiveAppearance
+{
+    return _appearance || [[_CPAppearanceManager sharedManager] systemAppearance];
+}
+
+/*!
+    Sets the application's appearance. \c nil makes the application follow the system
+    appearance. Every window and view whose effective appearance changes applies the new one.
+    @param anAppearance the appearance, or \c nil
+*/
+- (void)setAppearance:(CPAppearance)anAppearance
+{
+    if (_appearance === anAppearance || [_appearance isEqual:anAppearance])
+        return;
+
+    var previousName = [[self effectiveAppearance] name],
+        newName = [(anAppearance || [[_CPAppearanceManager sharedManager] systemAppearance]) name],
+        effectiveAppearanceChanges = newName !== previousName;
+
+    [self willChangeValueForKey:@"appearance"];
+
+    if (effectiveAppearanceChanges)
+        [self willChangeValueForKey:@"effectiveAppearance"];
+
+    _appearance = anAppearance;
+
+    if (effectiveAppearanceChanges)
+        [self didChangeValueForKey:@"effectiveAppearance"];
+
+    [self didChangeValueForKey:@"appearance"];
+
+    [self _effectiveAppearanceDidChange];
+}
+
+/*
+    Called by _CPAppearanceManager when the system appearance changes.
+*/
+- (void)_systemAppearanceDidChange
+{
+    if (!_appearance)
+        [self _effectiveAppearanceDidChange];
+}
+
+/*
+    Applies the application's effective appearance to every window. A window without an
+    appearance of its own passes the change to its views, its child windows and its sheet.
+*/
+- (void)_effectiveAppearanceDidChange
+{
+    var windows = [self windows];
+
+    for (var i = 0, count = windows.length; i < count; i++)
+        [windows[i] _updateEffectiveAppearance];
 }
 
 /*!

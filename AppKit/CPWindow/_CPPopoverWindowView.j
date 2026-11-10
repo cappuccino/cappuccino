@@ -122,7 +122,6 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
     {
         _arrowOffsetX = 0.0;
         _arrowOffsetY = 0.0;
-        _appearance = [CPAppearance appearanceNamed:CPAppearanceNameVibrantLight];
         _cursorSize = CGSizeMakeCopy(_CPPopoverWindowViewDefaultCursorSize);
         _contentViewSavedBackgroundColor = nil;
     }
@@ -168,7 +167,12 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
         gradient,
         frame = [self bounds];
 
-    if ([_appearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]])
+    /*
+        The view set its own appearance and compared it with VibrantLight, so it ignored the
+        appearance of its window. It now reads its effective appearance, which the popover
+        sets on the window, and takes the plain values for every light appearance.
+    */
+    if ([[self effectiveAppearance] bestMatchFromAppearancesWithNames:@[CPAppearanceNameAqua, CPAppearanceNameDarkAqua]] === CPAppearanceNameAqua)
     {
         gradient = [self valueForThemeAttribute:@"background-gradient"];
         strokeColor = [self valueForThemeAttribute:@"stroke-color"];

@@ -57,7 +57,6 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 {
     BOOL            _animates           @accessors(property=animates);
     id              _targetView         @accessors(property=targetView);
-    int             _appearance         @accessors(getter=appearance);
     BOOL            _isClosing          @accessors(property=isClosing);
     BOOL            _isOpening          @accessors(property=isOpening);
 
@@ -141,19 +140,6 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
 // MARK: -
 // MARK: Getters / Setters
-
-- (void)setAppearance:(int)anAppearance
-{
-    if (_appearance === anAppearance)
-        return;
-
-    _appearance = anAppearance;
-
-    var appearanceName = _appearance == CPPopoverAppearanceMinimal ? CPAppearanceNameVibrantLight : CPAppearanceNameVibrantDark,
-        viewAppearance = [CPAppearance appearanceNamed:appearanceName];
-
-    [_windowView setAppearance:viewAppearance];
-}
 
 - (void)setStyleMask:(unsigned)aStyleMask
 {

@@ -32,6 +32,12 @@
 */
 @class CPResponder
 
+/*
+    CPAppearance.j defines the composite of the nine appearance states. This file comes early
+    in AppKit's import order and reads the value only when it encodes.
+*/
+@global _CPThemeStateAppearanceAll
+
 var CPViewThemeClassKey             = @"CPViewThemeClassKey",
     CPViewThemeStateKey             = @"CPViewThemeStateKey";
 
@@ -455,7 +461,13 @@ var NULL_THEME = {};
 - (void)_encodeThemeObjectsWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:[self themeClass] forKey:CPViewThemeClassKey];
-    [aCoder encodeObject:String(_themeState) forKey:CPViewThemeStateKey];
+    /*
+        Leave the appearance states out. They derive from the appearance chain, so an archive
+        that kept them held a state that was wrong wherever the copy was decoded, and a
+        decoded view outside any hierarchy held an appearance state. The decoded view applies
+        its appearance when it enters a hierarchy.
+    */
+    [aCoder encodeObject:String(_themeState.without(_CPThemeStateAppearanceAll)) forKey:CPViewThemeStateKey];
 
     for (var attributeName in _themeAttributes)
     {

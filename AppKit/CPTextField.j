@@ -2104,7 +2104,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView)];
     [self setValue:aFont forThemeAttribute:@"font" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow)];
 
-    [self layoutSubviews];
+    [self _layoutSubviewsInEffectiveAppearance];
 }
 
 - (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
@@ -2156,7 +2156,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     [self setValue:placeholderColor forThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
 
-    [self layoutSubviews];
+    [self _layoutSubviewsInEffectiveAppearance];
 }
 
 - (void)viewDidHide

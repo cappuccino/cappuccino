@@ -68,6 +68,10 @@ CPVisualEffectStateInactive                 = 2;
         _material                = CPVisualEffectMaterialAppearanceBased;
         _blendingMode            = CPVisualEffectBlendingModeWithinWindow;
         _state                   = CPVisualEffectStateFollowsWindowActiveState;
+        /*
+            A view made in code keeps VibrantDark as its own appearance, as before. In AppKit a
+            new NSVisualEffectView has none; an application that wants this sets nil.
+        */
         _appearance              = [CPAppearance appearanceNamed:CPAppearanceNameVibrantDark];
     }
 
@@ -77,22 +81,6 @@ CPVisualEffectStateInactive                 = 2;
 
 // MARK: -
 // MARK: CPVisualEffectView API
-
-/*! Sets the appearance of the CPVisualEffectView.
-
-    Only CPAppearance named CPAppearanceNameVibrantDark or CPAppearanceNameVibrantLight are valid
-
-    @param anAppearance the CPAppearance.
-*/
-- (void)setAppearance:(CPAppearance)anAppearance
-{
-    if (![self _validAppearance:anAppearance])
-        [CPException raise:CPInvalidArgumentException reason:"Appearance can only be CPAppearanceNameVibrantDark or CPAppearanceNameVibrantLight in CPVisualEffectView, but is " + anAppearance];
-
-    [super setAppearance:anAppearance];
-
-    [self setNeedsLayout:YES];
-}
 
 /*! Sets the received effect state.
     Possible values:
@@ -118,9 +106,14 @@ CPVisualEffectStateInactive                 = 2;
 // MARK: -
 // MARK: Utilities
 
+/*
+    The view read its own appearance and accepted only the two vibrant appearances, so a view
+    without an appearance of its own, or below a dark window, took the light colour. It now
+    reads its effective appearance and takes the dark colour for every dark appearance.
+*/
 - (void)_setEffectEnabled:(BOOL)shouldEnable
 {
-    var dark       = [[self appearance] isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]],
+    var dark       = [[self effectiveAppearance] bestMatchFromAppearancesWithNames:@[CPAppearanceNameAqua, CPAppearanceNameDarkAqua]] === CPAppearanceNameDarkAqua,
         color      = (dark ? [CPColor colorWithHexString:@"1e1e1e"] : [CPColor whiteColor]),
         finalColor = shouldEnable ? [color colorWithAlphaComponent:0.6] : color;
 
@@ -149,11 +142,6 @@ CPVisualEffectStateInactive                 = 2;
             [self _setEffectEnabled:NO];
             break;
     }
-}
-
-- (BOOL)_validAppearance:(CPAppearance)anAppearance
-{
-    return [anAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]] || [anAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]];
 }
 
 
