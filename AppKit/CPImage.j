@@ -1401,7 +1401,7 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
 @implementation _CPDynamicImage : CPImage
 {
     CGSize      _sizeOverride;
-    CPImage     _observedImage;
+    CPArray     _pendingImages;
 }
 
 - (id)_initWithDynamicImageName:(CPString)aName
@@ -1462,7 +1462,12 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
 
     var resolvedImage = [self _resolvedImage];
 
-    return resolvedImage ? [resolvedImage size] : CGSizeMakeZero();
+    if (!resolvedImage)
+        return CGSizeMakeZero();
+
+    [self _observeImage:resolvedImage];
+
+    return [resolvedImage size];
 }
 
 - (Image)image
@@ -1579,28 +1584,43 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
 
 /*
     A view that finds the image not yet loaded waits for CPImageDidLoadNotification from the
-    system image, so the system image posts it when the resolved image loads.
+    dynamic image, so the dynamic image posts it when a resolved image loads. The dynamic image
+    watched the resolved image only in -loadStatus and -load, and only one image at a time.
+    CPImageView reads -size, so it never received the notification, and an image resolved in a
+    second appearance replaced the first. The dynamic image now watches each resolved image
+    that -size, -loadStatus or -load finds loading, and posts once for each one that loads. A
+    view that receives the notification checks its own image again, because the image that
+    loaded can belong to another appearance.
 */
 - (void)_observeImage:(CPImage)anImage
 {
-    if (!anImage || anImage === _observedImage || [anImage loadStatus] === CPImageLoadStatusCompleted)
+    if (!anImage)
         return;
 
-    var center = [CPNotificationCenter defaultCenter];
+    /*
+        An image that has loaded posts nothing more, and an image that failed posts nothing.
+    */
+    var status = [anImage loadStatus];
 
-    if (_observedImage)
-        [center removeObserver:self name:CPImageDidLoadNotification object:_observedImage];
+    if (status !== CPImageLoadStatusInitialized && status !== CPImageLoadStatusLoading)
+        return;
 
-    _observedImage = anImage;
+    if (!_pendingImages)
+        _pendingImages = [];
 
-    [center addObserver:self selector:@selector(_observedImageDidLoad:) name:CPImageDidLoadNotification object:anImage];
+    if ([_pendingImages indexOfObjectIdenticalTo:anImage] !== CPNotFound)
+        return;
+
+    [_pendingImages addObject:anImage];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_pendingImageDidLoad:) name:CPImageDidLoadNotification object:anImage];
 }
 
-- (void)_observedImageDidLoad:(CPNotification)aNotification
+- (void)_pendingImageDidLoad:(CPNotification)aNotification
 {
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_observedImage];
+    var loadedImage = [aNotification object];
 
-    _observedImage = nil;
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:loadedImage];
+    [_pendingImages removeObjectIdenticalTo:loadedImage];
 
     [self _imageDidLoad];
 }

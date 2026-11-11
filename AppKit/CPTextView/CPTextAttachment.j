@@ -279,6 +279,14 @@ _CPTextAttachmentDidChangeSizeNotification = @"_CPTextAttachmentDidChangeSizeNot
 */
 - (void)_imageDidLoad:(CPNotification)aNotification
 {
+    /*
+        A dynamic image posts the notification when any of its resolved images loads. The
+        attachment took every notification as the load of its own image, so it took the size of
+        an image that was still loading and stopped waiting for it.
+    */
+    if ([_image loadStatus] !== CPImageLoadStatusCompleted)
+        return;
+
     [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_image];
 
     if (_imageView)

@@ -282,9 +282,37 @@ function _CPImageViewRecordsAreSame(aRecord, anotherRecord)
         [self _applyImageInCurrentAppearance];
 }
 
+/*
+    A dynamic image posts the notification when any of its resolved images loads, and that
+    image can belong to another appearance. The view took every notification as the load of its
+    own image, so it showed an image that was still loading and stopped waiting for it. The view
+    now resolves its image again in its effective appearance: a new image is applied, an image
+    that is still loading is awaited further, and a loaded image is shown.
+*/
 - (void)imageDidLoad:(CPNotification)aNotification
 {
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:[self objectValue]];
+    var image = [self objectValue],
+        previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
+
+    try
+    {
+        if (!_CPImageViewRecordsAreSame(_appliedImageRecord, _CPImageViewRecordForImage(image)))
+        {
+            [self _applyImageInCurrentAppearance];
+            return;
+        }
+
+        var size = [image size];
+
+        if (size && size.width === -1 && size.height === -1)
+            return;
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:image];
     [self hideOrDisplayContents];
 
     [self setNeedsLayout];

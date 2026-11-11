@@ -376,13 +376,31 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     if (_image == anImage)
         return;
 
+    /*
+        The view kept observing a replaced image, so the load of that image laid the view out
+        and removed the observation of the new one.
+    */
+    if (_image)
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_image];
+
     _image = anImage;
     _flags |= _CPImageAndTextViewImageChangedFlag;
 
-    if ([_image loadStatus] !== CPImageLoadStatusCompleted)
-        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(imageDidLoad:) name:CPImageDidLoadNotification object:_image];
-
+    [self _waitForImageIfLoading];
     [self setNeedsLayout];
+}
+
+/*
+    Observes the image while it is still loading in the current drawing appearance.
+*/
+- (void)_waitForImageIfLoading
+{
+    var center = [CPNotificationCenter defaultCenter];
+
+    [center removeObserver:self name:CPImageDidLoadNotification object:_image];
+
+    if (_image && [_image loadStatus] !== CPImageLoadStatusCompleted)
+        [center addObserver:self selector:@selector(imageDidLoad:) name:CPImageDidLoadNotification object:_image];
 }
 
 - (void)setImageOffset:(float)theImageOffset
@@ -867,6 +885,15 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             }
         }
     }
+
+    /*
+        The view waited for an image only when it received it, outside layout. A dynamic image
+        that resolved to a loading image in this view's appearance, after a change of appearance
+        or after a notification for another appearance's image, left the view without the
+        picture. Layout resolves the image in this view's appearance, so the view waits here.
+    */
+    if (_flags & _CPImageAndTextViewImageChangedFlag)
+        [self _waitForImageIfLoading];
 
     _flags = 0;
 }
