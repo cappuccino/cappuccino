@@ -387,6 +387,15 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     return [super couldBeMoveEvent:anEvent];
 }
 
+/*
+    A sheet takes the frame shape of a document-modal window, as it takes the body colour of
+    that class: its top edge lies under the parent window's title bar.
+*/
+- (Class)_frameClass
+{
+    return _isSheet ? _CPDocModalWindowView : [super _frameClass];
+}
+
 - (void)_enableSheet:(BOOL)enable inWindow:(CPWindow)parentWindow
 {
     [super _enableSheet:enable inWindow:parentWindow];

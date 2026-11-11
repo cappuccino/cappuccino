@@ -386,24 +386,6 @@ CPTexturedBackgroundWindowMask
         [_windowView _setWindow:self];
         [_windowView setNextResponder:self];
 
-        // CSS Styling
-        if (CPDOMAvailable)
-        {
-            var radius;
-
-            if (radius = [_windowView actualValueForThemeAttribute:@"border-top-left-radius"])
-                _windowView._DOMElement.style.borderTopLeftRadius = radius;
-
-            if (radius = [_windowView actualValueForThemeAttribute:@"border-top-right-radius"])
-                _windowView._DOMElement.style.borderTopRightRadius = radius;
-
-            if (radius = [_windowView actualValueForThemeAttribute:@"border-bottom-left-radius"])
-                _windowView._DOMElement.style.borderBottomLeftRadius = radius;
-
-            if (radius = [_windowView actualValueForThemeAttribute:@"border-bottom-right-radius"])
-                _windowView._DOMElement.style.borderBottomRightRadius = radius;
-        }
-        
         // Size calculation needs _windowView
         _minSize = [self _calculateMinSizeForProposedSize:CGSizeMake(0.0, 0.0)];
         _maxSize = CGSizeMake(1000000.0, 1000000.0);

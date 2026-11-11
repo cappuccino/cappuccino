@@ -29,6 +29,7 @@
 @class CPPlatformWindow
 
 @global CPApp
+@global document
 
 var _CPWindowViewCornerResizeRectWidth = 10,
     _CPWindowViewMinContentHeight = 2,
@@ -44,6 +45,43 @@ var _CPWindowViewCornerResizeRectWidth = 10,
     _CPWindowViewResizeRegionLeft = 7;
 
 _CPWindowViewResizeSlop = 3;
+
+/*
+    Returns the CSS radius for the corner of a view that lies inside a window view corner of
+    radius anOuterRadius, aHorizontalInset and aVerticalInset points from it. Each component is
+    the outer radius less the inset, never less than zero, so the two curves have one centre.
+    An empty anOuterRadius gives an empty string, which removes the radius.
+*/
+function _CPWindowViewInnerCornerRadius(anOuterRadius, aHorizontalInset, aVerticalInset)
+{
+    if (!anOuterRadius)
+        return "";
+
+    return "max(0px, " + anOuterRadius + " - " + aHorizontalInset + "px) max(0px, " + anOuterRadius + " - " + aVerticalInset + "px)";
+}
+
+/*
+    Returns the CSS radius for a corner of the frame border, which extends aWidth points beyond
+    a window view corner of radius anOuterRadius. The radius is the outer radius plus the width,
+    so the two curves have one centre.
+*/
+function _CPWindowViewFrameBorderRadius(anOuterRadius, aWidth)
+{
+    return "calc(" + (anOuterRadius || "0px") + " + " + aWidth + "px)";
+}
+
+/*
+    Writes four corner radii into the style of aDOMElement. Nil radii remove them.
+*/
+function _CPWindowViewSetCornerRadii(aDOMElement, someRadii)
+{
+    var style = aDOMElement.style;
+
+    style.borderTopLeftRadius = someRadii ? someRadii.topLeft : "";
+    style.borderTopRightRadius = someRadii ? someRadii.topRight : "";
+    style.borderBottomLeftRadius = someRadii ? someRadii.bottomLeft : "";
+    style.borderBottomRightRadius = someRadii ? someRadii.bottomRight : "";
+}
 
 
 @implementation _CPWindowView : CPView
@@ -64,6 +102,8 @@ _CPWindowViewResizeSlop = 3;
     CGRect      _cachedScreenFrame;
 
     CPView      _sheetShadowView;
+    CPView      _cornerClippedView;
+    DOMElement  _frameBorderElement;
 
     BOOL        _isTracking @accessors(getter=_isTracking);
 }
@@ -145,6 +185,8 @@ _CPWindowViewResizeSlop = 3;
             @"zoom-image-origin": [CPNull null],
             @"zoom-image-size": [CPNull null],
             @"frame-outset": CGInsetMakeZero(),
+            @"frame-border-color": [CPNull null],
+            @"frame-border-width": 0,
             @"sheet-vertical-offset": -1
         };
 }
@@ -975,10 +1017,21 @@ _CPWindowViewResizeSlop = 3;
 
 - (void)didAddSubview:(CPView)aView
 {
+    if (aView === [[self window] contentView])
+        [self setNeedsLayout];
+
     if (!_resizeIndicator || aView === _resizeIndicator)
         return;
 
     [self addSubview:_resizeIndicator];
+}
+
+- (void)willRemoveSubview:(CPView)aView
+{
+    [super willRemoveSubview:aView];
+
+    if (aView === _cornerClippedView)
+        [self _setCornerClippedView:nil];
 }
 
 - (void)_enableSheet:(BOOL)enable inWindow:(CPWindow)parentWindow
@@ -1030,6 +1083,170 @@ _CPWindowViewResizeSlop = 3;
         [_resizeIndicator setFrame:CGRectMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height, size.width, size.height)];
         [_resizeIndicator setImage:[self valueForThemeAttribute:@"resize-indicator"]];
     }
+
+    [self _updateFrameShape];
+}
+
+/*
+    The window frame had three defects. CPWindow wrote the corner radii only when it made the
+    window, so a theme change or a new window view kept the old radii. The window border lay in
+    views behind the content view, and the content view, inside the border with square corners,
+    covered the border at each rounded corner. When the content corners follow the window
+    corners, the border and the content meet on one curve, and the browser smooths each edge
+    separately, so the border shows as a beaded line. The window view now writes its radii at
+    each layout, gives the content view corners that follow its own, and draws the frame border
+    itself, above its subviews.
+*/
+- (void)_updateFrameShape
+{
+    var contentView = [[self window] contentView];
+
+    if ([contentView superview] !== self)
+        contentView = nil;
+
+    [self _setCornerClippedView:contentView];
+
+    if (!CPDOMAvailable)
+        return;
+
+    _CPWindowViewSetCornerRadii(_DOMElement, [self _cornerRadii]);
+
+    if (contentView)
+        _CPWindowViewSetCornerRadii(contentView._DOMElement, [self _cornerRadiiForSubviewFrame:[contentView frame]]);
+
+    [self _updateFrameBorder];
+}
+
+/*
+    Draws the frame border as one ring above the subviews, with the receiver's corner radii.
+    The ring extends one border width beyond the bounds and is twice the border width, so the
+    receiver's clip cuts off its outer half. The browser then smooths the outer edge once, at
+    the clip, and the inner edge once, over the content.
+*/
+- (void)_updateFrameBorder
+{
+    var width = [self _frameValueForThemeAttribute:@"frame-border-width"],
+        color = [self _frameValueForThemeAttribute:@"frame-border-color"];
+
+    if (!(width > 0) || ![color isKindOfClass:[CPColor class]])
+    {
+        if (_frameBorderElement)
+        {
+            _DOMElement.removeChild(_frameBorderElement);
+            _frameBorderElement = nil;
+        }
+
+        return;
+    }
+
+    if (!_frameBorderElement)
+    {
+        _frameBorderElement = document.createElement("div");
+        _frameBorderElement.style.position = "absolute";
+        _frameBorderElement.style.boxSizing = "border-box";
+        _frameBorderElement.style.borderStyle = "solid";
+        _frameBorderElement.style.pointerEvents = "none";
+
+        /*
+            Each view element has z-index 0, so the ring lies above all subviews.
+        */
+        _frameBorderElement.style.zIndex = 1;
+
+        _DOMElement.appendChild(_frameBorderElement);
+    }
+
+    var style = _frameBorderElement.style,
+        radii = [self _cornerRadii],
+        offset = -width + "px";
+
+    style.top = offset;
+    style.left = offset;
+    style.right = offset;
+    style.bottom = offset;
+    style.borderWidth = (2 * width) + "px";
+    style.borderColor = [color cssString];
+    style.borderTopLeftRadius = _CPWindowViewFrameBorderRadius(radii.topLeft, width);
+    style.borderTopRightRadius = _CPWindowViewFrameBorderRadius(radii.topRight, width);
+    style.borderBottomLeftRadius = _CPWindowViewFrameBorderRadius(radii.bottomLeft, width);
+    style.borderBottomRightRadius = _CPWindowViewFrameBorderRadius(radii.bottomRight, width);
+}
+
+/*
+    Returns the class whose theme entries give the frame shape: the corner radii and the frame
+    border.
+*/
+- (Class)_frameClass
+{
+    return [self class];
+}
+
+/*
+    Returns the value of a frame attribute for the receiver's theme state, from the theme entry
+    of the frame class or of its nearest superclass that has one.
+*/
+- (id)_frameValueForThemeAttribute:(CPString)aName
+{
+    var theme = [self actualTheme],
+        state = [self themeState];
+
+    for (var aClass = [self _frameClass]; aClass && aClass !== CPResponder; aClass = [aClass superclass])
+    {
+        var attribute = [theme attributeWithName:aName forClass:aClass];
+
+        if (attribute)
+            return [attribute valueForState:state];
+    }
+
+    return nil;
+}
+
+/*
+    Returns the CSS radii of the receiver's corners, from the theme.
+*/
+- (JSObject)_cornerRadii
+{
+    return {
+        topLeft: [self _frameValueForThemeAttribute:@"border-top-left-radius"] || "",
+        topRight: [self _frameValueForThemeAttribute:@"border-top-right-radius"] || "",
+        bottomLeft: [self _frameValueForThemeAttribute:@"border-bottom-left-radius"] || "",
+        bottomRight: [self _frameValueForThemeAttribute:@"border-bottom-right-radius"] || ""
+    };
+}
+
+/*
+    Returns the CSS radii that make the corners of a subview with frame aFrame follow the
+    receiver's corners.
+*/
+- (JSObject)_cornerRadiiForSubviewFrame:(CGRect)aFrame
+{
+    var radii = [self _cornerRadii],
+        bounds = [self bounds],
+        left = CGRectGetMinX(aFrame) - CGRectGetMinX(bounds),
+        top = CGRectGetMinY(aFrame) - CGRectGetMinY(bounds),
+        right = CGRectGetMaxX(bounds) - CGRectGetMaxX(aFrame),
+        bottom = CGRectGetMaxY(bounds) - CGRectGetMaxY(aFrame);
+
+    return {
+        topLeft: _CPWindowViewInnerCornerRadius(radii.topLeft, left, top),
+        topRight: _CPWindowViewInnerCornerRadius(radii.topRight, right, top),
+        bottomLeft: _CPWindowViewInnerCornerRadius(radii.bottomLeft, left, bottom),
+        bottomRight: _CPWindowViewInnerCornerRadius(radii.bottomRight, right, bottom)
+    };
+}
+
+/*
+    Makes aView the view whose corners follow the receiver's corners, and removes the radii
+    from the view that held them before.
+*/
+- (void)_setCornerClippedView:(CPView)aView
+{
+    if (_cornerClippedView === aView)
+        return;
+
+    if (_cornerClippedView && CPDOMAvailable)
+        _CPWindowViewSetCornerRadii(_cornerClippedView._DOMElement, nil);
+
+    _cornerClippedView = aView;
 }
 
 - (void)_adjustShadowViewSize

@@ -9097,17 +9097,12 @@ function A3MaskIcon(aMaskImage, aColor)
     var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:CPClosableWindowMask],
 
     // --- Colors ---
+    /*
+        The window view draws the frame border (frame-border-color below), so the head and
+        body colours give only the fill.
+    */
     bezelHeadCssColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": A3ColorBackgroundHighlighted,
-        @"border-top-color": A3ColorWindowBorder,
-        @"border-top-style": @"solid",
-        @"border-top-width": @"1px",
-        @"border-left-color": A3ColorWindowBorder,
-        @"border-left-style": @"solid",
-        @"border-left-width": @"1px",
-        @"border-right-color": A3ColorWindowBorder,
-        @"border-right-style": @"solid",
-        @"border-right-width": @"1px",
         @"border-top-left-radius": @"6px",
         @"border-top-right-radius": @"6px",
         @"border-bottom-left-radius": @"0px",
@@ -9117,15 +9112,6 @@ function A3MaskIcon(aMaskImage, aColor)
 
     inactiveBezelHeadCssColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": A3ColorWindowHeadInactive,
-        @"border-top-color": A3ColorWindowBorder,
-        @"border-top-style": @"solid",
-        @"border-top-width": @"1px",
-        @"border-left-color": A3ColorWindowBorder,
-        @"border-left-style": @"solid",
-        @"border-left-width": @"1px",
-        @"border-right-color": A3ColorWindowBorder,
-        @"border-right-style": @"solid",
-        @"border-right-width": @"1px",
         @"border-top-left-radius": @"6px",
         @"border-top-right-radius": @"6px",
         @"border-bottom-left-radius": @"0px",
@@ -9139,9 +9125,6 @@ function A3MaskIcon(aMaskImage, aColor)
 
     bezelCssColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": A3ColorBackground,
-        @"border-color": A3ColorWindowBorder,
-        @"border-style": @"solid",
-        @"border-width": @"1px",
         @"border-top-left-radius": @"0px",
         @"border-top-right-radius": @"0px",
         @"border-bottom-left-radius": @"7px",
@@ -9271,6 +9254,14 @@ function A3MaskIcon(aMaskImage, aColor)
      [@"title-bar-height",                      31],
      [@"title-margin",                          4],
      [@"frame-outset",                          CGInsetMake(1, 1, 1, 1)],
+
+     // --- FRAME SHAPE (window view corners, and frame border above the content) ---
+     [@"border-top-left-radius",                @"6px"],
+     [@"border-top-right-radius",               @"6px"],
+     [@"border-bottom-left-radius",             @"7px"],
+     [@"border-bottom-right-radius",            @"7px"],
+     [@"frame-border-color",                    [CPColor colorWithCSSString:A3ColorWindowBorder]],
+     [@"frame-border-width",                    1],
 
      // --- REGISTER BUTTON IMAGES ---
      
