@@ -1069,6 +1069,17 @@ function _CPWindowViewSetCornerRadii(aDOMElement, someRadii)
     return MIN(myWidth, parentWidth);
 }
 
+/*
+    Applies the window's shadow again in the new appearance. Under a CSS theme the shadow is
+    written on the receiver's element outside any layout, so nothing else writes it again.
+*/
+- (void)_effectiveAppearanceDidChange
+{
+    [super _effectiveAppearanceDidChange];
+
+    [[self window] _updateShadow];
+}
+
 - (void)layoutSubviews
 {
     [super layoutSubviews];

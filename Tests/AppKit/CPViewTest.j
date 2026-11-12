@@ -1,5 +1,6 @@
 @import <AppKit/CPView.j>
 @import <AppKit/CPApplication.j>
+@import <AppKit/CPWebView.j>
 
 var methodCalled;
 var updateTrackingAreasCalls,
@@ -1705,6 +1706,43 @@ var updateTrackingAreasCalls,
     // If the fix is correct, the window should have been set before viewDidAppear was called,
     // so the flag should be NO.
     [self assertFalse:windowPropertyWasNilInViewDidAppear message:@"The view's window property should be set before -[CPViewController viewDidAppear] is called."];
+}
+
+/*
+    The background of a web view's iframe has no layout of its own that would write it, so a
+    change of appearance applies it again.
+*/
+- (void)testAnAppearanceChangeAppliesTheWebViewBackgroundAgain
+{
+    var webView = [[CPViewTestWebView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
+
+    webView.applyCount = 0;
+
+    [webView setAppearance:[CPAppearance appearanceNamed:CPAppearanceNameDarkAqua]];
+
+    [self assert:1 equals:webView.applyCount];
+}
+
+@end
+
+/*
+    A web view that counts the applications of its iframe's background. Node has no DOM, so the
+    web view makes no iframe.
+*/
+@implementation CPViewTestWebView : CPWebView
+{
+    int     applyCount;
+}
+
+- (id)_initDOMWithFrame:(CGRect)aFrame
+{
+    return self;
+}
+
+- (void)_applyBackgroundColor
+{
+    applyCount++;
+    [super _applyBackgroundColor];
 }
 
 @end

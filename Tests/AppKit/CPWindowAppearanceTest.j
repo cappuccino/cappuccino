@@ -324,4 +324,79 @@
     [self assert:1 equals:subview.hookCount];
 }
 
+// MARK: Window shadow
+
+/*
+    Under a CSS theme the window shadow is a property of the window, written outside the layout
+    of any view. The shadow converts the array form of a CSS value in the window's appearance.
+    The window reads the value from the window view's theme (-actualValueForThemeAttribute:),
+    so the test gives the window view a theme that holds it.
+*/
+- (void)testTheWindowShadowConvertsInTheWindowAppearance
+{
+    var window = [self window],
+        windowView = [window _windowView],
+        theme = [[CPTheme alloc] initWithName:@"CPWindowAppearanceTestShadowTheme"];
+
+    [windowView setValue:@[@"0px 5px 10px 0px ", [[CPWindowAppearanceTestDynamicColor alloc] _initDynamicColor]] forThemeAttribute:@"window-shadow-color"];
+    [theme takeThemeFromObject:windowView];
+    [windowView setTheme:theme];
+    [window setAppearance:[self appearance:CPAppearanceNameDarkAqua]];
+
+    [self assert:CPAppearanceNameAqua equals:[[CPAppearance currentDrawingAppearance] name]];
+    [self assert:@"0px 5px 10px 0px " + [[CPColor whiteColor] cssString] equals:[window _windowShadowCSSString]];
+}
+
+- (void)testAThemeWithoutAWindowShadowGivesNoShadow
+{
+    var window = [self window];
+
+    [[window _windowView] setTheme:[[CPTheme alloc] initWithName:@"CPWindowAppearanceTestEmptyTheme"]];
+
+    [self assert:@"" equals:[window _windowShadowCSSString]];
+}
+
+- (void)testAnAppearanceChangeUpdatesTheWindowShadowAgain
+{
+    var window = [[CPWindowAppearanceTestWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 300.0, 200.0) styleMask:CPTitledWindowMask];
+
+    window.shadowUpdateCount = 0;
+    [window setAppearance:[self appearance:CPAppearanceNameDarkAqua]];
+
+    [self assert:1 equals:window.shadowUpdateCount];
+}
+
+@end
+
+/*
+    A window that counts the updates of its shadow.
+*/
+@implementation CPWindowAppearanceTestWindow : CPWindow
+{
+    int     shadowUpdateCount;
+}
+
+- (void)_updateShadow
+{
+    shadowUpdateCount++;
+    [super _updateShadow];
+}
+
+@end
+
+/*
+    A colour that is white in a dark appearance and black in every other.
+*/
+@implementation CPWindowAppearanceTestDynamicColor : _CPDynamicColor
+
+- (CPColor)_valueInAppearance:(CPAppearance)anAppearance
+{
+    return [anAppearance name] === CPAppearanceNameDarkAqua ? [CPColor whiteColor] : [CPColor blackColor];
+}
+
+- (_CPDynamicColor)_dynamicCopy
+{
+    return [[CPWindowAppearanceTestDynamicColor alloc] _initDynamicColor];
+}
+
 @end

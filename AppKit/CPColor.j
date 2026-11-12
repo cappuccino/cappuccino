@@ -78,6 +78,14 @@ var cachedBlackColor,
 var _CPColorSystemCatalogName = @"System";
 
 /*
+    The catalog that holds a theme's own colours: the colours that have no System name. The
+    theme gives their values in the attribute "theme-colors" of CPColor (see
+    _CPThemeColorValue). The catalog name does not contain a theme's name, so that a theme
+    and a bundle that extends it resolve the same colour names.
+*/
+var _CPColorThemeCatalogName = @"Theme";
+
+/*
     The colours of the System catalog, with each colour's value when the current theme gives
     it none. These are the names that Interface Builder writes into a XIB and that AppKit
     resolves, including older names that it still resolves and one private name. Where
@@ -156,7 +164,9 @@ var _CPSystemColorDefaults = {
         "windowFrameTextColor":                         [0.0, 0.0, 0.0, 0.8471]
     },
     _CPSystemColors = {},
-    _CPSystemColorDefaultValues = {};
+    _CPSystemColorDefaultValues = {},
+    _CPThemeColors = {},
+    _CPThemeColorMissingNames = {};
 
 /*
     Returns the theme attribute of CPColor that holds a theme's values for the system colour
@@ -193,6 +203,47 @@ function _CPSystemColorValue(aName, anAppearance)
     return defaultValue;
 }
 
+/*
+    Returns the value of the theme colour aName for anAppearance. The attribute "theme-colors"
+    of the current theme holds, for each appearance state, a dictionary from colour name to
+    colour. The lookup takes the dictionaries in the order of -bestMatchFromAppearancesWithNames:
+    for anAppearance and uses the first one that holds aName, then the dictionary for every
+    appearance. A name that no dictionary holds is a defect of the theme: it logs one warning
+    and gives the clear colour.
+*/
+function _CPThemeColorValue(aName, anAppearance)
+{
+    var theme = [CPTheme defaultTheme],
+        values = [[theme attributeWithName:@"theme-colors" forClass:[CPColor defaultThemeClass]] values];
+
+    if (values)
+    {
+        var matchingNames = _CPAppearanceMatchingNames([anAppearance name]);
+
+        for (var i = 0, count = matchingNames.length; i < count; i++)
+        {
+            var state = _CPThemeStateForAppearanceName(matchingNames[i]),
+                value = state ? [[values objectForKey:String(state)] objectForKey:aName] : nil;
+
+            if (value)
+                return value;
+        }
+
+        var normalValue = [[values objectForKey:String(CPThemeStateNormal)] objectForKey:aName];
+
+        if (normalValue)
+            return normalValue;
+    }
+
+    if (!_CPThemeColorMissingNames.hasOwnProperty(aName))
+    {
+        _CPThemeColorMissingNames[aName] = YES;
+        CPLog.warn("Theme colour: the theme " + [theme name] + " gives no value for \"" + aName + "\"");
+    }
+
+    return [CPColor clearColor];
+}
+
 /// @endcond
 
 @class _CPCatalogColor
@@ -225,7 +276,9 @@ function _CPSystemColorValue(aName, anAppearance)
 
 /*
     Besides its own attributes, CPColor has one attribute for each system colour, which holds
-    the theme's values for that colour (see _CPSystemColorValue).
+    the theme's values for that colour (see _CPSystemColorValue), and the attribute
+    "theme-colors", which holds the values of the theme's own colours (see
+    _CPThemeColorValue).
 */
 + (CPDictionary)themeAttributes
 {
@@ -234,7 +287,8 @@ function _CPSystemColorValue(aName, anAppearance)
             @"secondary-selected-control-color":        [CPNull null],
             @"selected-text-background-color":          [CPNull null],
             @"selected-text-inactive-background-color": [CPNull null],
-            @"css-based":                               NO
+            @"css-based":                               NO,
+            @"theme-colors":                            [CPNull null]
         };
 
     for (var colorName in _CPSystemColorDefaults)
@@ -618,16 +672,33 @@ function _CPSystemColorValue(aName, anAppearance)
     value for the current drawing appearance (see
     +[CPAppearance currentDrawingAppearance]), or the colour's default when the theme gives
     none.
+
+    The catalog \c Theme holds a theme's own colours. For it, the method returns a colour
+    for any name, because a theme's archive is decoded before the theme gives values. A
+    name that the current theme does not give resolves to the clear colour.
     @param aCatalogName the name of the catalog
     @param aColorName the name of the colour
     @return the named colour, or \c nil
 */
 + (CPColor)colorWithCatalogName:(CPString)aCatalogName colorName:(CPString)aColorName
 {
+    if (aCatalogName === _CPColorThemeCatalogName && aColorName)
+        return [self _themeColorNamed:aColorName];
+
     if (aCatalogName !== _CPColorSystemCatalogName || !_CPSystemColorDefaults.hasOwnProperty(aColorName))
         return nil;
 
     return [self _systemColorNamed:aColorName];
+}
+
++ (CPColor)_themeColorNamed:(CPString)aColorName
+{
+    var color = _CPThemeColors.hasOwnProperty(aColorName) ? _CPThemeColors[aColorName] : nil;
+
+    if (!color)
+        color = _CPThemeColors[aColorName] = [[_CPCatalogColor alloc] _initWithCatalogName:_CPColorThemeCatalogName colorName:aColorName];
+
+    return color;
 }
 
 + (CPColor)_systemColorNamed:(CPString)aColorName
@@ -1482,6 +1553,118 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 // Remark : +(void)restorePreviousCSSState and -(DOMElement)applyCSSColorForView are meant to be used by low level UI widgets (like CPView) to implement
 //          CSS theme support.
 
+/*
+    A value in a CSS dictionary of a colour or an image is a string, a colour, or an array of
+    strings and colours. A colour can be a named colour, so that the dictionary follows the
+    appearance: [CPColor separatorColor], or @[@"0 0 0 3px ", aColor] for a value with more
+    than a colour. The dictionary keeps the objects; each value is converted when it is
+    written, in the current drawing appearance.
+*/
+
+/*
+    Returns the CSS text of aValue, a value of a CSS dictionary: a string gives itself; a
+    colour gives its CSS string in the current drawing appearance; an array gives its members,
+    each converted, joined with no separator. A number gives its decimal text, as the DOM
+    writes it. Any other value is a defect of the dictionary and raises.
+*/
+function _CPCSSValueString(aValue)
+{
+    if (typeof aValue === "string")
+        return aValue;
+
+    if (typeof aValue === "number")
+        return String(aValue);
+
+    if (aValue && aValue.isa)
+    {
+        if ([aValue isKindOfClass:CPColor])
+            return [aValue cssString];
+
+        if ([aValue isKindOfClass:CPArray])
+        {
+            var text = "";
+
+            for (var i = 0, count = aValue.length; i < count; i++)
+                text += _CPCSSValueString(aValue[i]);
+
+            return text;
+        }
+    }
+
+    [CPException raise:CPInvalidArgumentException reason:"A CSS dictionary value must be a string, a colour or an array of these, not " + aValue];
+}
+
+/*
+    Returns YES when aValue, a value of a CSS dictionary, is a colour or an array that holds
+    one.
+*/
+function _CPCSSValueHoldsColor(aValue)
+{
+    if (!aValue || !aValue.isa || typeof aValue === "string")
+        return NO;
+
+    if ([aValue isKindOfClass:CPColor])
+        return YES;
+
+    if ([aValue isKindOfClass:CPArray])
+    {
+        for (var i = 0, count = aValue.length; i < count; i++)
+            if (_CPCSSValueHoldsColor(aValue[i]))
+                return YES;
+    }
+
+    return NO;
+}
+
+function _CPCSSDictionaryHoldsColor(aDictionary)
+{
+    var values = [aDictionary allValues];
+
+    for (var i = 0, count = [values count]; i < count; i++)
+        if (_CPCSSValueHoldsColor(values[i]))
+            return YES;
+
+    return NO;
+}
+
+/*
+    Returns YES when a CSS dictionary of anObject, a colour or an image, holds a colour. Such
+    an object writes other CSS in another appearance, although it is the same object.
+
+    The result is computed at each call and not kept on the object, because a dictionary
+    changes after the object is made: a theme replaces placeholder strings with the values of
+    its dynamic set in place (see -[CPTheme applyDynamicSet:]).
+*/
+function _CPCSSObjectIsAppearanceDependent(anObject)
+{
+    return _CPCSSDictionaryHoldsColor([anObject cssDictionary]) ||
+           _CPCSSDictionaryHoldsColor([anObject cssBeforeDictionary]) ||
+           _CPCSSDictionaryHoldsColor([anObject cssAfterDictionary]);
+}
+
+function _CPCSSDictionaryText(aDictionary)
+{
+    var text = "",
+        keys = [aDictionary allKeys];
+
+    for (var i = 0, count = [keys count]; i < count; i++)
+        text += keys[i] + ": " + _CPCSSValueString([aDictionary objectForKey:keys[i]]) + "; ";
+
+    return text;
+}
+
+/*
+    Returns the CSS that anObject, a colour or an image, writes in the current drawing
+    appearance: its three dictionaries with every value converted, as one string. A setter
+    compares it with the text of its last write to decide whether to write again.
+*/
+function _CPCSSObjectText(anObject)
+{
+    return _CPCSSDictionaryText([anObject cssDictionary]) +
+           "::before { " + _CPCSSDictionaryText([anObject cssBeforeDictionary]) + "} " +
+           "::after { " + _CPCSSDictionaryText([anObject cssAfterDictionary]) + "}";
+}
+
 @implementation CPColor (CSSTheming)
 {
     CPDictionary    _cssDictionary              @accessors(property=cssDictionary);
@@ -1548,6 +1731,10 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     @deref(aPreviousStateRef) = @[];
 }
 
+/*
+    Writes the receiver's CSS into the DOM. Each value is converted with _CPCSSValueString in
+    the current drawing appearance, which the caller sets to the view's appearance.
+*/
 - (DOMElement)applyCSSColorForView:(CPView)aView onDOMElement:(DOMElement)aDOMElement styleNode:(DOMElement)aStyleNode previousState:(CPArrayRef)aPreviousStateRef
 {
     var aPreviousState = @deref(aPreviousStateRef);
@@ -1555,7 +1742,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     [_cssDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
      {
          [aPreviousState addObject:@[aKey, aDOMElement.style[aKey]]];
-         aDOMElement.style[aKey] = anObject;
+         aDOMElement.style[aKey] = _CPCSSValueString(anObject);
      }];
 
     if ([self hasCSSBeforeDictionary] || [self hasCSSAfterDictionary])
@@ -1571,7 +1758,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
             [_cssBeforeDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
              {
-                 styleContent += aKey + ": " + anObject + "; ";
+                 styleContent += aKey + ": " + _CPCSSValueString(anObject) + "; ";
              }];
 
             styleContent += "} ";
@@ -1583,7 +1770,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
             [_cssAfterDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
              {
-                 styleContent += aKey + ": " + anObject + "; ";
+                 styleContent += aKey + ": " + _CPCSSValueString(anObject) + "; ";
              }];
 
             styleContent += "} ";
@@ -1883,8 +2070,9 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
 
 
 /*
-    A colour of a catalog, such as the System catalog. It keeps its catalog name and colour
-    name and takes its value from the current theme (see _CPSystemColorValue).
+    A colour of a catalog: the System catalog or the theme catalog. It keeps its catalog name
+    and colour name and takes its value from the current theme (see _CPSystemColorValue and
+    _CPThemeColorValue).
 */
 @implementation _CPCatalogColor : _CPDynamicColor
 {
@@ -1907,6 +2095,9 @@ var CPColorComponentsKey            = @"CPColorComponentsKey",
 
 - (CPColor)_valueInAppearance:(CPAppearance)anAppearance
 {
+    if (_catalogName === _CPColorThemeCatalogName)
+        return _CPThemeColorValue(_colorName, anAppearance);
+
     return _CPSystemColorValue(_colorName, anAppearance);
 }
 

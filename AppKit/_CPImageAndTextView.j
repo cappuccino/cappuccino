@@ -247,19 +247,21 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     The early return compared only the object. A dynamic colour is the same object in every
     appearance, so a control that set it again after a change of appearance kept the CSS of
     the old one. The CSS string now takes part in the comparison.
+
+    The setter wrote the colour at once, in the current drawing appearance. Called outside
+    layout, as from an event handler, it wrote the application's value of a named colour in a
+    view of another appearance. The setter now marks the colour for layout, which writes it in
+    the view's appearance (see -_layoutTextColor).
 */
 - (void)setTextColor:(CPColor)aTextColor
 {
-    var cssString = [aTextColor cssString];
-
-    if (_textColor === aTextColor && _textColorCSSString === cssString)
+    if (_textColor === aTextColor && _textColorCSSString === [aTextColor cssString])
         return;
 
     _textColor = aTextColor;
-    _textColorCSSString = cssString;
+    _flags |= _CPImageAndTextViewTextColorChangedFlag;
 
-    if (CPDOMAvailable)
-        _DOMElement.style.color = cssString;
+    [self setNeedsLayout];
 }
 
 - (CPColor)textColor
@@ -268,19 +270,31 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 }
 
 /*
-    Writes the text colour again and marks the text shadow and the image as changed, so that
-    the next layout resolves them in the new appearance.
+    Writes the text colour when it changed: when it was set, or when it gives another CSS
+    string in the current drawing appearance, which layout sets to the view's appearance.
+*/
+- (void)_layoutTextColor
+{
+    var cssString = [_textColor cssString];
+
+    if (!(_flags & _CPImageAndTextViewTextColorChangedFlag) && cssString === _textColorCSSString)
+        return;
+
+    _textColorCSSString = cssString;
+
+    if (CPDOMAvailable)
+        _DOMElement.style.color = cssString;
+}
+
+/*
+    Marks the text colour, the text shadow and the image as changed, so that the next layout
+    resolves them in the new appearance.
 */
 - (void)_effectiveAppearanceDidChange
 {
     [super _effectiveAppearanceDidChange];
 
-    _textColorCSSString = [_textColor cssString];
-
-    if (CPDOMAvailable)
-        _DOMElement.style.color = _textColorCSSString;
-
-    _flags |= _CPImageAndTextViewTextShadowColorChangedFlag | _CPImageAndTextViewImageChangedFlag;
+    _flags |= _CPImageAndTextViewTextColorChangedFlag | _CPImageAndTextViewTextShadowColorChangedFlag | _CPImageAndTextViewImageChangedFlag;
 
     [self setNeedsLayout];
 }
@@ -463,6 +477,8 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
 - (void)layoutSubviews
 {
+    [self _layoutTextColor];
+
     if (CPDOMAvailable)
     {
         var needsDOMTextElement = _imagePosition !== CPImageOnly && ([_text length] > 0),
@@ -503,7 +519,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         {
             [[_textShadowColor cssDictionary] enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
              {
-                 _DOMTextElement.style[aKey] = anObject;
+                 _DOMTextElement.style[aKey] = _CPCSSValueString(anObject);
              }];
         }
         else

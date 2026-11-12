@@ -42,6 +42,7 @@
 @class _CPSystemImage
 @global document
 @global _CPRaiseInvalidAbstractInvocation
+@global _CPCSSValueString
 
 @protocol CPImageDelegate <CPObject>
 
@@ -889,6 +890,11 @@ function _CPSystemImageValue(aName, anAppearance)
     return ([_cssAfterDictionary count] > 0);
 }
 
+/*
+    Writes the receiver's CSS into the DOM. Each value is converted with _CPCSSValueString (see
+    CPColor.j) in the current drawing appearance, which the caller sets to the view's
+    appearance.
+*/
 - (DOMElement)applyCSSImageForView:(CPView)aView onDOMElement:(DOMElement)aDOMElement styleNode:(DOMElement)aStyleNode previousState:(CPArrayRef)aPreviousStateRef
 {
     if (!CPDOMAvailable) return;
@@ -907,7 +913,7 @@ function _CPSystemImageValue(aName, anAppearance)
     [_cssDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
      {
          [aPreviousState addObject:@[aKey, aDOMElement.style[aKey]]];
-         aDOMElement.style[aKey] = anObject;
+         aDOMElement.style[aKey] = _CPCSSValueString(anObject);
      }];
 
     if (_cssBeforeDictionary || _cssAfterDictionary)
@@ -923,7 +929,7 @@ function _CPSystemImageValue(aName, anAppearance)
 
             [_cssBeforeDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
              {
-                 styleContent += aKey + ": " + anObject + "; ";
+                 styleContent += aKey + ": " + _CPCSSValueString(anObject) + "; ";
              }];
 
             styleContent += "} ";
@@ -935,7 +941,7 @@ function _CPSystemImageValue(aName, anAppearance)
 
             [_cssAfterDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
              {
-                 styleContent += aKey + ": " + anObject + "; ";
+                 styleContent += aKey + ": " + _CPCSSValueString(anObject) + "; ";
              }];
 
             styleContent += "} ";

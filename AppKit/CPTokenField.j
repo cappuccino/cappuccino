@@ -426,8 +426,13 @@ CPTokenFieldDeleteButtonType     = 1;
             element = [self _inputElement],
             font = [self currentValueForThemeAttribute:@"font"];
 
+        /*
+            The text colour resolved in the current drawing appearance, which outside layout
+            is the application's, so a named colour took the application's value in a field
+            of another appearance. It now resolves in the field's appearance.
+        */
         element.value = nil;
-        element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
+        element.style.color = [self _inputElementTextColorCSSString];
         element.style.font = [font cssString];
         element.style.zIndex = 1000;
 

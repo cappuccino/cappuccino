@@ -811,6 +811,25 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     _DOMElement.style[CPBrowserStyleProperty(@"user-select")] = shouldEnable ? @"text" : @"none";
 }
 
+/*
+    Returns the CSS string of the text colour for the shared input element, in the receiver's
+    effective appearance and current theme state. The shared element is styled when it moves
+    into a field, which can happen outside layout, so the method sets the appearance itself.
+*/
+- (CPString)_inputElementTextColorCSSString
+{
+    var previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
+
+    try
+    {
+        return [[self currentValueForThemeAttribute:@"text-color"] cssString];
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
+}
+
 /*!
     Set the css style for the input element of the textField
     @ignore
@@ -846,8 +865,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             break;
     }
 
-    // Use currentValueForThemeAttribute to respect all current states (HUD, Placeholder, Editing, etc.)
-    element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
+    /*
+        The text colour resolved in the current drawing appearance. The method also runs when
+        the field becomes first responder and from -[CPComboBox takeStringValueFromList],
+        outside layout, where the drawing appearance is the application's. A named colour
+        then took the application's value in a field of another appearance. The colour now
+        resolves in the field's appearance.
+    */
+    element.style.color = [self _inputElementTextColorCSSString];
 
     switch ([self alignment])
     {

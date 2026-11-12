@@ -53,6 +53,41 @@
     [self assert:@"12" equals:[control objectValue]];
 }
 
+/*
+    The shared input element takes the field's text colour when it moves into the field, which
+    can happen outside layout, where the drawing appearance is the application's. The colour
+    resolves in the field's appearance. The field holds text: an empty field holds the
+    placeholder state, which takes the placeholder's colour.
+*/
+- (void)testTheInputElementTextColorResolvesInTheFieldAppearance
+{
+    var field = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0)];
+
+    [field setStringValue:@"Text"];
+    [field setAppearance:[CPAppearance appearanceNamed:CPAppearanceNameDarkAqua]];
+    [field setTextColor:[[CPTextFieldTestDynamicColor alloc] _initDynamicColor]];
+
+    [self assert:CPAppearanceNameAqua equals:[[CPAppearance currentDrawingAppearance] name]];
+    [self assert:[[CPColor whiteColor] cssString] equals:[field _inputElementTextColorCSSString]];
+}
+
+@end
+
+/*
+    A colour that is white in a dark appearance and black in every other.
+*/
+@implementation CPTextFieldTestDynamicColor : _CPDynamicColor
+
+- (CPColor)_valueInAppearance:(CPAppearance)anAppearance
+{
+    return [anAppearance name] === CPAppearanceNameDarkAqua ? [CPColor whiteColor] : [CPColor blackColor];
+}
+
+- (_CPDynamicColor)_dynamicCopy
+{
+    return [[CPTextFieldTestDynamicColor alloc] _initDynamicColor];
+}
+
 @end
 
 @implementation CPTextFieldSubclass : CPTextField

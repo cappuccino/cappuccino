@@ -91,6 +91,42 @@
     [self assert:[_delegate representedObjects] equals:[@"Alexandre", @"Antoine"]];
 }
 
+// MARK: -
+// MARK: Appearance
+
+/*
+    The shared input element takes the token field's text colour when the field becomes first
+    responder, outside layout, where the drawing appearance is the application's. The colour
+    resolves in the field's appearance. The field holds a token: an empty field holds the
+    placeholder state, which takes the placeholder's colour.
+*/
+- (void)testTheInputElementTextColorResolvesInTheFieldAppearance
+{
+    [_tokenField setObjectValue:[@"Alexandre"]];
+    [_tokenField setAppearance:[CPAppearance appearanceNamed:CPAppearanceNameDarkAqua]];
+    [_tokenField setTextColor:[[CPTokenFieldTestDynamicColor alloc] _initDynamicColor]];
+
+    [self assert:CPAppearanceNameAqua equals:[[CPAppearance currentDrawingAppearance] name]];
+    [self assert:[[CPColor whiteColor] cssString] equals:[_tokenField _inputElementTextColorCSSString]];
+}
+
+@end
+
+/*
+    A colour that is white in a dark appearance and black in every other.
+*/
+@implementation CPTokenFieldTestDynamicColor : _CPDynamicColor
+
+- (CPColor)_valueInAppearance:(CPAppearance)anAppearance
+{
+    return [anAppearance name] === CPAppearanceNameDarkAqua ? [CPColor whiteColor] : [CPColor blackColor];
+}
+
+- (_CPDynamicColor)_dynamicCopy
+{
+    return [[CPTokenFieldTestDynamicColor alloc] _initDynamicColor];
+}
+
 @end
 
 @implementation TestDelegateTokenField : CPObject <CPTokenFieldDelegate>

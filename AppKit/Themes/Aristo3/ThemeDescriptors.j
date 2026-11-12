@@ -56,11 +56,15 @@
 @import <AppKit/CPImage.j>
 
 @import "Aristo3Colors.j"
+@import "Aristo3DarkColors.j"
 
-var A3ColorActiveText   = [A3CPColorActiveText cssString],
-    A3ColorInactiveText = [A3CPColorInactiveText cssString],
-    A3ColorWhite        = [[CPColor whiteColor] cssString],
-    A3ColorBlack        = [[CPColor blackColor] cssString];
+/*
+    The string forms of the two text colours hold the named colours, so that a CSS value
+    follows the appearance. A3ColorWhite waits for names of its own (SPEC-4 part 4e).
+*/
+var A3ColorActiveText   = A3CPColorActiveText,
+    A3ColorInactiveText = A3CPColorInactiveText,
+    A3ColorWhite        = [[CPColor whiteColor] cssString];
 
 // SVGs
     var svgArrowDown    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNNyAxMEwxMiAxNUwxNyAxMEg3WiIgZmlsbD0iIzQ1NDU0NSIvPgo8L3N2Zz4=')",
@@ -245,8 +249,15 @@ function A3MaskIcon(aMaskImage, aColor)
      [@"alternate-selected-control-color",        [[CPColor alloc] _initWithRGBA:[0.22, 0.46, 0.84, 1.0]]],
      [@"secondary-selected-control-color",        [[CPColor alloc] _initWithRGBA:[0.83, 0.83, 0.83, 1.0]]],
      [@"selected-text-background-color",          [CPColor colorWithHexString:"99CCFF"]],
-     [@"selected-text-inactive-background-color", [CPColor colorWithHexString:"CCCCCC"]]
+     [@"selected-text-inactive-background-color", [CPColor colorWithHexString:"CCCCCC"]],
+     [@"theme-colors",                            A3ThemeColorValues],
+     [@"theme-colors",                            A3DarkThemeColorValues, CPThemeStateAppearanceDarkAqua]
     ];
+
+    [A3DarkSystemColorValues enumerateKeysAndObjectsUsingBlock:function(aName, aValue, stop)
+    {
+        themedColorValues.push([_CPThemeAttributeForSystemColorName(aName), aValue, CPThemeStateAppearanceDarkAqua]);
+    }];
 
     [self registerThemeValues:themedColorValues forObject:color];
 
@@ -7064,7 +7075,7 @@ function A3MaskIcon(aMaskImage, aColor)
     // Standard Background
     background = [CPColor colorWithCSSDictionary:@{
                                                    @"background-color": A3ColorBackgroundWhite,
-                                                   @"border-bottom": @"1px solid " + A3ColorTableDivider,
+                                                   @"border-bottom": @[@"1px solid ", A3ColorTableDivider],
                                                    @"box-sizing": @"border-box"
                                                   }
                                 beforeDictionary:nil
@@ -7362,12 +7373,12 @@ function A3MaskIcon(aMaskImage, aColor)
         // Replaced PatternImage
         horizontalDividerColor = [CPColor colorWithCSSDictionary:@{
             @"background-color": A3ColorBackground,
-            @"border-top": @"1px solid " + A3ColorBorderLight
+            @"border-top": @[@"1px solid ", A3ColorBorderLight]
         }],
         
         verticalDividerColor = [CPColor colorWithCSSDictionary:@{
             @"background-color": A3ColorBackground,
-            @"border-left": @"1px solid " + A3ColorBorderLight
+            @"border-left": @[@"1px solid ", A3ColorBorderLight]
         }],
 
         thinDividerCssColor = [CPColor colorWithCSSDictionary:@{
@@ -8584,7 +8595,7 @@ function A3MaskIcon(aMaskImage, aColor)
 
     // --- Standard Colors ---
     var bezelColor = [CPColor colorWithCSSDictionary:@{
-            @"border": @"1px solid " + A3ColorBorderDark,
+            @"border": @[@"1px solid ", A3ColorBorderDark],
             @"background-color": A3ColorBackgroundWhite,
             @"border-radius": @"3px",
             @"box-sizing": @"border-box"
@@ -8640,7 +8651,7 @@ function A3MaskIcon(aMaskImage, aColor)
 
     // --- Standard Colors (Blue with White Stripes) ---
     var bezelColor = [CPColor colorWithCSSDictionary:@{
-            @"border": @"1px solid " + A3ColorBorderDark,
+            @"border": @[@"1px solid ", A3ColorBorderDark],
             @"background-color": A3ColorBackgroundWhite,
             @"border-radius": @"3px",
             @"box-sizing": @"border-box"
@@ -8823,7 +8834,7 @@ function A3MaskIcon(aMaskImage, aColor)
     var levelIndicator = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
 
     bezelColor = [CPColor colorWithCSSDictionary:@{
-        @"border": @"1px solid " + A3ColorBorderDark
+        @"border": @[@"1px solid ", A3ColorBorderDark]
     }],
 
     // --- Standard Colors (Traffic Light) ---
@@ -8990,7 +9001,7 @@ function A3MaskIcon(aMaskImage, aColor)
     // Using pure CSS window frame
     var bezelColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": A3ColorBackground,
-        @"border": @"1px solid " + A3ColorWindowBorder,
+        @"border": @[@"1px solid ", A3ColorWindowBorder],
         @"border-radius": @"6px",
         @"box-shadow": @"0 5px 15px rgba(0,0,0,0.5)"
     }],
@@ -9025,7 +9036,7 @@ function A3MaskIcon(aMaskImage, aColor)
     [
      [@"shadow-inset",                   CGInsetMake(0, 0, 0, 0)],
      [@"shadow-distance",                5],
-     [@"window-shadow-color",            @"0px 5px 10px 0px rgba(0, 0, 0, 0.25)"],
+     [@"window-shadow-color",            @[@"0px 5px 10px 0px ", A3ColorWindowViewWindowShadow]],
      [@"resize-indicator",               resizeIndicator],
      [@"attached-sheet-shadow-color",    sheetShadow,           CPThemeStateNormal],
      [@"shadow-height",                  5],
@@ -9260,7 +9271,7 @@ function A3MaskIcon(aMaskImage, aColor)
      [@"border-top-right-radius",               @"6px"],
      [@"border-bottom-left-radius",             @"7px"],
      [@"border-bottom-right-radius",            @"7px"],
-     [@"frame-border-color",                    [CPColor colorWithCSSString:A3ColorWindowBorder]],
+     [@"frame-border-color",                    A3ColorWindowBorder],
      [@"frame-border-width",                    1],
 
      // --- REGISTER BUTTON IMAGES ---
@@ -9329,7 +9340,7 @@ function A3MaskIcon(aMaskImage, aColor)
     // Apply the same styling as the standard Modal Window to cover the background
     var bezelColor = [CPColor colorWithCSSDictionary:@{
                                                             @"background-color": A3ColorBackgroundWhite,
-                                                            @"border": @"1px solid " + A3ColorWindowBorder,
+                                                            @"border": @[@"1px solid ", A3ColorWindowBorder],
                                                             @"border-radius": @"6px",
                                                             @"box-shadow": @"0 5px 15px rgba(0,0,0,0.5)"
                                                         }];
@@ -9353,7 +9364,7 @@ function A3MaskIcon(aMaskImage, aColor)
     // Standard Theme Toolbar
     toolbarBackgroundColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": A3ColorBackground,
-        @"border-bottom": @"1px solid " + A3ColorBorderLight
+        @"border-bottom": @[@"1px solid ", A3ColorBorderLight]
     }],
 
     // HUD Theme Window Background (Dark/Translucent)
@@ -9400,7 +9411,7 @@ function A3MaskIcon(aMaskImage, aColor)
     toolbarExtraItemsAlternateImage = toolbarExtraItemsImage,
     
     toolbarSeparatorColor = [CPColor colorWithCSSDictionary:@{
-        @"border-left": @"1px solid " + A3ColorBorderLight
+        @"border-left": @[@"1px solid ", A3ColorBorderLight]
     }],
 
     themeValues =

@@ -1442,6 +1442,32 @@ CPTexturedBackgroundWindowMask
     return _hasShadow;
 }
 
+/*
+    Returns the CSS of the window's shadow under a CSS theme: the window view's attribute
+    "window-shadow-color" in the theme, converted in the window's effective appearance (see
+    _CPCSSValueString). The shadow is a property of the window, written outside the layout of
+    any view, so the method sets the appearance itself. A theme that gives no value gives no
+    shadow, as the DOM took the nil value before.
+*/
+- (CPString)_windowShadowCSSString
+{
+    var value = [_windowView actualValueForThemeAttribute:@"window-shadow-color"];
+
+    if (value === nil || value === undefined)
+        return "";
+
+    var previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
+
+    try
+    {
+        return _CPCSSValueString(value);
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
+}
+
 - (void)_updateShadow
 {
     if ([self _sharesChromeWithPlatformWindow])
@@ -1471,16 +1497,17 @@ CPTexturedBackgroundWindowMask
             // _setSharesChromeWithPlatformWindow whereas _windowView is not yet created
             if (_windowView && _windowView._DOMElement)
             {
-                var currentBoxShadow = _windowView._DOMElement.style.boxShadow;
-
-                if (_hasShadow && (currentBoxShadow.length == 0))
-                {
-                    _windowView._DOMElement.style.boxShadow = [_windowView actualValueForThemeAttribute:@"window-shadow-color"];
-                }
-                else if (!_hasShadow && (currentBoxShadow.length > 0))
-                {
+                /*
+                    The method wrote the shadow only when the element had none, so the value
+                    of a new appearance never reached the DOM. It wrote the attribute's value
+                    as it was, so a value that holds a named colour, in the array form of a
+                    CSS value, could not be written. The shadow is now converted in the
+                    window's appearance and written whenever the window has one.
+                */
+                if (_hasShadow)
+                    _windowView._DOMElement.style.boxShadow = [self _windowShadowCSSString];
+                else if (_windowView._DOMElement.style.boxShadow.length > 0)
                     _windowView._DOMElement.style.boxShadow = "";
-                }
             }
         }
     }

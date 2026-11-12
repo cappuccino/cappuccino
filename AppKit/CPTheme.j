@@ -31,6 +31,8 @@
 @class CPImage
 @class CPColor
 @class CPApplication
+@class _CPDynamicColor
+@class _CPDynamicImage
 
 var CPThemesByName          = { },
     CPThemeDefaultTheme     = nil,
@@ -430,6 +432,44 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 
 var _savedThemesByName = { };
 
+/*
+    Returns YES when aValue, a value of a theme attribute, is a colour or an image with CSS
+    dictionaries of its own. A dynamic colour or image, such as a named colour or a System
+    image, has none: it resolves to another object when it is asked for them.
+*/
+function _CPThemeValueHasOwnCSSDictionaries(aValue)
+{
+    if (!aValue || !aValue.isa)
+        return NO;
+
+    if (!([aValue isKindOfClass:CPImage] || [aValue isKindOfClass:CPColor]))
+        return NO;
+
+    if ([aValue isKindOfClass:_CPDynamicImage] || [aValue isKindOfClass:_CPDynamicColor])
+        return NO;
+
+    return !![aValue cssDictionary];
+}
+
+/*
+    Returns aValue, a value of a CSS dictionary, with "%%" replaced by aPath in a string and in
+    each string member of an array, which gives a new array. A colour has no path and stays
+    as it is.
+*/
+function _CPThemeCSSValueWithResourcesPath(aValue, aPath)
+{
+    if (typeof aValue === "string")
+        return [aValue stringByReplacingOccurrencesOfString:@"%%" withString:aPath];
+
+    if (aValue && aValue.isa && [aValue isKindOfClass:CPArray])
+        return aValue.map(function(aMember)
+        {
+            return _CPThemeCSSValueWithResourcesPath(aMember, aPath);
+        });
+
+    return aValue;
+}
+
 @implementation CPTheme (CSSTheming)
 
 - (void)_initializeDynamicAttributesAndResourcesPathWithBundle:(CPBundle)aBundle
@@ -499,9 +539,15 @@ var _savedThemesByName = { };
           {
               // anObject2 is now a _CPThemeAttribute
 
+              /*
+                  The walk asked every colour and image for its CSS dictionaries. A named
+                  colour resolves when asked, against the default theme, which at theme load
+                  is not yet this theme, so each theme colour logged a missing value. A
+                  dynamic value holds no dictionaries of its own, so the walk skips it.
+              */
               [[anObject2 values] enumerateKeysAndObjectsUsingBlock:function(aKey3, anObject3, stop3)
                {
-                   if (anObject3.isa && ([anObject3 isKindOfClass:CPImage] || [anObject3 isKindOfClass:CPColor]) && [anObject3 cssDictionary])
+                   if (_CPThemeValueHasOwnCSSDictionaries(anObject3))
                    {
                        // We have a CSS defined image or color
                        [self _fixPathInCSSDictionary:[anObject3 cssDictionary]       withPathToResources:pathToResources];
@@ -513,11 +559,16 @@ var _savedThemesByName = { };
      }];
 }
 
+/*
+    The method sent -stringByReplacingOccurrencesOfString:withString: to every value. A value
+    can also be a colour or an array (see _CPCSSValueString in CPColor.j), and a colour does
+    not respond to it, so theme load raised. Only strings, also inside arrays, hold paths.
+*/
 - (void)_fixPathInCSSDictionary:(CPDictionary)aDictionary withPathToResources:(CPString)pathToResources
 {
     [aDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
      {
-         [aDictionary setObject:[anObject stringByReplacingOccurrencesOfString:@"%%" withString:pathToResources] forKey:aKey];
+         [aDictionary setObject:_CPThemeCSSValueWithResourcesPath(anObject, pathToResources) forKey:aKey];
      }];
 }
 
@@ -529,11 +580,15 @@ var _savedThemesByName = { };
           {
               var anObject2Values = [anObject2 values];
 
+              /*
+                  As in -setCSSResourcesPath:, a dynamic colour or image resolved here against
+                  the previous default theme. The walk skips it.
+              */
               [anObject2Values enumerateKeysAndObjectsUsingBlock:function(aKey3, anObject3, stop3)
                {
                    if (anObject3.isa)
                    {
-                       if (([anObject3 isKindOfClass:CPImage] || [anObject3 isKindOfClass:CPColor]) && [anObject3 cssDictionary])
+                       if (_CPThemeValueHasOwnCSSDictionaries(anObject3))
                        {
                            // We have a CSS defined image or color
                            [self _applyDynamicSet:dynamicSet toCSSDictionary:[anObject3 cssDictionary]];
@@ -552,11 +607,16 @@ var _savedThemesByName = { };
      }];
 }
 
+/*
+    The method compared every value with the names of the set. A value can also be a colour
+    or an array, which is never a placeholder; -containsKey: compared its description as a
+    key. Only a string is a placeholder.
+*/
 - (void)_applyDynamicSet:(CPDictionary)dynamicSet toCSSDictionary:(CPDictionary)aDictionary
 {
     [aDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
      {
-         if ([dynamicSet containsKey:anObject])
+         if (typeof anObject === "string" && [dynamicSet containsKey:anObject])
              [aDictionary setObject:[dynamicSet objectForKey:anObject] forKey:aKey];
      }];
 }

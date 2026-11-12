@@ -794,14 +794,41 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     [self _applyBackgroundColor];
 }
 
+/*
+    The method resolved the background colour in the current drawing appearance, which
+    outside layout is the application's, so a named colour took the application's value in a
+    web view of another appearance; and nothing applied it again after a change of
+    appearance. It now resolves in the receiver's effective appearance, and
+    -_effectiveAppearanceDidChange calls it.
+*/
 - (void)_applyBackgroundColor
 {
     if (_iframe)
     {
-        var bgColor = [self backgroundColor] || [CPColor whiteColor];
-        _iframe.allowtransparency = !_drawsBackground;
-        _iframe.style.backgroundColor = _drawsBackground ? [bgColor cssString] : "transparent";
+        var bgColor = [self backgroundColor] || [CPColor whiteColor],
+            previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
+
+        try
+        {
+            _iframe.allowtransparency = !_drawsBackground;
+            _iframe.style.backgroundColor = _drawsBackground ? [bgColor cssString] : "transparent";
+        }
+        finally
+        {
+            _CPAppearanceEndDrawing(previousAppearance);
+        }
     }
+}
+
+/*
+    Applies the iframe's background again in the new appearance. The iframe has no layout of
+    its own that would write it.
+*/
+- (void)_effectiveAppearanceDidChange
+{
+    [super _effectiveAppearanceDidChange];
+
+    [self _applyBackgroundColor];
 }
 
 // IBActions

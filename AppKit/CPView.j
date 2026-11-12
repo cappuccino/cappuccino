@@ -227,6 +227,7 @@ function _CPViewResolvedColorsAreSame(aColor, anotherColor)
     float               _opacity;
     CPColor             _backgroundColor;
     CPColor             _backgroundColorResolved;
+    CPString            _backgroundColorCSSText;
 
     BOOL                _autoresizesSubviews;
     unsigned            _autoresizingMask;
@@ -2063,18 +2064,44 @@ function _CPViewResolvedColorsAreSame(aColor, anotherColor)
         after an appearance change left the old value in the DOM. The setter now skips only
         when the object and its resolved value are both unchanged.
     */
-    var resolvedColor = [self _resolvedBackgroundColor:aColor];
+    var resolvedColor = [self _resolvedBackgroundColor:aColor],
+        cssText = [self _backgroundCSSTextForResolvedColor:resolvedColor];
 
-    if (_backgroundColor === aColor && _CPViewResolvedColorsAreSame(resolvedColor, _backgroundColorResolved))
+    if (_backgroundColor === aColor && _CPViewResolvedColorsAreSame(resolvedColor, _backgroundColorResolved) && cssText === _backgroundColorCSSText)
         return;
 
     _backgroundColor = aColor;
     _backgroundColorResolved = resolvedColor;
+    _backgroundColorCSSText = cssText;
 
     if (!CPDOMAvailable)
         return;
 
-    [self _applyBackgroundColor];
+    [self _writeBackgroundColor];
+}
+
+/*
+    A CSS colour whose dictionaries hold a colour writes other CSS in another appearance,
+    although it is the same object. The setter and the reapplication skipped the write for the
+    same object, so the old appearance's CSS stayed in the DOM. They now also compare the CSS
+    that such a colour writes in the receiver's effective appearance. Returns that text, or
+    nil for every other colour.
+*/
+- (CPString)_backgroundCSSTextForResolvedColor:(CPColor)aResolvedColor
+{
+    if (![aResolvedColor isCSSBased] || !_CPCSSObjectIsAppearanceDependent(aResolvedColor))
+        return nil;
+
+    var previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
+
+    try
+    {
+        return _CPCSSObjectText(aResolvedColor);
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
 }
 
 /*
@@ -2107,21 +2134,27 @@ function _CPViewResolvedColorsAreSame(aColor, anotherColor)
 */
 - (void)_reapplyBackgroundColorIfNeeded
 {
-    var resolvedColor = [self _resolvedBackgroundColor:_backgroundColor];
+    var resolvedColor = [self _resolvedBackgroundColor:_backgroundColor],
+        cssText = [self _backgroundCSSTextForResolvedColor:resolvedColor];
 
-    if (_CPViewResolvedColorsAreSame(resolvedColor, _backgroundColorResolved))
+    if (_CPViewResolvedColorsAreSame(resolvedColor, _backgroundColorResolved) && cssText === _backgroundColorCSSText)
         return;
 
     _backgroundColorResolved = resolvedColor;
+    _backgroundColorCSSText = cssText;
 
     if (CPDOMAvailable)
-        [self _applyBackgroundColor];
+        [self _writeBackgroundColor];
 }
 
 /*
     Writes the resolved background colour into the DOM.
+
+    The method was named -_applyBackgroundColor, which is the name of an older private method
+    of CPWebView that styles the web view's iframe. The web view's method replaced this one,
+    so a web view's own element got no background. The method now has a name of its own.
 */
-- (void)_applyBackgroundColor
+- (void)_writeBackgroundColor
 {
     var color = _backgroundColorResolved;
 
@@ -2208,10 +2241,25 @@ function _CPViewResolvedColorsAreSame(aColor, anotherColor)
 
     if (_backgroundType === BackgroundCSSStyling)
     {
-        _cssStyleNode = [color applyCSSColorForView:self
-                                                  onDOMElement:_DOMElement
-                                                     styleNode:_cssStyleNode
-                                                 previousState:@ref(_cssStylePreviousState)];
+        /*
+            The setter resolved the colour in the receiver's appearance, but wrote its CSS in
+            the current drawing appearance, which outside layout is the application's. A
+            named colour inside the CSS dictionaries then took the application's value. The
+            write now runs in the receiver's effective appearance.
+        */
+        var previousAppearance = _CPAppearanceBeginDrawing([self effectiveAppearance]);
+
+        try
+        {
+            _cssStyleNode = [color applyCSSColorForView:self
+                                           onDOMElement:_DOMElement
+                                              styleNode:_cssStyleNode
+                                          previousState:@ref(_cssStylePreviousState)];
+        }
+        finally
+        {
+            _CPAppearanceEndDrawing(previousAppearance);
+        }
     }
     else if (_backgroundType === BackgroundTrivialColor || _backgroundType === BackgroundTransparentColor)
     {

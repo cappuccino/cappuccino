@@ -327,4 +327,43 @@
     [self assert:0 equals:[button showsStateBy]];
 }
 
+/*
+    A text colour set outside layout, as from an event handler, is written by layout, which
+    resolves it in the view's appearance. The setter wrote it at once, in the application's
+    appearance.
+*/
+- (void)testATextColorSetOutsideLayoutIsWrittenByLayoutInTheViewAppearance
+{
+    var view = [[_CPImageAndTextView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 20.0)];
+
+    [view setAppearance:[CPAppearance appearanceNamed:CPAppearanceNameDarkAqua]];
+    [view layoutIfNeeded];
+
+    [view setTextColor:[[CPButtonTestDynamicColor alloc] _initDynamicColor]];
+
+    [self assertTrue:[view needsLayout] message:@"-setTextColor: marks the view for layout"];
+    [self assertNull:view._textColorCSSString message:@"-setTextColor: writes nothing"];
+
+    [view layoutIfNeeded];
+
+    [self assert:[[CPColor whiteColor] cssString] equals:view._textColorCSSString];
+}
+
+@end
+
+/*
+    A colour that is white in a dark appearance and black in every other.
+*/
+@implementation CPButtonTestDynamicColor : _CPDynamicColor
+
+- (CPColor)_valueInAppearance:(CPAppearance)anAppearance
+{
+    return [anAppearance name] === CPAppearanceNameDarkAqua ? [CPColor whiteColor] : [CPColor blackColor];
+}
+
+- (_CPDynamicColor)_dynamicCopy
+{
+    return [[CPButtonTestDynamicColor alloc] _initDynamicColor];
+}
+
 @end

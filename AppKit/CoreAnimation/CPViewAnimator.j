@@ -6,6 +6,29 @@
 var DEFAULT_CSS_PROPERTIES = nil,
     FRAME_UPDATERS = {};
 
+/*
+    Returns a value function that calls aFunction in the effective appearance of aView. The
+    keyframes of an animation are built outside layout, where the drawing appearance is the
+    application's, so a named colour took the application's value in a view of another
+    appearance.
+*/
+function _CPViewAnimatorValueFunctionInAppearance(aFunction, aView)
+{
+    return function(aStartValue, aValue)
+    {
+        var previousAppearance = _CPAppearanceBeginDrawing([aView effectiveAppearance]);
+
+        try
+        {
+            return aFunction(aStartValue, aValue);
+        }
+        finally
+        {
+            _CPAppearanceEndDrawing(previousAppearance);
+        }
+    };
+}
+
 @implementation CPViewAnimator : _CPObjectAnimator
 {
     BOOL    _wantsPeriodicFrameUpdates  @accessors(property=wantsPeriodicFrameUpdates);
@@ -159,6 +182,14 @@ var DEFAULT_CSS_PROPERTIES = nil,
         var completionFunction = (anIndex == 0) ? anAction.completion : null,
             property = [aDict objectForKey:@"property"],
             getter = [aDict objectForKey:@"value"];
+
+        /*
+            The value function of backgroundColor resolved the colour in the current drawing
+            appearance, which here is the application's. It now runs in the animated view's
+            appearance.
+        */
+        if (getter)
+            getter = _CPViewAnimatorValueFunctionInAppearance(getter, anAction.object);
 
         animation.addPropertyAnimation(property, getter, anAction.duration, anAction.keytimes, anAction.values, timingFunctions, completionFunction);
     }];

@@ -48,6 +48,10 @@ var CPImageViewEmptyPlaceholderImage = nil;
 /*
     Returns a record of what the image gives in the current drawing appearance: its file name
     and its CSS dictionaries. A dynamic image gives other values in another appearance.
+
+    A CSS image whose dictionaries hold a colour gives other CSS in another appearance with
+    the same dictionaries, so a record of the dictionaries alone kept the old appearance's
+    CSS. The record also holds the CSS that such an image writes.
 */
 function _CPImageViewRecordForImage(anImage)
 {
@@ -58,7 +62,8 @@ function _CPImageViewRecordForImage(anImage)
         filename: isCSSBased ? nil : [image filename],
         cssDictionary: isCSSBased ? [image cssDictionary] : nil,
         cssBeforeDictionary: isCSSBased ? [image cssBeforeDictionary] : nil,
-        cssAfterDictionary: isCSSBased ? [image cssAfterDictionary] : nil
+        cssAfterDictionary: isCSSBased ? [image cssAfterDictionary] : nil,
+        cssText: isCSSBased && _CPCSSObjectIsAppearanceDependent(image) ? _CPCSSObjectText(image) : nil
     };
 }
 
@@ -68,7 +73,8 @@ function _CPImageViewRecordsAreSame(aRecord, anotherRecord)
            aRecord.filename === anotherRecord.filename &&
            aRecord.cssDictionary === anotherRecord.cssDictionary &&
            aRecord.cssBeforeDictionary === anotherRecord.cssBeforeDictionary &&
-           aRecord.cssAfterDictionary === anotherRecord.cssAfterDictionary;
+           aRecord.cssAfterDictionary === anotherRecord.cssAfterDictionary &&
+           aRecord.cssText === anotherRecord.cssText;
 }
 
 /*!
