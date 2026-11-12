@@ -47,6 +47,56 @@ var _CPWindowViewCornerResizeRectWidth = 10,
 _CPWindowViewResizeSlop = 3;
 
 /*
+    Returns the parts of the CSS value aCSSValue that spaces separate. A part with parentheses,
+    such as calc(1px + 2px), stays whole, and a slash outside parentheses is a part of its own.
+*/
+function _CPWindowViewCSSParts(aCSSValue)
+{
+    var parts = [],
+        part = "",
+        depth = 0;
+
+    for (var i = 0, count = aCSSValue.length; i < count; i++)
+    {
+        var character = aCSSValue.charAt(i);
+
+        if (character === "(")
+            depth++;
+        else if (character === ")")
+            depth--;
+
+        if (depth === 0 && (character === "/" || /\s/.test(character)))
+        {
+            if (part.length)
+                parts.push(part);
+
+            if (character === "/")
+                parts.push("/");
+
+            part = "";
+        }
+        else
+            part += character;
+    }
+
+    if (part.length)
+        parts.push(part);
+
+    return parts;
+}
+
+/*
+    Returns the horizontal and the vertical component of the corner radius aRadius, which has
+    one component for a circular corner or two for an elliptical one.
+*/
+function _CPWindowViewRadiusComponents(aRadius)
+{
+    var parts = _CPWindowViewCSSParts(aRadius);
+
+    return [parts[0], parts[1] || parts[0]];
+}
+
+/*
     Returns the CSS radius for the corner of a view that lies inside a window view corner of
     radius anOuterRadius, aHorizontalInset and aVerticalInset points from it. Each component is
     the outer radius less the inset, never less than zero, so the two curves have one centre.
@@ -57,7 +107,9 @@ function _CPWindowViewInnerCornerRadius(anOuterRadius, aHorizontalInset, aVertic
     if (!anOuterRadius)
         return "";
 
-    return "max(0px, " + anOuterRadius + " - " + aHorizontalInset + "px) max(0px, " + anOuterRadius + " - " + aVerticalInset + "px)";
+    var components = _CPWindowViewRadiusComponents(anOuterRadius);
+
+    return "max(0px, " + components[0] + " - " + aHorizontalInset + "px) max(0px, " + components[1] + " - " + aVerticalInset + "px)";
 }
 
 /*
@@ -67,7 +119,106 @@ function _CPWindowViewInnerCornerRadius(anOuterRadius, aHorizontalInset, aVertic
 */
 function _CPWindowViewFrameBorderRadius(anOuterRadius, aWidth)
 {
-    return "calc(" + (anOuterRadius || "0px") + " + " + aWidth + "px)";
+    var components = _CPWindowViewRadiusComponents(anOuterRadius || "0px"),
+        horizontal = "calc(" + components[0] + " + " + aWidth + "px)";
+
+    return components[1] === components[0] ? horizontal : horizontal + " calc(" + components[1] + " + " + aWidth + "px)";
+}
+
+/*
+    Returns the four radii that the parts someParts of one side of a border-radius shorthand
+    give, in the order top left, top right, bottom right, bottom left, as CSS expands one to
+    four values. Returns nil for any other number of parts.
+*/
+function _CPWindowViewExpandedCornerParts(someParts)
+{
+    switch (someParts.length)
+    {
+        case 1:
+            return [someParts[0], someParts[0], someParts[0], someParts[0]];
+
+        case 2:
+            return [someParts[0], someParts[1], someParts[0], someParts[1]];
+
+        case 3:
+            return [someParts[0], someParts[1], someParts[2], someParts[1]];
+
+        case 4:
+            return someParts;
+
+        default:
+            return nil;
+    }
+}
+
+/*
+    Returns the corner radii that aValue, a CSS border-radius shorthand, gives, as an object
+    with topLeft, topRight, bottomLeft and bottomRight, or nil for a value that is not valid.
+    The radii after a slash are the vertical components.
+*/
+function _CPWindowViewCornerRadiiOfShorthand(aValue)
+{
+    var parts = _CPWindowViewCSSParts(aValue),
+        slash = parts.indexOf("/"),
+        horizontal = _CPWindowViewExpandedCornerParts(slash === -1 ? parts : parts.slice(0, slash)),
+        vertical = slash === -1 ? horizontal : _CPWindowViewExpandedCornerParts(parts.slice(slash + 1));
+
+    if (!horizontal || !vertical)
+        return nil;
+
+    var corners = [];
+
+    for (var i = 0; i < 4; i++)
+        corners.push(vertical[i] === horizontal[i] ? horizontal[i] : horizontal[i] + " " + vertical[i]);
+
+    return {
+        topLeft: corners[0],
+        topRight: corners[1],
+        bottomRight: corners[2],
+        bottomLeft: corners[3]
+    };
+}
+
+var _CPWindowViewCornerKeys = {
+        topLeft: "border-top-left-radius",
+        topRight: "border-top-right-radius",
+        bottomLeft: "border-bottom-left-radius",
+        bottomRight: "border-bottom-right-radius"
+    };
+
+/*
+    Returns the corner radii that aColor, a background colour, declares in its CSS dictionary:
+    the shorthand border-radius, with each corner's own key over it. Returns nil when aColor
+    declares no radius.
+*/
+function _CPWindowViewCornerRadiiOfBackground(aColor)
+{
+    var dictionary = [aColor isCSSBased] ? [aColor cssDictionary] : nil;
+
+    if (!dictionary)
+        return nil;
+
+    var shorthand = [dictionary objectForKey:@"border-radius"],
+        radii = (shorthand !== nil && shorthand !== undefined) ? _CPWindowViewCornerRadiiOfShorthand(_CPCSSValueString(shorthand)) : nil,
+        found = !!radii;
+
+    radii = radii || {};
+
+    for (var corner in _CPWindowViewCornerKeys)
+    {
+        if (!_CPWindowViewCornerKeys.hasOwnProperty(corner))
+            continue;
+
+        var value = [dictionary objectForKey:_CPWindowViewCornerKeys[corner]];
+
+        if (value !== nil && value !== undefined)
+        {
+            radii[corner] = _CPCSSValueString(value);
+            found = YES;
+        }
+    }
+
+    return found ? radii : nil;
 }
 
 /*
@@ -1212,16 +1363,48 @@ function _CPWindowViewSetCornerRadii(aDOMElement, someRadii)
 }
 
 /*
-    Returns the CSS radii of the receiver's corners, from the theme.
+    Returns the CSS radii of the receiver's corners: the theme's radii for its kind of window,
+    else the radii that its background declares.
+
+    A window that sets its shape in code gives it in its background, as a menu window does for
+    each background style (-[_CPMenuWindow setBackgroundStyle:]). The receiver writes its radii
+    on the same element at each layout, and without radii from the theme it wrote empty ones
+    and removed the background's corners. The background is now the second source, so the
+    receiver also rounds its content view to those corners.
 */
 - (JSObject)_cornerRadii
 {
+    var radii = {
+            topLeft: [self _frameValueForThemeAttribute:@"border-top-left-radius"],
+            topRight: [self _frameValueForThemeAttribute:@"border-top-right-radius"],
+            bottomLeft: [self _frameValueForThemeAttribute:@"border-bottom-left-radius"],
+            bottomRight: [self _frameValueForThemeAttribute:@"border-bottom-right-radius"]
+        };
+
+    if (radii.topLeft == nil && radii.topRight == nil && radii.bottomLeft == nil && radii.bottomRight == nil)
+        radii = _CPWindowViewCornerRadiiOfBackground(_backgroundColorResolved) || radii;
+
     return {
-        topLeft: [self _frameValueForThemeAttribute:@"border-top-left-radius"] || "",
-        topRight: [self _frameValueForThemeAttribute:@"border-top-right-radius"] || "",
-        bottomLeft: [self _frameValueForThemeAttribute:@"border-bottom-left-radius"] || "",
-        bottomRight: [self _frameValueForThemeAttribute:@"border-bottom-right-radius"] || ""
+        topLeft: radii.topLeft || "",
+        topRight: radii.topRight || "",
+        bottomLeft: radii.bottomLeft || "",
+        bottomRight: radii.bottomRight || ""
     };
+}
+
+/*
+    The corners can come from the background (see -_cornerRadii), so a new background lays out
+    the frame again. Only a change asks for layout: the layout of some window views sets their
+    background each time.
+*/
+- (void)setBackgroundColor:(CPColor)aColor
+{
+    var previousColor = _backgroundColor;
+
+    [super setBackgroundColor:aColor];
+
+    if (_backgroundColor !== previousColor)
+        [self setNeedsLayout];
 }
 
 /*

@@ -8422,20 +8422,21 @@ function A3MaskIcon(aMaskImage, aColor)
 {
     var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0) styleMask:_CPToolTipWindowMask],
 
-    // Pure DOM CSS dictionary for Standard Tooltip
+    /*
+        Pure DOM CSS dictionaries for the standard and the HUD tool tip. The corners are the
+        window view's corner radii below. A border-radius in a bezel was overwritten by the
+        window view at each layout.
+    */
     bezelColor =[CPColor colorWithCSSDictionary:@{
         @"background-color": @"#FFFFCA",
         @"border": @"1px solid #B0B0B0",
-        @"border-radius": @"2px",
         @"box-sizing": @"border-box",
         @"box-shadow": @"0px 1px 3px rgba(0,0,0,0.25)"
     }],
-    
-    // Pure DOM CSS dictionary for HUD Tooltip
+
     hudBezelColor =[CPColor colorWithCSSDictionary:@{
         @"background-color": @"rgba(0, 0, 0, 0.85)",
         @"border": @"1px solid rgba(255, 255, 255, 0.25)",
-        @"border-radius": @"2px",
         @"box-sizing": @"border-box",
         @"box-shadow": @"0px 2px 5px rgba(0,0,0,0.5)"
     }],
@@ -8450,6 +8451,10 @@ function A3MaskIcon(aMaskImage, aColor)
          // --- Standard Theme Mappings ---
          [@"bezel-color",        bezelColor],
          [@"color",             [CPColor blackColor]],
+         [@"border-top-left-radius",     @"2px"],
+         [@"border-top-right-radius",    @"2px"],
+         [@"border-bottom-left-radius",  @"2px"],
+         [@"border-bottom-right-radius", @"2px"],
 
          // --- HUD Theme Mappings ---
          [@"bezel-color",        hudBezelColor,         CPThemeStateHUD],
@@ -8998,17 +9003,23 @@ function A3MaskIcon(aMaskImage, aColor)
 {
     var modalWindowView = [[_CPModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:_CPModalWindowView];
 
-    // Using pure CSS window frame
+    /*
+        Using pure CSS window frame. The corners are the window view's corner radii below. A
+        border-radius in the bezel was overwritten by the window view at each layout.
+    */
     var bezelColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": A3ColorBackground,
         @"border": @[@"1px solid ", A3ColorWindowBorder],
-        @"border-radius": @"6px",
         @"box-shadow": @"0 5px 15px rgba(0,0,0,0.5)"
     }],
 
     themeValues =
     [
-     [@"bezel-color", bezelColor]
+     [@"bezel-color",                bezelColor],
+     [@"border-top-left-radius",     @"6px"],
+     [@"border-top-right-radius",    @"6px"],
+     [@"border-bottom-left-radius",  @"6px"],
+     [@"border-bottom-right-radius", @"6px"]
      ];
 
     [self registerThemeValues:themeValues forView:modalWindowView];
@@ -9031,7 +9042,13 @@ function A3MaskIcon(aMaskImage, aColor)
         "background-color": A3ColorActiveText
     } size:CGSizeMake(12, 12)],
 
-    // Global
+    /*
+        Values for every kind of window. They gave the corner radii of a sheet, 0, 0, 7 and 7
+        points. A window view takes its frame values from the nearest class that has them,
+        and the HUD and bridge views copy these values, so every kind of window took the
+        sheet's rounded bottom corners: the menu bar, the full-page bridge window, tool tips
+        and popovers too. Each kind of window that has rounded corners now gives its own.
+    */
     themedWindowViewValues =
     [
      [@"shadow-inset",                   CGInsetMake(0, 0, 0, 0)],
@@ -9042,11 +9059,7 @@ function A3MaskIcon(aMaskImage, aColor)
      [@"shadow-height",                  5],
      [@"shadown-horizontal-offset",      2],
      [@"sheet-vertical-offset",          -1],
-     [@"size-indicator",                 CGSizeMake(12, 12)],
-     [@"border-top-left-radius",         @"0px"], 
-     [@"border-top-right-radius",        @"0px"], 
-     [@"border-bottom-left-radius",      @"7px"],
-     [@"border-bottom-right-radius",     @"7px"]
+     [@"size-indicator",                 CGSizeMake(12, 12)]
      ];
 
     [self registerThemeValues:themedWindowViewValues forView:windowView];
@@ -9058,9 +9071,12 @@ function A3MaskIcon(aMaskImage, aColor)
 {
     var HUDWindowView = [[_CPHUDWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:CPHUDBackgroundWindowMask | CPClosableWindowMask],
     
+    /*
+        The corners are the window view's corner radii below. A border-radius in the bezel was
+        overwritten by the window view at each layout.
+    */
     HUDBezelColor = [CPColor colorWithCSSDictionary:@{
-        @"background-color": @"rgba(0, 0, 0, 0.85)",
-        @"border-radius": @"5px"
+        @"background-color": @"rgba(0, 0, 0, 0.85)"
     }],
 
     closeImage = [CPImage imageWithCSSDictionary:@{
@@ -9093,7 +9109,11 @@ function A3MaskIcon(aMaskImage, aColor)
      [@"title-alignment",            CPCenterTextAlignment],
      [@"title-line-break-mode",      CPLineBreakByTruncatingTail],
      [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
-     [@"title-bar-height",           26]
+     [@"title-bar-height",           26],
+     [@"border-top-left-radius",     @"5px"],
+     [@"border-top-right-radius",    @"5px"],
+     [@"border-bottom-left-radius",  @"5px"],
+     [@"border-bottom-right-radius", @"5px"]
      ];
 
     [self registerThemeValues:themeValues forView:HUDWindowView inherit:themedWindowViewValues];
@@ -9337,11 +9357,16 @@ function A3MaskIcon(aMaskImage, aColor)
 {
     var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:nil];
 
-    // Apply the same styling as the standard Modal Window to cover the background
+    /*
+        Apply the same styling as the standard Modal Window to cover the background. A sheet
+        hangs from the title bar of its parent, so its top corners are square and its bottom
+        corners round: the window view's corner radii below, which a sheet of a standard window
+        takes too. A border-radius in the bezel was overwritten by the window view at each
+        layout.
+    */
     var bezelColor = [CPColor colorWithCSSDictionary:@{
                                                             @"background-color": A3ColorBackgroundWhite,
                                                             @"border": @[@"1px solid ", A3ColorWindowBorder],
-                                                            @"border-radius": @"6px",
                                                             @"box-shadow": @"0 5px 15px rgba(0,0,0,0.5)"
                                                         }];
 
@@ -9349,7 +9374,11 @@ function A3MaskIcon(aMaskImage, aColor)
         [@"bezel-color", bezelColor],
         [@"body-color", [CPColor whiteColor]],
         [@"shadow-height", 0.0],
-        [@"title-bar-height", 0.0]
+        [@"title-bar-height", 0.0],
+        [@"border-top-left-radius", @"0px"],
+        [@"border-top-right-radius", @"0px"],
+        [@"border-bottom-left-radius", @"7px"],
+        [@"border-bottom-right-radius", @"7px"]
     ];
 
     [self registerThemeValues:themeValues forView:docModalWindowView];
@@ -9367,10 +9396,16 @@ function A3MaskIcon(aMaskImage, aColor)
         @"border-bottom": @[@"1px solid ", A3ColorBorderLight]
     }],
 
-    // HUD Theme Window Background (Dark/Translucent)
+    /*
+        HUD Theme Window Background (Dark/Translucent)
+
+        This bezel declared a 5 px border-radius, copied from the HUD window's bezel. A bridge
+        window fills the browser window and has square corners, so the bezel declares none.
+        No code reads this value: the bridge view sets a black background for the HUD style
+        itself, and its window view never takes the HUD state.
+    */
     hudBezelColor = [CPColor colorWithCSSDictionary:@{
         @"background-color": @"rgba(0, 0, 0, 0.85)",
-        @"border-radius": @"5px",
         @"box-shadow": @"0 5px 15px rgba(0,0,0,0.5)"
     }],
 

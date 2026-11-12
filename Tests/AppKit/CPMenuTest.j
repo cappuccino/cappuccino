@@ -3,6 +3,8 @@
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPText.j>
 
+@import "BuiltThemes.j"
+
 
 @implementation CPMenuTest : OJTestCase
 {
@@ -237,6 +239,36 @@
 - (void)undo:(id)sender
 {
     undoWasCalled = YES;
+}
+
+/*
+    A menu window takes the background of the style it is given. Every style took the pop-up
+    background. The test reads the built Aristo3 theme, so it needs the themes built first, as
+    `npx jake build` does.
+*/
+- (void)testEachBackgroundStyleTakesItsOwnBackground
+{
+    var aristo3 = BuiltThemeNamed(@"Aristo3"),
+        previousTheme = [CPTheme defaultTheme];
+
+    [self assertNotNull:aristo3 message:@"The built blends hold no Aristo3 theme. Build the themes first."];
+
+    [CPTheme setDefaultTheme:aristo3];
+
+    try
+    {
+        var menuWindow = [[_CPMenuWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 100.0, 100.0) styleMask:CPBorderlessWindowMask];
+
+        [menuWindow setBackgroundStyle:_CPMenuWindowMenuBarBackgroundStyle];
+        [self assert:[aristo3 valueForAttributeWithName:@"menu-window-menu-bar-background-style-color" forClass:_CPMenuView] same:[menuWindow backgroundColor]];
+
+        [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
+        [self assert:[aristo3 valueForAttributeWithName:@"menu-window-pop-up-background-style-color" forClass:_CPMenuView] same:[menuWindow backgroundColor]];
+    }
+    finally
+    {
+        [CPTheme setDefaultTheme:previousTheme];
+    }
 }
 
 @end

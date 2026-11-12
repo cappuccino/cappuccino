@@ -173,9 +173,22 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
     return color;
 }
 
+/*
+    The method read the menu view's pop-up colour for every style, so a menu under the menu bar
+    took the pop-up background, with its top border and its rounded top corners. It now reads
+    the menu view's value for the style it is given, in the menu view's current state, so that
+    a state such as HUD still gives its own value.
+*/
 - (void)setBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
 {
-    var color = [_menuView currentValueForThemeAttribute:@"menu-window-pop-up-background-style-color"];
+    var attributeName = nil;
+
+    if (aBackgroundStyle === _CPMenuWindowPopUpBackgroundStyle)
+        attributeName = @"menu-window-pop-up-background-style-color";
+    else if (aBackgroundStyle === _CPMenuWindowMenuBarBackgroundStyle)
+        attributeName = @"menu-window-menu-bar-background-style-color";
+
+    var color = attributeName ? [_menuView currentValueForThemeAttribute:attributeName] : nil;
 
     if (!color)
         color = [[self class] backgroundColorForBackgroundStyle:aBackgroundStyle];
