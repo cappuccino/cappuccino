@@ -65,7 +65,7 @@ SourceActionDelete          = 5;
 
     if (_iconKind === @"all")
     {
-        var color = _isHighlighted ? [CPColor whiteColor] : [CPColor colorWithRed:0.33 green:0.45 blue:0.62 alpha:1.0],
+        var color = _isHighlighted ? [CPColor alternateSelectedControlTextColor] : [CPColor controlAccentColor],
             head = [CPBezierPath bezierPath],
             body = [CPBezierPath bezierPath];
 
@@ -78,9 +78,8 @@ SourceActionDelete          = 5;
     }
 
     // Folder shape for groups and smart folders.
-    var fill = _isHighlighted ? [CPColor whiteColor] :
-               (_iconKind === @"smart" ? [CPColor colorWithRed:0.55 green:0.42 blue:0.78 alpha:1.0]
-                                   : [CPColor colorWithRed:0.38 green:0.62 blue:0.88 alpha:1.0]),
+    var fill = _isHighlighted ? [CPColor alternateSelectedControlTextColor] :
+               (_iconKind === @"smart" ? [CPColor systemPurpleColor] : [CPColor controlAccentColor]),
         folder = [CPBezierPath bezierPath];
 
     [folder moveToPoint:CGPointMake(1, 3)];
@@ -98,7 +97,7 @@ SourceActionDelete          = 5;
     {
         // Gear-ish dot to distinguish smart folders.
         var mark = [CPBezierPath bezierPath],
-            markColor = _isHighlighted ? [CPColor colorWithRed:0.55 green:0.42 blue:0.78 alpha:1.0] : [CPColor whiteColor];
+            markColor = _isHighlighted ? [CPColor systemPurpleColor] : [CPColor alternateSelectedControlTextColor];
 
         [markColor set];
         [mark appendBezierPathWithOvalInRect:CGRectMake(w / 2 - 2.5, 7.5, 5, 5)];
@@ -217,7 +216,7 @@ var BadgeFont       = nil,
 
 - (void)_updateColors
 {
-    [_badgeLabel setTextColor:_isHighlighted ? [CPColor colorWithRed:0.29 green:0.54 blue:0.82 alpha:1.0] : [CPColor whiteColor]];
+    [_badgeLabel setTextColor:_isHighlighted ? [CPColor controlAccentColor] : [CPColor alternateSelectedControlTextColor]];
 }
 
 - (void)drawRect:(CGRect)aRect
@@ -228,7 +227,7 @@ var BadgeFont       = nil,
 
     [path appendBezierPathWithRoundedRect:bounds xRadius:radius yRadius:radius];
 
-    [(_isHighlighted ? [CPColor whiteColor] : [CPColor colorWithRed:0.56 green:0.63 blue:0.76 alpha:1.0]) set];
+    [(_isHighlighted ? [CPColor alternateSelectedControlTextColor] : [CPColor systemGrayColor]) set];
     [path fill];
 }
 
@@ -327,10 +326,13 @@ var BadgeFont       = nil,
 
 - (void)_updateSelectionAppearance
 {
-    // CPTableView marks data views of selected rows with CPThemeStateSelectedDataView
-    // and, only while the table is focused (first responder in the key window),
-    // additionally with CPThemeStateFirstResponder. The unfocused selection colour
-    // is a light gray, so white text is only legible in the focused case.
+    /*
+        CPTableView marks data views of selected rows with CPThemeStateSelectedDataView and,
+        only while the table is focused (first responder in the key window), additionally
+        with CPThemeStateFirstResponder. The unfocused selection colour is a light gray, so
+        the selected text colour is only legible in the focused case. A title without a
+        colour of its own takes the theme's text colour, which follows the appearance.
+    */
     var selected = [self hasThemeState:CPThemeStateSelectedDataView],
         emphasized = selected && [self hasThemeState:CPThemeStateFirstResponder];
 
@@ -338,9 +340,9 @@ var BadgeFont       = nil,
     [_badgeView setSelected:emphasized];
 
     if (_isHeader)
-        [_titleField setTextColor:[CPColor colorWithWhite:0.45 alpha:1.0]];
+        [_titleField setTextColor:[CPColor secondaryLabelColor]];
     else
-        [_titleField setTextColor:emphasized ? [CPColor whiteColor] : [CPColor colorWithWhite:0.15 alpha:1.0]];
+        [_titleField setTextColor:emphasized ? [CPColor alternateSelectedControlTextColor] : nil];
 }
 
 @end
@@ -402,7 +404,6 @@ var BadgeFont       = nil,
     [_outlineView setCornerView:nil];
     [_outlineView setColumnAutoresizingStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
     [_outlineView setSelectionHighlightStyle:CPTableViewSelectionHighlightStyleSourceList];
-    [_outlineView setBackgroundColor:[CPColor colorWithRed:212.0 / 255.0 green:221.0 / 255.0 blue:230.0 / 255.0 alpha:1.0]];
     [_outlineView setRowHeight:SourceRowHeight];
     [_outlineView setAllowsMultipleSelection:NO];
     [_outlineView setAllowsEmptySelection:YES];

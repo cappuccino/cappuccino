@@ -163,7 +163,7 @@ var EditorWidth         = 680.0,
     [_formatField setFrame:CGRectMake(20, height - 88, width - 40, 18)];
     [_formatField setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
     [_formatField setFont:[CPFont fontWithName:@"Menlo, Courier" size:11.0]];
-    [_formatField setTextColor:[CPColor grayColor]];
+    [_formatField setTextColor:[CPColor secondaryLabelColor]];
     [_formatField setLineBreakMode:CPLineBreakByTruncatingTail];
     [_formatField setSelectable:YES];
     [content addSubview:_formatField];

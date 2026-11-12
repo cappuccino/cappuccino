@@ -190,7 +190,7 @@
 
     _statusField = [CPTextField labelWithTitle:@""];
     [_statusField setFont:[CPFont systemFontOfSize:11.0]];
-    [_statusField setTextColor:[CPColor colorWithWhite:0.35 alpha:1.0]];
+    [_statusField setTextColor:[CPColor secondaryLabelColor]];
     [_statusField setAlignment:CPRightTextAlignment];
     [_statusField setVerticalAlignment:CPCenterVerticalTextAlignment];
     [_statusField setFrame:CGRectMake(80, 0, CGRectGetWidth(aFrame) - 92, barHeight)];

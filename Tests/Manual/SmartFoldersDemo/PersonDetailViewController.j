@@ -55,7 +55,6 @@ PersonDetailPreferredHeight = 5 * RowPitch + 52.0;
         view = [[CPView alloc] initWithFrame:frame];
 
     [view setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    [view setBackgroundColor:[CPColor colorWithWhite:0.96 alpha:1.0]];
 
     var box = [[CPBox alloc] initWithFrame:CGRectInset(frame, 12, 8)];
     [box setTitle:@"Selected Person"];
@@ -119,7 +118,7 @@ PersonDetailPreferredHeight = 5 * RowPitch + 52.0;
     [self _labelInRow:4 column:right title:@"Record ID:" in:content];
     var uid = [self _valueLabelInRow:4 x:right + LabelWidth + LabelGap in:content];
     [uid setSelectable:YES];
-    [uid setTextColor:[CPColor grayColor]];
+    [uid setTextColor:[CPColor secondaryLabelColor]];
     [uid bind:CPValueBinding toObject:_arrayController withKeyPath:@"selection.uid" options:options];
 
     [self setView:view];
@@ -147,7 +146,6 @@ PersonDetailPreferredHeight = 5 * RowPitch + 52.0;
 
     [label setAlignment:CPRightTextAlignment];
     [label setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [label setTextColor:[CPColor colorWithWhite:0.25 alpha:1.0]];
     [self _place:label row:aRow x:anX width:LabelWidth height:RowHeight in:aSuperview];
 
     return label;
