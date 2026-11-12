@@ -62,6 +62,13 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
         [window setDelegate:self];
         [window setTitle:@"Smart Folders Demo"];
 
+        /*
+            A bridge window draws no background of its own, so the page showed through views
+            without a background, such as the detail pane. The window takes AppKit's window
+            background, which follows the appearance.
+        */
+        [window setBackgroundColor:[CPColor windowBackgroundColor]];
+
         _sourceListController = [[SourceListViewController alloc] initWithLibrary:_library];
         [_sourceListController setDelegate:self];
 
