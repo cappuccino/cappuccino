@@ -169,10 +169,12 @@ A3DefineDarkThemeColor(@"windowViewWindowShadowColor", [CPColor colorWithCSSStri
 
 /*
     System colours with AppKit's DarkAqua value on macOS 27, in sRGB, as CPColor holds
-    AppKit's Aqua values: the source-list background, secondary text, and the gray and purple
-    tints. A System colour without a value here keeps its Aqua value in the dark appearance,
-    so the source list stayed light and secondary text stayed black.
+    AppKit's Aqua values: the window background, the source-list background, secondary text,
+    and the gray and purple tints. A System colour without a value here keeps its Aqua value
+    in the dark appearance, so a window background stayed white, the source list stayed light
+    and secondary text stayed black.
 */
+A3DefineDarkSystemColor(@"windowBackgroundColor", [CPColor colorWithRed:0.1176 green:0.1176 blue:0.1176 alpha:1.0]);
 A3DefineDarkSystemColor(@"_sourceListBackgroundColor", [CPColor colorWithRed:0.1765 green:0.1765 blue:0.1765 alpha:0.9]);
 A3DefineDarkSystemColor(@"secondaryLabelColor", [CPColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.549]);
 A3DefineDarkSystemColor(@"systemGrayColor", [CPColor colorWithRed:0.5961 green:0.5961 blue:0.6157 alpha:1.0]);

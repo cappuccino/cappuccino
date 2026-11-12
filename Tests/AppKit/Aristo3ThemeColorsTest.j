@@ -202,6 +202,7 @@ var Aristo3ThemeColorsTestObjectDescriptions = ["Catalog color", "Asset color", 
 - (void)testTheSystemColorsOfTheDarkSetTakeAppKitsDarkAquaValues
 {
     var expectedComponents = {
+            "windowBackgroundColor":        [[1.0, 1.0, 1.0, 1.0], [0.1176, 0.1176, 0.1176, 1.0]],
             "_sourceListBackgroundColor":   [[0.9647, 0.9647, 0.9647, 0.8], [0.1765, 0.1765, 0.1765, 0.9]],
             "secondaryLabelColor":          [[0.0, 0.0, 0.0, 0.498], [1.0, 1.0, 1.0, 0.549]],
             "systemGrayColor":              [[0.5569, 0.5569, 0.5765, 1.0], [0.5961, 0.5961, 0.6157, 1.0]],
