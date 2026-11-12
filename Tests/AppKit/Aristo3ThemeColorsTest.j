@@ -196,6 +196,51 @@ var Aristo3ThemeColorsTestObjectDescriptions = ["Catalog color", "Asset color", 
 }
 
 /*
+    Each System colour in Aristo3's dark set takes AppKit's DarkAqua value in DarkAqua and
+    keeps AppKit's Aqua value in Aqua.
+*/
+- (void)testTheSystemColorsOfTheDarkSetTakeAppKitsDarkAquaValues
+{
+    var expectedComponents = {
+            "_sourceListBackgroundColor":   [[0.9647, 0.9647, 0.9647, 0.8], [0.1765, 0.1765, 0.1765, 0.9]],
+            "secondaryLabelColor":          [[0.0, 0.0, 0.0, 0.498], [1.0, 1.0, 1.0, 0.549]],
+            "systemGrayColor":              [[0.5569, 0.5569, 0.5765, 1.0], [0.5961, 0.5961, 0.6157, 1.0]],
+            "systemPurpleColor":            [[0.7961, 0.1882, 0.8784, 1.0], [0.8588, 0.2039, 0.949, 1.0]]
+        },
+        appearanceNames = [CPAppearanceNameAqua, CPAppearanceNameDarkAqua],
+        mismatches = [];
+
+    [CPTheme setDefaultTheme:[self aristo3]];
+
+    for (var name in expectedComponents)
+    {
+        var color = [CPColor colorWithCatalogName:@"System" colorName:name];
+
+        for (var i = 0; i < appearanceNames.length; i++)
+        {
+            var expected = expectedComponents[name][i],
+                components = nil;
+
+            [[CPAppearance appearanceNamed:appearanceNames[i]] performAsCurrentDrawingAppearance:function()
+            {
+                components = [[color colorUsingColorSpaceName:nil] components];
+            }];
+
+            for (var j = 0; j < 4; j++)
+            {
+                if (ROUND(components[j] * 10000) !== ROUND(expected[j] * 10000))
+                {
+                    mismatches.push(name + " in " + appearanceNames[i] + ": " + components.join(", ") + " should be " + expected.join(", "));
+                    break;
+                }
+            }
+        }
+    }
+
+    [self assertTrue:mismatches.length === 0 message:mismatches.join("\n")];
+}
+
+/*
     A site that joins a named colour into a string with + writes the colour's description.
     Every CSS value converts in Aqua and in DarkAqua, and no text holds the description of
     an object.
