@@ -7312,7 +7312,13 @@ function A3MaskIcon(aMaskImage, aColor)
      [@"image-generic-file",                     imageGenericFile],
      [@"default-row-height",                     17.0], 
      [@"header-view-height",                     22],
-     [@"background-color",                       [CPColor whiteColor]],
+
+     /*
+         The default background of a table view without a colour of its own. The value was
+         white, which does not follow the appearance, and no code read it. It is now the
+         table row colour, the control background colour.
+     */
+     [@"background-color",                       A3CPColorTableRow],
 
      // HUD Images mapping
      [@"sort-image",                             sortImageHUD,           CPThemeStateHUD],

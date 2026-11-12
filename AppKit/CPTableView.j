@@ -357,6 +357,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     BOOL                        _usesAlternatingRowBackgroundColors;
     CPArray                     _alternatingRowBackgroundColors;
+    BOOL                        _usesDefaultBackgroundColor;
 
     unsigned                    _selectionHighlightStyle;
     CPColor                     _unfocusedSelectionHighlightColor;
@@ -487,6 +488,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         //Setting Display Attributes
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleRegular;
+        [self setBackgroundColor:nil];
 
         [self setUsesAlternatingRowBackgroundColors:NO];
         [self setAlternatingRowBackgroundColors:[self valueForThemeAttribute:@"alternating-row-colors"]];
@@ -586,16 +588,56 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self _initSubclass];
 }
 
-- (void)setThemeState:(CPThemeState)aState
+/*!
+    Sets the background colour of the table view. A \c nil colour gives the default
+    background: the theme's background colour in the table view's current state, else
+    \c +[CPColor controlBackgroundColor], as in AppKit. For a transparent table view, set
+    \c +[CPColor clearColor].
+    @param aColor the background colour, or \c nil for the default background
+*/
+- (void)setBackgroundColor:(CPColor)aColor
 {
-    [super setThemeState:aState];
-    [self setBackgroundColor:[self hasThemeState:CPThemeStateHUD] ? [CPColor clearColor] : [CPColor whiteColor]];
+    if (aColor === [CPNull null])
+        aColor = nil;
+
+    _usesDefaultBackgroundColor = !aColor;
+
+    [super setBackgroundColor:aColor || [self _defaultBackgroundColor]];
 }
 
-- (void)unsetThemeState:(CPThemeState)aState
+/*
+    Returns the default background: the theme's background colour in the receiver's current
+    state, else the control background colour, AppKit's default.
+*/
+- (CPColor)_defaultBackgroundColor
 {
-    [super unsetThemeState:aState];
-    [self setBackgroundColor:[self hasThemeState:CPThemeStateHUD] ? [CPColor clearColor] : [CPColor whiteColor]];
+    return [self currentValueForThemeAttribute:@"background-color"] || [CPColor controlBackgroundColor];
+}
+
+/*
+    Applies the default background again when the receiver has no background colour of its
+    own.
+
+    The table view set a white background, or a clear one in the HUD state, at each change of
+    theme state, over the colour that the application had set. A change of appearance, key
+    window or first responder is a change of theme state, so no colour of the application,
+    the theme or AppKit could show. A change of theme state now marks the table view for
+    layout, as for every view, and the layout applies the default only to a table view
+    without a colour of its own.
+*/
+- (void)_updateDefaultBackgroundColor
+{
+    if (_usesDefaultBackgroundColor)
+        [super setBackgroundColor:[self _defaultBackgroundColor]];
+}
+
+/*
+    The receiver archives only a background colour of its own, so that a decoded copy takes
+    the default background from its theme again.
+*/
+- (CPColor)_archivedBackgroundColor
+{
+    return _usesDefaultBackgroundColor ? nil : [super _archivedBackgroundColor];
 }
 
 - (void)_initSubclass
@@ -1080,6 +1122,8 @@ NOT YET IMPLEMENTED
 /*!
     Sets the selection highlight style to an enumerated value.
     This value can also affect the way the tableview draws feedback when the user is dragging.
+    As in AppKit, the source-list style also sets the background colour to the source-list
+    background colour. A background colour set after the style replaces it.
 
     Valid values are:
 <pre>
@@ -1092,8 +1136,16 @@ NOT YET IMPLEMENTED
 {
     _selectionHighlightStyle = aSelectionHighlightStyle;
 
+    /*
+        The source-list style changed only the dragging feedback style. The table view kept
+        its background, so a source list had the background of a plain table, and the
+        System catalog's source-list background colour had no reader.
+    */
     if (aSelectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList)
+    {
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleSourceList;
+        [self setBackgroundColor:[CPColor colorWithCatalogName:@"System" colorName:@"_sourceListBackgroundColor"]];
+    }
     else
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
 
@@ -4512,6 +4564,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)layoutSubviews
 {
+    [self _updateDefaultBackgroundColor];
     [self load];
 }
 

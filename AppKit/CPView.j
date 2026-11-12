@@ -4280,8 +4280,10 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     if (!_autoresizesSubviews)
         [aCoder encodeBool:_autoresizesSubviews forKey:CPViewAutoresizesSubviewsKey];
 
-    if (_backgroundColor != nil)
-        [aCoder encodeObject:_backgroundColor forKey:CPViewBackgroundColorKey];
+    var archivedBackgroundColor = [self _archivedBackgroundColor];
+
+    if (archivedBackgroundColor != nil)
+        [aCoder encodeObject:archivedBackgroundColor forKey:CPViewBackgroundColorKey];
 
     if (_hitTests !== YES)
         [aCoder encodeBool:_hitTests forKey:CPViewHitTestsKey];
@@ -4318,6 +4320,16 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeBool:_isScaled forKey:CPViewIsScaledKey];
     [aCoder encodeObject:_appearance forKey:CPViewAppearanceKey];
     [aCoder encodeObject:_trackingAreas forKey:CPViewTrackingAreasKey];
+}
+
+/*
+    Returns the background colour that the receiver archives: its background colour. A
+    subclass that gives a default background when it has no colour of its own returns nil
+    for the default, so that a decoded copy takes the default again.
+*/
+- (CPColor)_archivedBackgroundColor
+{
+    return _backgroundColor;
 }
 
 @end
