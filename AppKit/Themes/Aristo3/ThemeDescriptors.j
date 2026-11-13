@@ -9378,7 +9378,12 @@ function A3MaskIcon(aMaskImage, aColor)
 
     var themeValues = [
         [@"bezel-color", bezelColor],
-        [@"body-color", [CPColor whiteColor]],
+
+        /*
+            The body was fixed white, so a sheet stayed white in dark mode. It takes the window
+            background, as in AppKit, which is white in Aqua.
+        */
+        [@"body-color", [CPColor windowBackgroundColor]],
         [@"shadow-height", 0.0],
         [@"title-bar-height", 0.0],
         [@"border-top-left-radius", @"0px"],

@@ -196,6 +196,16 @@ var Aristo3ThemeColorsTestObjectDescriptions = ["Catalog color", "Asset color", 
 }
 
 /*
+    A sheet's body takes the window background, as in AppKit, so it follows the appearance.
+*/
+- (void)testASheetBodyTakesTheWindowBackground
+{
+    var bodyColor = [[self aristo3] valueForAttributeWithName:@"body-color" forClass:[_CPDocModalWindowView defaultThemeClass]];
+
+    [self assert:[CPColor windowBackgroundColor] equals:bodyColor];
+}
+
+/*
     Each System colour in Aristo3's dark set takes AppKit's DarkAqua value in DarkAqua and
     keeps AppKit's Aqua value in Aqua.
 */
