@@ -179,3 +179,15 @@ A3DefineDarkSystemColor(@"_sourceListBackgroundColor", [CPColor colorWithRed:0.1
 A3DefineDarkSystemColor(@"secondaryLabelColor", [CPColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.549]);
 A3DefineDarkSystemColor(@"systemGrayColor", [CPColor colorWithRed:0.5961 green:0.5961 blue:0.6157 alpha:1.0]);
 A3DefineDarkSystemColor(@"systemPurpleColor", [CPColor colorWithRed:0.8588 green:0.2039 blue:0.949 alpha:1.0]);
+
+// Rule editor: the alternate row matches the table's; the borders match the table divider.
+
+A3DefineDarkThemeColor(@"ruleEditorAlternateRowColor", [CPColor colorWithRed:38.0/255.0 green:38.0/255.0 blue:38.0/255.0 alpha:1.0]);
+A3DefineDarkThemeColor(@"ruleEditorSliceTopBorderColor", [CPColor colorWithRed:58.0/255.0 green:58.0/255.0 blue:58.0/255.0 alpha:1.0]);
+A3DefineDarkThemeColor(@"ruleEditorSliceBottomBorderColor", [CPColor colorWithRed:25.0/255.0 green:25.0/255.0 blue:25.0/255.0 alpha:1.0]);
+A3DefineDarkThemeColor(@"ruleEditorSliceLastBottomBorderColor", [CPColor colorWithRed:15.0/255.0 green:15.0/255.0 blue:15.0/255.0 alpha:1.0]);
+
+// Boxes: a faint light fill and border in place of the faint black ones.
+
+A3DefineDarkThemeColor(@"boxFillColor", [CPColor colorWithCSSString:@"rgba(255,255,255,0.05)"]);
+A3DefineDarkThemeColor(@"boxBorderColor", [CPColor colorWithCSSString:@"rgba(255,255,255,0.12)"]);

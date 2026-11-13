@@ -249,3 +249,19 @@ A3ColorSquareButtonBackground       = A3DefineThemeColor(@"squareButtonBackgroun
 // Window shadow
 
 A3ColorWindowViewWindowShadow       = A3DefineThemeColor(@"windowViewWindowShadowColor", [CPColor colorWithCSSString:@"rgba(0, 0, 0, 0.25)"]);
+
+// Rule editor
+
+/*
+    The rows alternate between the table view background, which has a System name, and a pale
+    blue. The slice borders separate the rows.
+*/
+A3CPColorRuleEditorAlternateRow             = A3DefineThemeColor(@"ruleEditorAlternateRowColor", [CPColor colorWithRed:235.0/255.0 green:239.0/255.0 blue:252.0/255.0 alpha:1.0]);
+A3CPColorRuleEditorSliceTopBorder           = A3DefineThemeColor(@"ruleEditorSliceTopBorderColor", [CPColor colorWithWhite:0.9 alpha:1.0]);
+A3CPColorRuleEditorSliceBottomBorder        = A3DefineThemeColor(@"ruleEditorSliceBottomBorderColor", [CPColor colorWithWhite:0.729412 alpha:1.0]);
+A3CPColorRuleEditorSliceLastBottomBorder    = A3DefineThemeColor(@"ruleEditorSliceLastBottomBorderColor", [CPColor colorWithWhite:0.6 alpha:1.0]);
+
+// Boxes
+
+A3ColorBoxFill                              = A3DefineThemeColor(@"boxFillColor", [CPColor colorWithCSSString:@"rgba(0,0,0,0.08)"]);
+A3ColorBoxBorder                            = A3DefineThemeColor(@"boxBorderColor", [CPColor colorWithCSSString:@"rgba(0,0,0,0.1)"]);

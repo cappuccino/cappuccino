@@ -8269,16 +8269,19 @@ function A3MaskIcon(aMaskImage, aColor)
 {
     var ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 300.0)],
 
-    // --- Standard Colors ---
-    backgroundColors = [[CPColor whiteColor], [CPColor colorWithRed:235 / 255 green:239 / 255 blue:252 / 255 alpha:1]],
+    /*
+        The row and border colours were fixed, so the rows and their borders stayed light in
+        dark mode. They take names that follow the appearance.
+    */
+    backgroundColors = [A3CPColorTableRow, A3CPColorRuleEditorAlternateRow],
 
     // Selection Colors
     selectedActiveRowColor = @"A3CPColorBorderBlue",       // Active (Blue)
     selectedInactiveRowColor = A3CPColorBorderBlueInactive, // Inactive (Light Gray)
 
-    sliceTopBorderColor = [CPColor colorWithWhite:0.9 alpha:1.0],
-    sliceBottomBorderColor = [CPColor colorWithWhite:0.729412 alpha:1.0],
-    sliceLastBottomBorderColor = [CPColor colorWithWhite:0.6 alpha:1.0],
+    sliceTopBorderColor = A3CPColorRuleEditorSliceTopBorder,
+    sliceBottomBorderColor = A3CPColorRuleEditorSliceBottomBorder,
+    sliceLastBottomBorderColor = A3CPColorRuleEditorSliceLastBottomBorder,
 
     // Standard Font Color
     fontColor = A3CPColorActiveText,
@@ -8785,17 +8788,20 @@ function A3MaskIcon(aMaskImage, aColor)
 {
     var box = [[CPBox alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
 
-    // Standard Style
+    /*
+        Standard style. The fill and the border were fixed black, so they did not show in dark
+        mode. They take names that follow the appearance.
+    */
     backgroundColor = [CPColor colorWithCSSDictionary:@{
-                                                         @"background-color": @"rgba(0,0,0,0.08)",
-                                                         @"border-color": @"rgba(0,0,0,0.1)",
+                                                         @"background-color": A3ColorBoxFill,
+                                                         @"border-color": A3ColorBoxBorder,
                                                          @"border-style": @"solid",
                                                          @"border-width": @"1px",
                                                          @"border-radius": @"5px",
                                                          @"box-sizing": @"border-box"
                                                          }],
     borderColor = [CPColor colorWithCSSDictionary:@{
-                                                     @"background-color": @"rgba(0,0,0,0.1)"
+                                                     @"background-color": A3ColorBoxBorder
                                                     }],
 
     // --- HUD Styles ---
