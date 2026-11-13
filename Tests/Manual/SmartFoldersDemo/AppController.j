@@ -24,22 +24,34 @@
 
 @import "Library.j"
 @import "MainWindowController.j"
+@import "SettingsWindowController.j"
 
 @implementation AppController : CPObject
 {
     Library                 _library;
     MainWindowController    _mainWindowController;
+    SettingsWindowController _settingsWindowController;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     _library = [[Library alloc] init];
 
+    [SettingsWindowController applySavedAppearance];
+
     [self _buildMainMenu];
     [CPMenu setMenuBarVisible:YES];
 
     _mainWindowController = [[MainWindowController alloc] initWithLibrary:_library];
     [_mainWindowController showWindow:self];
+}
+
+- (void)showSettings:(id)aSender
+{
+    if (!_settingsWindowController)
+        _settingsWindowController = [[SettingsWindowController alloc] init];
+
+    [_settingsWindowController showWindow:self];
 }
 
 // ---------------------------------------------------------------- Menu
@@ -84,6 +96,8 @@
     [self _addItem:@"Delete Group or Smart Folder" action:@selector(deleteSelectedSourceItem:) key:nil modifiers:0 to:fileMenu];
     [fileMenu addItem:[CPMenuItem separatorItem]];
     [self _addItem:@"Reset Library…" action:@selector(resetLibrary:) key:nil modifiers:0 to:fileMenu];
+    [fileMenu addItem:[CPMenuItem separatorItem]];
+    [self _addItem:@"Settings…" action:@selector(showSettings:) key:@"," modifiers:0 to:fileMenu];
 
     // Edit
     var editMenu = [self _addSubmenu:@"Edit" to:mainMenu];
