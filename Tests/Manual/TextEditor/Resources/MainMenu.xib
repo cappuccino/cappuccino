@@ -26,7 +26,11 @@
                             <menuItem isSeparatorItem="YES" id="236">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Settings…" keyEquivalent="," id="129"/>
+                            <menuItem title="Settings…" keyEquivalent="," id="129">
+                                <connections>
+                                    <action selector="showSettings:" target="-1" id="Sts-Ap-Wnd"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>

@@ -26,14 +26,38 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
+@import "SettingsWindowController.j"
+
 
 @implementation AppController : CPObject
+{
+    SettingsWindowController    _settingsWindowController;
+}
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
+    /*
+        Apply the appearance chosen in the Settings window, kept from an earlier session.
+        Every window, open or not yet open, takes it.
+    */
+    [SettingsWindowController applySavedAppearance];
+
     // This is called when the application is done loading.
     // Uncomment the following line to hide the standard menu bar.
     // [CPMenu setMenuBarVisible:NO];
+}
+
+/*
+    The action of the Settings… menu item in MainMenu.xib, sent to the first responder. The
+    application delegate is the last stop of the responder chain, so it receives it. The
+    Settings window is made on first use and kept.
+*/
+- (void)showSettings:(id)aSender
+{
+    if (!_settingsWindowController)
+        _settingsWindowController = [[SettingsWindowController alloc] init];
+
+    [_settingsWindowController showWindow:self];
 }
 
 @end
