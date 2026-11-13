@@ -31,7 +31,9 @@
       first, and its Import button opens the browser's file dialog.
     - Quick Import runs the open panel with neither, so the browser's file dialog opens at once.
     - The check boxes run the panel as a sheet, allow several files, choose a folder instead of
-      files, and set a delegate that rejects files whose names contain "bad".
+      files, and set a delegate that rejects files whose names contain "bad". Only Import CSV…
+      shows a sheet: Quick Import opens the browser's file dialog at once, and a browser's
+      dialog cannot be a sheet.
     - The allowed file types are csv and text/csv, so other files are removed and reported.
     - Each file is read through its item provider, and decoded with the chosen encoding, or with
       encoding detection.
@@ -116,6 +118,7 @@ var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
     [contentView addSubview:[self _buttonWithTitle:@"Map Fields…" action:@selector(mapFields:) frame:CGRectMake(290.0, 20.0, 120.0, 24.0)]];
 
     _sheetCheckBox = [self _checkBoxWithTitle:@"As a sheet" origin:CGPointMake(20.0, 58.0)];
+    [_sheetCheckBox setToolTip:@"Applies to Import CSV…. Quick Import opens the browser's file dialog, which cannot be a sheet."];
     _multipleCheckBox = [self _checkBoxWithTitle:@"Several files" origin:CGPointMake(140.0, 58.0)];
     _folderCheckBox = [self _checkBoxWithTitle:@"Choose a folder" origin:CGPointMake(270.0, 58.0)];
     _rejectCheckBox = [self _checkBoxWithTitle:@"Delegate rejects names containing \"bad\"" origin:CGPointMake(410.0, 58.0)];
