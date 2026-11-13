@@ -100,6 +100,13 @@ var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
 
     _window = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
 
+    /*
+        A bridge window draws no background of its own, so the page showed through the views
+        without a background. The window takes AppKit's window background, which follows the
+        appearance.
+    */
+    [_window setBackgroundColor:[CPColor windowBackgroundColor]];
+
     var contentView = [_window contentView],
         width = CGRectGetWidth([contentView bounds]),
         height = CGRectGetHeight([contentView bounds]);
@@ -605,7 +612,7 @@ var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
 
     _detailField = [CPTextField labelWithTitle:@""];
     [_detailField setFrame:CGRectMake(20.0, 72.0, 400.0, 20.0)];
-    [_detailField setTextColor:[CPColor grayColor]];
+    [_detailField setTextColor:[CPColor secondaryLabelColor]];
     [contentView addSubview:_detailField];
 
     [cancelButton setKeyEquivalent:CPEscapeFunctionKey];
@@ -751,7 +758,7 @@ var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
         [listView addSubview:nameField];
 
         [sampleField setFrame:CGRectMake(160.0, y, sheetWidth - 60.0 - 330.0, 20.0)];
-        [sampleField setTextColor:[CPColor grayColor]];
+        [sampleField setTextColor:[CPColor secondaryLabelColor]];
         [listView addSubview:sampleField];
 
         [popUp addItemWithTitle:@"Ignore"];
@@ -768,7 +775,7 @@ var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
 
     _mappingWarningField = [CPTextField labelWithTitle:@""];
     [_mappingWarningField setFrame:CGRectMake(20.0, 60.0 + listHeight, sheetWidth - 40.0, 20.0)];
-    [_mappingWarningField setTextColor:[CPColor redColor]];
+    [_mappingWarningField setTextColor:[CPColor systemRedColor]];
     [contentView addSubview:_mappingWarningField];
 
     var applyButton = [self _buttonWithTitle:@"Apply" action:@selector(_applyMapping:) frame:CGRectMake(sheetWidth - 20.0 - 90.0, sheetHeight - 44.0, 90.0, 24.0)],
