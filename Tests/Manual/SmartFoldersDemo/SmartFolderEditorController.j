@@ -117,6 +117,7 @@ var EditorWidth         = 680.0,
 
     var title = [CPTextField labelWithTitle:@"Smart Folder"];
     [title setFont:[CPFont boldSystemFontOfSize:13.0]];
+    [title sizeToFit];
     [title setFrameOrigin:CGPointMake(20, 14)];
     [content addSubview:title];
 
