@@ -2391,6 +2391,26 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
     return _implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_;
 }
 
+/*
+    The outline view implements tableView:writeRowsWithIndexes:toPasteboard: for every outline
+    data source, so the table's check answered YES. Every outline therefore selected a row on
+    mouse-up instead of mouse-down, as only a table that can start a drag does.
+*/
+- (BOOL)_dataSourceRespondsToWriteRowsWithIndexesToPasteboard
+{
+    return _implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_;
+}
+
+/*
+    The outline view implements tableView:validateDrop:proposedRow:proposedDropOperation: for
+    every outline data source, so the table's check answered YES, and every outline accepted
+    the preparation of a drop that its data source could not validate.
+*/
+- (BOOL)_dataSourceRespondsToValidateDropProposedRowProposedDropOperation
+{
+    return _implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_;
+}
+
 - (BOOL)_delegateRespondsToViewForTableColumn
 {
     return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_viewForTableColumn_item_;

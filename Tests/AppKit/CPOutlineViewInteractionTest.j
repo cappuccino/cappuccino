@@ -26,8 +26,8 @@
     An outline view adds a parent to every row, so it reports a drag by item and a drop
     by parent item and child index. Selection and editing come from CPTableView, and
     CPTableViewInteractionTest.j covers them. These tests cover what an outline view
-    changes, including the outline data source's part in deciding whether a double click
-    starts an edit.
+    changes, including the outline data source's part in deciding when a click selects a
+    row, whether a drop can be prepared and whether a double click starts an edit.
 */
 
 var OutlineInteractionDragType = @"OutlineInteractionDragType";
@@ -47,15 +47,12 @@ var OutlineInteractionDragType = @"OutlineInteractionDragType";
 
 @end
 
-@implementation _CPOutlineInteractionDataSource : CPObject
+/*
+    An outline data source that supplies items and values, with no drag methods.
+*/
+@implementation _CPOutlineInteractionBasicDataSource : CPObject
 {
     id          tree @accessors;
-    CPArray     writtenItems @accessors;
-    CPArray     validations @accessors;
-    CPArray     acceptedDrops @accessors;
-    id          retargetItem @accessors;
-    id          retargetIndex @accessors;
-    BOOL        shouldRetarget @accessors;
 }
 
 - (id)init
@@ -70,8 +67,6 @@ var OutlineInteractionDragType = @"OutlineInteractionDragType";
             @"B": [],
             @"C": [@"C1"]
         };
-        validations = [];
-        acceptedDrops = [];
     }
 
     return self;
@@ -100,6 +95,34 @@ var OutlineInteractionDragType = @"OutlineInteractionDragType";
 - (id)outlineView:(CPOutlineView)anOutlineView objectValueForTableColumn:(CPTableColumn)aColumn byItem:(id)anItem
 {
     return anItem;
+}
+
+@end
+
+/*
+    An outline data source that writes dragged items and validates and accepts drops.
+*/
+@implementation _CPOutlineInteractionDataSource : _CPOutlineInteractionBasicDataSource
+{
+    CPArray     writtenItems @accessors;
+    CPArray     validations @accessors;
+    CPArray     acceptedDrops @accessors;
+    id          retargetItem @accessors;
+    id          retargetIndex @accessors;
+    BOOL        shouldRetarget @accessors;
+}
+
+- (id)init
+{
+    self = [super init];
+
+    if (self)
+    {
+        validations = [];
+        acceptedDrops = [];
+    }
+
+    return self;
 }
 
 - (BOOL)outlineView:(CPOutlineView)anOutlineView writeItems:(CPArray)theItems toPasteboard:(CPPasteboard)aPasteboard
@@ -389,6 +412,46 @@ var OutlineInteractionDragType = @"OutlineInteractionDragType";
 
     [self assertNull:outlineView._dragHoverTimer];
     [self assertFalse:[outlineView isItemExpanded:@"C"]];
+}
+
+// MARK: Drag support
+
+/*
+    A table that can start a drag selects a row on mouse-up, so that a drag from an
+    unselected row does not change the selection first. An outline must decide this from
+    its own data source.
+*/
+- (void)testAnOutlineWithoutDragSupportSelectsOnMouseDown
+{
+    [outlineView setDataSource:[[_CPOutlineInteractionBasicDataSource alloc] init]];
+    [self sendMouse:CPLeftMouseDown atPoint:[self pointInItem:@"B"]];
+
+    [self assert:[outlineView rowForItem:@"B"] equals:[outlineView selectedRow]];
+}
+
+- (void)testAnOutlineWithDragSupportSelectsOnMouseUp
+{
+    var point = [self pointInItem:@"B"];
+
+    [self sendMouse:CPLeftMouseDown atPoint:point];
+
+    [self assert:CPNotFound equals:[outlineView selectedRow] message:@"mouse-down must not select"];
+
+    [self sendMouse:CPLeftMouseUp atPoint:point];
+
+    [self assert:[outlineView rowForItem:@"B"] equals:[outlineView selectedRow]];
+}
+
+- (void)testAnOutlineWithoutDropSupportRefusesToPrepareADrop
+{
+    [outlineView setDataSource:[[_CPOutlineInteractionBasicDataSource alloc] init]];
+
+    [self assertFalse:[outlineView prepareForDragOperation:[self draggingInfoAtPoint:[self pointInItem:@"B"]]]];
+}
+
+- (void)testAnOutlineWithDropSupportPreparesADrop
+{
+    [self assertTrue:[outlineView prepareForDragOperation:[self draggingInfoAtPoint:[self pointInItem:@"B"]]]];
 }
 
 // MARK: Editing
