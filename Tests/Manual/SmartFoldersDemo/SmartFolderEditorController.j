@@ -276,29 +276,13 @@ var EditorWidth         = 680.0,
     if (![aPredicate isKindOfClass:[CPCompoundPredicate class]])
         aPredicate = [CPCompoundPredicate andPredicateWithSubpredicates:[aPredicate]];
 
-    try
-    {
-        [_predicateEditor setObjectValue:aPredicate];
-    }
-    catch (e)
-    {
-        CPLog.warn("SmartFoldersDemo: CPPredicateEditor could not represent " + [aPredicate predicateFormat] + ": " + e);
-        [_predicateEditor setObjectValue:[CPCompoundPredicate andPredicateWithSubpredicates:[[CPPredicate predicateWithFormat:@"lastName CONTAINS[cd] %@", @""]]]];
-    }
+    [_predicateEditor setObjectValue:aPredicate];
 }
 
 - (CPPredicate)_currentPredicate
 {
-    try
-    {
-        [_predicateEditor reloadPredicate];
-        return [_predicateEditor predicate];
-    }
-    catch (e)
-    {
-        CPLog.warn("SmartFoldersDemo: could not build predicate: " + e);
-        return nil;
-    }
+    [_predicateEditor reloadPredicate];
+    return [_predicateEditor predicate];
 }
 
 - (void)closeSheet:(id)sender

@@ -17,6 +17,11 @@
  *
  * Data (people, groups, smart folders) is persisted in CPUserDefaults.
  * Use File ▸ Reset Library… to return to the deterministic sample data.
+ *
+ * The application catches no exception. It tests the frameworks, so a
+ * framework failure must show and must not fall back to a default. If the
+ * stored library cannot load, launch stops with the exception; delete the
+ * site's local storage to return to the sample data.
  */
 
 @import <Foundation/Foundation.j>

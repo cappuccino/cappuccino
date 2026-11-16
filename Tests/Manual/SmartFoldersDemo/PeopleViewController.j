@@ -249,16 +249,7 @@
 
     _contentTitle = aTitle || @"";
 
-    try
-    {
-        [_arrayController setFilterPredicate:aPredicate];
-    }
-    catch (e)
-    {
-        CPLog.warn("SmartFoldersDemo: filter predicate failed: " + e);
-        [_arrayController setFilterPredicate:nil];
-    }
-
+    [_arrayController setFilterPredicate:aPredicate];
     [_arrayController setContent:[thePeople copy]];
     [_arrayController setSelectedObjects:selected];
 

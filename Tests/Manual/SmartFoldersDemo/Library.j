@@ -152,20 +152,9 @@ var LibraryDefaultsKey          = @"SmartFoldersDemo.Library.v1",
 - (id)initWithDictionary:(CPDictionary)aDictionary
 {
     var format = [aDictionary objectForKey:@"predicate"],
-        aPredicate = nil;
+        aPredicate = format ? [CPPredicate predicateWithFormat:format] : [CPPredicate predicateWithValue:YES];
 
-    try
-    {
-        if (format)
-            aPredicate = [CPPredicate predicateWithFormat:format];
-    }
-    catch (e)
-    {
-        CPLog.warn("SmartFoldersDemo: could not parse stored predicate '" + format + "': " + e);
-    }
-
-    return [self initWithName:[aDictionary objectForKey:@"name"] || @"Smart Folder"
-                    predicate:aPredicate || [CPPredicate predicateWithValue:YES]];
+    return [self initWithName:[aDictionary objectForKey:@"name"] || @"Smart Folder" predicate:aPredicate];
 }
 
 - (CPDictionary)dictionaryRepresentation
@@ -361,15 +350,7 @@ var LibraryDefaultsKey          = @"SmartFoldersDemo.Library.v1",
     if (!aPredicate)
         return _people;
 
-    try
-    {
-        return [_people filteredArrayUsingPredicate:aPredicate];
-    }
-    catch (e)
-    {
-        CPLog.warn("SmartFoldersDemo: predicate evaluation failed: " + e);
-        return nil;
-    }
+    return [_people filteredArrayUsingPredicate:aPredicate];
 }
 
 - (int)countForItem:(id)anItem
@@ -383,8 +364,7 @@ var LibraryDefaultsKey          = @"SmartFoldersDemo.Library.v1",
     if (!predicate)
         return [base count];
 
-    var matches = [self peopleMatchingPredicate:predicate];
-    return matches ? [matches count] : CPNotFound;
+    return [[self peopleMatchingPredicate:predicate] count];
 }
 
 // ---------------------------------------------------------------- People mutation
@@ -659,32 +639,18 @@ var LibraryDefaultsKey          = @"SmartFoldersDemo.Library.v1",
     if (!dictionary || ![dictionary isKindOfClass:[CPDictionary class]])
         return NO;
 
-    try
-    {
-        var people = [dictionary objectForKey:@"people"] || [],
-            groups = [dictionary objectForKey:@"groups"] || [],
-            folders = [dictionary objectForKey:@"smartFolders"] || [];
+    var people = [dictionary objectForKey:@"people"] || [],
+        groups = [dictionary objectForKey:@"groups"] || [],
+        folders = [dictionary objectForKey:@"smartFolders"] || [];
 
-        for (var i = 0; i < people.length; i++)
-            [self _insertPerson:[[Person alloc] initWithDictionary:people[i]]];
+    for (var i = 0; i < people.length; i++)
+        [self _insertPerson:[[Person alloc] initWithDictionary:people[i]]];
 
-        for (var i = 0; i < groups.length; i++)
-            [[_groupsSection children] addObject:[[LibraryGroup alloc] initWithDictionary:groups[i]]];
+    for (var i = 0; i < groups.length; i++)
+        [[_groupsSection children] addObject:[[LibraryGroup alloc] initWithDictionary:groups[i]]];
 
-        for (var i = 0; i < folders.length; i++)
-            [[_smartFoldersSection children] addObject:[[SmartFolder alloc] initWithDictionary:folders[i]]];
-    }
-    catch (e)
-    {
-        CPLog.warn("SmartFoldersDemo: stored library is unreadable, using sample data. " + e);
-
-        _people = [];
-        _peopleByUID = {};
-        [[_groupsSection children] removeAllObjects];
-        [[_smartFoldersSection children] removeAllObjects];
-
-        return NO;
-    }
+    for (var i = 0; i < folders.length; i++)
+        [[_smartFoldersSection children] addObject:[[SmartFolder alloc] initWithDictionary:folders[i]]];
 
     return [_people count] > 0;
 }
