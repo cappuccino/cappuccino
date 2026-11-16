@@ -90,8 +90,7 @@
     [view addSubview:_splitView];
     [self setView:view];
 
-    if ([_splitView respondsToSelector:@selector(setAutosaveName:)])
-        [_splitView setAutosaveName:@"SmartFoldersDemo.PeopleSplit"];
+    [_splitView setAutosaveName:@"SmartFoldersDemo.PeopleSplit"];
 
     [self _updateStatus];
 }
@@ -157,13 +156,8 @@
     [_tableView setDraggingSourceOperationMask:CPDragOperationCopy | CPDragOperationMove forLocal:YES];
     [_tableView setDraggingSourceOperationMask:CPDragOperationCopy forLocal:NO];
 
-    if ([_tableView respondsToSelector:@selector(setAutosaveName:)])
-    {
-        [_tableView setAutosaveName:@"SmartFoldersDemo.PeopleTable"];
-
-        if ([_tableView respondsToSelector:@selector(setAutosaveTableColumns:)])
-            [_tableView setAutosaveTableColumns:YES];
-    }
+    [_tableView setAutosaveName:@"SmartFoldersDemo.PeopleTable"];
+    [_tableView setAutosaveTableColumns:YES];
 
     [scrollView setDocumentView:_tableView];
     [pane addSubview:scrollView];
@@ -172,8 +166,7 @@
     var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(aFrame) - barHeight, CGRectGetWidth(aFrame), barHeight)];
     [buttonBar setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
 
-    if ([buttonBar respondsToSelector:@selector(setHasResizeControl:)])
-        [buttonBar setHasResizeControl:NO];
+    [buttonBar setHasResizeControl:NO];
 
     var plusButton = [CPButtonBar plusButton];
     [plusButton setTarget:nil];

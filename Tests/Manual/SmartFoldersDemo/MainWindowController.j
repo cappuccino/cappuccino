@@ -110,11 +110,8 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [_splitView addSubview:people];
     [contentView addSubview:_splitView];
 
-    if ([_splitView respondsToSelector:@selector(setButtonBar:forDividerAtIndex:)])
-        [_splitView setButtonBar:[_sourceListController buttonBar] forDividerAtIndex:0];
-
-    if ([_splitView respondsToSelector:@selector(setAutosaveName:)])
-        [_splitView setAutosaveName:@"SmartFoldersDemo.MainSplit"];
+    [_splitView setButtonBar:[_sourceListController buttonBar] forDividerAtIndex:0];
+    [_splitView setAutosaveName:@"SmartFoldersDemo.MainSplit"];
 }
 
 - (void)_buildToolbar

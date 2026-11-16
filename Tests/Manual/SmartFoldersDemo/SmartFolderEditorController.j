@@ -55,7 +55,7 @@ var EditorWidth         = 680.0,
         {
             var expression = [items[i] representedObject];
 
-            if ([expression respondsToSelector:@selector(expressionType)] && [expression expressionType] === CPKeyPathExpressionType)
+            if ([expression expressionType] === CPKeyPathExpressionType)
             {
                 var title = EditorTitles[[expression keyPath]];
 

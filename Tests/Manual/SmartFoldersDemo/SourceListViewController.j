@@ -424,11 +424,8 @@ var BadgeFont       = nil,
     _buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(frame) - barHeight, CGRectGetWidth(frame), barHeight)];
     [_buttonBar setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
 
-    if ([_buttonBar respondsToSelector:@selector(setHasResizeControl:)])
-        [_buttonBar setHasResizeControl:YES];
-
-    if ([_buttonBar respondsToSelector:@selector(setResizeControlIsLeftAligned:)])
-        [_buttonBar setResizeControlIsLeftAligned:NO];
+    [_buttonBar setHasResizeControl:YES];
+    [_buttonBar setResizeControlIsLeftAligned:NO];
 
     var plusButton = [CPButtonBar plusButton];
     [plusButton setTarget:self];
