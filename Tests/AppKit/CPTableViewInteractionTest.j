@@ -49,10 +49,12 @@ var InteractionDragType = @"InteractionDragType";
 
 @end
 
-@implementation _CPTableInteractionDataSource : CPObject
+/*
+    A data source that supplies values but cannot store an edited value.
+*/
+@implementation _CPTableInteractionReadOnlyDataSource : CPObject
 {
     CPArray     rows @accessors;
-    CPArray     editedValues @accessors;
 }
 
 - (id)init
@@ -60,10 +62,7 @@ var InteractionDragType = @"InteractionDragType";
     self = [super init];
 
     if (self)
-    {
         rows = [@"Zero", @"One", @"Two", @"Three", @"Four"];
-        editedValues = [];
-    }
 
     return self;
 }
@@ -76,6 +75,23 @@ var InteractionDragType = @"InteractionDragType";
 - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
 {
     return rows[aRow];
+}
+
+@end
+
+@implementation _CPTableInteractionDataSource : _CPTableInteractionReadOnlyDataSource
+{
+    CPArray     editedValues @accessors;
+}
+
+- (id)init
+{
+    self = [super init];
+
+    if (self)
+        editedValues = [];
+
+    return self;
 }
 
 - (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)aColumn row:(int)aRow
@@ -593,6 +609,83 @@ var InteractionDragType = @"InteractionDragType";
     [tableColumn setEditable:NO];
     [self clickRow:1];
     [self clickPoint:[self pointInRow:1] flags:0 clicks:2];
+
+    [self assert:CPNotFound equals:[tableView editedRow]];
+}
+
+/*
+    Removes the data source and binds the column to an array controller. The table then
+    stores an edited value through its content binding.
+*/
+- (void)useBindings
+{
+    var arrayController = [[CPArrayController alloc] initWithContent:[
+            @{ @"name": @"Zero" },
+            @{ @"name": @"One" },
+            @{ @"name": @"Two" },
+            @{ @"name": @"Three" },
+            @{ @"name": @"Four" }
+        ]];
+
+    dataSource = nil;
+    [tableView setDataSource:nil];
+    [tableColumn bind:CPValueBinding toObject:arrayController withKeyPath:@"arrangedObjects.name" options:nil];
+    [tableView reloadData];
+}
+
+/*
+    Sends a double click on a row whose second mouse-down moves the given distance before
+    the mouse-up.
+*/
+- (void)doubleClickRow:(int)aRow movingBy:(float)aDistance
+{
+    var start = [self pointInRow:aRow],
+        end = CGPointMake(start.x + aDistance, start.y);
+
+    [self sendEvent:[self mouseEvent:CPLeftMouseDown atPoint:start flags:0 clicks:2]];
+    [self sendEvent:[self mouseEvent:CPLeftMouseDragged atPoint:end flags:0 clicks:2]];
+    [self sendEvent:[self mouseEvent:CPLeftMouseUp atPoint:end flags:0 clicks:2]];
+}
+
+- (void)testDoubleClickDoesNotStartAnEditThatNothingCanStore
+{
+    [self useDataSource:[[_CPTableInteractionReadOnlyDataSource alloc] init]];
+    [self clickRow:1];
+    [self clickPoint:[self pointInRow:1] flags:0 clicks:2];
+
+    [self assert:CPNotFound equals:[tableView editedRow]];
+}
+
+- (void)testDoubleClickStartsEditingInABoundTable
+{
+    [self useBindings];
+    [self clickRow:1];
+    [self clickPoint:[self pointInRow:1] flags:0 clicks:2];
+
+    [self assert:1 equals:[tableView editedRow]];
+}
+
+- (void)testAMoveWithinTheClickSlopStillStartsAnEdit
+{
+    [self clickRow:1];
+    [self doubleClickRow:1 movingBy:3.0];
+
+    [self assert:1 equals:[tableView editedRow]];
+}
+
+- (void)testAMoveBeyondTheClickSlopDoesNotStartAnEdit
+{
+    [self clickRow:1];
+    [self doubleClickRow:1 movingBy:10.0];
+
+    [self assert:CPNotFound equals:[tableView editedRow]];
+}
+
+- (void)testAMoveBeyondTheClickSlopDoesNotStartAnEditInABoundTable
+{
+    [self useBindings];
+    [self clickRow:1];
+    [self doubleClickRow:1 movingBy:10.0];
 
     [self assert:CPNotFound equals:[tableView editedRow]];
 }

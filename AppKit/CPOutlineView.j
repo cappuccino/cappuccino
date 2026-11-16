@@ -2380,6 +2380,17 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
     return _implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_;
 }
 
+/*
+    The outline view is its own table data source and implements
+    tableView:setObjectValue:forTableColumn:row: for every outline data source. The table's
+    check therefore answered YES, and a double click started an edit, although the outline
+    data source could not store the value.
+*/
+- (BOOL)_dataSourceRespondsToSetObjectValueForTableColumnRow
+{
+    return _implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_;
+}
+
 - (BOOL)_delegateRespondsToViewForTableColumn
 {
     return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_viewForTableColumn_item_;

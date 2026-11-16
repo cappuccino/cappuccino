@@ -61,7 +61,12 @@
 */
 - (BOOL)_dataSourceRespondsToSetObjectValueForTableColumnRow
 {
-    return CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_;
+    /*
+        The method returned the flag constant instead of testing it against the implemented
+        methods, so it answered YES for every data source. A double click then started an edit
+        that neither the data source nor a content binding could store.
+    */
+    return _implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_;
 }
 
 /*!

@@ -72,8 +72,13 @@
     _startTrackingPoint = aPoint;
     _startTrackingTimestamp = new Date();
 
-    if ([self _dataSourceRespondsToSetObjectValueForTableColumnRow])
-        _trackingPointMovedOutOfClickSlop = NO;
+    /*
+        The table tracked the click slop only for a data source that implements
+        tableView:setObjectValue:forTableColumn:row:. A table that edits through its content
+        binding needs the slop too, because the slop decides whether a double click starts
+        an edit. The table now tracks it for every click.
+    */
+    _trackingPointMovedOutOfClickSlop = NO;
 
     // if the table has drag support then we use mouseUp to select a single row.
     // otherwise it uses mouse down.
@@ -193,8 +198,8 @@
         [self _updateSelectionWithMouseAtRow:row];
     }
 
-    if ([self _dataSourceRespondsToSetObjectValueForTableColumnRow]
-        && !_trackingPointMovedOutOfClickSlop)
+    // Track the click slop for every table; see -startTrackingAt:.
+    if (!_trackingPointMovedOutOfClickSlop)
     {
         var CLICK_SPACE_DELTA = 5.0; // Stolen from AppKit/Platform/DOM/CPPlatformWindow+DOM.j
         if (ABS(aPoint.x - _startTrackingPoint.x) > CLICK_SPACE_DELTA

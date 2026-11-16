@@ -26,7 +26,8 @@
     An outline view adds a parent to every row, so it reports a drag by item and a drop
     by parent item and child index. Selection and editing come from CPTableView, and
     CPTableViewInteractionTest.j covers them. These tests cover what an outline view
-    changes.
+    changes, including the outline data source's part in deciding whether a double click
+    starts an edit.
 */
 
 var OutlineInteractionDragType = @"OutlineInteractionDragType";
@@ -130,6 +131,46 @@ var OutlineInteractionDragType = @"OutlineInteractionDragType";
 
 @end
 
+/*
+    An outline data source that stores an edited value.
+*/
+@implementation _CPOutlineInteractionEditingDataSource : _CPOutlineInteractionDataSource
+{
+    CPArray     editedItems @accessors;
+}
+
+- (id)init
+{
+    self = [super init];
+
+    if (self)
+        editedItems = [];
+
+    return self;
+}
+
+- (void)outlineView:(CPOutlineView)anOutlineView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)aColumn byItem:(id)anItem
+{
+    editedItems.push(anItem);
+}
+
+@end
+
+/*
+    A delegate that permits every edit, so that only the data source decides whether a
+    double click starts one.
+*/
+@implementation _CPOutlineInteractionEditingDelegate : CPObject
+{
+}
+
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldEditTableColumn:(CPTableColumn)aColumn item:(id)anItem
+{
+    return YES;
+}
+
+@end
+
 @implementation _CPOutlineInteractionDraggingInfo : CPObject
 {
     CPPasteboard    draggingPasteboard @accessors;
@@ -188,6 +229,11 @@ var OutlineInteractionDragType = @"OutlineInteractionDragType";
 
 - (void)sendMouse:(CPEventType)aType atPoint:(CGPoint)aPoint
 {
+    [self sendMouse:aType atPoint:aPoint clicks:1];
+}
+
+- (void)sendMouse:(CPEventType)aType atPoint:(CGPoint)aPoint clicks:(int)aClickCount
+{
     var event = [CPEvent mouseEventWithType:aType
                                    location:[outlineView convertPoint:aPoint toView:nil]
                               modifierFlags:0
@@ -195,7 +241,7 @@ var OutlineInteractionDragType = @"OutlineInteractionDragType";
                                windowNumber:[theWindow windowNumber]
                                     context:nil
                                 eventNumber:0
-                                 clickCount:1
+                                 clickCount:aClickCount
                                    pressure:0];
 
     [CPApp sendEvent:event];
@@ -343,6 +389,42 @@ var OutlineInteractionDragType = @"OutlineInteractionDragType";
 
     [self assertNull:outlineView._dragHoverTimer];
     [self assertFalse:[outlineView isItemExpanded:@"C"]];
+}
+
+// MARK: Editing
+
+/*
+    Makes the outline column editable, gives the outline view a delegate that permits every
+    edit, and sends a double click on an item.
+*/
+- (void)doubleClickToEditItem:(id)anItem
+{
+    var point = [self pointInItem:anItem];
+
+    [[outlineView outlineTableColumn] setEditable:YES];
+    [outlineView setDelegate:[[_CPOutlineInteractionEditingDelegate alloc] init]];
+
+    [self sendMouse:CPLeftMouseDown atPoint:point clicks:1];
+    [self sendMouse:CPLeftMouseUp atPoint:point clicks:1];
+    [self sendMouse:CPLeftMouseDown atPoint:point clicks:2];
+    [self sendMouse:CPLeftMouseUp atPoint:point clicks:2];
+}
+
+- (void)testDoubleClickDoesNotStartAnEditThatTheDataSourceCannotStore
+{
+    [self doubleClickToEditItem:@"B"];
+
+    [self assert:CPNotFound equals:[outlineView editedRow]];
+}
+
+- (void)testDoubleClickStartsAnEditThatTheDataSourceCanStore
+{
+    dataSource = [[_CPOutlineInteractionEditingDataSource alloc] init];
+    [outlineView setDataSource:dataSource];
+
+    [self doubleClickToEditItem:@"B"];
+
+    [self assert:[outlineView rowForItem:@"B"] equals:[outlineView editedRow]];
 }
 
 @end
