@@ -105,9 +105,10 @@ var CPToolbarsByIdentifier              = nil,
     Called to obtain a toolbar item. Required.
     @param toolbar the toolbar the item belongs to
     @param itemIdentifier the identifier of the toolbar item
-    @param flag \c YES means the item will be placed in the toolbar. \c NO means the item will be displayed for
-    some other purpose (non-functional)
-    @return the toolbar item or \c nil if no such item belongs in the toolbar
+    @param flag \c YES means the toolbar inserts the returned item itself, with its view. \c NO means the item will be
+    displayed for some other purpose (non-functional)
+    @return the toolbar item or \c nil if no such item belongs in the toolbar. Each toolbar expects an item of
+    its own.
 */
 @implementation CPToolbar : CPObject
 {
@@ -361,11 +362,20 @@ var CPToolbarsByIdentifier              = nil,
         if (!item && _delegate)
             item = [self _sendDelegateItemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES];
 
-        item = [item copy];
-
         if (item == nil)
             [CPException raise:CPInvalidArgumentException
                          reason:@"Toolbar delegate " + _delegate + " returned nil toolbar item for identifier \"" + identifier + "\""];
+
+        /*
+            The toolbar copied every item before it inserted it, also the item that the delegate
+            returned for insertion and the item decoded from a cib. A copy archives and unarchives
+            the item's view, so the toolbar showed a decoded copy: the application's references
+            reached an item and a view that were never shown, and the copy lost its target. AppKit
+            inserts the item that it receives. An item already placed in this reload or shown by
+            another toolbar is still copied, because a view has only one superview.
+        */
+        if ([self _isItemInUse:item])
+            item = [item copy];
 
         item._toolbar = self;
 
@@ -431,6 +441,24 @@ var CPToolbarsByIdentifier              = nil,
         if (!isAutovalidation || [item autovalidates])
             [item validate];
     }
+}
+
+/*
+    Returns YES when the receiver has already placed the item in the current reload, or when
+    another toolbar shows the item.
+    @ignore
+*/
+- (BOOL)_isItemInUse:(CPToolbarItem)anItem
+{
+    if ([_items indexOfObjectIdenticalTo:anItem] !== CPNotFound)
+        return YES;
+
+    var owner = [anItem toolbar];
+
+    if (!owner || owner === self)
+        return NO;
+
+    return [[owner items] indexOfObjectIdenticalTo:anItem] !== CPNotFound;
 }
 
 /* @ignore */
@@ -945,6 +973,14 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
 - (void)reloadToolbarItems
 {
+    /*
+        The old item views kept observing their items after a reload. Each item was a new copy,
+        so nothing else used the items they observed. The toolbar now keeps an item across a
+        reload, and an old view would still update with it. The old views now stop observing.
+    */
+    for (var UID in _viewsForToolbarItems)
+        [_viewsForToolbarItems[UID] _stopObservingToolbarItem];
+
     // Get rid of all our current subviews.
     var subviews = [self subviews],
         count = subviews.length;
@@ -985,6 +1021,9 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 }
 
 @end
+
+/* @ignore */
+var _CPToolbarItemViewObservedKeyPaths = [@"label", @"image", @"alternateImage", @"minSize", @"maxSize", @"target", @"action", @"enabled"];
 
 /* @ignore */
 var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
@@ -1059,19 +1098,31 @@ var LABEL_MARGIN    = 2.0;
 
         _toolbar = aToolbar;
 
-        var keyPaths = [@"label", @"image", @"alternateImage", @"minSize", @"maxSize", @"target", @"action", @"enabled"],
-            index = 0,
-            count = [keyPaths count];
+        var index = 0,
+            count = [_CPToolbarItemViewObservedKeyPaths count];
 
         for (; index < count; ++index)
             [_toolbarItem
                 addObserver:self
-                 forKeyPath:keyPaths[index]
+                 forKeyPath:_CPToolbarItemViewObservedKeyPaths[index]
                     options:0
                     context:NULL];
     }
 
     return self;
+}
+
+/*
+    Ends the observation of the item when the toolbar view discards the receiver.
+    @ignore
+*/
+- (void)_stopObservingToolbarItem
+{
+    var index = 0,
+        count = [_CPToolbarItemViewObservedKeyPaths count];
+
+    for (; index < count; ++index)
+        [_toolbarItem removeObserver:self forKeyPath:_CPToolbarItemViewObservedKeyPaths[index]];
 }
 
 - (void)FIXME_setIsHUD:(BOOL)shouldBeHUD

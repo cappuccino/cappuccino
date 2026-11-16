@@ -1,0 +1,227 @@
+/*
+ *  CPToolbarTest.j
+ *  AppKit
+ *
+ *  Created by David Richardson on 2026-11-16.
+ *  Copyright David Richardson 2026.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+@import <AppKit/AppKit.j>
+
+var ToolbarTestItemIdentifier = @"ToolbarTestItem";
+
+/*
+    Makes a toolbar item whose view is a button with the given target.
+*/
+var ToolbarTestMakeViewItem = function(aTarget)
+{
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)],
+        item = [[CPToolbarItem alloc] initWithItemIdentifier:ToolbarTestItemIdentifier];
+
+    [button setTitle:@"Test"];
+    [button setTarget:aTarget];
+    [button setAction:@selector(toolbarTestAction:)];
+
+    [item setLabel:@"Test"];
+    [item setView:button];
+    [item setMinSize:CGSizeMake(60.0, 24.0)];
+    [item setMaxSize:CGSizeMake(60.0, 24.0)];
+
+    return item;
+};
+
+/*
+    A toolbar delegate that gives view items. It gives a new item for each call, as AppKit expects,
+    or one cached item for every call when cachesItems is YES.
+*/
+@implementation _ToolbarTestDelegate : CPObject
+{
+    CPArray         itemIdentifiers @accessors;
+    BOOL            cachesItems     @accessors;
+    CPToolbarItem   cachedItem      @accessors(readonly);
+    CPArray         givenItems      @accessors(readonly);
+}
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        itemIdentifiers = [ToolbarTestItemIdentifier];
+        cachesItems = NO;
+        givenItems = [];
+    }
+
+    return self;
+}
+
+- (CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)aToolbar
+{
+    return itemIdentifiers;
+}
+
+- (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)aToolbar
+{
+    return itemIdentifiers;
+}
+
+- (CPToolbarItem)toolbar:(CPToolbar)aToolbar itemForItemIdentifier:(CPString)anIdentifier willBeInsertedIntoToolbar:(BOOL)aFlag
+{
+    if (cachesItems && cachedItem)
+        return cachedItem;
+
+    var item = ToolbarTestMakeViewItem(self);
+
+    [givenItems addObject:item];
+
+    if (cachesItems)
+        cachedItem = item;
+
+    return item;
+}
+
+- (void)toolbarTestAction:(id)aSender
+{
+}
+
+@end
+
+@implementation CPToolbarTest : OJTestCase
+
+- (void)testTheItemTheDelegateGivesForInsertionIsInserted
+{
+    var delegate = [_ToolbarTestDelegate new],
+        toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestInsertion"];
+
+    [toolbar setDelegate:delegate];
+
+    var givenItem = [delegate givenItems][0],
+        insertedItem = [toolbar items][0];
+
+    [self assert:givenItem same:insertedItem message:@"the toolbar must insert the item that the delegate gives"];
+    [self assert:[givenItem view] same:[insertedItem view] message:@"the toolbar must show the view that the application made"];
+    [self assert:toolbar same:[insertedItem toolbar]];
+}
+
+- (void)testTheViewOfAnInsertedItemKeepsItsTarget
+{
+    var delegate = [_ToolbarTestDelegate new],
+        toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestTarget"];
+
+    [toolbar setDelegate:delegate];
+
+    [self assert:delegate same:[[[toolbar items][0] view] target] message:@"the control in a view item must keep its target"];
+}
+
+/*
+    nib2cib gives a decoded toolbar its items in these two instance variables. An outlet in the
+    same cib reaches the decoded item and its view, so the toolbar must show those.
+*/
+- (void)testAnItemDecodedWithTheToolbarIsInsertedAsDecoded
+{
+    var sourceToolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestDecoded"],
+        sourceItem = ToolbarTestMakeViewItem(nil);
+
+    sourceToolbar._identifiedItems = @{ ToolbarTestItemIdentifier: sourceItem };
+    sourceToolbar._defaultItems = [sourceItem];
+
+    var toolbar = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:sourceToolbar]];
+
+    // The decoded toolbar loads its items at the end of the run loop.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    var decodedItem = [toolbar._identifiedItems objectForKey:ToolbarTestItemIdentifier],
+        insertedItem = [toolbar items][0];
+
+    [self assert:decodedItem same:insertedItem message:@"the toolbar must insert the decoded item"];
+    [self assert:[decodedItem view] same:[insertedItem view] message:@"the toolbar must show the decoded view"];
+}
+
+- (void)testAnItemGivenForTwoPlacesIsCopiedForTheSecond
+{
+    var delegate = [_ToolbarTestDelegate new],
+        toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestTwoPlaces"];
+
+    [delegate setCachesItems:YES];
+    [delegate setItemIdentifiers:[ToolbarTestItemIdentifier, ToolbarTestItemIdentifier]];
+    [toolbar setDelegate:delegate];
+
+    var cachedItem = [delegate cachedItem],
+        items = [toolbar items];
+
+    [self assert:cachedItem same:items[0] message:@"the first place must hold the item that the delegate gives"];
+    [self assertFalse:cachedItem === items[1] message:@"the second place must hold a copy"];
+    [self assertFalse:[cachedItem view] === [items[1] view] message:@"the copy must have a view of its own"];
+    [self assert:toolbar same:[items[1] toolbar]];
+}
+
+- (void)testAnItemShownByAnotherToolbarIsCopied
+{
+    var delegate = [_ToolbarTestDelegate new],
+        firstToolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestShared"],
+        secondToolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestShared"];
+
+    [delegate setCachesItems:YES];
+    [firstToolbar setDelegate:delegate];
+    [secondToolbar setDelegate:delegate];
+
+    var cachedItem = [delegate cachedItem];
+
+    [self assert:cachedItem same:[firstToolbar items][0] message:@"the first toolbar must keep the item"];
+    [self assert:firstToolbar same:[cachedItem toolbar]];
+    [self assertFalse:cachedItem === [secondToolbar items][0] message:@"the second toolbar must show a copy"];
+    [self assert:secondToolbar same:[[secondToolbar items][0] toolbar]];
+}
+
+- (void)testAReloadKeepsTheItemThatTheToolbarShows
+{
+    var delegate = [_ToolbarTestDelegate new],
+        toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestReload"];
+
+    [delegate setCachesItems:YES];
+    [toolbar setDelegate:delegate];
+
+    // A change of display mode reloads the items.
+    [toolbar setDisplayMode:CPToolbarDisplayModeIconOnly];
+
+    [self assert:[delegate cachedItem] same:[toolbar items][0] message:@"a reload must not copy an item that the toolbar shows"];
+}
+
+- (void)testAnItemViewThatAReloadDiscardsNoLongerFollowsItsItem
+{
+    var delegate = [_ToolbarTestDelegate new],
+        toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestItemViews"];
+
+    [delegate setCachesItems:YES];
+    [toolbar setDelegate:delegate];
+
+    var toolbarView = [toolbar _toolbarView],
+        item = [toolbar items][0],
+        discardedItemView = [toolbarView viewForItem:item];
+
+    [toolbar setDisplayMode:CPToolbarDisplayModeIconOnly];
+
+    var currentItemView = [toolbarView viewForItem:item];
+
+    [self assertFalse:discardedItemView === currentItemView message:@"a reload must make new item views"];
+
+    [item setEnabled:NO];
+
+    [self assertFalse:[currentItemView isEnabled] message:@"the current item view must follow its item"];
+    [self assertTrue:[discardedItemView isEnabled] message:@"a discarded item view must no longer follow its item"];
+}
+
+@end
