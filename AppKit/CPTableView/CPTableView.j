@@ -28,7 +28,7 @@
 */
 
 @import "CPTableViewCore.j"
-@import "_CPTableRowView.j"
+@import "CPTableRowView.j"
 @import "CPTableView+Columns.j"
 @import "CPTableView+Selection.j"
 @import "CPTableView+Layout.j"

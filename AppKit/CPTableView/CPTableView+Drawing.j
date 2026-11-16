@@ -71,7 +71,7 @@
     }];
 
     // 4. Z-Order Correction:
-    // _CPTableRowViews (alternating row colors) are also added "Below nil". 
+    // Row views (alternating row colors) are also added "Below nil".
     // To ensure the Column selection appears ON TOP of the row alternating colors,
     // we must push the currently visible row views to the very back.
     for (var rowIndex in _visibleRowViews)
@@ -120,7 +120,7 @@
 
 /*!
     Draws the background in a given clip rect.
-    Deprecated: Handled by _CPTableRowView
+    Deprecated: Handled by CPTableRowView
 */
 - (void)drawBackgroundInClipRect:(CGRect)aRect
 {
@@ -128,7 +128,7 @@
 
 /*!
     Draws the grid for the tableview.
-    Deprecated: Handled by _CPTableRowView
+    Deprecated: Handled by CPTableRowView
 */
 - (void)drawGridInClipRect:(CGRect)aRect
 {
@@ -136,7 +136,7 @@
 
 /*!
     Draws the selection.
-    Deprecated: Handled by _CPTableRowView
+    Deprecated: Handled by CPTableRowView
 */
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
@@ -149,7 +149,7 @@
 */
 - (void)_drawGroupRowsForRects:(CPArray)rects
 {
-    // TODO: Implement Group Row styling in _CPTableRowView
+    // TODO: Implement Group Row styling in CPTableRowView
 }
 
 /*!

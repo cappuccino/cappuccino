@@ -311,6 +311,7 @@
 - (void)draggingExited:(id)sender
 {
     [_dropOperationFeedbackView removeFromSuperview];
+    [self _setDropTargetRow:CPNotFound];
 }
 
 /*
@@ -330,6 +331,7 @@
     _retargetedDropRow = nil;
     _draggedRowIndexes = [CPIndexSet indexSet];
     [_dropOperationFeedbackView removeFromSuperview];
+    [self _setDropTargetRow:CPNotFound];
 }
 
 /*

@@ -21,6 +21,7 @@
  */
 
 @import "CPTableViewCore.j"
+@import "CPTableRowView.j"
 
 
 @class CPButton
@@ -45,6 +46,7 @@
 {
     if (_reloadAllRows)
     {
+        [self _removeAllRowViews];
         [self _unloadDataViewsInRows:_exposedRows columns:_exposedColumns];
 
         _exposedRows = [CPIndexSet indexSet];
@@ -74,6 +76,8 @@
     [previouslyExposedRows removeIndexes:newlyExposedRows];
     [previouslyExposedColumns removeIndexes:newlyExposedColumns];
 
+    var addedRowViewRows = [self _updateRowViewsForRows:exposedRows];
+
     [self _unloadDataViewsInRows:previouslyExposedRows columns:obscuredColumns];
     [self _unloadDataViewsInRows:obscuredRows columns:previouslyExposedColumns];
     [self _unloadDataViewsInRows:obscuredRows columns:obscuredColumns];
@@ -85,6 +89,8 @@
 
     _exposedRows = exposedRows;
     _exposedColumns = exposedColumns;
+
+    [self _announceRowViewsInRows:addedRowViewRows];
 
     // Remove old draw view call
     // [_tableDrawView setFrame:exposedRect];
@@ -197,18 +203,6 @@
 */
 - (void)_unloadDataViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes
 {
-    // Recycle Row Views
-    [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stop) {
-        var rowView = _visibleRowViews[rowIndex];
-
-        if (rowView)
-        {
-             [rowView removeFromSuperview];
-             _cachedRowViews.push(rowView);
-             delete _visibleRowViews[rowIndex];
-        }
-    }];
-
     if (![rowIndexes count] || ![columnIndexes count] || [columnIndexes lastIndex] >=  [_tableColumns count])
         return;
 
@@ -235,42 +229,7 @@
 */
 - (void)_loadDataViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes
 {
-    // Load Row Views
-    var focused = [self _isFocused],
-        visibleWidth = MAX([self bounds].size.width, CGRectGetWidth([self exposedRect])),
-        delegateRespondsToGroupRow = (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_);
-
-    [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stop) {
-        
-        var isGroupRow = delegateRespondsToGroupRow && [_delegate tableView:self isGroupRow:rowIndex];
-
-        if (!_visibleRowViews[rowIndex])
-        {
-            var rowView = [self _dequeueRowView];
-            if (!rowView)
-                rowView = [[_CPTableRowView alloc] initWithTableView:self];
-
-            [rowView setIsGroupRow:isGroupRow];
-            [rowView setRowIndex:rowIndex];
-            [rowView setSelected:[self isRowSelected:rowIndex] focused:focused];
-
-            // Set frame to span the entire width
-            var rowRect = [self _rectOfRow:rowIndex checkRange:NO];
-            rowRect.size.width = visibleWidth;
-            rowRect.origin.x = 0;
-
-            [rowView setFrame:rowRect];
-
-            // Add behind data views
-            [self addSubview:rowView positioned:CPWindowBelow relativeTo:nil];
-            _visibleRowViews[rowIndex] = rowView;
-        }
-        else
-        {
-            // Update state of existing view
-            [_visibleRowViews[rowIndex] setIsGroupRow:isGroupRow];
-        }
-    }];
+    var focused = [self _isFocused];
 
     if (![rowIndexes count] || ![columnIndexes count])
         return;
@@ -296,8 +255,7 @@
             isRowSelected = [self isRowSelected:rowIndex],
             row = rowIndex;
 
-        // Note: Even for group rows, we iterate all columns to render their data.
-        // The background styling is handled by the _CPTableRowView above.
+        // Even for group rows, all columns get their data views. The row view draws the row's look.
         [columnIndexes enumerateIndexesUsingBlock:function(columnIndex, stopCol)
         {
             var tableColumn = _tableColumns[columnIndex],
@@ -315,36 +273,344 @@
     }];
 }
 
-- (CPView)_dequeueRowView
+/*
+    Returns the frame of the row view of a row: the row's rect, over the full width of the
+    table view.
+*/
+- (CGRect)_frameOfRowViewAtRow:(CPInteger)aRow
+{
+    var rect = [self _rectOfRow:aRow checkRange:NO];
+
+    rect.origin.x = 0.0;
+    rect.size.width = MAX(CGRectGetWidth([self bounds]), CGRectGetWidth([self exposedRect]));
+
+    return rect;
+}
+
+/*
+    Gives each row in rowIndexes a row view, and removes the row views of other rows. A row
+    view made below the last row for a row that is now a real row, or the reverse, is
+    replaced. Returns the real rows that got a row view, in ascending order, for the
+    announcement.
+*/
+- (CPArray)_updateRowViewsForRows:(CPIndexSet)rowIndexes
+{
+    var numberOfRows = [self numberOfRows],
+        addedRows = [];
+
+    for (var key in _visibleRowViews)
+    {
+        if (!_visibleRowViews.hasOwnProperty(key))
+            continue;
+
+        var row = +key;
+
+        if (![rowIndexes containsIndex:row] || [_visibleRowViews[key] _isFillerRow] !== (row >= numberOfRows))
+            [self _removeRowViewAtRow:row];
+    }
+
+    [rowIndexes enumerateIndexesUsingBlock:function(row, stop)
+    {
+        if (_visibleRowViews[row])
+            return;
+
+        var rowView = [self _addRowViewAtRow:row];
+
+        if (![rowView _isFillerRow])
+            addedRows.push(row);
+    }];
+
+    return addedRows;
+}
+
+/*
+    Announces the row views of the rows in anArray, which the table view has added.
+*/
+- (void)_announceRowViewsInRows:(CPArray)anArray
+{
+    for (var i = 0, count = anArray.length; i < count; i++)
+    {
+        var row = anArray[i],
+            rowView = _visibleRowViews[row];
+
+        if (rowView)
+            [self didAddRowView:rowView forRow:row];
+    }
+}
+
+/*
+    Makes, configures and adds the row view of aRow, behind the views of the row, and returns
+    it. A row below the last row gets a row view of the table view's own: such a row view is
+    never given to the delegate.
+*/
+- (CPTableRowView)_addRowViewAtRow:(CPInteger)aRow
+{
+    var isFillerRow = aRow >= [self numberOfRows],
+        rowView = isFillerRow ? nil : [self _sendDelegateRowViewForRow:aRow];
+
+    if (rowView)
+        [rowView _setMadeByTableView:NO];
+    else
+    {
+        rowView = [self _dequeueRowView] || [[CPTableRowView alloc] initWithFrame:CGRectMakeZero()];
+        [rowView _setMadeByTableView:YES];
+    }
+
+    [rowView _setFillerRow:isFillerRow];
+    [rowView setFrame:[self _frameOfRowViewAtRow:aRow]];
+
+    [self _configureRowView:rowView forRow:aRow];
+    [rowView setNeedsLayout];
+
+    [self addSubview:rowView positioned:CPWindowBelow relativeTo:nil];
+    _visibleRowViews[aRow] = rowView;
+
+    return rowView;
+}
+
+/*
+    Removes the row view of aRow and announces the removal. The row view goes back to the
+    table view's pool when the table view made it, to the reuse queue of
+    makeViewWithIdentifier:owner: when it has an identifier, and is released otherwise.
+*/
+- (void)_removeRowViewAtRow:(CPInteger)aRow
+{
+    var rowView = _visibleRowViews[aRow];
+
+    if (!rowView)
+        return;
+
+    delete _visibleRowViews[aRow];
+    [rowView removeFromSuperview];
+
+    if (![rowView _isFillerRow])
+        [self didRemoveRowView:rowView forRow:(aRow < [self numberOfRows] ? aRow : -1)];
+
+    [rowView _prepareForReuse];
+
+    if ([rowView _isMadeByTableView])
+        _cachedRowViews.push(rowView);
+    else if ([rowView identifier])
+        [self _enqueueReusableDataView:rowView];
+}
+
+/*
+    Removes every row view.
+*/
+- (void)_removeAllRowViews
+{
+    for (var key in _visibleRowViews)
+    {
+        if (_visibleRowViews.hasOwnProperty(key))
+            [self _removeRowViewAtRow:+key];
+    }
+}
+
+- (CPTableRowView)_dequeueRowView
 {
     if (_cachedRowViews.length > 0)
         return _cachedRowViews.pop();
+
     return nil;
 }
 
+/*
+    Sets every property of aRowView from the state of the table view for aRow. A row view
+    only shows this state.
+*/
+- (void)_configureRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRow
+{
+    var isFillerRow = aRow >= [self numberOfRows],
+        isGroupRow = !isFillerRow && [self _sendDelegateIsGroupRow:aRow],
+        defaultColor = nil;
+
+    if (isGroupRow)
+        defaultColor = [self valueForThemeAttribute:@"group-row-background-color"];
+    else if (_usesAlternatingRowBackgroundColors)
+    {
+        var colors = [self alternatingRowBackgroundColors],
+            count = [colors count];
+
+        if (count)
+            defaultColor = colors[aRow % count];
+    }
+
+    [aRowView _setTableView:self];
+    [aRowView _setDefaultBackgroundColor:defaultColor];
+    [aRowView setSelected:!isFillerRow && [self isRowSelected:aRow]];
+    [aRowView setEmphasized:[self _isFocused]];
+    [aRowView setGroupRowStyle:isGroupRow];
+    [aRowView setSelectionHighlightStyle:_selectionHighlightStyle];
+    [aRowView setPreviousRowSelected:aRow > 0 && [self isRowSelected:aRow - 1]];
+    [aRowView setNextRowSelected:[self isRowSelected:aRow + 1]];
+    [aRowView setDraggingDestinationFeedbackStyle:_destinationDragStyle];
+    [aRowView setTargetForDropOperation:aRow === _dropTargetRow];
+    [aRowView setIndentationForDropOperation:isFillerRow ? 0.0 : [self _indentationForDropOperationOnRow:aRow]];
+}
+
+/*
+    Configures the row views of the rows whose selection changed between oldRows and
+    newRows, and of their neighbours, whose previous and next row state can change.
+*/
+- (void)_configureRowViewsForSelectionChangeFromRows:(CPIndexSet)oldRows toRows:(CPIndexSet)newRows
+{
+    var isChanged = function(aRow)
+    {
+        return aRow >= 0 && [oldRows containsIndex:aRow] !== [newRows containsIndex:aRow];
+    };
+
+    for (var key in _visibleRowViews)
+    {
+        if (!_visibleRowViews.hasOwnProperty(key))
+            continue;
+
+        var row = +key;
+
+        if (isChanged(row - 1) || isChanged(row) || isChanged(row + 1))
+            [self _configureRowView:_visibleRowViews[key] forRow:row];
+    }
+}
+
+/*
+    Configures every visible row view and marks it for layout. A change of the grid or of a
+    table view colour changes no property of a row view, but changes its look.
+*/
 - (void)_updateAllVisibleRowViews
 {
-    var focused = [self _isFocused];
-    for (var idx in _visibleRowViews)
+    for (var key in _visibleRowViews)
     {
-        if (_visibleRowViews.hasOwnProperty(idx))
-            [_visibleRowViews[idx] setSelected:[self isRowSelected:+idx] focused:focused];
+        if (!_visibleRowViews.hasOwnProperty(key))
+            continue;
+
+        var rowView = _visibleRowViews[key];
+
+        [self _configureRowView:rowView forRow:+key];
+        [rowView setNeedsLayout];
     }
 }
 
 - (void)_updateAllVisibleRowViewsFrames
 {
-    var visibleWidth = MAX([self bounds].size.width, CGRectGetWidth([self exposedRect]));
-    for (var idx in _visibleRowViews)
+    for (var key in _visibleRowViews)
     {
-        if (_visibleRowViews.hasOwnProperty(idx))
-        {
-             var rowView = _visibleRowViews[idx],
-                 rect = [rowView frame];
-             rect.size.width = visibleWidth;
-             [rowView setFrame:rect];
-        }
+        if (_visibleRowViews.hasOwnProperty(key))
+            [_visibleRowViews[key] setFrame:[self _frameOfRowViewAtRow:+key]];
     }
+}
+
+/*
+    Returns the indentation of the feedback for a drop on aRow. A table view has none.
+*/
+- (float)_indentationForDropOperationOnRow:(CPInteger)aRow
+{
+    return 0.0;
+}
+
+/*
+    Returns the row of the row view that is aView or contains it, or -1. Row views below the
+    last row are private and give -1.
+*/
+- (CPInteger)_rowOfRowViewContainingView:(CPView)aView
+{
+    var view = aView;
+
+    while (view && [view superview] !== self)
+        view = [view superview];
+
+    if (!view)
+        return -1;
+
+    var numberOfRows = [self numberOfRows];
+
+    for (var key in _visibleRowViews)
+    {
+        if (_visibleRowViews.hasOwnProperty(key) && _visibleRowViews[key] === view && +key < numberOfRows)
+            return +key;
+    }
+
+    return -1;
+}
+
+/*!
+    Returns the row view of a row.
+
+    @param row The index of the row.
+    @param makeIfNecessary YES to make a row view when the row has none.
+    @return The row view, or nil when the row has none and \c makeIfNecessary is NO.
+
+    @discussion
+    A row view that this method makes is temporary: the table view removes it at its next
+    layout when the row is not on screen.
+
+    An exception is raised when \c row is not a row of the table view.
+*/
+- (id)rowViewAtRow:(CPInteger)aRow makeIfNecessary:(BOOL)makeIfNecessary
+{
+    if (aRow < 0 || aRow > (_numberOfRows - 1))
+        [CPException raise:CPInvalidArgumentException
+                    reason:@"Row " + aRow + " out of row range [0-" + (_numberOfRows - 1) + "] for rowViewAtRow:makeIfNecessary:"];
+
+    var rowView = _visibleRowViews[aRow];
+
+    if (rowView && ![rowView _isFillerRow])
+        return rowView;
+
+    if (!makeIfNecessary)
+        return nil;
+
+    if (rowView)
+        [self _removeRowViewAtRow:aRow];
+
+    rowView = [self _addRowViewAtRow:aRow];
+    [self didAddRowView:rowView forRow:aRow];
+
+    // The next layout removes the row view if the row is not on screen.
+    [self setNeedsLayout];
+
+    return rowView;
+}
+
+/*!
+    Calls handler for each row view of a row on screen, in ascending order of the rows.
+
+    @param handler A function that takes two arguments: the row view and its row.
+*/
+- (void)enumerateAvailableRowViewsUsingBlock:(Function/*CPTableRowView rowView, CPInteger row*/)handler
+{
+    var numberOfRows = [self numberOfRows],
+        rows = [];
+
+    for (var key in _visibleRowViews)
+    {
+        if (_visibleRowViews.hasOwnProperty(key) && +key < numberOfRows)
+            rows.push(+key);
+    }
+
+    rows.sort(function(lhs, rhs) { return lhs - rhs; });
+
+    for (var i = 0, count = rows.length; i < count; i++)
+        handler(_visibleRowViews[rows[i]], rows[i]);
+}
+
+/*!
+    Called when the table view has added a row view for a row. A subclass can override this
+    method to change the row view or add views to it. Call super: the default implementation
+    sends \c tableView:didAddRowView:forRow: to the delegate.
+*/
+- (void)didAddRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRow
+{
+    [self _sendDelegateDidAddRowView:aRowView forRow:aRow];
+}
+
+/*!
+    Called when the table view has removed a row view from a row. The table view can reuse the
+    row view, so a subclass should remove views that it added. The row is -1 for a row that no
+    longer exists. Call super: the default implementation sends
+    \c tableView:didRemoveRowView:forRow: to the delegate.
+*/
+- (void)didRemoveRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRow
+{
+    [self _sendDelegateDidRemoveRowView:aRowView forRow:aRow];
 }
 
 - (CPView)preparedViewAtColumn:(CPInteger)column row:(CPInteger)row
@@ -467,16 +733,12 @@
         [view setFrame:[self frameOfDataViewAtColumn:column row:row]];
     }];
 
-    // Also layout row views if needed (usually handled by resize)
-    var visibleWidth = MAX([self bounds].size.width, CGRectGetWidth([self exposedRect]));
-    [rowIndexes enumerateIndexesUsingBlock:function(row, stop) {
-        if (_visibleRowViews[row])
-        {
-             var rect = [self _rectOfRow:row checkRange:NO];
-             rect.size.width = visibleWidth;
-             rect.origin.x = 0;
-             [_visibleRowViews[row] setFrame:rect];
-        }
+    [rowIndexes enumerateIndexesUsingBlock:function(row, stop)
+    {
+        var rowView = _visibleRowViews[row];
+
+        if (rowView)
+            [rowView setFrame:[self _frameOfRowViewAtRow:row]];
     }];
 }
 

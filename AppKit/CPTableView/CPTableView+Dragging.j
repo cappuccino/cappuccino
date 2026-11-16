@@ -85,6 +85,28 @@
     return row;
 }
 
+/*
+    Records aRow as the row that a drag proposes a drop on, or CPNotFound for none, and
+    configures the row views of the old and the new row.
+*/
+- (void)_setDropTargetRow:(CPInteger)aRow
+{
+    if (_dropTargetRow === aRow)
+        return;
+
+    var oldRow = _dropTargetRow,
+        oldRowView = _visibleRowViews[oldRow],
+        newRowView = _visibleRowViews[aRow];
+
+    _dropTargetRow = aRow;
+
+    if (oldRowView)
+        [self _configureRowView:oldRowView forRow:oldRow];
+
+    if (newRowView)
+        [self _configureRowView:newRowView forRow:aRow];
+}
+
 /*!
     @ignore
 */
@@ -139,6 +161,8 @@
     else
         rect = [self _rectForDropHighlightViewOnRow:row];
 
+    [self _setDropTargetRow:(row !== -1 && dropOperation === CPTableViewDropOn && dragOperation !== CPDragOperationNone) ? row : CPNotFound];
+
     [_dropOperationFeedbackView setDropOperation:row !== -1 ? dropOperation : CPDragOperationNone];
     [_dropOperationFeedbackView setHidden:(dragOperation == CPDragOperationNone)];
     [_dropOperationFeedbackView setFrame:rect];
@@ -156,6 +180,7 @@
     // FIX ME: is there anything else that needs to happen here?
     // actual validation is called in draggingUpdated:
     [_dropOperationFeedbackView removeFromSuperview];
+    [self _setDropTargetRow:CPNotFound];
 
     return [self _dataSourceRespondsToValidateDropProposedRowProposedDropOperation];
 }

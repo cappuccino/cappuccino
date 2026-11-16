@@ -285,6 +285,42 @@
     return [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRowIndex];
 }
 
+/*!
+    @ignore
+    Return the row view that the delegate gives for the row. By default return nil.
+*/
+- (CPTableRowView)_sendDelegateRowViewForRow:(CPInteger)aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_rowViewForRow_))
+        return nil;
+
+    return [_delegate tableView:self rowViewForRow:aRowIndex];
+}
+
+/*!
+    @ignore
+    Call the delegate tableView:didAddRowView:forRow:
+*/
+- (void)_sendDelegateDidAddRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_didAddRowView_forRow_))
+        return;
+
+    [_delegate tableView:self didAddRowView:aRowView forRow:aRowIndex];
+}
+
+/*!
+    @ignore
+    Call the delegate tableView:didRemoveRowView:forRow:
+*/
+- (void)_sendDelegateDidRemoveRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_didRemoveRowView_forRow_))
+        return;
+
+    [_delegate tableView:self didRemoveRowView:aRowView forRow:aRowIndex];
+}
+
 
 // MARK: -
 // MARK: Delegate methods to implement

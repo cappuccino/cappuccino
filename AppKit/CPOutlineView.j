@@ -81,7 +81,10 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
     CPOutlineViewDelegate_outlineView_willRemoveView_forTableColumn_item_                           = 1 << 24,
     CPOutlineViewDelegate_selectionShouldChangeInOutlineView_                                       = 1 << 25,
     CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                                      = 1 << 26,
-    CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                                      = 1 << 27;
+    CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                                      = 1 << 27,
+    CPOutlineViewDelegate_outlineView_rowViewForItem_                                               = 1 << 28,
+    CPOutlineViewDelegate_outlineView_didAddRowView_forRow_                                         = 1 << 29,
+    CPOutlineViewDelegate_outlineView_didRemoveRowView_forRow_                                      = 1 << 30;
 
 CPOutlineViewDropOnItemIndex = -1;
 
@@ -121,11 +124,14 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
 - (CPString)outlineView:(CPOutlineView)anOutlineView typeSelectStringForTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
 - (CPView)outlineView:(CPOutlineView)anOutlineView dataViewForTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
 - (CPView)outlineView:(CPOutlineView)anOutlineView viewForTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (CPTableRowView)outlineView:(CPOutlineView)anOutlineView rowViewForItem:(id)anItem;
 - (float)outlineView:(CPOutlineView)anOutlineView heightOfRowByItem:(id)anItem;
 - (float)outlineView:(CPOutlineView)anOutlineView sizeToFitWidthOfColumn:(CPTableColumn)aTableColumn;
 - (id)outlineView:(CPOutlineView)anOutlineView nextTypeSelectMatchFromItem:(id)startItem toItem:(id)endItem forString:(CPString)searchString;
+- (void)outlineView:(CPOutlineView)anOutlineView didAddRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRow;
 - (void)outlineView:(CPOutlineView)anOutlineView didClickTableColumn:(CPTableColumn)aTableColumn;
 - (void)outlineView:(CPOutlineView)anOutlineView didDragTableColumn:(CPTableColumn)aTableColumn;
+- (void)outlineView:(CPOutlineView)anOutlineView didRemoveRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRow;
 - (void)outlineView:(CPOutlineView)anOutlineView mouseDownInHeaderOfTableColumn:(CPTableColumn)aTableColumn;
 - (void)outlineView:(CPOutlineView)anOutlineView willDisplayOutlineView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
 - (void)outlineView:(CPOutlineView)anOutlineView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
@@ -1614,6 +1620,17 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
     Return YES if the item is a group item, otherwise NO.
     @code - (BOOL)outlineView:(CPOutlineView)outlineView isGroupItem:(id)item; @endcode
 
+    @section rowviews Row Views:
+
+    Return a row view for the row of an item, or nil for a CPTableRowView of the outline view's own.
+    @code - (CPTableRowView)outlineView:(CPOutlineView)outlineView rowViewForItem:(id)item; @endcode
+
+    Called when the outline view has added a row view for a row.
+    @code - (void)outlineView:(CPOutlineView)outlineView didAddRowView:(CPTableRowView)rowView forRow:(CPInteger)row; @endcode
+
+    Called when the outline view has removed a row view from a row. The row is -1 for a row that no longer exists.
+    @code - (void)outlineView:(CPOutlineView)outlineView didRemoveRowView:(CPTableRowView)rowView forRow:(CPInteger)row; @endcode
+
 
     @section variableitems Variable Item Heights
 
@@ -1711,7 +1728,10 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
             CPOutlineViewDelegate_outlineView_willDisplayView_forTableColumn_item_               , @selector(outlineView:willDisplayView:forTableColumn:item:),
             CPOutlineViewDelegate_outlineView_willRemoveView_forTableColumn_item_                , @selector(outlineView:willRemoveView:forTableColumn:item:),
             CPOutlineViewDelegate_selectionShouldChangeInOutlineView_                            , @selector(selectionShouldChangeInOutlineView:),
-            CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                           , @selector(outlineView:menuForTableColumn:item:)
+            CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                           , @selector(outlineView:menuForTableColumn:item:),
+            CPOutlineViewDelegate_outlineView_rowViewForItem_                                    , @selector(outlineView:rowViewForItem:),
+            CPOutlineViewDelegate_outlineView_didAddRowView_forRow_                              , @selector(outlineView:didAddRowView:forRow:),
+            CPOutlineViewDelegate_outlineView_didRemoveRowView_forRow_                           , @selector(outlineView:didRemoveRowView:forRow:)
         ],
         delegateCount = [delegateMethods count];
 
@@ -2014,6 +2034,15 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
     rect.size.width -= rect.origin.x; // This assumes that the x returned by super is zero
 
     return rect;
+}
+
+/*
+    Returns the indentation of the feedback for a drop on aRow: the indentation of the row's
+    item.
+*/
+- (float)_indentationForDropOperationOnRow:(CPInteger)aRow
+{
+    return [self levelForRow:aRow] * [self indentationPerLevel];
 }
 
 /*!
@@ -2567,6 +2596,26 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
         var item = [self itemAtRow:aRowIndex];
         [_outlineViewDelegate outlineView:self willRemoveView:aView forTableColumn:aTableColumn item:item];
     }
+}
+
+- (CPTableRowView)tableView:(CPTableView)aTableView rowViewForRow:(CPInteger)aRow
+{
+    if ((_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_rowViewForItem_))
+        return [_outlineViewDelegate outlineView:self rowViewForItem:[self itemAtRow:aRow]];
+
+    return nil;
+}
+
+- (void)tableView:(CPTableView)aTableView didAddRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRow
+{
+    if ((_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_didAddRowView_forRow_))
+        [_outlineViewDelegate outlineView:self didAddRowView:aRowView forRow:aRow];
+}
+
+- (void)tableView:(CPTableView)aTableView didRemoveRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRow
+{
+    if ((_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_didRemoveRowView_forRow_))
+        [_outlineViewDelegate outlineView:self didRemoveRowView:aRowView forRow:aRow];
 }
 
 - (BOOL)tableView:(CPTableView)aTableView isGroupRow:(CPInteger)aRow

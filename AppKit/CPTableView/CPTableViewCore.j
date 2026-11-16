@@ -45,6 +45,7 @@
 @class CPClipView
 @class CPButton
 @class _CPDropOperationDrawingView
+@class CPTableRowView
 
 @global CPApp
 
@@ -88,7 +89,10 @@ CPTableViewDelegate_selectionShouldChangeInTableView_                           
     CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 22,
     CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 23,
     CPTableViewDelegate_tableViewMenuForTableColumn_row_                                                = 1 << 24,
-    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 25;
+    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 25,
+    CPTableViewDelegate_tableView_rowViewForRow_                                                        = 1 << 26,
+    CPTableViewDelegate_tableView_didAddRowView_forRow_                                                 = 1 << 27,
+    CPTableViewDelegate_tableView_didRemoveRowView_forRow_                                              = 1 << 28;
 
 //CPTableViewDraggingDestinationFeedbackStyles
 CPTableViewDraggingDestinationFeedbackStyleNone = -1;
@@ -153,9 +157,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (CPString)tableView:(CPTableView)aTableView typeSelectStringForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex;
 - (CPView)tableView:(CPTableView)aTableView dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex;
 - (CPView)tableView:(CPTableView)aTableView viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex;
+- (CPTableRowView)tableView:(CPTableView)aTableView rowViewForRow:(CPInteger)aRowIndex;
 - (float)tableView:(CPTableView)aTableView heightOfRow:(CPInteger)aRowIndex;
+- (void)tableView:(CPTableView)aTableView didAddRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRowIndex;
 - (void)tableView:(CPTableView)aTableView didClickTableColumn:(CPTableColumn)aTableColumn;
 - (void)tableView:(CPTableView)aTableView didDragTableColumn:(CPTableColumn)aTableColumn;
+- (void)tableView:(CPTableView)aTableView didRemoveRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRowIndex;
 - (void)tableView:(CPTableView)aTableView mouseDownInHeaderOfTableColumn:(CPTableColumn)aTableColumn;
 - (void)tableView:(CPTableView)aTableView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex;
 - (void)tableView:(CPTableView)aTableView willRemoveView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex;
@@ -213,7 +220,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPDictionary                _archivedDataViews;
     Object                      _unavailable_custom_cibs;
 
-    // Row View Management (DOM Composition)
+    // Row views: the visible row views by row, and the pool of row views that the table view made
     Object                      _visibleRowViews;
     CPArray                     _cachedRowViews;
 
@@ -282,6 +289,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPDragOperation             _dragOperationDefaultMask;
     int                         _retargetedDropRow;
     CPDragOperation             _retargetedDropOperation;
+    CPInteger                   _dropTargetRow;
 
     BOOL                        _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL                        _lastColumnShouldSnap;
@@ -438,9 +446,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     _groupRows = [CPIndexSet indexSet];
 
-    // Row View Initialization for DOM rendering
     _visibleRowViews = { };
     _cachedRowViews = [];
+    _dropTargetRow = CPNotFound;
 
     _draggedColumnIndex = -1;
     _draggedColumnIsSelected = NO;
@@ -1082,6 +1090,15 @@ NOT YET IMPLEMENTED
 
 - (CPColor)_unfocusedSelectionColorFromColor:(CPColor)aColor saturation:(float)saturation
 {
+    /*
+        A table view without a selection colour, as under no theme, and a colour that CSS
+        defines, which has no components, gave no hue: the method read the first element of a
+        null array and raised. A row view that laid out in that state stopped the display
+        server, so no later layout ran. Such a colour has no unfocused variant.
+    */
+    if (!aColor || [aColor isCSSBased])
+        return nil;
+
     var hsb = [aColor hsbComponents];
 
     return [CPColor colorWithHue:hsb[0] saturation:hsb[1] * saturation brightness:hsb[2]];
@@ -1452,6 +1469,35 @@ When using bindings, this method is optional if at least one identifier has been
 
 The autoresizingMask of the returned view will automatically be set to CPViewNotSizable if the data view was created in Interface builder in a table column. Otherwise, for example if the view is created manually in code, this method expects the data view to have a CPViewNotSizable mask.
 
+Returns the row view for the specified row.
+@code
+- (CPTableRowView)tableView:(CPTableView)tableView rowViewForRow:(CPInteger)row
+@endcode
+
+@discussion
+Implement this method to give rows a subclass of CPTableRowView. The table view sets the
+properties of the row view before it adds it. Returning nil is acceptable: the table view then
+uses a CPTableRowView of its own. A row view with an identifier goes to the reuse queue of
+makeViewWithIdentifier:owner: when it leaves the screen.
+
+Called when the table view has added a row view for a row.
+@code
+- (void)tableView:(CPTableView)tableView didAddRowView:(CPTableRowView)rowView forRow:(CPInteger)row
+@endcode
+
+@discussion
+The delegate can set properties of the row view here, such as its background colour, or add
+views to it.
+
+Called when the table view has removed a row view from a row.
+@code
+- (void)tableView:(CPTableView)tableView didRemoveRowView:(CPTableRowView)rowView forRow:(CPInteger)row
+@endcode
+
+@discussion
+The table view can reuse the row view, so the delegate should remove any views that it added.
+The row is -1 for a row that no longer exists.
+
 
 @section displayingcells Displaying Cells:
 
@@ -1590,6 +1636,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
 
     [self _updateIsViewBased];
+
+    if ([_delegate respondsToSelector:@selector(tableView:rowViewForRow:)])
+        _implementedDelegateMethods |= CPTableViewDelegate_tableView_rowViewForRow_;
+
+    if ([_delegate respondsToSelector:@selector(tableView:didAddRowView:forRow:)])
+        _implementedDelegateMethods |= CPTableViewDelegate_tableView_didAddRowView_forRow_;
+
+    if ([_delegate respondsToSelector:@selector(tableView:didRemoveRowView:forRow:)])
+        _implementedDelegateMethods |= CPTableViewDelegate_tableView_didRemoveRowView_forRow_;
 
     if ([_delegate respondsToSelector:@selector(tableView:didClickTableColumn:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_didClickTableColumn_;

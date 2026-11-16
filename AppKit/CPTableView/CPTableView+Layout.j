@@ -243,7 +243,7 @@
     Returns the index of the row for the specified view.
 
     @param view The view.
-    @return The index of the row corresponding to the view. Returns -1 if the view is not a dataView, or a subview of a dataView.
+    @return The index of the row corresponding to the view. Returns -1 if the view is not a dataView or a row view, or a subview of one.
     @discussion This is typically needed in the action method for a CPButton (or CPControl) to find out what row (and column) the action should be performed on.
                 The implementation is O(rxc) where r is the number of visible rows, and c is the number of visible columns, so this method should generally not be called within a loop.
 */
@@ -252,6 +252,9 @@
     var row;
 
     [self getColumn:nil row:@ref(row) forView:aView];
+
+    if (row === -1)
+        row = [self _rowOfRowViewContainingView:aView];
 
     return row;
 }

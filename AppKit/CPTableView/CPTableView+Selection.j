@@ -174,22 +174,7 @@
     if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone)
         [self _enumerateViewsInRows:newRows columns:_exposedColumns usingBlock:_BlockSelectView];
 
-
-    // Update Row Views (DOM Backgrounds)
-    var focused = [self _isFocused];
-    [oldRows enumerateIndexesUsingBlock:function(idx, stop) {
-        var rowView = _visibleRowViews[idx];
-
-        if (rowView)
-            [rowView setSelected:NO focused:focused];
-    }];
-
-    [newRows enumerateIndexesUsingBlock:function(idx, stop) {
-        var rowView = _visibleRowViews[idx];
-
-        if (rowView)
-            [rowView setSelected:YES focused:focused];
-    }];
+    [self _configureRowViewsForSelectionChangeFromRows:oldRows toRows:newRows];
 }
 
 /*!
