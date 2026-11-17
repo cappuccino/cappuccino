@@ -4745,15 +4745,26 @@ var interpolate = function(fromValue, toValue, progress)
             continue;
         }
 
+        /*
+            The walks below climbed the superviews until they reached the content view. A view
+            outside the content view, such as a toolbar item under the window view, never reaches
+            it: the walk passed the window view to nil and ran for ever, because a nil superview is
+            neither the content view nor the frontmost view. The window view is the root of every
+            view in the window, so the walks now stop there, and a walk that reaches nil raises.
+        */
+
         // Next verify if aView is a subview of frontmostView
         // If so, it's our new frontmost view
 
         var searchingView = aView;
 
-        while ((searchingView !== _contentView) && ([searchingView superview] !== frontmostView))
+        while (searchingView && (searchingView !== _windowView) && ([searchingView superview] !== frontmostView))
             searchingView = [searchingView superview];
 
-        if (searchingView !== _contentView)
+        if (!searchingView)
+            [CPException raise:CPInternalInconsistencyException reason:"Problem with view hierarchy"];
+
+        if (searchingView !== _windowView)
         {
             frontmostTrackingArea = aTrackingArea;
             frontmostView         = aView;
@@ -4768,12 +4779,12 @@ var interpolate = function(fromValue, toValue, progress)
         var firstView      = frontmostView,
             firstSuperview = [firstView superview];
 
-        while (firstView !== _contentView)
+        while (firstView && (firstView !== _windowView))
         {
             var secondView      = aView,
                 secondSuperview = [secondView superview];
 
-            while ((secondSuperview !== _contentView) && (firstSuperview !== secondSuperview))
+            while (secondSuperview && (secondSuperview !== _windowView) && (firstSuperview !== secondSuperview))
             {
                 secondView      = secondSuperview;
                 secondSuperview = [secondView superview];
@@ -4786,7 +4797,7 @@ var interpolate = function(fromValue, toValue, progress)
             firstSuperview = [firstView superview];
         }
 
-        if (firstSuperview !== secondSuperview)
+        if (!firstSuperview || (firstSuperview !== secondSuperview))
             [CPException raise:CPInternalInconsistencyException reason:"Problem with view hierarchy"];
 
         var firstSuperviewSubviews = [firstSuperview subviews],
