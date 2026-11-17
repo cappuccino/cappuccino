@@ -2468,12 +2468,16 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         _textFieldTrackingArea = nil;
     }
 
+    /*
+        The I-beam area was the bounds inset by the content inset, not the content rect. A
+        subclass that narrows its content rect, such as CPSearchField, which keeps its text
+        between its buttons, kept an I-beam area over the parts it excludes, and that area
+        overlapped the cursor areas of the subclass's own controls. The area now takes the
+        content rect, which places the text and the editing input.
+    */
     if ([self isEnabled] && (_isEditable || _isSelectable))
     {
-        var myBounds     = CGRectMakeCopy([self bounds]),
-            contentInset = [self currentValueForThemeAttribute:@"content-inset"];
-        
-        _textFieldTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectInsetByInset(myBounds, contentInset)
+        _textFieldTrackingArea = [[CPTrackingArea alloc] initWithRect:[self contentRectForBounds:[self bounds]]
                                                               options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
                                                                 owner:self
                                                              userInfo:nil];
