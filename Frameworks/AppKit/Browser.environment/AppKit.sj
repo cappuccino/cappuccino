@@ -40590,7 +40590,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
 
 ,["void","CPCoder"])]);
 }
-p;13;CPTextField.jt;136834;@STATIC;1.0;i;11;CPControl.ji;17;CPStringDrawing.ji;17;CPCompatibility.ji;8;CPText.ji;20;CPWindow_Constants.ji;21;_CPImageAndTextView.jt;136690;objj_executeFile("CPControl.j", YES);objj_executeFile("CPStringDrawing.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPImageAndTextView.j", YES);{var the_protocol = objj_allocateProtocol("CPTextFieldDelegate");
+p;13;CPTextField.jt;136689;@STATIC;1.0;i;11;CPControl.ji;17;CPStringDrawing.ji;17;CPCompatibility.ji;8;CPText.ji;20;CPWindow_Constants.ji;21;_CPImageAndTextView.jt;136545;objj_executeFile("CPControl.j", YES);objj_executeFile("CPStringDrawing.j", YES);objj_executeFile("CPCompatibility.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPImageAndTextView.j", YES);{var the_protocol = objj_allocateProtocol("CPTextFieldDelegate");
 var aProtocol = objj_getProtocol("CPControlTextEditingDelegate");
 if (!aProtocol) throw new SyntaxError("*** Could not find definition for protocol \"CPTextFieldDelegate\"");
 protocol_addProtocol(the_protocol, aProtocol);
@@ -42357,9 +42357,7 @@ var meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_textFi
     }
     if ((self.isa.method_msgSend["isEnabled"] || _objj_forward)(self, "isEnabled") && (self._isEditable || self._isSelectable))
     {
-        var myBounds = CGRectMakeCopy((self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds")),
-            contentInset = (self.isa.method_msgSend["currentValueForThemeAttribute:"] || _objj_forward)(self, "currentValueForThemeAttribute:", "content-inset");
-        self._textFieldTrackingArea = ((___r1 = (CPTrackingArea.isa.method_msgSend["alloc"] || _objj_forward)(CPTrackingArea, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithRect:options:owner:userInfo:"] || _objj_forward)(___r1, "initWithRect:options:owner:userInfo:", CGRectInsetByInset(myBounds, contentInset), CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow, self, nil));
+        self._textFieldTrackingArea = ((___r1 = (CPTrackingArea.isa.method_msgSend["alloc"] || _objj_forward)(CPTrackingArea, "alloc")), ___r1 == null ? ___r1 : (___r1.isa.method_msgSend["initWithRect:options:owner:userInfo:"] || _objj_forward)(___r1, "initWithRect:options:owner:userInfo:", (self.isa.method_msgSend["contentRectForBounds:"] || _objj_forward)(self, "contentRectForBounds:", (self.isa.method_msgSend["bounds"] || _objj_forward)(self, "bounds")), CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow, self, nil));
         (self.isa.method_msgSend["addTrackingArea:"] || _objj_forward)(self, "addTrackingArea:", self._textFieldTrackingArea);
     }
     (objj_getClass("CPTextField").super_class.method_dtable["updateTrackingAreas"] || _objj_forward)(self, "updateTrackingAreas");
