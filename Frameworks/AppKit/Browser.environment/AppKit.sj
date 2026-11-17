@@ -82204,7 +82204,7 @@ var meta_class = the_class.isa;class_addIvars(the_class, [new objj_ivar("_window
 
 ,["void"])]);
 }
-p;10;CPWindow.jt;214251;@STATIC;1.0;I;25;Foundation/CPCountedSet.jI;33;Foundation/CPNotificationCenter.jI;26;Foundation/CPUndoManager.ji;12;CGGeometry.ji;13;CPAnimation.ji;10;CPCursor.ji;14;CPDragServer.ji;9;CPEvent.ji;18;CPPlatformWindow.ji;22;CPPlatformWindow+DOM.ji;13;CPResponder.ji;10;CPScreen.ji;8;CPText.ji;16;CPTrackingArea.ji;8;CPView.ji;20;CPWindow_Constants.ji;31;_CPBorderlessBridgeWindowView.ji;25;_CPBorderlessWindowView.ji;23;_CPDocModalWindowView.ji;18;_CPHUDWindowView.ji;20;_CPModalWindowView.ji;22;_CPPopoverWindowView.ji;21;_CPShadowWindowView.ji;23;_CPStandardWindowView.ji;22;_CPToolTipWindowView.jt;213646;objj_executeFile("Foundation/CPCountedSet.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPUndoManager.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDragServer.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPPlatformWindow+DOM.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPScreen.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPBorderlessBridgeWindowView.j", YES);objj_executeFile("_CPBorderlessWindowView.j", YES);objj_executeFile("_CPDocModalWindowView.j", YES);objj_executeFile("_CPHUDWindowView.j", YES);objj_executeFile("_CPModalWindowView.j", YES);objj_executeFile("_CPPopoverWindowView.j", YES);objj_executeFile("_CPShadowWindowView.j", YES);objj_executeFile("_CPStandardWindowView.j", YES);objj_executeFile("_CPToolTipWindowView.j", YES);{var the_typedef = objj_allocateTypeDef("_CPWindowFullPlatformWindowSession");
+p;10;CPWindow.jt;214518;@STATIC;1.0;I;25;Foundation/CPCountedSet.jI;33;Foundation/CPNotificationCenter.jI;26;Foundation/CPUndoManager.ji;12;CGGeometry.ji;13;CPAnimation.ji;10;CPCursor.ji;14;CPDragServer.ji;9;CPEvent.ji;18;CPPlatformWindow.ji;22;CPPlatformWindow+DOM.ji;13;CPResponder.ji;10;CPScreen.ji;8;CPText.ji;16;CPTrackingArea.ji;8;CPView.ji;20;CPWindow_Constants.ji;31;_CPBorderlessBridgeWindowView.ji;25;_CPBorderlessWindowView.ji;23;_CPDocModalWindowView.ji;18;_CPHUDWindowView.ji;20;_CPModalWindowView.ji;22;_CPPopoverWindowView.ji;21;_CPShadowWindowView.ji;23;_CPStandardWindowView.ji;22;_CPToolTipWindowView.jt;213913;objj_executeFile("Foundation/CPCountedSet.j", NO);objj_executeFile("Foundation/CPNotificationCenter.j", NO);objj_executeFile("Foundation/CPUndoManager.j", NO);objj_executeFile("CGGeometry.j", YES);objj_executeFile("CPAnimation.j", YES);objj_executeFile("CPCursor.j", YES);objj_executeFile("CPDragServer.j", YES);objj_executeFile("CPEvent.j", YES);objj_executeFile("CPPlatformWindow.j", YES);objj_executeFile("CPPlatformWindow+DOM.j", YES);objj_executeFile("CPResponder.j", YES);objj_executeFile("CPScreen.j", YES);objj_executeFile("CPText.j", YES);objj_executeFile("CPTrackingArea.j", YES);objj_executeFile("CPView.j", YES);objj_executeFile("CPWindow_Constants.j", YES);objj_executeFile("_CPBorderlessBridgeWindowView.j", YES);objj_executeFile("_CPBorderlessWindowView.j", YES);objj_executeFile("_CPDocModalWindowView.j", YES);objj_executeFile("_CPHUDWindowView.j", YES);objj_executeFile("_CPModalWindowView.j", YES);objj_executeFile("_CPPopoverWindowView.j", YES);objj_executeFile("_CPShadowWindowView.j", YES);objj_executeFile("_CPStandardWindowView.j", YES);objj_executeFile("_CPToolTipWindowView.j", YES);{var the_typedef = objj_allocateTypeDef("_CPWindowFullPlatformWindowSession");
 objj_registerTypeDef(the_typedef);
 }{var the_protocol = objj_allocateProtocol("CPWindowDelegate");
 var aProtocol = objj_getProtocol("CPObject");
@@ -85055,9 +85055,11 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
             continue;
         }
         var searchingView = aView;
-        while (searchingView !== self._contentView && (searchingView == null ? searchingView : (searchingView.isa.method_msgSend["superview"] || _objj_forward)(searchingView, "superview")) !== frontmostView)
+        while (searchingView && searchingView !== self._windowView && (searchingView == null ? searchingView : (searchingView.isa.method_msgSend["superview"] || _objj_forward)(searchingView, "superview")) !== frontmostView)
             searchingView = (searchingView == null ? searchingView : (searchingView.isa.method_msgSend["superview"] || _objj_forward)(searchingView, "superview"));
-        if (searchingView !== self._contentView)
+        if (!searchingView)
+            (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInternalInconsistencyException, "Problem with view hierarchy");
+        if (searchingView !== self._windowView)
         {
             frontmostTrackingArea = aTrackingArea;
             frontmostView = aView;
@@ -85065,11 +85067,11 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
         }
         var firstView = frontmostView,
             firstSuperview = (firstView == null ? firstView : (firstView.isa.method_msgSend["superview"] || _objj_forward)(firstView, "superview"));
-        while (firstView !== self._contentView)
+        while (firstView && firstView !== self._windowView)
         {
             var secondView = aView,
                 secondSuperview = (secondView == null ? secondView : (secondView.isa.method_msgSend["superview"] || _objj_forward)(secondView, "superview"));
-            while (secondSuperview !== self._contentView && firstSuperview !== secondSuperview)
+            while (secondSuperview && secondSuperview !== self._windowView && firstSuperview !== secondSuperview)
             {
                 secondView = secondSuperview;
                 secondSuperview = (secondView == null ? secondView : (secondView.isa.method_msgSend["superview"] || _objj_forward)(secondView, "superview"));
@@ -85079,7 +85081,7 @@ var meta_class = the_class.isa;class_addMethods(the_class, [new objj_method(sel_
             firstView = firstSuperview;
             firstSuperview = (firstView == null ? firstView : (firstView.isa.method_msgSend["superview"] || _objj_forward)(firstView, "superview"));
         }
-        if (firstSuperview !== secondSuperview)
+        if (!firstSuperview || firstSuperview !== secondSuperview)
             (CPException.isa.method_msgSend["raise:reason:"] || _objj_forward)(CPException, "raise:reason:", CPInternalInconsistencyException, "Problem with view hierarchy");
         var firstSuperviewSubviews = (firstSuperview == null ? firstSuperview : (firstSuperview.isa.method_msgSend["subviews"] || _objj_forward)(firstSuperview, "subviews")),
             firstViewIndex = (firstSuperviewSubviews == null ? firstSuperviewSubviews : (firstSuperviewSubviews.isa.method_msgSend["indexOfObject:"] || _objj_forward)(firstSuperviewSubviews, "indexOfObject:", firstView)),
