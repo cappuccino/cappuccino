@@ -42,6 +42,13 @@
 
     [tableView reloadData];
 
+    /*
+        The reload happens in the next layout. The enumeration below visits the data views that
+        exist, so the layout must come first. The enumeration ran a run loop pass, which did
+        the layout, until that pass was removed.
+    */
+    [tableView layoutIfNeeded];
+
     var enumerateViewsInRowsCall = 0;
 
     [tableView _enumerateViewsInRows:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 3)]  columns:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 4)] usingBlock:function(view, row, column, stop)

@@ -960,7 +960,12 @@
 {
     [self reloadData];
 
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    /*
+        The reload must be done before the enumeration, so that the views of the exposed rows
+        exist. A run loop pass did this, and also ran the timers, the delayed performs and the
+        display server at this point. The layout does the reload alone.
+    */
+    [self layoutIfNeeded];
 
     [self _enumerateViewsInRows:_exposedRows columns:_exposedColumns usingBlock:handler];
 }
@@ -971,8 +976,13 @@
 
 - (void)_enumerateViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes usingBlock:(Function/*CPView dataView, CPInteger row, CPInteger column, @ref stop*/)handler
 {
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
+    /*
+        Visits the data views that exist now and changes nothing else. This method began with
+        a run loop pass, which ran the timers, the delayed performs and the display server in
+        the middle of the caller's change: inside a load, a selection change or an expand. The
+        display server then displayed views, the canvas of the drawing pass among them, before
+        the change was complete.
+    */
     [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stopRow)
     {
         var dataViewsForRow = _dataViewsForRows[rowIndex];
@@ -998,8 +1008,10 @@
 
 - (void)_enumerateViewsInRows:(CPIndexSet)rowIndexes tableColumns:(CPArray)tableColumns usingBlock:(Function/*CPView dataView, CPInteger row, CPtableColumn tableColumn, CPInteger column, @ref stop*/)handler
 {
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
+    /*
+        Visits the data views that exist now and changes nothing else, as the method above.
+        It began with a run loop pass, for the same effect.
+    */
     [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stopRow)
     {
         var dataViewsForRow = _dataViewsForRows[rowIndex];

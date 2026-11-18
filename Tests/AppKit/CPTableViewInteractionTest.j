@@ -289,10 +289,17 @@ var InteractionDragType = @"InteractionDragType";
                               pressure:0];
 }
 
+/*
+    Sends an event the way the platform does: through the application. The window hit-tests
+    a mouse-down and sends it to the view under the point, and the table view's tracking then
+    asks the application for the drags and the mouse-up. This method also sent each event to
+    -trackMouse: directly. When the table view was the view under the point, it then tracked
+    each event twice: a command-click toggled the row twice, and a second shift-click took
+    the new end of the selection as its anchor.
+*/
 - (void)sendEvent:(CPEvent)anEvent
 {
     [CPApp sendEvent:anEvent];
-    [tableView trackMouse:anEvent];
 }
 
 - (void)clickPoint:(CGPoint)aPoint flags:(unsigned)theFlags clicks:(int)aClickCount
@@ -309,6 +316,42 @@ var InteractionDragType = @"InteractionDragType";
 - (void)clickRow:(int)aRow flags:(unsigned)theFlags
 {
     [self clickPoint:[self pointInRow:aRow] flags:theFlags clicks:1];
+}
+
+/*
+    Puts the table view in a scroll view, as an application does. The table view then fills
+    its clip view, so the empty area below the last row belongs to the table view. The two
+    tests of a click outside the rows clicked (20, 290) in a table view without a scroll view.
+    That table view is only as tall as its rows, so the window sent the click to the content
+    view. The table view received the click only because the event helper also sent each
+    event to -trackMouse:.
+*/
+- (void)placeTableViewInScrollView
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 300.0, 300.0)];
+
+    [tableView removeFromSuperview];
+    [[theWindow contentView] addSubview:scrollView];
+    [scrollView setDocumentView:tableView];
+}
+
+/*
+    Returns a point in the table view below its last row.
+*/
+- (CGPoint)pointBelowTheRows
+{
+    return CGPointMake(20.0, CGRectGetMaxY([tableView rectOfRow:[tableView numberOfRows] - 1]) + 20.0);
+}
+
+/*
+    Clicks below the last row, after it checks that the point is inside the table view.
+*/
+- (void)clickBelowTheRows
+{
+    var point = [self pointBelowTheRows];
+
+    [self assertTrue:CGRectContainsPoint([tableView bounds], point) message:@"The point below the rows must be inside the table view"];
+    [self clickPoint:point flags:0 clicks:1];
 }
 
 - (void)pressKey:(CPString)aCharacter flags:(unsigned)theFlags
@@ -371,17 +414,19 @@ var InteractionDragType = @"InteractionDragType";
 
 - (void)testClickOutsideTheRowsClearsTheSelection
 {
+    [self placeTableViewInScrollView];
     [self clickRow:1];
-    [self clickPoint:CGPointMake(20.0, 290.0) flags:0 clicks:1];
+    [self clickBelowTheRows];
 
     [self assert:[] equals:[self selectedRows]];
 }
 
 - (void)testClickOutsideTheRowsKeepsTheSelectionWhenItCannotBeEmpty
 {
+    [self placeTableViewInScrollView];
     [tableView setAllowsEmptySelection:NO];
     [self clickRow:1];
-    [self clickPoint:CGPointMake(20.0, 290.0) flags:0 clicks:1];
+    [self clickBelowTheRows];
 
     [self assert:[1] equals:[self selectedRows]];
 }

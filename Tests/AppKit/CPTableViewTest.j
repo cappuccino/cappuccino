@@ -710,9 +710,22 @@
 
     [container setTableEntries:dataArray];
 
-    // The first two are visible so they are accessed both when setting up the observers and displaying the cell in the table view
-    [self assert:[[dataArray[0] countingDictionary] objectForKey:@"a"] equals:5];
-    [self assert:[[dataArray[1] countingDictionary] objectForKey:@"a"] equals:5];
+    /*
+        The table view loads its data views in the next layout. On the platform, this layout
+        runs at the end of the event, so the test lays out before it counts the reads. A run
+        loop pass inside the table view's view enumeration did this layout in the middle of
+        -setTableEntries:, until that pass was removed. The value binder of the second column
+        then set the values of that column's new data views a second time. This gave each
+        visible row a fifth read.
+    */
+    [table layoutIfNeeded];
+
+    /*
+        Each row is read once for the observer of each column. The first two rows are visible,
+        so each is also read once when the data view of each column is prepared.
+    */
+    [self assert:[[dataArray[0] countingDictionary] objectForKey:@"a"] equals:4];
+    [self assert:[[dataArray[1] countingDictionary] objectForKey:@"a"] equals:4];
      // This is not visible so it is only accessed when setting up the observers
     [self assert:[[dataArray[2] countingDictionary] objectForKey:@"a"] equals:2];
 

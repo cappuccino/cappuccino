@@ -82,7 +82,10 @@
     if (index === CPNotFound)
         return;
 
-    // we defer the actual removal until the end of the runloop in order to keep a reference to the column.
+    /*
+        The load removes the column, at the end of this method. Until then the table view keeps a
+        reference to it, for the data views of the column.
+    */
     [_differedColumnDataToRemove addObject:{"column":aTableColumn, "shouldBeHidden": [aTableColumn isHidden]}];
     _needsDifferedTableColumnRemove = YES;
 
@@ -100,7 +103,13 @@
         _dirtyTableColumnRangeIndex = MIN(index, _dirtyTableColumnRangeIndex);
 
     [self reloadData];
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    /*
+        The load removes the column, so the reload must be done before this method returns. A
+        run loop pass did this, and also ran the timers, the delayed performs and the display
+        server at this point. The layout does the load alone.
+    */
+    [self layoutIfNeeded];
 }
 
 /*!
