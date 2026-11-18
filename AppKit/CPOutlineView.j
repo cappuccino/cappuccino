@@ -1612,6 +1612,7 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
     @section editin Editing:
 
     Return YES to allow for editing of a dataview at given item and tableColumn, otherwise NO to prevent the edit.
+    If the delegate does not implement this method, the outline view allows the edit.
     @code - (BOOL)outlineView:(CPOutlineView)outlineView shouldEditTableColumn:(CPTableColumn)tableColumn item:(id)item; @endcode
 
     @section groups Group Items:
@@ -2600,7 +2601,13 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
     if ((_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldEditTableColumn_item_))
         return [_outlineViewDelegate outlineView:self shouldEditTableColumn:aColumn item:[self itemAtRow:aRow]];
 
-    return NO;
+    /*
+        A delegate without the method allows the edit, as in CPTableView. This method returned
+        NO, so an outline view refused every edit unless its delegate implemented
+        -outlineView:shouldEditTableColumn:item:, even with an editable column and a data
+        source that stores values.
+    */
+    return YES;
 }
 
 - (float)tableView:(CPTableView)theTableView heightOfRow:(CPInteger)theRow

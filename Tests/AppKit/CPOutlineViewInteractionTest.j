@@ -462,10 +462,19 @@ var OutlineInteractionDragType = @"OutlineInteractionDragType";
 */
 - (void)doubleClickToEditItem:(id)anItem
 {
+    [outlineView setDelegate:[[_CPOutlineInteractionEditingDelegate alloc] init]];
+    [self doubleClickItem:anItem];
+}
+
+/*
+    Makes the outline column editable and sends a double click on an item. The delegate is
+    left as it is.
+*/
+- (void)doubleClickItem:(id)anItem
+{
     var point = [self pointInItem:anItem];
 
     [[outlineView outlineTableColumn] setEditable:YES];
-    [outlineView setDelegate:[[_CPOutlineInteractionEditingDelegate alloc] init]];
 
     [self sendMouse:CPLeftMouseDown atPoint:point clicks:1];
     [self sendMouse:CPLeftMouseUp atPoint:point clicks:1];
@@ -486,6 +495,21 @@ var OutlineInteractionDragType = @"OutlineInteractionDragType";
     [outlineView setDataSource:dataSource];
 
     [self doubleClickToEditItem:@"B"];
+
+    [self assert:[outlineView rowForItem:@"B"] equals:[outlineView editedRow]];
+}
+
+/*
+    A delegate without -outlineView:shouldEditTableColumn:item: allows the edit, as a table
+    view delegate without -tableView:shouldEditTableColumn:row: does.
+*/
+- (void)testADelegateWithoutTheShouldEditMethodAllowsTheEdit
+{
+    dataSource = [[_CPOutlineInteractionEditingDataSource alloc] init];
+    [outlineView setDataSource:dataSource];
+    [outlineView setDelegate:[[CPObject alloc] init]];
+
+    [self doubleClickItem:@"B"];
 
     [self assert:[outlineView rowForItem:@"B"] equals:[outlineView editedRow]];
 }
