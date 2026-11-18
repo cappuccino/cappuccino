@@ -9478,7 +9478,15 @@ function A3MaskIcon(aMaskImage, aColor)
      [@"small-size-height",                      46.0],
      [@"image-item-separator-color",             toolbarSeparatorColor],
      [@"image-item-separator-size",              CGRectMake(0.0, 0.0, 2.0, 32.0)],
-     [@"label-color",                            [CPColor disabledControlTextColor],             CPThemeStateDisabled],
+
+     /*
+        The labels were black in a dark window. Aristo3 gave no normal label colour, so the
+        class default labelColor applied, and the disabled colour was the System colour
+        disabledControlTextColor. Aristo3 gives neither System colour a dark value. The labels
+        now take the theme's text colours, which have a light and a dark value.
+     */
+     [@"label-color",                            A3CPColorActiveText],
+     [@"label-color",                            A3CPColorInactiveText,                          CPThemeStateDisabled],
      [@"label-color",                            [CPColor whiteColor],                           CPThemeStateHUD],
      [@"label-color",                            [CPColor colorWithWhite:1.0 alpha:0.5],         [CPThemeStateHUD, CPThemeStateDisabled]]
      ];
