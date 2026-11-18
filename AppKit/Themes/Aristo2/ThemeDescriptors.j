@@ -2976,7 +2976,10 @@ function ButtonBarImageAction()
             [@"regular-size-height",                    59.0],
             [@"small-size-height",                      46.0],
             [@"image-item-separator-color",             toolbarSeparatorColor],
-            [@"image-item-separator-size",              CGRectMake(0.0, 0.0, 2.0, 32.0)]
+            [@"image-item-separator-size",              CGRectMake(0.0, 0.0, 2.0, 32.0)],
+            [@"label-color",                            [CPColor disabledControlTextColor],             CPThemeStateDisabled],
+            [@"label-color",                            [CPColor whiteColor],                           CPThemeStateHUD],
+            [@"label-color",                            [CPColor colorWithWhite:1.0 alpha:0.5],         [CPThemeStateHUD, CPThemeStateDisabled]]
         ];
 
 

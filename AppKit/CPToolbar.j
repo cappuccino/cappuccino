@@ -653,12 +653,8 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     CPArray             _invisibleItems;
 
     CPPopUpButton       _additionalItemsButton;
-    CPColor             _labelColor;
-    CPColor             _labelShadowColor;
 
     float               _minWidth;
-
-    BOOL                _FIXME_isHUD;
 }
 
 + (CPString)defaultThemeClass
@@ -678,6 +674,10 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             @"small-size-height": 46.0,
             @"image-item-separator-color": [CPNull null],
             @"image-item-separator-size": CGRectMake(0.0, 0.0, 2.0, 32.0),
+            @"label-color": [CPColor labelColor],
+            @"label-font": [CPFont systemFontOfSize:11.0],
+            @"label-shadow-color": [CPNull null],
+            @"label-shadow-offset": CGSizeMakeZero(),
         };
 }
 
@@ -688,9 +688,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     if (self)
     {
         _minWidth = 0;
-
-        _labelColor = [CPColor blackColor];
-        _labelShadowColor = [CPColor colorWithWhite:1.0 alpha:0.75];
 
         _additionalItemsButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 15.0) pullsDown:YES];
         [_additionalItemsButton setBordered:NO];
@@ -711,20 +708,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 - (CPToolbar)toolbar
 {
     return _toolbar;
-}
-
-- (void)FIXME_setIsHUD:(BOOL)shouldBeHUD
-{
-    if (_FIXME_isHUD === shouldBeHUD)
-        return;
-
-    _FIXME_isHUD = shouldBeHUD;
-
-    var items = [_toolbar items],
-        count = [items count];
-
-    while (count--)
-        [[self viewForItem:items[count]] FIXME_setIsHUD:shouldBeHUD];
 }
 
 // This *should* be roughly O(3N) = O(N)
@@ -775,7 +758,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             [invisibleItemsSortedByPriority addObject:item];
 
             [view setHidden:YES];
-            [view FIXME_setIsHUD:_FIXME_isHUD];
         }
     }
 
@@ -1056,8 +1038,6 @@ var LABEL_MARGIN    = 2.0;
     CPView          _highlightView;
 
     CPTextField     _labelField;
-
-    BOOL            _FIXME_isHUD;
 }
 
 - (BOOL)acceptsFirstResponder
@@ -1086,10 +1066,11 @@ var LABEL_MARGIN    = 2.0;
 
         _labelField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
-        [_labelField setFont:[CPFont systemFontOfSize:11.0]];
-        [_labelField setTextColor:[self FIXME_labelColor]];
-        [_labelField setTextShadowColor:[self FIXME_labelShadowColor]];
-        [_labelField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
+        /*
+            The font sets the label size, which -updateFromItem measures below, before the
+            toolbar view is assigned. Colour and shadow follow in -layoutSubviews.
+        */
+        [_labelField setFont:[aToolbar valueForThemeAttribute:@"label-font" inState:[self themeState]]];
         [_labelField setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin];
 
         [self addSubview:_labelField];
@@ -1123,13 +1104,6 @@ var LABEL_MARGIN    = 2.0;
 
     for (; index < count; ++index)
         [_toolbarItem removeObserver:self forKeyPath:_CPToolbarItemViewObservedKeyPaths[index]];
-}
-
-- (void)FIXME_setIsHUD:(BOOL)shouldBeHUD
-{
-    _FIXME_isHUD = shouldBeHUD;
-    [_labelField setTextColor:[self FIXME_labelColor]];
-    [_labelField setTextShadowColor:[self FIXME_labelShadowColor]];
 }
 
 - (void)updateFromItem
@@ -1191,6 +1165,9 @@ var LABEL_MARGIN    = 2.0;
     var minSize = [_toolbarItem minSize],
         maxSize = [_toolbarItem maxSize];
 
+    if (_toolbar)
+        [_labelField setFont:[_toolbar valueForThemeAttribute:@"label-font" inState:[self themeState]]];
+
     [_labelField setStringValue:[_toolbarItem label]];
     [_labelField sizeToFit]; // FIXME
 
@@ -1244,6 +1221,8 @@ var LABEL_MARGIN    = 2.0;
                                viewWidth,
                                viewHeight)];
 
+    [self _layoutLabelAppearance];
+
     // Label is always drawn at the bottom of the view. So if the view is really tall but the icon is tiny, the icon is centred above the label while the label remains on the bottom.
     [_labelField setFrameOrigin:CGPointMake(ROUND((width - _labelSize.width) / 2.0), CGRectGetHeight(bounds) - _labelSize.height)];
 }
@@ -1271,34 +1250,29 @@ var LABEL_MARGIN    = 2.0;
 
     [super setEnabled:shouldBeEnabled];
 
-    if (shouldBeEnabled)
-    {
-        [_imageView setAlphaValue:1.0];
-        [_labelField setAlphaValue:1.0];
-    }
-    else
-    {
-        [_imageView setAlphaValue:0.5];
-        [_labelField setAlphaValue:0.5];
-    }
+    /*
+        The label takes its disabled look from the toolbar view's theme in -layoutSubviews.
+    */
+    [_imageView setAlphaValue:shouldBeEnabled ? 1.0 : 0.5];
 
     [_toolbar tile];
 }
 
-- (CPColor)FIXME_labelColor
+/*
+    Applies the label colour and shadow of the toolbar view's theme for the receiver's state:
+    highlighted, disabled, and HUD in a HUD window.
+
+    Labels had black text and a white shadow, hard-coded in this class, so they ignored the
+    theme and the appearance; the shadow was wrong in dark mode. The values now come from the
+    toolbar view's theme attributes, applied in layout, and no theme gives a shadow.
+*/
+- (void)_layoutLabelAppearance
 {
-    if (_FIXME_isHUD)
-        return [CPColor whiteColor];
+    var state = [self themeState];
 
-    return [CPColor blackColor];
-}
-
-- (CPColor)FIXME_labelShadowColor
-{
-    if (_FIXME_isHUD)
-        return [self isHighlighted] ? [CPColor colorWithWhite:1.0 alpha:0.5] : [CPColor clearColor];
-
-    return [self isHighlighted] ? [CPColor colorWithWhite:0.0 alpha:0.3] : [CPColor colorWithWhite:1.0 alpha:0.75];
+    [_labelField setTextColor:[_toolbar valueForThemeAttribute:@"label-color" inState:state]];
+    [_labelField setTextShadowColor:[_toolbar valueForThemeAttribute:@"label-shadow-color" inState:state]];
+    [_labelField setTextShadowOffset:[_toolbar valueForThemeAttribute:@"label-shadow-offset" inState:state]];
 }
 
 - (void)setHighlighted:(BOOL)shouldBeHighlighted
@@ -1324,7 +1298,6 @@ var LABEL_MARGIN    = 2.0;
             [_imageView addSubview:_highlightView];
         }
 
-        [_labelField setTextShadowOffset:CGSizeMakeZero()];
     }
     else
     {
@@ -1334,11 +1307,7 @@ var LABEL_MARGIN    = 2.0;
             [_imageView setImage:image];
 
         [_highlightView removeFromSuperview];
-
-        [_labelField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
     }
-
-    [_labelField setTextShadowColor:[self FIXME_labelShadowColor]];
 }
 
 - (BOOL)sendAction:(SEL)anAction to:(id)aSender

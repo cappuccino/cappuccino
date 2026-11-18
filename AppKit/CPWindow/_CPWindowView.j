@@ -1114,7 +1114,6 @@ function _CPWindowViewSetCornerRadii(aDOMElement, someRadii)
         if (toolbarView)
         {
             [toolbarView removeFromSuperview];
-            [toolbarView FIXME_setIsHUD:_styleMask & CPHUDBackgroundWindowMask];
 
             [self addSubview:toolbarView];
         }

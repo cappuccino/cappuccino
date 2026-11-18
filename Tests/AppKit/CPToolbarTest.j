@@ -224,4 +224,94 @@ var ToolbarTestMakeViewItem = function(aTarget)
     [self assertTrue:[discardedItemView isEnabled] message:@"a discarded item view must no longer follow its item"];
 }
 
+/*
+    Returns the toolbar view and the view of the first item of a new toolbar.
+*/
+- (CPArray)toolbarViewAndItemView
+{
+    var delegate = [_ToolbarTestDelegate new],
+        toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestLabel"];
+
+    [toolbar setDelegate:delegate];
+
+    var toolbarView = [toolbar _toolbarView];
+
+    return [toolbarView, [toolbarView viewForItem:[toolbar items][0]]];
+}
+
+- (void)testNoThemeGivesToolbarLabelsAShadow
+{
+    var toolbarView = [self toolbarViewAndItemView][0];
+
+    [self assertNull:[toolbarView valueForThemeAttribute:@"label-shadow-color" inState:CPThemeStateNormal]];
+    [self assertNull:[toolbarView valueForThemeAttribute:@"label-shadow-color" inState:CPThemeStateHighlighted]];
+}
+
+- (void)testALabelTakesTheLabelColorOfTheToolbarView
+{
+    var views = [self toolbarViewAndItemView],
+        color = [CPColor redColor];
+
+    [views[0] setValue:color forThemeAttribute:@"label-color"];
+    [views[1] layoutSubviews];
+
+    [self assert:color same:[views[1]._labelField textColor]];
+}
+
+- (void)testADisabledItemTakesTheDisabledLabelColorAtFullOpacity
+{
+    var views = [self toolbarViewAndItemView],
+        color = [CPColor blueColor];
+
+    [views[0] setValue:[CPColor redColor] forThemeAttribute:@"label-color"];
+    [views[0] setValue:color forThemeAttribute:@"label-color" inState:CPThemeStateDisabled];
+    [views[1] setEnabled:NO];
+    [views[1] layoutSubviews];
+
+    [self assert:color same:[views[1]._labelField textColor]];
+    [self assert:1.0 equals:[views[1]._labelField alphaValue]];
+}
+
+- (void)testAnItemInAHUDWindowTakesTheHUDLabelColor
+{
+    var views = [self toolbarViewAndItemView],
+        color = [CPColor greenColor];
+
+    [views[0] setValue:color forThemeAttribute:@"label-color" inState:CPThemeStateHUD];
+    [views[1] setThemeState:CPThemeStateHUD];
+    [views[1] layoutSubviews];
+
+    [self assert:color same:[views[1]._labelField textColor]];
+}
+
+- (void)testAHighlightedItemTakesTheHighlightedLabelShadow
+{
+    var views = [self toolbarViewAndItemView],
+        color = [CPColor redColor],
+        offset = CGSizeMake(0.0, 2.0);
+
+    [views[0] setValue:color forThemeAttribute:@"label-shadow-color" inState:CPThemeStateHighlighted];
+    [views[0] setValue:offset forThemeAttribute:@"label-shadow-offset" inState:CPThemeStateHighlighted];
+    /*
+        The test item has a custom view, which never takes the highlight: -mouseDown: passes the
+        click on. The label depends only on the highlighted theme state, so the test sets it.
+    */
+    [views[1] setThemeState:CPThemeStateHighlighted];
+    [views[1] layoutSubviews];
+
+    [self assert:color same:[views[1]._labelField textShadowColor]];
+    [self assertTrue:CGSizeEqualToSize(offset, [views[1]._labelField textShadowOffset])];
+}
+
+- (void)testALabelTakesTheLabelFontOfTheToolbarView
+{
+    var views = [self toolbarViewAndItemView],
+        font = [CPFont boldSystemFontOfSize:13.0];
+
+    [views[0] setValue:font forThemeAttribute:@"label-font"];
+    [views[1] updateFromItem];
+
+    [self assert:font same:[views[1]._labelField font]];
+}
+
 @end
