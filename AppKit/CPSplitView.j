@@ -671,6 +671,13 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
     if ([self _delegateRespondsToSplitViewResizeSubviewsWithOldSize])
     {
         [self _sendDelegateSplitViewResizeSubviewsWithOldSize:oldSize];
+
+        /*
+            The delegate sets the frames of the subviews only, as in AppKit. This method returned
+            here, so the divider views kept their old frames: only the split view's own path below
+            moved them.
+        */
+        [self _layoutDividersFromArrangedSubviews];
         return;
     }
 
@@ -831,6 +838,33 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 }
 
 // MARK: - Private layout utilities
+
+/*
+    Places each divider view after the subview before it, from that subview's frame. The divider
+    keeps its thickness and fills the split view in the other direction.
+*/
+- (void)_layoutDividersFromArrangedSubviews
+{
+    var myOtherSize = [self frame].size[_otherSizeComponent],
+        dividerColor = [self dividerColor];
+
+    for (var i = 0, count = MIN(_dividerSubviews.length, _arrangedSubviews.length - 1); i < count; i++)
+    {
+        var subviewFrame = [_arrangedSubviews[i] frame],
+            divider = _dividerSubviews[i],
+            frame = CGRectMakeZero();
+
+        frame.origin[_originComponent] = subviewFrame.origin[_originComponent] + subviewFrame.size[_sizeComponent];
+        frame.size[_sizeComponent] = [divider frameSize][_sizeComponent];
+        frame.size[_otherSizeComponent] = myOtherSize;
+
+        [divider setBackgroundColor:dividerColor];
+        [divider setFrame:frame];
+    }
+
+    [self updateTrackingAreas];
+}
+
 
 - (void)_distribute:(CPInteger)remainingSpace amoung:(CPInteger)count onFlexible:(BOOL)onFlexible fromIndex:(CPInteger)fromIndex toIndex:(CPInteger)toIndex
 {

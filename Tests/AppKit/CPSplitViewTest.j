@@ -137,6 +137,41 @@
     [self assert:25 equals:[viewA frameSize].height message:@"divider position restored"];
 }
 
+/*
+    A delegate that lays out the subviews sets only their frames. The split view places the
+    divider after the first subview.
+*/
+- (void)testTheDividerFollowsTheSubviewsThatTheDelegateLaysOut
+{
+    var thickness = [splitView dividerThickness];
+
+    [splitView setDelegate:[CPSplitViewLayoutDelegate new]];
+    [splitView setFrame:CGRectMake(0, 0, 200, 200)];
+
+    [self assertTrue:CGRectEqualToRect(CGRectMake(0, 0, 200, 70), [viewA frame]) message:@"the delegate places the first subview, at " + CPStringFromRect([viewA frame])];
+    [self assertTrue:CGRectEqualToRect(CGRectMake(0, 70, 200, thickness), [splitView rectOfDividerAtIndex:0]) message:@"the divider follows the first subview, at " + CPStringFromRect([splitView rectOfDividerAtIndex:0])];
+}
+
+@end
+
+/*
+    Lays out the subviews itself: the first subview is 70 points high, and the second one fills
+    the rest below the divider.
+*/
+@implementation CPSplitViewLayoutDelegate : CPObject
+{
+}
+
+- (void)splitView:(CPSplitView)aSplitView resizeSubviewsWithOldSize:(CGSize)oldSize
+{
+    var size = [aSplitView frameSize],
+        thickness = [aSplitView dividerThickness],
+        subviews = [aSplitView arrangedSubviews];
+
+    [subviews[0] setFrame:CGRectMake(0, 0, size.width, 70)];
+    [subviews[1] setFrame:CGRectMake(0, 70 + thickness, size.width, size.height - 70 - thickness)];
+}
+
 @end
 
 @implementation CPSplitViewDontResizeTopView : CPObject
