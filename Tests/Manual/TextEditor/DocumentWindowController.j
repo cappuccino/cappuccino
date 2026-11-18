@@ -26,6 +26,7 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
+@import "HelpViewController.j"
 @import "LoremIpsum.j"
 @import "TableExample.j"
 
@@ -56,6 +57,11 @@ function compareZoomLevels(aLevel, anotherLevel)
     File's Owner in DocumentWindow.xib, so this controller is the window's
     delegate. windowDidLoad assigns it again, so the delegate is set even if
     the connection is missing from the xib.
+
+    The controller is also the text view's delegate (CPTextViewDelegate),
+    but the protocol list names only CPWindowDelegate. The parser rejects a
+    comma in the protocol list of an implementation. A protocol list is a
+    declaration, so leaving one out changes no behaviour.
 */
 @implementation DocumentWindowController : CPWindowController <CPWindowDelegate>
 {
@@ -64,6 +70,11 @@ function compareZoomLevels(aLevel, anotherLevel)
         to the text view in DocumentWindow.xib.
     */
     @outlet CPTextView  textView;
+
+    /*
+        The help popover of this window. It is made on first use and kept.
+    */
+    CPPopover           _helpPopover;
 }
 
 - (id)init
@@ -93,6 +104,13 @@ function compareZoomLevels(aLevel, anotherLevel)
         in code.
     */
     [textView setRulerVisible:YES];
+
+    /*
+        Make this controller the text view's delegate, so that it can add a
+        Help item to the text view's context menu. See
+        textView:menu:forEvent:atIndex: below.
+    */
+    [textView setDelegate:self];
 }
 
 /*!
@@ -132,6 +150,97 @@ function compareZoomLevels(aLevel, anotherLevel)
 - (@action)insertTableExample:(id)aSender
 {
     [textView insertText:[TableExample attributedString]];
+}
+
+/*!
+    Shows the help popover.
+
+    Help > TextEdit by Cappuccino Help in MainMenu.xib sends showHelp: to
+    First Responder, with the key equivalent Command-?. The Help item of the
+    text view's context menu sends the same action. The responder chain
+    delivers it to the controller of the active document's window, as it
+    does Insert Lorem Ipsum.
+
+    In Cocoa, NSApplication also implements showHelp:, and opens the
+    application's help book. CPApplication does not yet implement it. So
+    when no document window is open, no responder handles the action, and
+    AppKit disables the menu item.
+
+    The popover points at the place the help is about. From the context
+    menu, that is the point that was clicked, which the menu item carries in
+    its represented object. From the Help menu or the keyboard, it is the
+    selection. See helpAnchorRect.
+
+    The popover sets no appearance of its own. It takes the default, so it
+    follows the appearance of the text view: under a theme with a dark set,
+    it is dark when the text view is dark. A transient popover closes when
+    the user clicks outside it or presses Escape.
+*/
+- (@action)showHelp:(id)aSender
+{
+    if (!_helpPopover)
+    {
+        _helpPopover = [[CPPopover alloc] init];
+
+        [_helpPopover setContentViewController:[[HelpViewController alloc] init]];
+        [_helpPopover setBehavior:CPPopoverBehaviorTransient];
+    }
+
+    var clickedPoint = [aSender isKindOfClass:[CPMenuItem class]] ? [aSender representedObject] : nil,
+        anchorRect = clickedPoint ? CGRectMake(clickedPoint.x, clickedPoint.y, 1.0, 1.0) : [self helpAnchorRect];
+
+    [_helpPopover showRelativeToRect:anchorRect ofView:textView preferredEdge:CPMaxYEdge];
+}
+
+/*!
+    Returns the rectangle, in the text view's coordinates, at which the help
+    popover points when it is shown from the Help menu or the keyboard.
+
+    This is the rectangle of the first character of the selection, or of the
+    character after the insertion point. At the end of the text, the layout
+    manager gives the last character instead, and in an empty document a
+    small rectangle at the start of the text. It gives the rectangle in the
+    coordinates of the text container, so it is moved by the container's
+    origin in the text view. When the selection is scrolled out of view, the
+    popover points at the top centre of the visible part of the text.
+*/
+- (CGRect)helpAnchorRect
+{
+    var visibleRect = [textView visibleRect],
+        selection = [textView selectedRange],
+        rect = [[textView layoutManager] boundingRectForGlyphRange:CPMakeRange(selection.location, 1) inTextContainer:[textView textContainer]],
+        origin = [textView textContainerOrigin];
+
+    rect = CGRectOffset(rect, origin.x, origin.y);
+
+    if (CGRectIsEmpty(rect) || !CGRectIntersectsRect(rect, visibleRect))
+        rect = CGRectMake(CGRectGetMidX(visibleRect), CGRectGetMinY(visibleRect), 1.0, 1.0);
+
+    return rect;
+}
+
+/*!
+    Adds a Help item to the text view's context menu.
+
+    This is a CPTextViewDelegate method. The text view calls it each time it
+    shows its context menu, with the menu it is about to show, and shows the
+    menu that this method returns. The text view makes a new menu each time,
+    so the item is added to a fresh menu and does not accumulate.
+
+    The item sends showHelp: to First Responder, like the Help menu item.
+    Its represented object is the point that was clicked, in the text view's
+    coordinates, so that showHelp: can point the popover at it.
+*/
+- (CPMenu)textView:(CPTextView)aTextView menu:(CPMenu)aMenu forEvent:(CPEvent)anEvent atIndex:(unsigned)anIndex
+{
+    var helpItem = [[CPMenuItem alloc] initWithTitle:@"Help" action:@selector(showHelp:) keyEquivalent:@""];
+
+    [helpItem setRepresentedObject:[aTextView convertPoint:[anEvent locationInWindow] fromView:nil]];
+
+    [aMenu addItem:[CPMenuItem separatorItem]];
+    [aMenu addItem:helpItem];
+
+    return aMenu;
 }
 
 /*!
