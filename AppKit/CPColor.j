@@ -86,8 +86,8 @@ var _CPColorSystemCatalogName = @"System";
 var _CPColorThemeCatalogName = @"Theme";
 
 /*
-    The colours of the System catalog, with each colour's value when the current theme gives
-    it none. These are the names that Interface Builder writes into a XIB and that AppKit
+    The colours of the System catalog, with each colour's built-in value for the Aqua
+    appearance, which applies when the current theme gives none (see _CPSystemColorBuiltInSets). These are the names that Interface Builder writes into a XIB and that AppKit
     resolves, including older names that it still resolves and one private name. Where
     Cappuccino already produced a value, the entry keeps it: the four colours that CPColor
     and Aristo2 already defined, and the three that nib2cib maps (controlColor,
@@ -163,10 +163,137 @@ var _CPSystemColorDefaults = {
         "windowFrameColor":                             [0.6667, 0.6667, 0.6667, 1.0],
         "windowFrameTextColor":                         [0.0, 0.0, 0.0, 0.8471]
     },
+    /*
+        The system colours whose DarkAqua value differs from their entry in
+        _CPSystemColorDefaults: AppKit's DarkAqua value on macOS 27.2.1, in sRGB. Two entries
+        are Cappuccino's own. textInsertionPointColor is white, the dark value of textColor,
+        because AppKit's black cannot show on the dark text background. selectedTextBackgroundColor
+        is a dark blue, because the Aqua entry is a blue and AppKit gives only a grey. Every other
+        name keeps its Aqua entry in DarkAqua. See _CPSystemColorBuiltInSets.
+    */
+    _CPSystemColorDarkAquaChanges = {
+        "_sourceListBackgroundColor":                   [0.1765, 0.1765, 0.1765, 0.9],
+        "alternateSelectedControlColor":                [0.0, 0.349, 0.8196, 1.0],
+        "alternatingContentBackgroundColor":            [1.0, 1.0, 1.0, 0.0471],
+        "controlBackgroundColor":                       [0.1176, 0.1176, 0.1176, 1.0],
+        "controlColor":                                 [1.0, 1.0, 1.0, 0.2471],
+        "controlHighlightColor":                        [1.0, 1.0, 1.0, 0.098],
+        "controlLightHighlightColor":                   [1.0, 1.0, 1.0, 0.098],
+        "controlTextColor":                             [1.0, 1.0, 1.0, 0.8471],
+        "disabledControlTextColor":                     [1.0, 1.0, 1.0, 0.2471],
+        "gridColor":                                    [0.102, 0.102, 0.102, 1.0],
+        "headerColor":                                  [1.0, 1.0, 1.0, 1.0],
+        "headerTextColor":                              [1.0, 1.0, 1.0, 1.0],
+        "highlightColor":                               [0.7059, 0.7059, 0.7059, 1.0],
+        "keyboardFocusIndicatorColor":                  [0.102, 0.6627, 1.0, 0.498],
+        "labelColor":                                   [1.0, 1.0, 1.0, 0.8471],
+        "linkColor":                                    [0.2549, 0.6118, 1.0, 1.0],
+        "placeholderTextColor":                         [1.0, 1.0, 1.0, 0.549],
+        "quaternaryLabelColor":                         [1.0, 1.0, 1.0, 0.098],
+        "quaternarySystemFillColor":                    [1.0, 1.0, 1.0, 0.0275],
+        "quinaryLabelColor":                            [1.0, 1.0, 1.0, 0.0471],
+        "quinarySystemFillColor":                       [1.0, 1.0, 1.0, 0.0078],
+        "secondaryLabelColor":                          [1.0, 1.0, 1.0, 0.549],
+        "secondarySelectedControlColor":                [0.2745, 0.2745, 0.2745, 1.0],
+        "secondarySystemFillColor":                     [1.0, 1.0, 1.0, 0.0784],
+        "selectedContentBackgroundColor":               [0.0, 0.349, 0.8196, 1.0],
+        "selectedControlColor":                         [0.2471, 0.2471, 0.2471, 1.0],
+        "selectedControlTextColor":                     [1.0, 1.0, 1.0, 0.8471],
+        "selectedTextBackgroundColor":                  [0.2471, 0.3882, 0.5451, 1.0],
+        "separatorColor":                               [1.0, 1.0, 1.0, 0.12],
+        "systemBlueColor":                              [0.0, 0.5686, 1.0, 1.0],
+        "systemBrownColor":                             [0.7176, 0.5412, 0.4, 1.0],
+        "systemCyanColor":                              [0.2353, 0.8275, 0.9961, 1.0],
+        "systemFillColor":                              [1.0, 1.0, 1.0, 0.098],
+        "systemGrayColor":                              [0.5961, 0.5961, 0.6157, 1.0],
+        "systemGreenColor":                             [0.1882, 0.8196, 0.3451, 1.0],
+        "systemIndigoColor":                            [0.4275, 0.4863, 1.0, 1.0],
+        "systemMintColor":                              [0.0, 0.8549, 0.7647, 1.0],
+        "systemOrangeColor":                            [1.0, 0.5725, 0.1882, 1.0],
+        "systemPinkColor":                              [1.0, 0.2157, 0.3725, 1.0],
+        "systemPurpleColor":                            [0.8588, 0.2039, 0.949, 1.0],
+        "systemRedColor":                               [1.0, 0.2588, 0.2706, 1.0],
+        "systemTealColor":                              [0.0, 0.8235, 0.8784, 1.0],
+        "systemYellowColor":                            [1.0, 0.8392, 0.0, 1.0],
+        "tertiaryLabelColor":                           [1.0, 1.0, 1.0, 0.2471],
+        "tertiarySystemFillColor":                      [1.0, 1.0, 1.0, 0.0471],
+        "textBackgroundColor":                          [0.1176, 0.1176, 0.1176, 1.0],
+        "textColor":                                    [1.0, 1.0, 1.0, 1.0],
+        "textInsertionPointColor":                      [1.0, 1.0, 1.0, 1.0],
+        "underPageBackgroundColor":                     [0.1569, 0.1569, 0.1569, 1.0],
+        "unemphasizedSelectedContentBackgroundColor":   [0.2745, 0.2745, 0.2745, 1.0],
+        "unemphasizedSelectedTextBackgroundColor":      [0.2745, 0.2745, 0.2745, 1.0],
+        "unemphasizedSelectedTextColor":                [1.0, 1.0, 1.0, 1.0],
+        "windowBackgroundColor":                        [0.1176, 0.1176, 0.1176, 1.0],
+        "windowFrameTextColor":                         [1.0, 1.0, 1.0, 0.8471]
+    },
     _CPSystemColors = {},
-    _CPSystemColorDefaultValues = {},
+    _CPSystemColorBuiltInColors = {},
     _CPThemeColors = {},
     _CPThemeColorMissingNames = {};
+
+/*
+    Returns a set of built-in values that holds every name of _CPSystemColorDefaults: the entry
+    in someChanges where it has one, else the Aqua entry.
+*/
+function _CPSystemColorSetWithChanges(someChanges)
+{
+    var values = {};
+
+    for (var colorName in _CPSystemColorDefaults)
+        values[colorName] = someChanges.hasOwnProperty(colorName) ? someChanges[colorName] : _CPSystemColorDefaults[colorName];
+
+    return values;
+}
+
+/*
+    The built-in values of the system colours, one set for each appearance that the system can
+    select, found by the appearance's name. The Aqua set is _CPSystemColorDefaults, and the
+    DarkAqua set is complete too. A high-contrast set holds a name only when its value differs
+    from the set of normal contrast; both are empty, because no source gives such values yet.
+    There is no vibrant set: a vibrant appearance takes the set of the plain appearance of its
+    lightness, through the order of _CPAppearanceMatchingNames().
+*/
+var _CPSystemColorBuiltInSets = {};
+
+_CPSystemColorBuiltInSets[CPAppearanceNameAqua] = _CPSystemColorDefaults;
+_CPSystemColorBuiltInSets[CPAppearanceNameDarkAqua] = _CPSystemColorSetWithChanges(_CPSystemColorDarkAquaChanges);
+_CPSystemColorBuiltInSets[CPAppearanceNameAccessibilityHighContrastAqua] = {};
+_CPSystemColorBuiltInSets[CPAppearanceNameAccessibilityHighContrastDarkAqua] = {};
+
+/*
+    Returns the built-in value of the system colour aName for anAppearance. The lookup takes
+    the supported form of anAppearance under the default theme (see _CPAppearanceSupportedName),
+    so a theme without dark controls gets no dark values around its light ones. It then takes
+    the first set, in the order of _CPAppearanceMatchingNames(), that holds aName, and the Aqua
+    set when none does. The values are made once for each set and kept.
+*/
+function _CPSystemColorBuiltInValue(aName, anAppearance)
+{
+    var appearanceName = anAppearance ? _CPAppearanceSupportedName([anAppearance name]) : CPAppearanceNameAqua,
+        matchingNames = _CPAppearanceMatchingNames(appearanceName).concat([CPAppearanceNameAqua]);
+
+    for (var i = 0, count = matchingNames.length; i < count; i++)
+    {
+        var setName = matchingNames[i],
+            values = _CPSystemColorBuiltInSets[setName];
+
+        if (!values || !values.hasOwnProperty(aName))
+            continue;
+
+        var colors = _CPSystemColorBuiltInColors[setName];
+
+        if (!colors)
+            colors = _CPSystemColorBuiltInColors[setName] = {};
+
+        if (!colors.hasOwnProperty(aName))
+            colors[aName] = [[CPColor alloc] _initWithRGBA:values[aName].slice()];
+
+        return colors[aName];
+    }
+
+    return nil;
+}
 
 /*
     Returns the theme attribute of CPColor that holds a theme's values for the system colour
@@ -183,9 +310,14 @@ function _CPThemeAttributeForSystemColorName(aName)
 }
 
 /*
-    Returns the value of the system colour aName for anAppearance: the current theme's value for
-    anAppearance (see _CPThemeAttributeValueForAppearance), then the value in
-    _CPSystemColorDefaults.
+    Returns the value of the system colour aName for anAppearance, in two steps. First the
+    current theme's value: the value for the closest appearance, then the value without a state
+    (see _CPThemeAttributeValueForAppearance). A value without a state is a value for every
+    appearance, as everywhere in CPTheme, so it comes before the built-in value. Then the
+    built-in value (see _CPSystemColorBuiltInValue).
+
+    The built-in values had only the Aqua set, so every theme that gave no dark value of its own
+    drew a system colour, labelColor for example, in its Aqua value in a dark view.
 */
 function _CPSystemColorValue(aName, anAppearance)
 {
@@ -195,12 +327,7 @@ function _CPSystemColorValue(aName, anAppearance)
     if (themeValue)
         return themeValue;
 
-    var defaultValue = _CPSystemColorDefaultValues[aName];
-
-    if (!defaultValue)
-        defaultValue = _CPSystemColorDefaultValues[aName] = [[CPColor alloc] _initWithRGBA:_CPSystemColorDefaults[aName].slice()];
-
-    return defaultValue;
+    return _CPSystemColorBuiltInValue(aName, anAppearance);
 }
 
 /*
