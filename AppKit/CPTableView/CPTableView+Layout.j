@@ -566,9 +566,8 @@
 
     [self setFrameSize:CGSizeMake(width, height)];
 
-    [self _updateSelectedColumnBackgrounds];
-
     [self setNeedsLayout];
+    [self _markDrawingPassForDisplay];
 }
 
 

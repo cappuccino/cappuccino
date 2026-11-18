@@ -107,6 +107,14 @@
         [self _configureRowView:newRowView forRow:aRow];
 }
 
+/*
+    Blinks the feedback for a drop on the row of the current drop target.
+*/
+- (void)_blinkDropTargetRowView
+{
+    [_visibleRowViews[_dropTargetRow] _blinkDraggingDestinationFeedback];
+}
+
 /*!
     @ignore
 */
@@ -335,24 +343,25 @@
 
 @end
 
+/*
+    Draws the marker for a drop between rows, and the frame for a drop on the whole table
+    view. The row view of the row draws the feedback for a drop on a row.
+*/
 @implementation _CPDropOperationDrawingView : CPView
 {
     unsigned    dropOperation @accessors;
     CPTableView tableView @accessors;
     int         currentRow @accessors;
-    BOOL        isBlinking @accessors;
 }
 
 - (void)drawRect:(CGRect)aRect
 {
-    if (tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone || isBlinking)
+    if (tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone)
         return;
 
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        borderRadius,
         borderColor,
-        borderWidth,
-        backgroundColor;
+        borderWidth;
 
     if (currentRow === -1)
     {
@@ -364,34 +373,6 @@
         CGContextStrokeRect(context, [self bounds]);
     }
 
-    else if (dropOperation === CPTableViewDropOn)
-    {
-        //if row is selected don't fill and stroke white
-        var selectedRows = [tableView selectedRowIndexes],
-            newRect = CGRectMake(aRect.origin.x + 2, aRect.origin.y + 2, aRect.size.width - 4, aRect.size.height - 5);
-
-        if ([selectedRows containsIndex:currentRow])
-        {
-            borderRadius = [tableView valueForThemeAttribute:@"dropview-on-selected-border-radius"];
-            borderColor = [tableView valueForThemeAttribute:@"dropview-on-selected-border-color"];
-            borderWidth = [tableView valueForThemeAttribute:@"dropview-on-selected-border-width"];
-            backgroundColor = [tableView valueForThemeAttribute:@"dropview-on-selected-background-color"];
-        }
-        else
-        {
-            borderRadius = [tableView valueForThemeAttribute:@"dropview-on-border-radius"];
-            borderColor = [tableView valueForThemeAttribute:@"dropview-on-border-color"];
-            borderWidth = [tableView valueForThemeAttribute:@"dropview-on-border-width"];
-            backgroundColor = [tableView valueForThemeAttribute:@"dropview-on-background-color"];
-        }
-
-        CGContextSetStrokeColor(context, borderColor);
-        CGContextSetLineWidth(context, borderWidth);
-        CGContextSetFillColor(context, backgroundColor);
-        CGContextFillRoundedRectangleInRect(context, newRect, borderRadius, YES, YES, YES, YES);
-        CGContextStrokeRoundedRectangleInRect(context, newRect, borderRadius, YES, YES, YES, YES);
-
-    }
     else if (dropOperation === CPTableViewDropAbove)
     {
         //reposition the view up a tad
@@ -419,31 +400,6 @@
         CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
         CGContextStrokePath(context);
     }
-}
-
-- (void)blink
-{
-    if (dropOperation !== CPTableViewDropOn)
-        return;
-
-    isBlinking = YES;
-
-    var showCallback = function()
-    {
-        [self setHidden: NO];
-        isBlinking = NO;
-    };
-
-    var hideCallback = function()
-    {
-        [self setHidden: YES];
-        isBlinking = YES;
-    };
-
-    [self setHidden: YES];
-    [CPTimer scheduledTimerWithTimeInterval:0.1 callback:showCallback repeats:NO];
-    [CPTimer scheduledTimerWithTimeInterval:0.19 callback:hideCallback repeats:NO];
-    [CPTimer scheduledTimerWithTimeInterval:0.27 callback:showCallback repeats:NO];
 }
 
 @end

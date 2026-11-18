@@ -2142,6 +2142,12 @@ function ButtonBarImageAction()
             [@"alternating-row-colors",                 alternatingRowColors],
             [@"grid-color",                             gridColor],
             [@"highlighted-grid-color",                 [CPColor whiteColor]],
+            /*
+                The table view drew group rows with a fixed grey gradient from 220 to 199 in its
+                code. The group row colour is now theme data; this is the middle of that
+                gradient.
+            */
+            [@"group-row-background-color",             [CPColor colorWithCalibratedWhite:210.0 / 255.0 alpha:1.0]],
             [@"selection-color",                        selectionColor],
             [@"sourcelist-selection-color",             sourceListSelectionColor],
             [@"sort-image",                             sortImage],

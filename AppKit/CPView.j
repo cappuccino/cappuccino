@@ -361,6 +361,18 @@ function _CPViewResolvedColorsAreSame(aColor, anotherColor)
              };
 }
 
+/*
+    Returns YES when the instances of the receiver draw in drawRect:, so that they take display
+    marks. By default a class draws when it or a superclass below CPView implements drawRect:
+    or viewWillDraw. A class whose drawRect: draws only for some of its subclasses overrides
+    this method.
+*/
++ (BOOL)_hasCustomDrawRect
+{
+    return [self instanceMethodForSelector:@selector(drawRect:)] !== [CPView instanceMethodForSelector:@selector(drawRect:)]
+        || [self instanceMethodForSelector:@selector(viewWillDraw)] !== [CPView instanceMethodForSelector:@selector(viewWillDraw)];
+}
+
 - (void)_setupViewFlags
 {
     var theClass = [self class],
@@ -370,8 +382,7 @@ function _CPViewResolvedColorsAreSame(aColor, anotherColor)
     {
         var flags = 0;
 
-        if ([theClass instanceMethodForSelector:@selector(drawRect:)] !== [CPView instanceMethodForSelector:@selector(drawRect:)]
-            || [theClass instanceMethodForSelector:@selector(viewWillDraw)] !== [CPView instanceMethodForSelector:@selector(viewWillDraw)])
+        if ([theClass _hasCustomDrawRect])
             flags |= CPViewHasCustomDrawRect;
 
         if ([theClass instanceMethodForSelector:@selector(viewWillLayout)] !== [CPView instanceMethodForSelector:@selector(viewWillLayout)])

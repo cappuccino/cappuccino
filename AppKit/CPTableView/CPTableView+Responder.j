@@ -205,6 +205,9 @@
     else
         [self _notifyViewDidBecomeFirstResponder];
 
+    // The start and the end of editing change the focus of the table view.
+    [self setNeedsDisplay:YES];
+
     // This is for cell-based tables only. In view-based mode, we do not change the textfield apprearence during an edit.
     if (!_isViewBased && _editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && [responder isEditable] && [responder superview] == self)
     {
@@ -242,30 +245,19 @@
     [self _resignFirstResponderWithoutSendingAction:textField];
 }
 
+/*
+    The row views and the column selection follow the focus through the signal of
+    -setNeedsDisplay:, which a change of key window, first responder or editing sends. These
+    methods update the data views.
+*/
 - (void)_notifyViewDidBecomeFirstResponder
 {
-    // Ensure the row highlights turn "blue" (active)
-    [self _updateAllVisibleRowViews];
-    // Ensure the text turns white
     [self _updateDataViewsFocusState];
-
-    // for symmetry with _notifyViewDidResignFirstResponder
-    setTimeout(function() {
-        [self _updateSelectedColumnBackgrounds];
-    }, 0);
 }
 
 - (void)_notifyViewDidResignFirstResponder
 {
-    // Ensure the row highlights turn "gray" (inactive)
-    [self _updateAllVisibleRowViews];
-    // Ensure the text turns black
     [self _updateDataViewsFocusState];
-
-    // needed because _isFocussed still returns true in this iteration of the run loop
-    setTimeout(function() {
-        [self _updateSelectedColumnBackgrounds];
-    }, 0);
 }
 
 @end

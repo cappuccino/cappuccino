@@ -1941,7 +1941,7 @@ function SHOULD_SELECT_ITEM(anOutlineView, anItem)
         {
             if (_dropItem)
             {
-                [_dropOperationFeedbackView blink];
+                [self _blinkDropTargetRowView];
                 [CPTimer scheduledTimerWithTimeInterval:.3 callback:[self expandItem:_dropItem] repeats:NO];
             }
         };

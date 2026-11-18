@@ -925,7 +925,15 @@ var CPTableHeaderViewResizeZone = 3.0,
     [_tableView _loadDataViewsInRows:rowsIndexes columns:columnsIndexes];
     [_tableView _layoutViewsForRowIndexes:rowsIndexes columnIndexes:columnsIndexes];
     [_tableView _updateDataViewsFocusState];
-    [_tableView._tableDrawView displayRect:columnVisRect];
+
+    /*
+        The header view displayed the table view's canvas through an instance variable that
+        the table view no longer has, so nothing drew again after a column drag. The table
+        view marks the canvas of its drawing pass, when it has one, and lays out its column
+        selection and grid lines again.
+    */
+    [_tableView _markDrawingPassForDisplay];
+    [_tableView setNeedsLayout];
 
     [[CPCursor arrowCursor] set]; // FIXME: retirer ?
     [self updateTrackingAreas];

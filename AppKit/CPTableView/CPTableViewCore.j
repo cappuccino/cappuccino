@@ -117,6 +117,16 @@ CPTableViewGridNone                     = 0;
 CPTableViewSolidVerticalGridLineMask    = 1 << 0;
 CPTableViewSolidHorizontalGridLineMask  = 1 << 1;
 
+/*
+    The layers of the drawing pass, back to front. A table view subclass that overrides the
+    method of a layer draws that layer and each layer in front of it on a canvas; the row
+    views and the table view's own views stop drawing those layers. Private.
+*/
+_CPTableViewDrawingLayerBackground  = 1 << 0;
+_CPTableViewDrawingLayerSelection   = 1 << 1;
+_CPTableViewDrawingLayerGrid        = 1 << 2;
+_CPTableViewDrawingLayerRows        = 1 << 3;
+
 CPTableViewNoColumnAutoresizing = 0;
 CPTableViewUniformColumnAutoresizingStyle = 1; // FIX ME: This is FUBAR
 CPTableViewSequentialColumnAutoresizingStyle = 2;
@@ -242,6 +252,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL                        _usesDefaultBackgroundColor;
 
     unsigned                    _selectionHighlightStyle;
+    BOOL                        _rowViewsNeedConfiguration;
     CPColor                     _unfocusedSelectionHighlightColor;
     CPDictionary                _unfocusedSourceListSelectionColor;
     CPTableColumn               _currentHighlightedTableColumn;
@@ -293,7 +304,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     BOOL                        _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL                        _lastColumnShouldSnap;
-    BOOL                        _implementsCustomDrawRow;
     BOOL                        _isViewBased;
     BOOL                        _contentBindingExplicitlySet;
 
@@ -303,7 +313,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL                        _draggedColumnIsSelected;
     BOOL                        _needsDifferedTableColumnRemove;
     CPArray                     _differedColumnDataToRemove;
-    CPArray                     _selectedColumnBackgroundViews;
 
     Function                    _BlockDeselectView;
     Function                    _BlockSelectView;
@@ -463,7 +472,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
     _differedColumnDataToRemove = [];
     _needsDifferedTableColumnRemove = NO;
-    _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
 
     if (!_sortDescriptors)
         _sortDescriptors = [];
@@ -525,8 +533,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)_initSubclass
 {
-    _selectedColumnBackgroundViews = [];
-
     _BlockDeselectView = function(view, row, column)
     {
         [view unsetThemeState:CPThemeStateSelectedDataView];
@@ -708,8 +714,6 @@ NOT YET IMPLEMENTED
 {
     [self _setupReload];
     [self setNeedsLayout];
-    // No more manual draw rect
-    // [self setNeedsDisplay:YES];
 }
 
 // Reloads the views AND the data
@@ -894,6 +898,7 @@ NOT YET IMPLEMENTED
     _rowHeight = MAX(0.0, aRowHeight);
 
     [self setNeedsLayout];
+    [self _markDrawingPassForDisplay];
 }
 
 /*!
@@ -911,8 +916,13 @@ NOT YET IMPLEMENTED
 */
 - (void)setUsesAlternatingRowBackgroundColors:(BOOL)shouldUseAlternatingRowBackgroundColors
 {
+    shouldUseAlternatingRowBackgroundColors = !!shouldUseAlternatingRowBackgroundColors;
+
+    if (_usesAlternatingRowBackgroundColors === shouldUseAlternatingRowBackgroundColors)
+        return;
+
     _usesAlternatingRowBackgroundColors = shouldUseAlternatingRowBackgroundColors;
-    [self _updateAllVisibleRowViews];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -931,7 +941,6 @@ NOT YET IMPLEMENTED
 - (void)setAlternatingRowBackgroundColors:(CPArray)alternatingRowBackgroundColors
 {
     [self setValue:alternatingRowBackgroundColors forThemeAttribute:@"alternating-row-colors"];
-    [self _updateAllVisibleRowViews];
 }
 
 /*!
@@ -990,7 +999,7 @@ NOT YET IMPLEMENTED
 
     [self _updateHighlightWithOldRows:[CPIndexSet indexSet] newRows:_selectedRowIndexes];
     [self _updateHighlightWithOldColumns:[CPIndexSet indexSet] newColumns:_selectedColumnIndexes];
-    [self _updateAllVisibleRowViews];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -1004,7 +1013,6 @@ NOT YET IMPLEMENTED
         return;
 
     [self setValue:aColor forThemeAttribute:@"selection-color"];
-    [self _updateAllVisibleRowViews];
 }
 
 /*!
@@ -1127,7 +1135,6 @@ NOT YET IMPLEMENTED
 - (void)setGridColor:(CPColor)aColor
 {
     [self setValue:aColor forThemeAttribute:@"grid-color"];
-    [self _updateAllVisibleRowViews];
 }
 
 /*!
@@ -1149,7 +1156,7 @@ NOT YET IMPLEMENTED
         return;
 
     _gridStyleMask = aGrideStyleMask;
-    [self _updateAllVisibleRowViews];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -2071,6 +2078,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [self _updateDefaultBackgroundColor];
     [self load];
+    [self _configureRowViewsAfterLookChangeIfNeeded];
+    [self _layoutTableDecorationViews];
 }
 
 /*!
@@ -2098,8 +2107,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     _exposedRect = nil;
 
-    // No need to setNeedsDisplay for canvas
-    // [self setNeedsDisplay:YES];
+    /*
+        A scroll changes no look. The layout attaches row views to the rows that enter and
+        marks the canvas of the drawing pass, when there is one.
+    */
     [self setNeedsLayout];
 }
 

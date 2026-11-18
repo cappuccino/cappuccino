@@ -66,7 +66,6 @@
         _selectedColumnIndexes = [columns copy];
 
     [self _updateHighlightWithOldColumns:previousSelectedIndexes newColumns:_selectedColumnIndexes];
-    [self _updateSelectedColumnBackgrounds];
 
     if (_headerView)
         [_headerView setNeedsDisplay:YES];
@@ -113,8 +112,6 @@
     {
         [self _updateHighlightWithOldColumns:_selectedColumnIndexes newColumns:[CPIndexSet indexSet]];
         _selectedColumnIndexes = [CPIndexSet indexSet];
-
-        [self _updateSelectedColumnBackgrounds];
 
         if (_headerView)
             [_headerView setNeedsDisplay:YES];
@@ -175,6 +172,7 @@
         [self _enumerateViewsInRows:newRows columns:_exposedColumns usingBlock:_BlockSelectView];
 
     [self _configureRowViewsForSelectionChangeFromRows:oldRows toRows:newRows];
+    [self _markDrawingPassForDisplay];
 }
 
 /*!
@@ -202,6 +200,10 @@
              [headerView setThemeState:CPThemeStateSelected];
         }];
     }
+
+    // The layout places the column selection views.
+    [self setNeedsLayout];
+    [self _markDrawingPassForDisplay];
 }
 
 /*!

@@ -44,6 +44,21 @@
 */
 - (void)load
 {
+    /*
+        The canvas of the drawing pass draws again when the rows, the columns or the exposed
+        rect change. A load that changes none of them does not mark it.
+    */
+    var drawingPassView = [self _drawingPassView],
+        previousDrawingPassFrame = drawingPassView ? CGRectMakeCopy([drawingPassView frame]) : nil,
+        drawingPassNeedsDisplay = _reloadAllRows;
+
+    [self _layoutTableDrawingViews];
+
+    drawingPassView = [self _drawingPassView];
+
+    if (drawingPassView && (!previousDrawingPassFrame || !CGRectEqualToRect(previousDrawingPassFrame, [drawingPassView frame])))
+        drawingPassNeedsDisplay = YES;
+
     if (_reloadAllRows)
     {
         [self _removeAllRowViews];
@@ -92,10 +107,11 @@
 
     [self _announceRowViewsInRows:addedRowViewRows];
 
-    // Remove old draw view call
-    // [_tableDrawView setFrame:exposedRect];
+    if ([newlyExposedRows count] || [obscuredRows count] || [newlyExposedColumns count] || [obscuredColumns count])
+        drawingPassNeedsDisplay = YES;
 
-    // [self setNeedsDisplay:YES]; // Not needed for structure changes
+    if (drawingPassNeedsDisplay)
+        [drawingPassView setNeedsDisplay:YES];
 
     // if we have any columns to remove do that here
 
@@ -415,18 +431,20 @@
 }
 
 /*
-    Sets every property of aRowView from the state of the table view for aRow. A row view
-    only shows this state.
+    Returns the state that the table view gives the row view of aRow, in the form of
+    -[CPTableRowView _rowState]. The default background is the group row colour for a group
+    row outside the source-list style, else the alternating colour of the row when the table
+    view uses alternating colours, else none.
 */
-- (void)_configureRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRow
+- (Object)_tableRowStateForRow:(CPInteger)aRow
 {
     var isFillerRow = aRow >= [self numberOfRows],
         isGroupRow = !isFillerRow && [self _sendDelegateIsGroupRow:aRow],
         defaultColor = nil;
 
-    if (isGroupRow)
-        defaultColor = [self valueForThemeAttribute:@"group-row-background-color"];
-    else if (_usesAlternatingRowBackgroundColors)
+    if (isGroupRow && _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleSourceList)
+        defaultColor = [self currentValueForThemeAttribute:@"group-row-background-color"];
+    else if (!isGroupRow && _usesAlternatingRowBackgroundColors)
     {
         var colors = [self alternatingRowBackgroundColors],
             count = [colors count];
@@ -435,17 +453,40 @@
             defaultColor = colors[aRow % count];
     }
 
+    return {
+        selected: !isFillerRow && [self isRowSelected:aRow],
+        emphasized: [self _isFocused],
+        groupRowStyle: isGroupRow,
+        selectionHighlightStyle: _selectionHighlightStyle,
+        previousRowSelected: aRow > 0 && [self isRowSelected:aRow - 1],
+        nextRowSelected: [self isRowSelected:aRow + 1],
+        targetForDropOperation: aRow === _dropTargetRow,
+        draggingDestinationFeedbackStyle: _destinationDragStyle,
+        indentationForDropOperation: isFillerRow ? 0.0 : [self _indentationForDropOperationOnRow:aRow],
+        backgroundColor: nil,
+        defaultBackgroundColor: defaultColor
+    };
+}
+
+/*
+    Sets every property of aRowView from the state of the table view for aRow. A row view
+    only shows this state.
+*/
+- (void)_configureRowView:(CPTableRowView)aRowView forRow:(CPInteger)aRow
+{
+    var state = [self _tableRowStateForRow:aRow];
+
     [aRowView _setTableView:self];
-    [aRowView _setDefaultBackgroundColor:defaultColor];
-    [aRowView setSelected:!isFillerRow && [self isRowSelected:aRow]];
-    [aRowView setEmphasized:[self _isFocused]];
-    [aRowView setGroupRowStyle:isGroupRow];
-    [aRowView setSelectionHighlightStyle:_selectionHighlightStyle];
-    [aRowView setPreviousRowSelected:aRow > 0 && [self isRowSelected:aRow - 1]];
-    [aRowView setNextRowSelected:[self isRowSelected:aRow + 1]];
-    [aRowView setDraggingDestinationFeedbackStyle:_destinationDragStyle];
-    [aRowView setTargetForDropOperation:aRow === _dropTargetRow];
-    [aRowView setIndentationForDropOperation:isFillerRow ? 0.0 : [self _indentationForDropOperationOnRow:aRow]];
+    [aRowView _setDefaultBackgroundColor:state.defaultBackgroundColor];
+    [aRowView setSelected:state.selected];
+    [aRowView setEmphasized:state.emphasized];
+    [aRowView setGroupRowStyle:state.groupRowStyle];
+    [aRowView setSelectionHighlightStyle:state.selectionHighlightStyle];
+    [aRowView setPreviousRowSelected:state.previousRowSelected];
+    [aRowView setNextRowSelected:state.nextRowSelected];
+    [aRowView setDraggingDestinationFeedbackStyle:state.draggingDestinationFeedbackStyle];
+    [aRowView setTargetForDropOperation:state.targetForDropOperation];
+    [aRowView setIndentationForDropOperation:state.indentationForDropOperation];
 }
 
 /*
@@ -468,24 +509,6 @@
 
         if (isChanged(row - 1) || isChanged(row) || isChanged(row + 1))
             [self _configureRowView:_visibleRowViews[key] forRow:row];
-    }
-}
-
-/*
-    Configures every visible row view and marks it for layout. A change of the grid or of a
-    table view colour changes no property of a row view, but changes its look.
-*/
-- (void)_updateAllVisibleRowViews
-{
-    for (var key in _visibleRowViews)
-    {
-        if (!_visibleRowViews.hasOwnProperty(key))
-            continue;
-
-        var rowView = _visibleRowViews[key];
-
-        [self _configureRowView:rowView forRow:+key];
-        [rowView setNeedsLayout];
     }
 }
 
@@ -656,8 +679,6 @@
             [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
             [dataView unsetThemeState:CPThemeStateGroupRow];
         }
-
-        [self setNeedsDisplay:YES];
     }
 
     if (!_isViewBased)

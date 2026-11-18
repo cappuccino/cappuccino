@@ -205,6 +205,10 @@
 
     var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
     [self _layoutViewsForRowIndexes:rowIndexes columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
+
+    // The layout places the vertical grid lines and the column selection again.
+    [self setNeedsLayout];
+    [self _markDrawingPassForDisplay];
 }
 
 /*!
