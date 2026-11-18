@@ -206,6 +206,16 @@ var Aristo3ThemeColorsTestObjectDescriptions = ["Catalog color", "Asset color", 
 }
 
 /*
+    Aristo3 has a dark set, so it supports Aqua and DarkAqua, and a dark system makes it dark.
+*/
+- (void)testAristo3SupportsAquaAndDarkAqua
+{
+    [CPTheme setDefaultTheme:[self aristo3]];
+
+    [self assert:[CPAppearanceNameAqua, CPAppearanceNameDarkAqua] equals:_CPAppearanceSupportedNames()];
+}
+
+/*
     Each System colour in Aristo3's dark set takes AppKit's DarkAqua value in DarkAqua and
     keeps AppKit's Aqua value in Aqua.
 */

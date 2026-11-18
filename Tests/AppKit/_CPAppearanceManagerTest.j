@@ -22,6 +22,8 @@
 
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPAppearance.j>
+@import <AppKit/CPColor.j>
+@import <AppKit/CPTheme.j>
 
 var _CPAppearanceManagerTestDark = "(prefers-color-scheme: dark)",
     _CPAppearanceManagerTestHighContrast = "(prefers-contrast: more)",
@@ -79,16 +81,38 @@ function _CPAppearanceManagerTestMedia(someMatchingQueries)
 }
 
 @implementation _CPAppearanceManagerTest : OJTestCase
+{
+    CPTheme     _previousTheme;
+}
 
 - (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
+
+    _previousTheme = [CPTheme defaultTheme];
+    [CPTheme setDefaultTheme:[self themeSupportingBothLightnesses]];
+}
+
+/*
+    The system appearance is the supported form of the traits under the default theme. These
+    tests read the traits, so they run under a theme that supports both lightnesses.
+*/
+- (CPTheme)themeSupportingBothLightnesses
+{
+    var theme = [[CPTheme alloc] initWithName:@"_CPAppearanceManagerTestBothLightnesses"],
+        template = [CPColor colorWithWhite:0.0 alpha:1.0];
+
+    [template setValue:[CPAppearanceNameAqua, CPAppearanceNameDarkAqua] forThemeAttribute:@"supported-appearances"];
+    [theme takeThemeFromObject:template];
+
+    return theme;
 }
 
 - (void)tearDown
 {
     [[_CPAppearanceManager sharedManager] _setMatchMediaFunction:nil];
+    [CPTheme setDefaultTheme:_previousTheme];
 }
 
 - (CPString)systemAppearanceNameForQueries:(CPArray)someMatchingQueries

@@ -22,6 +22,8 @@
 
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPAppearance.j>
+@import <AppKit/CPColor.j>
+@import <AppKit/CPTheme.j>
 @import <AppKit/CPView.j>
 @import <AppKit/CPWindow.j>
 
@@ -73,6 +75,7 @@ function CPApplicationAppearanceTestDarkMedia(isDark)
 @implementation CPApplicationAppearanceTest : OJTestCase
 {
     CPArray     observedValues;
+    CPTheme     _previousTheme;
 }
 
 - (void)setUp
@@ -81,12 +84,31 @@ function CPApplicationAppearanceTestDarkMedia(isDark)
     [[CPApplication alloc] init];
 
     observedValues = [];
+
+    _previousTheme = [CPTheme defaultTheme];
+    [CPTheme setDefaultTheme:[self themeSupportingBothLightnesses]];
+}
+
+/*
+    The system appearance is the supported form of the traits under the default theme. These
+    tests read the traits, so they run under a theme that supports both lightnesses.
+*/
+- (CPTheme)themeSupportingBothLightnesses
+{
+    var theme = [[CPTheme alloc] initWithName:@"CPApplicationAppearanceTestBothLightnesses"],
+        template = [CPColor colorWithWhite:0.0 alpha:1.0];
+
+    [template setValue:[CPAppearanceNameAqua, CPAppearanceNameDarkAqua] forThemeAttribute:@"supported-appearances"];
+    [theme takeThemeFromObject:template];
+
+    return theme;
 }
 
 - (void)tearDown
 {
     [[_CPAppearanceManager sharedManager] _setMatchMediaFunction:nil];
     [CPApp setAppearance:nil];
+    [CPTheme setDefaultTheme:_previousTheme];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)aChange context:(id)aContext

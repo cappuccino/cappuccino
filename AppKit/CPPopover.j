@@ -145,14 +145,35 @@ function _CPPopoverValueIsAppearance(aValue)
 
 /*!
     Returns the appearance that the popover gives its window: the CPAppearance set; else
-    VibrantDark for CPPopoverAppearanceHUD; else VibrantLight.
+    VibrantDark for CPPopoverAppearanceHUD; else, for the default, VibrantDark when the default
+    theme supports VibrantDark and the popover is shown from a view with a dark effective
+    appearance; else VibrantLight. Before the popover is shown, the default is VibrantLight.
 */
 - (CPAppearance)effectiveAppearance
 {
     if (_CPPopoverValueIsAppearance(_appearance))
         return _appearance;
 
-    return [CPAppearance appearanceNamed:_appearance == CPPopoverAppearanceHUD ? CPAppearanceNameVibrantDark : CPAppearanceNameVibrantLight];
+    if (_appearance == CPPopoverAppearanceHUD || [self _defaultFollowsADarkPositioningView])
+        return [CPAppearance appearanceNamed:CPAppearanceNameVibrantDark];
+
+    return [CPAppearance appearanceNamed:CPAppearanceNameVibrantLight];
+}
+
+/*
+    Returns YES when the default popover takes the dark form: the default theme supports
+    VibrantDark (see _CPAppearanceIsSupported), and the effective appearance of the
+    positioning view is dark. A theme without dark support gets no dark popover that the
+    application did not ask for.
+*/
+- (BOOL)_defaultFollowsADarkPositioningView
+{
+    if (!_positioningView || !_CPAppearanceIsSupported(CPAppearanceNameVibrantDark))
+        return NO;
+
+    var positioningAppearance = [_positioningView effectiveAppearance];
+
+    return [positioningAppearance bestMatchFromAppearancesWithNames:[CPAppearanceNameAqua, CPAppearanceNameDarkAqua]] === CPAppearanceNameDarkAqua;
 }
 
 + (CPSet)keyPathsForValuesAffectingEffectiveAppearance

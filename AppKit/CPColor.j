@@ -278,7 +278,8 @@ function _CPThemeColorValue(aName, anAppearance)
     Besides its own attributes, CPColor has one attribute for each system colour, which holds
     the theme's values for that colour (see _CPSystemColorValue), and the attribute
     "theme-colors", which holds the values of the theme's own colours (see
-    _CPThemeColorValue).
+    _CPThemeColorValue). The attribute "supported-appearances" holds the names of the
+    appearances that the theme supports (see _CPAppearanceSupportedNames).
 */
 + (CPDictionary)themeAttributes
 {
@@ -288,6 +289,7 @@ function _CPThemeColorValue(aName, anAppearance)
             @"selected-text-background-color":          [CPNull null],
             @"selected-text-inactive-background-color": [CPNull null],
             @"css-based":                               NO,
+            @"supported-appearances":                   [CPAppearanceNameAqua],
             @"theme-colors":                            [CPNull null]
         };
 

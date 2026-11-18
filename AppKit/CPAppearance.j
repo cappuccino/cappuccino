@@ -27,6 +27,11 @@
 @global CPApp
 
 /*
+    CPColor.j imports this file, so this file refers to CPColor only when its functions run.
+*/
+@class CPColor
+
+/*
     Each name has AppKit's string with the CP prefix in place of NS, so that nib2cib maps an
     archived NSAppearance name by replacing the prefix. AppKit's high-contrast strings omit
     "HighContrast": NSAppearanceNameAccessibilityHighContrastAqua is "NSAppearanceNameAccessibilityAqua".
@@ -86,6 +91,113 @@ function _CPAppearanceMatchingNames(aName)
         default:
             return [aName];
     }
+}
+
+/*
+    The appearances that a theme supports when it gives no list: Aqua only. This is the class
+    default of the attribute "supported-appearances" (see +[CPColor themeAttributes]).
+*/
+var _CPAppearanceDefaultSupportedNames = [CPAppearanceNameAqua],
+    _CPAppearanceInvalidListThemeNames = {};
+
+/*
+    Returns the appearance of the other lightness with the same contrast and the same
+    vibrancy, or nil for a name without one. The counterpart of light content is DarkAqua.
+*/
+function _CPAppearanceCounterpartName(aName)
+{
+    switch (aName)
+    {
+        case CPAppearanceNameAqua:
+            return CPAppearanceNameDarkAqua;
+
+        case CPAppearanceNameDarkAqua:
+            return CPAppearanceNameAqua;
+
+        case CPAppearanceNameVibrantLight:
+            return CPAppearanceNameVibrantDark;
+
+        case CPAppearanceNameVibrantDark:
+            return CPAppearanceNameVibrantLight;
+
+        case CPAppearanceNameAccessibilityHighContrastAqua:
+            return CPAppearanceNameAccessibilityHighContrastDarkAqua;
+
+        case CPAppearanceNameAccessibilityHighContrastDarkAqua:
+            return CPAppearanceNameAccessibilityHighContrastAqua;
+
+        case CPAppearanceNameAccessibilityHighContrastVibrantLight:
+            return CPAppearanceNameAccessibilityHighContrastVibrantDark;
+
+        case CPAppearanceNameAccessibilityHighContrastVibrantDark:
+            return CPAppearanceNameAccessibilityHighContrastVibrantLight;
+
+        case CPAppearanceNameLightContent:
+            return CPAppearanceNameDarkAqua;
+
+        default:
+            return nil;
+    }
+}
+
+/*
+    Returns the names of the appearances that the default theme supports: the value of its
+    attribute "supported-appearances" in the class "color". A theme without the attribute
+    supports Aqua only. A list must hold Aqua or DarkAqua, because a theme must draw at least
+    one plain appearance. A list with neither is a defect of the theme: it logs one warning
+    and counts as the default.
+*/
+function _CPAppearanceSupportedNames()
+{
+    var theme = [CPTheme defaultTheme],
+        names = [theme valueForAttributeWithName:@"supported-appearances" forClass:[CPColor defaultThemeClass]];
+
+    if (![names isKindOfClass:[CPArray class]])
+        return _CPAppearanceDefaultSupportedNames;
+
+    if ([names containsObject:CPAppearanceNameAqua] || [names containsObject:CPAppearanceNameDarkAqua])
+        return names;
+
+    var themeName = [theme name];
+
+    if (!_CPAppearanceInvalidListThemeNames.hasOwnProperty(themeName))
+    {
+        _CPAppearanceInvalidListThemeNames[themeName] = YES;
+        CPLog.warn("Supported appearances: the theme " + themeName + " lists neither Aqua nor DarkAqua, so it counts as supporting Aqua only");
+    }
+
+    return _CPAppearanceDefaultSupportedNames;
+}
+
+/*
+    Returns YES when the default theme supports the appearance named aName: when that
+    appearance has a match in the theme's list, by -bestMatchFromAppearancesWithNames:.
+    DarkAqua in the list covers every dark appearance; a vibrant name alone covers only the
+    vibrant appearances of its lightness.
+*/
+function _CPAppearanceIsSupported(aName)
+{
+    return !![[CPAppearance appearanceNamed:aName] bestMatchFromAppearancesWithNames:_CPAppearanceSupportedNames()];
+}
+
+/*
+    Returns the supported form of the appearance named aName under the default theme: the
+    appearance itself when the theme supports it; else its counterpart of the other lightness
+    when the theme supports that; else the appearance itself. The system appearance, the
+    built-in values of the system colours and the popover default use it. It never changes an
+    appearance that code sets on the application, a window or a view.
+*/
+function _CPAppearanceSupportedName(aName)
+{
+    if (_CPAppearanceIsSupported(aName))
+        return aName;
+
+    var counterpart = _CPAppearanceCounterpartName(aName);
+
+    if (counterpart && _CPAppearanceIsSupported(counterpart))
+        return counterpart;
+
+    return aName;
 }
 
 

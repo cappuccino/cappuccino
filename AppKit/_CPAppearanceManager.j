@@ -21,6 +21,8 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPBundle.j>
+@import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPRunLoop.j>
 
 /*
@@ -34,6 +36,8 @@
 @global CPAppearanceNameDarkAqua
 @global CPAppearanceNameAccessibilityHighContrastAqua
 @global CPAppearanceNameAccessibilityHighContrastDarkAqua
+@global _CPThemeDefaultThemeDidChangeNotification
+@global _CPAppearanceSupportedName
 
 var _CPAppearanceSharedManager = nil;
 
@@ -112,6 +116,13 @@ function _CPAppearanceStopObservingQuery(aQueryList, aHandler)
     select the high-contrast name of the scheme's lightness, and set -forcedColorsActive. When
     the system appearance changes, the manager tells the application. Cocoa has no public
     counterpart, so the class is private.
+
+    The system appearance is the supported form of the appearance that the traits give (see
+    _CPAppearanceSupportedName): a theme that supports Aqua only keeps the system appearance
+    light, and a theme that supports dark appearances only makes it dark. With the Info.plist
+    key CPRequiresAquaSystemAppearance set to YES, the dark trait reads as off before that
+    rule applies. The manager keeps the traits, so that a change of the default theme can
+    lift or impose the limit without a media event.
 */
 @implementation _CPAppearanceManager : CPObject
 {
@@ -119,7 +130,9 @@ function _CPAppearanceStopObservingQuery(aQueryList, aHandler)
     JSObject    _highContrastQuery;
     JSObject    _forcedColorsQuery;
     Function    _changeHandler;
+    CPBundle    _infoBundle;
 
+    CPString    _traitAppearanceName;
     CPString    _systemAppearanceName;
     BOOL        _forcedColorsActive;
 }
@@ -151,7 +164,13 @@ function _CPAppearanceStopObservingQuery(aQueryList, aHandler)
         [self _observeWithMatchMediaFunction:_CPAppearanceBrowserMatchMedia()];
 
         _forcedColorsActive = _CPAppearanceQueryMatches(_forcedColorsQuery);
-        _systemAppearanceName = [self _nameFromQueries];
+        _traitAppearanceName = [self _nameFromQueries];
+        _systemAppearanceName = [self _limitedName];
+
+        [[CPNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(_defaultThemeDidChange:)
+                                                     name:_CPThemeDefaultThemeDidChangeNotification
+                                                   object:nil];
     }
 
     return self;
@@ -185,6 +204,17 @@ function _CPAppearanceStopObservingQuery(aQueryList, aHandler)
     [self _mediaQueriesDidChange];
 }
 
+/*
+    Replaces the bundle whose Info.plist the manager reads for CPRequiresAquaSystemAppearance,
+    and gives the system appearance again. nil returns to the main bundle. The unit tests use
+    this to supply the key.
+*/
+- (void)_setInfoBundle:(CPBundle)aBundle
+{
+    _infoBundle = aBundle;
+    [self _systemAppearanceMayHaveChanged];
+}
+
 - (void)_observeWithMatchMediaFunction:(Function)aMatchMediaFunction
 {
     _CPAppearanceStopObservingQuery(_darkQuery, _changeHandler);
@@ -200,24 +230,63 @@ function _CPAppearanceStopObservingQuery(aQueryList, aHandler)
     _CPAppearanceObserveQuery(_forcedColorsQuery, _changeHandler);
 }
 
+/*
+    Returns the name that the traits give, before the limit of the default theme. With
+    CPRequiresAquaSystemAppearance set to YES, the dark trait reads as off.
+*/
 - (CPString)_nameFromQueries
 {
-    var isDark = _CPAppearanceQueryMatches(_darkQuery),
+    var isDark = _CPAppearanceQueryMatches(_darkQuery) && ![self _requiresAquaSystemAppearance],
         isHighContrast = _CPAppearanceQueryMatches(_highContrastQuery) || _CPAppearanceQueryMatches(_forcedColorsQuery);
 
     return _CPAppearanceNameForSystemTraits(isDark, isHighContrast);
 }
 
+- (BOOL)_requiresAquaSystemAppearance
+{
+    var bundle = _infoBundle || [CPBundle mainBundle];
+
+    return [bundle objectForInfoDictionaryKey:@"CPRequiresAquaSystemAppearance"] === YES;
+}
+
 /*
-    Reads the queries again. When the name changes, the application's effective appearance
-    changes too, unless the application has an appearance of its own. The run loop then runs
-    once, as for a DOM event, so that layout and display happen in the same turn.
+    Returns the system appearance's name: the supported form of the name that the traits give.
+*/
+- (CPString)_limitedName
+{
+    return _CPAppearanceSupportedName(_traitAppearanceName);
+}
+
+/*
+    Reads the queries again, then gives the system appearance again.
 */
 - (void)_mediaQueriesDidChange
 {
-    var name = [self _nameFromQueries];
-
     _forcedColorsActive = _CPAppearanceQueryMatches(_forcedColorsQuery);
+
+    [self _systemAppearanceMayHaveChanged];
+}
+
+/*
+    The default theme states which appearances it supports, so a new default theme can change
+    the system appearance while the traits stay.
+*/
+- (void)_defaultThemeDidChange:(CPNotification)aNotification
+{
+    [self _systemAppearanceMayHaveChanged];
+}
+
+/*
+    Gives the system appearance again from the traits and the default theme. When the name
+    changes, the application's effective appearance changes too, unless the application has an
+    appearance of its own. The run loop then runs once, as for a DOM event, so that layout and
+    display happen in the same turn.
+*/
+- (void)_systemAppearanceMayHaveChanged
+{
+    _traitAppearanceName = [self _nameFromQueries];
+
+    var name = [self _limitedName];
 
     if (name === _systemAppearanceName)
         return;

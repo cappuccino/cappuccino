@@ -250,6 +250,7 @@ function A3MaskIcon(aMaskImage, aColor)
      [@"secondary-selected-control-color",        [[CPColor alloc] _initWithRGBA:[0.83, 0.83, 0.83, 1.0]]],
      [@"selected-text-background-color",          [CPColor colorWithHexString:"99CCFF"]],
      [@"selected-text-inactive-background-color", [CPColor colorWithHexString:"CCCCCC"]],
+     [@"supported-appearances",                   [CPAppearanceNameAqua, CPAppearanceNameDarkAqua]],
      [@"theme-colors",                            A3ThemeColorValues],
      [@"theme-colors",                            A3DarkThemeColorValues, CPThemeStateAppearanceDarkAqua]
     ];

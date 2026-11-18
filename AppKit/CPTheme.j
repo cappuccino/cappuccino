@@ -25,6 +25,7 @@
 @import <Foundation/CPString.j>
 @import <Foundation/CPKeyedUnarchiver.j>
 @import <Foundation/CPBundle.j>
+@import <Foundation/CPNotificationCenter.j>
 
 @class CPView
 @class _CPThemeAttribute
@@ -37,6 +38,13 @@
 var CPThemesByName          = { },
     CPThemeDefaultTheme     = nil,
     CPThemeDefaultHudTheme  = nil;
+
+/*
+    Posted by +setDefaultTheme:. The appearance manager observes it, because the default theme
+    states which appearances it supports, and so limits the system appearance. CPAppearance.j
+    imports this file and the manager, so this file cannot call the manager itself.
+*/
+_CPThemeDefaultThemeDidChangeNotification = @"_CPThemeDefaultThemeDidChangeNotification";
 
 
 /*!
@@ -53,6 +61,8 @@ var CPThemesByName          = { },
     CPThemeDefaultTheme = aTheme;
 
     [CPFont initializeSystemFontFromTheme:aTheme];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPThemeDefaultThemeDidChangeNotification object:self];
 }
 
 + (CPTheme)defaultTheme
