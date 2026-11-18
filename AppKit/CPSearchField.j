@@ -467,6 +467,17 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     return _searchMenu;
 }
 
+/*
+    -menu answers the search menu, which opens from the search button. The context menu is the
+    one set with -setMenu:, so that a right click shows the text field's menu, not the search
+    menu. CPTextField's -menuForEvent: asked -menu, got the search menu, often empty, and showed
+    nothing.
+*/
+- (CPMenu)_contextMenu
+{
+    return [super menu];
+}
+
 - (BOOL)isOpaque
 {
   return [super isOpaque] && [_cancelButton isOpaque] && [_searchButton isOpaque];

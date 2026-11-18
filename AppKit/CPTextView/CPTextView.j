@@ -524,12 +524,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     // Without a browser clipboard event, the plain text goes to the system clipboard through the
     // asynchronous Clipboard API.
     if (selectedRange.length && ![self _isKeyboardClipboardAction:sender] && _CPTextViewHasAsyncClipboard())
-    {
-        navigator.clipboard.writeText([pasteboard stringForType:CPStringPboardType] || "").then(nil, function(anError)
-        {
-            CPLog.warn("CPTextView: the browser refused to write to the clipboard: " + anError);
-        });
-    }
+        _CPPasteboardWriteStringToSystemClipboard([pasteboard stringForType:CPStringPboardType], "CPTextView");
 }
 
 - (void)_pasteString:(id)stringForPasting

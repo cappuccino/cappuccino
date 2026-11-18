@@ -71,6 +71,92 @@
     [self assert:[[CPColor whiteColor] cssString] equals:[field _inputElementTextColorCSSString]];
 }
 
+// MARK: Context menu
+
+/*
+    Returns the titles of a menu's items, with "-" for a separator.
+*/
+- (CPArray)titlesOfMenu:(CPMenu)aMenu
+{
+    return [[aMenu itemArray] valueForKey:@"title"].map(function(aTitle, anIndex)
+    {
+        return [[aMenu itemAtIndex:anIndex] isSeparatorItem] ? @"-" : aTitle;
+    });
+}
+
+- (void)testTheDefaultMenuHasCutCopyAndSelectAllButNoPaste
+{
+    [self assert:[@"Cut", @"Copy", @"-", @"Select All"] equals:[self titlesOfMenu:[CPTextField defaultMenu]]];
+}
+
+/*
+    An editable field shows the default menu, aimed at itself. Under ojtest the browser's
+    Clipboard API is missing, so Cut and Copy are disabled; Select All does not need it.
+*/
+- (void)testAnEditableFieldShowsTheDefaultMenu
+{
+    var field = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0)];
+
+    [field setEditable:YES];
+
+    var menu = [field menuForEvent:nil];
+
+    [self assert:[@"Cut", @"Copy", @"-", @"Select All"] equals:[self titlesOfMenu:menu]];
+    [self assert:field same:[[menu itemAtIndex:3] target] message:@"the items are aimed at the field"];
+    [self assertFalse:[[menu itemAtIndex:0] isEnabled] message:@"Cut needs the Clipboard API"];
+    [self assertFalse:[[menu itemAtIndex:1] isEnabled] message:@"Copy needs the Clipboard API"];
+    [self assertTrue:[[menu itemAtIndex:3] isEnabled] message:@"Select All is enabled"];
+}
+
+- (void)testASelectableFieldShowsTheDefaultMenu
+{
+    var field = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0)];
+
+    [field setEditable:NO];
+    [field setSelectable:YES];
+
+    [self assertNotNull:[field menuForEvent:nil]];
+}
+
+- (void)testALabelOrADisabledFieldShowsNoMenu
+{
+    var label = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0)],
+        disabledField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0)];
+
+    [label setEditable:NO];
+    [label setSelectable:NO];
+    [disabledField setEditable:YES];
+    [disabledField setEnabled:NO];
+
+    [self assertNull:[label menuForEvent:nil] message:@"a label has no menu"];
+    [self assertNull:[disabledField menuForEvent:nil] message:@"a disabled field has no menu"];
+}
+
+- (void)testAMenuSetByTheApplicationComesFirst
+{
+    var field = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0)],
+        menu = [[CPMenu alloc] initWithTitle:@"Application"];
+
+    [field setEditable:YES];
+    [field setMenu:menu];
+
+    [self assert:menu same:[field menuForEvent:nil]];
+}
+
+/*
+    A data view of a table view leaves the right click to the table view, which shows its own
+    menu.
+*/
+- (void)testATableDataViewShowsNoMenuOfItsOwn
+{
+    var field = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0)];
+
+    [field setEditable:YES];
+    [field setThemeState:CPThemeStateTableDataView];
+
+    [self assertNull:[field menuForEvent:nil]];
+}
+
 @end
 
 /*

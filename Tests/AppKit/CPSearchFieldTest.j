@@ -129,4 +129,33 @@
     [self assertTextAreaOf:searchField overlapsNoneOf:buttonAreas];
 }
 
+/*
+    -menu answers the search menu, which opens from the search button. A right click shows the
+    text field's context menu instead.
+*/
+- (void)testARightClickShowsTheTextFieldMenuNotTheSearchMenu
+{
+    var template = [[CPMenu alloc] initWithTitle:@"Search"];
+
+    [template addItemWithTitle:@"Option" action:nil keyEquivalent:@""];
+    [_searchField setSearchMenuTemplate:template];
+
+    var menu = [_searchField menuForEvent:nil];
+
+    [self assertNotNull:menu message:@"the search field has a context menu"];
+    [self assert:[@"Cut", @"Copy", @"", @"Select All"] equals:[[menu itemArray] valueForKey:@"title"]];
+}
+
+/*
+    A context menu set by the application comes first, as in a text field.
+*/
+- (void)testAContextMenuSetByTheApplicationComesFirst
+{
+    var menu = [[CPMenu alloc] initWithTitle:@"Application"];
+
+    [_searchField setMenu:menu];
+
+    [self assert:menu same:[_searchField menuForEvent:nil]];
+}
+
 @end

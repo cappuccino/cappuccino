@@ -27,6 +27,7 @@
 @import "CPWindow_Constants.j"
 @import "_CPImageAndTextView.j"
 
+@class CPMenuItem
 @class CPPasteboard
 @class CPScrollView
 
@@ -157,6 +158,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     BOOL                        _isSecure;
     BOOL                        _willBecomeFirstResponderByClick;
     BOOL                        _invokedByUserEvent;
+    CPRange                     _contextMenuSelectedRange;
 
     BOOL                        _drawsBackground;
 
@@ -1194,6 +1196,107 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 }
 
+/*!
+    Returns the standard context menu of an editable or selectable text field: Cut, Copy and
+    Select All. There is no Paste item: the browser allows a page to read the system clipboard
+    outside its own clipboard events only after a confirmation, so pasting stays with the key
+    equivalent and the browser's Edit menu. Each call returns a new menu, which an application
+    can extend and set with -setMenu:.
+*/
++ (CPMenu)defaultMenu
+{
+    var menu = [CPMenu new];
+
+    // FIXME I18N
+    [menu addItemWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"];
+    [menu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];
+    [menu addItem:[CPMenuItem separatorItem]];
+    [menu addItemWithTitle:@"Select All" action:@selector(selectAll:) keyEquivalent:@"a"];
+
+    return menu;
+}
+
+/*!
+    Returns the menu the receiver shows for a right click. A menu set with -setMenu: comes first.
+    Otherwise an enabled field that is editable or selectable shows +defaultMenu, aimed at the
+    receiver. A data view of a table view shows no menu of its own, so that the table view's menu
+    stays available.
+*/
+- (CPMenu)menuForEvent:(CPEvent)anEvent
+{
+    var menu = [self _contextMenu];
+
+    if (menu)
+        return menu;
+
+    if (![self isEnabled] || !([self isEditable] || [self isSelectable]) || [self hasThemeState:CPThemeStateTableDataView])
+        return nil;
+
+    menu = [[self class] defaultMenu];
+
+    /*
+        The field's selection is gone by the time a menu item sends its action: in a browser test
+        Copy found an empty selection and copied nothing, though the menu had enabled it. The
+        selection is kept here and restored before Cut or Copy.
+    */
+    _contextMenuSelectedRange = [self isEditable] ? CPMakeRangeCopy([self selectedRange]) : nil;
+
+    /*
+        The items are enabled here, not by automatic validation, because Cut and Copy also need
+        the Clipboard API. Validation through the responder chain would apply that condition to
+        the application's Edit menu too, and so block the key equivalents, which work without it.
+    */
+    [menu setAutoenablesItems:NO];
+
+    var canWriteToSystemClipboard = _CPPasteboardCanWriteToSystemClipboard(),
+        items = [menu itemArray];
+
+    for (var i = 0, count = [items count]; i < count; i++)
+    {
+        var item = items[i],
+            action = [item action];
+
+        if ([item isSeparatorItem])
+            continue;
+
+        [item setTarget:self];
+
+        var isEnabled = !![self validateUserInterfaceItem:item];
+
+        if (action === @selector(cut:) || action === @selector(copy:))
+            isEnabled = isEnabled && canWriteToSystemClipboard;
+
+        [item setEnabled:isEnabled];
+    }
+
+    return menu;
+}
+
+/*
+    Restores the selection the field had when its default context menu opened, when aSender is
+    an item of that menu. The kept selection is used once.
+*/
+- (void)_restoreContextMenuSelectionForSender:(id)aSender
+{
+    var range = _contextMenuSelectedRange;
+
+    _contextMenuSelectedRange = nil;
+
+    if (!range || range.length < 1 || ![aSender isKindOfClass:[CPMenuItem class]] || [aSender target] !== self)
+        return;
+
+    [self setSelectedRange:range];
+}
+
+/*
+    Returns the context menu set with -setMenu:. A subclass whose -menu answers another menu
+    overrides this method.
+*/
+- (CPMenu)_contextMenu
+{
+    return [self menu];
+}
+
 - (void)rightMouseDown:(CPEvent)anEvent
 {
     if ([self menuForEvent:anEvent] || [[self nextResponder] isKindOfClass:CPView])
@@ -1676,6 +1779,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if ([self isEditable])
     {
+        [self _restoreContextMenuSelectionForSender:sender];
+
         var selectedRange = [self selectedRange];
 
         if (selectedRange.length < 1)
@@ -1703,6 +1808,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         // Then also allow the browser to capture the copied text into the system clipboard.
         [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
+
+    /*
+        A key equivalent comes with the browser's own clipboard event, which puts the text on the
+        system clipboard. A click on a menu item does not, so the text goes there through the
+        asynchronous Clipboard API. Without it, a paste with the key equivalent would insert the
+        old contents of the system clipboard.
+    */
+    if (stringToCopy && [[CPApp currentEvent] type] !== CPKeyDown)
+        _CPPasteboardWriteStringToSystemClipboard(stringToCopy, "CPTextField");
 }
 
 - (void)cut:(id)sender

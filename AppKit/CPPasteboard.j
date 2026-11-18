@@ -324,6 +324,32 @@ var CPPasteboards = nil;
 
 @end
 
+/*
+    Returns YES if the page can write text to the system clipboard outside the browser's own
+    clipboard events, through the asynchronous Clipboard API. The browser offers it only in a
+    secure context.
+*/
+_CPPasteboardCanWriteToSystemClipboard = function()
+{
+    return CPDOMAvailable && typeof navigator !== "undefined" && !!navigator.clipboard && !!navigator.clipboard.writeText;
+};
+
+/*
+    Writes aString to the system clipboard through the asynchronous Clipboard API. The browser
+    accepts this only during a user action, such as a click on a menu item. A refusal is logged
+    with the name of aRequester.
+*/
+_CPPasteboardWriteStringToSystemClipboard = function(aString, aRequester)
+{
+    if (!_CPPasteboardCanWriteToSystemClipboard())
+        return;
+
+    navigator.clipboard.writeText(aString || "").then(nil, function(anError)
+    {
+        CPLog.warn(aRequester + ": the browser refused to write to the clipboard: " + anError);
+    });
+};
+
 var DOMDataTransferPasteboard = nil;
 
 @implementation _CPDOMDataTransferPasteboard : CPPasteboard
