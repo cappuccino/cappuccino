@@ -1446,7 +1446,13 @@ var SCROLLWHEEL_LINE_PIXELS = 6.0;
 
             _DOMEventMode = YES;
             _mouseIsDown = YES;
-            
+
+            /*
+                The view under the point decides whether the browser's context menu shows, as on
+                the main path below. This branch left the flag as the previous event had set it.
+            */
+            StopContextMenuDOMEventPropagation = YES;
+
             var clickCount = CPDOMEventGetClickCount(_lastMouseDown, timestamp, location, aDOMEvent._isFromTouch);
 
             // Fake a down and up event so that event tracking mode will work correctly
@@ -1457,6 +1463,14 @@ var SCROLLWHEEL_LINE_PIXELS = 6.0;
             [CPApp sendEvent:[CPEvent mouseEventWithType:_mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp location:location modifierFlags:modifierFlags
                     timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1
                     clickCount:clickCount pressure:0]];
+
+            /*
+                The events above can order in a window, such as a context menu, and mark views for
+                layout and display. This branch returned without the run loop pass that ends every
+                other mouse event, so the menu's frame appeared at once and its items only at the
+                next event or timer.
+            */
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
             return;
         }
