@@ -206,6 +206,14 @@ A3ColorScrollerLegacy               = A3DefineThemeColor(@"scrollerLegacyColor",
 A3ColorScrollerBackground           = A3DefineThemeColor(@"scrollerBackgroundColor", [CPColor colorWithCSSString:@"rgb(250,250,250)"]);
 A3ColorScrollerBorder               = A3DefineThemeColor(@"scrollerBorderColor", [CPColor colorWithCSSString:@"rgb(232,232,232)"]);
 
+// Toolbars
+
+/*
+    The toolbar's separator item took borderLightColor, rgb(230,230,230), on a toolbar of about
+    rgb(236,236,236), so it hardly showed in the light appearance.
+*/
+A3ColorToolbarSeparator             = A3DefineThemeColor(@"toolbarSeparatorColor", [CPColor colorWithCSSString:@"rgba(0,0,0,0.25)"]);
+
 // Sliders
 
 A3ColorSliderTrack                  = A3DefineThemeColor(@"sliderTrackColor", [CPColor colorWithCSSString:@"rgba(0,0,0,0.20)"]);

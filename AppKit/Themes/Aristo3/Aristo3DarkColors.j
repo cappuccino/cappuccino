@@ -120,6 +120,10 @@ A3DefineDarkThemeColor(@"scrollerLegacyColor", [CPColor colorWithCSSString:@"rgb
 A3DefineDarkThemeColor(@"scrollerBackgroundColor", [CPColor colorWithCSSString:@"rgb(35,35,35)"]);
 A3DefineDarkThemeColor(@"scrollerBorderColor", [CPColor colorWithCSSString:@"rgb(20,20,20)"]);
 
+// Toolbars
+
+A3DefineDarkThemeColor(@"toolbarSeparatorColor", [CPColor colorWithCSSString:@"rgba(255,255,255,0.25)"]);
+
 // Sliders
 
 /*

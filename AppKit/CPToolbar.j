@@ -27,6 +27,7 @@
 
 @import "CPPopUpButton.j"
 @import "CPToolbarItem.j"
+@import "_CPToolbarCustomizationPalette.j"
 
 @global CPApp
 
@@ -160,6 +161,8 @@ var CPToolbarConfigurationDisplayModeKey        = @"TB Display Mode",
 
     CPView                  _toolbarView;
     CPWindow                _window;
+
+    _CPToolbarCustomizationPalette  _customizationPalette;
 }
 
 /* @ignore */
@@ -261,6 +264,12 @@ var CPToolbarConfigurationDisplayModeKey        = @"TB Display Mode",
     _sizeMode = aSize;
 
     [[self _toolbarView] setFrame:[self _toolbarViewFrame]];
+
+    /*
+        The item views size their images when they are made, so they are made again for the
+        new size mode.
+    */
+    [_toolbarView reloadToolbarItems];
     [_window _noteToolbarChanged];
 
     [[self _toolbarsSharingConfiguration] makeObjectsPerformSelector:@selector(setSizeMode:) withObject:aSize];
@@ -584,9 +593,6 @@ var CPToolbarConfigurationDisplayModeKey        = @"TB Display Mode",
     // toolbar delegate is optional. Toolbar items can be combined from
     // both IB and a delegate (see Apple's NSToolbar guide for IB, for more details).
 
-    // _defaultItems may have been loaded from Cib
-    _itemIdentifiers = [_defaultItems valueForKey:@"itemIdentifier"] || [];
-
     /*
         A configuration that the toolbar took, or that the user made by adding and removing
         items, gives the items in place of the default ones. An identifier for which no item can
@@ -595,19 +601,7 @@ var CPToolbarConfigurationDisplayModeKey        = @"TB Display Mode",
     */
     var isConfigured = !!_configurationItemIdentifiers;
 
-    if (isConfigured)
-        _itemIdentifiers = [_configurationItemIdentifiers copy];
-    else if ([self _delegateRespondsToToolbarDefaultItemIdentifiers])
-    {
-        var itemIdentifiersFromDelegate = [self _sendDelegateToolbarDefaultItemIdentifiers];
-
-        // If we get items both from the Cib and from the delegate method, put the delegate items before the
-        // Cib ones.
-        if (itemIdentifiersFromDelegate)
-            _itemIdentifiers = [itemIdentifiersFromDelegate arrayByAddingObjectsFromArray:_itemIdentifiers];
-    }
-    // If we didn't load from a cib and the delegate hasn't been set yet, we'll just work with an empty list
-    // at this point.
+    _itemIdentifiers = isConfigured ? [_configurationItemIdentifiers copy] : [self _defaultItemIdentifiers];
 
     var index = 0,
         count = [_itemIdentifiers count];
@@ -641,6 +635,90 @@ var CPToolbarConfigurationDisplayModeKey        = @"TB Display Mode",
     _itemsSortedByVisibilityPriority = [_items sortedArrayUsingFunction:_CPToolbarItemVisibilityPriorityCompare context:NULL];
 
     [_toolbarView reloadToolbarItems];
+}
+
+/*
+    Returns the identifiers of the default items: those that the delegate gives, then those of
+    the default items decoded from a cib. Without either, the list is empty.
+    @ignore
+*/
+- (CPArray)_defaultItemIdentifiers
+{
+    // _defaultItems may have been loaded from Cib
+    var identifiers = [_defaultItems valueForKey:@"itemIdentifier"] || [];
+
+    if ([self _delegateRespondsToToolbarDefaultItemIdentifiers])
+    {
+        var itemIdentifiersFromDelegate = [self _sendDelegateToolbarDefaultItemIdentifiers];
+
+        // If we get items both from the Cib and from the delegate method, put the delegate items before the
+        // Cib ones.
+        if (itemIdentifiersFromDelegate)
+            identifiers = [itemIdentifiersFromDelegate arrayByAddingObjectsFromArray:identifiers];
+    }
+
+    return identifiers;
+}
+
+/*
+    Returns the identifiers of the items the user may add: those that the delegate allows, then
+    those of the allowed items decoded from a cib, each once.
+    @ignore
+*/
+- (CPArray)_allowedItemIdentifiers
+{
+    var identifiers = [[self _sendDelegateToolbarAllowedItemIdentifiers] || [] copy],
+        decoded = [_allowedItems valueForKey:@"itemIdentifier"] || [];
+
+    for (var i = 0; i < decoded.length; i++)
+        if ([identifiers indexOfObject:decoded[i]] === CPNotFound)
+            [identifiers addObject:decoded[i]];
+
+    return identifiers;
+}
+
+/*
+    Returns an item to show in the customization palette for the identifier, or nil. The
+    toolbar does not insert it, so the delegate is asked for an item not to be inserted.
+    @ignore
+*/
+- (CPToolbarItem)_paletteItemForItemIdentifier:(CPString)anIdentifier
+{
+    return [CPToolbarItem _standardItemWithItemIdentifier:anIdentifier] ||
+           [_identifiedItems objectForKey:anIdentifier] ||
+           [self _sendDelegateItemForItemIdentifier:anIdentifier willBeInsertedIntoToolbar:NO];
+}
+
+/*!
+    Runs the customization palette: a sheet on the toolbar's window from which the user drags
+    items into, within and out of the toolbar. It runs only when the toolbar allows
+    customization, is in a window and has no palette running; it shows a hidden toolbar.
+    @param aSender the object that sent the message
+*/
+- (void)runCustomizationPalette:(id)aSender
+{
+    if (!_allowsUserCustomization || !_window || _customizationPalette)
+        return;
+
+    [self setVisible:YES];
+
+    _customizationPalette = [[_CPToolbarCustomizationPalette alloc] initWithToolbar:self];
+    [_customizationPalette run];
+}
+
+/*!
+    Returns \c YES while the toolbar's customization palette runs.
+*/
+- (BOOL)customizationPaletteIsRunning
+{
+    return !!_customizationPalette;
+}
+
+/* @ignore */
+- (void)_customizationPaletteDidEnd
+{
+    _customizationPalette = nil;
+    [self validateVisibleItems];
 }
 
 /*
@@ -940,6 +1018,8 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     CPDictionary        _itemInfos;
     JSObject            _viewsForToolbarItems;
+
+    CPView              _customizationOverlay;
 
     CPArray             _visibleItems @accessors(readonly, property=visibleItems);
     CPArray             _invisibleItems;
@@ -1287,6 +1367,27 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     }
 
     [self tile];
+
+    if (_customizationOverlay)
+        [self addSubview:_customizationOverlay];
+}
+
+/*
+    Lays aView over the items while the customization palette runs, or removes the view laid
+    earlier when aView is nil. A reload of the items keeps the view on top.
+    @ignore
+*/
+- (void)_setCustomizationOverlay:(CPView)aView
+{
+    [_customizationOverlay removeFromSuperview];
+
+    _customizationOverlay = aView;
+
+    if (_customizationOverlay)
+    {
+        [_customizationOverlay setFrame:[self bounds]];
+        [self addSubview:_customizationOverlay];
+    }
 }
 
 - (void)layoutSubviews
@@ -1314,7 +1415,8 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return CPOrderedDescending;
 };
 
-var LABEL_MARGIN    = 2.0;
+var LABEL_MARGIN    = 2.0,
+    _CPToolbarSmallSizeScale = 24.0 / 32.0;
 
 @implementation _CPToolbarItemView : CPControl
 {
@@ -1454,8 +1556,8 @@ var LABEL_MARGIN    = 2.0;
         [_imageView setImage:[_toolbarItem image]];
     }
 
-    var minSize = [_toolbarItem minSize],
-        maxSize = [_toolbarItem maxSize];
+    var minSize = [self _sizeForSizeMode:[_toolbarItem minSize]],
+        maxSize = [self _sizeForSizeMode:[_toolbarItem maxSize]];
 
     if (_toolbar)
         [_labelField setFont:[_toolbar valueForThemeAttribute:@"label-font" inState:[self themeState]]];
@@ -1470,7 +1572,12 @@ var LABEL_MARGIN    = 2.0;
     var iconOnly = [[_toolbarItem toolbar] displayMode] === CPToolbarDisplayModeIconOnly,
         labelOnly = [[_toolbarItem toolbar] displayMode] === CPToolbarDisplayModeLabelOnly;
     [_labelField setHidden:iconOnly];
-    [_view setHidden:labelOnly];
+
+    /*
+        Text Only hid an item's own view but not its image, so an image item kept its image, and
+        an item whose image had no room showed a dot above its label.
+    */
+    [_view || _imageView setHidden:labelOnly];
 
     _minSize = CGSizeMake(MAX(_labelSize.width, minSize.width), (labelOnly ? 0 : minSize.height) + (iconOnly ? 0 : _labelSize.height + LABEL_MARGIN));
     _maxSize = CGSizeMake(MAX(_labelSize.width, maxSize.width), 100000000.0);
@@ -1502,7 +1609,7 @@ var LABEL_MARGIN    = 2.0;
 
     // The view is centred in the available space above the label.
     var view = _view || _imageView,
-        itemMaxSize = [_toolbarItem maxSize],
+        itemMaxSize = [self _sizeForSizeMode:[_toolbarItem maxSize]],
         iconOnly = [[_toolbarItem toolbar] displayMode] === CPToolbarDisplayModeIconOnly,
         height = CGRectGetHeight(bounds) - (iconOnly ? 0 : _labelSize.height),
         viewWidth = MIN(itemMaxSize.width, width),
@@ -1517,6 +1624,21 @@ var LABEL_MARGIN    = 2.0;
 
     // Label is always drawn at the bottom of the view. So if the view is really tall but the icon is tiny, the icon is centred above the label while the label remains on the bottom.
     [_labelField setFrameOrigin:CGPointMake(ROUND((width - _labelSize.width) / 2.0), CGRectGetHeight(bounds) - _labelSize.height)];
+}
+
+/*
+    Returns aSize for the toolbar's size mode. In the small size mode an image item takes AppKit's
+    small toolbar image, 24 points against 32, so its size scales by three quarters. Small size
+    lowered the toolbar but left every image at its full size, so the toolbar looked the same. An
+    item with a view of its own keeps its size.
+    @ignore
+*/
+- (CGSize)_sizeForSizeMode:(CGSize)aSize
+{
+    if ([_toolbarItem view] || [[_toolbarItem toolbar] sizeMode] !== CPToolbarSizeModeSmall)
+        return aSize;
+
+    return CGSizeMake(ROUND(aSize.width * _CPToolbarSmallSizeScale), ROUND(aSize.height * _CPToolbarSmallSizeScale));
 }
 
 - (void)mouseDown:(CPEvent)anEvent

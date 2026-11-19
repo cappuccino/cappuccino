@@ -9453,7 +9453,7 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
     toolbarExtraItemsAlternateImage = toolbarExtraItemsImage,
     
     toolbarSeparatorColor = [CPColor colorWithCSSDictionary:@{
-        @"border-left": @[@"1px solid ", A3ColorBorderLight]
+        @"border-left": @[@"1px solid ", A3ColorToolbarSeparator]
     }],
 
     themeValues =

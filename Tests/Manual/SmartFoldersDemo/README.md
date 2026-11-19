@@ -40,8 +40,12 @@ the other icons and the badges are drawn with `CPBezierPath`.
 12. View menu / toolbar: hide and show sidebar and detail pane; drag the sidebar resize control in the button bar.
     Toolbar items are enabled exactly when their menu items are: Edit only for a smart folder,
     New Smart Folder and New Group not while a sheet is open. In dark mode the glyphs are light.
-    View ▸ Hide Toolbar hides it and the item then reads Show Toolbar. View ▸ Customize Toolbar…
-    stays disabled until CPWindow implements the customisation palette.
+    View ▸ Hide Toolbar hides it and the item then reads Show Toolbar.
+    View ▸ Customize Toolbar… opens the customisation palette as a sheet: drag an item from the
+    palette into the toolbar (a marker shows where it goes), drag a toolbar item to another place,
+    drag one out of the toolbar to remove it, and drag the default set to restore it. Show sets
+    Icon and Text, Icon Only or Text Only; Done closes the sheet. Reload the page: the changed
+    toolbar stays (autosave). While the sheet is open, the toolbar items do not act.
     The standard Colors item opens the colour panel. In both appearances its labels, the boxes
     around the preview and the swatches, and the opacity slider's track and knob show.
 13. File ▸ Reset Library…: alert sheet, then sample data restored.

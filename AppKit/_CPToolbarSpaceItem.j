@@ -33,6 +33,11 @@
 
     if (self)
     {
+        /*
+            The item had no palette label, so the customization palette showed it without a
+            name. AppKit's label is "Space"; the toolbar shows no label for it.
+        */
+        [self setPaletteLabel:@"Space"];
         [self setMinSize:CGSizeMake(32.0, 32.0)];
         [self setMaxSize:CGSizeMake(32.0, 32.0)];
     }

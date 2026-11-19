@@ -154,6 +154,18 @@ var ToolbarTestIdentifiersOf = function(aToolbar)
     return [[aToolbar items] valueForKey:@"itemIdentifier"];
 };
 
+/*
+    Dragging information for a drop on the customization overlay.
+*/
+@implementation _ToolbarTestDraggingInfo : CPObject
+{
+    CPPasteboard    draggingPasteboard  @accessors;
+    CGPoint         draggingLocation    @accessors;
+    id              draggingSource      @accessors;
+}
+
+@end
+
 @implementation CPToolbarTest : OJTestCase
 
 - (void)testTheItemTheDelegateGivesForInsertionIsInserted
@@ -578,6 +590,131 @@ var ToolbarTestIdentifiersOf = function(aToolbar)
 
     [self assert:ToolbarTestIdentifiersOf(first) equals:ToolbarTestIdentifiersOf(second) message:@"the items"];
     [self assert:CPToolbarDisplayModeLabelOnly equals:[second displayMode] message:@"the display mode"];
+}
+
+// MARK: Customization palette
+
+- (void)testADropGoesBeforeTheFirstItemWhoseCentreIsAtOrRightOfIt
+{
+    var centres = [20.0, 60.0, 100.0];
+
+    [self assert:0 equals:_CPToolbarInsertionIndex(centres, 5.0) message:@"left of every item"];
+    [self assert:1 equals:_CPToolbarInsertionIndex(centres, 40.0) message:@"between the first two"];
+    [self assert:3 equals:_CPToolbarInsertionIndex(centres, 120.0) message:@"right of every item"];
+    [self assert:1 equals:_CPToolbarInsertionIndex([20.0, Infinity], 400.0) message:@"a hidden item counts as beyond the edge"];
+}
+
+- (void)testThePaletteOffersTheAllowedItemsAndTheDefaultSet
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestPalette"],
+        delegate = [_ToolbarTestRecordingDelegate new];
+
+    [delegate setItemIdentifiers:[CPToolbarSpaceItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, CPToolbarSeparatorItemIdentifier]];
+    [toolbar setDelegate:delegate];
+
+    var palette = [[_CPToolbarCustomizationPalette alloc] initWithToolbar:toolbar];
+
+    [self assert:[CPToolbarSpaceItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, CPToolbarSeparatorItemIdentifier] equals:[[palette itemViews] valueForKey:@"itemIdentifier"] message:@"the allowed items"];
+    [self assert:[CPToolbarSpaceItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, CPToolbarSeparatorItemIdentifier] equals:[[palette defaultSetView] defaultSet] message:@"the default set"];
+}
+
+- (void)testThePaletteRunsOnlyWhenTheToolbarAllowsCustomization
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestNoCustomization"];
+
+    [toolbar setDelegate:[_ToolbarTestRecordingDelegate new]];
+    [toolbar runCustomizationPalette:nil];
+
+    [self assertFalse:[toolbar customizationPaletteIsRunning]];
+}
+
+- (void)testTheWindowEnablesCustomizationOnlyWhenTheToolbarAllowsIt
+{
+    var window = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 400.0, 300.0) styleMask:CPTitledWindowMask],
+        toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestWindowValidation"],
+        menuItem = [[CPMenuItem alloc] initWithTitle:@"Customize Toolbar…" action:@selector(runToolbarCustomizationPalette:) keyEquivalent:@""];
+
+    [toolbar setDelegate:[_ToolbarTestRecordingDelegate new]];
+    [window setToolbar:toolbar];
+
+    [self assertFalse:[window validateUserInterfaceItem:menuItem] message:@"customization off"];
+
+    [toolbar setAllowsUserCustomization:YES];
+
+    [self assertTrue:[window validateUserInterfaceItem:menuItem] message:@"customization on"];
+}
+
+- (void)testDroppingTheDefaultSetRestoresTheDefaultItems
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestDefaultSetDrop"],
+        pasteboard = [CPPasteboard pasteboardWithName:@"CPToolbarTestDefaultSetDrop"],
+        info = [_ToolbarTestDraggingInfo new];
+
+    [toolbar setDelegate:[_ToolbarTestRecordingDelegate new]];
+    [toolbar removeItemAtIndex:0];
+
+    var overlay = [[_CPToolbarCustomizationOverlay alloc] initWithToolbar:toolbar frame:CGRectMake(0.0, 0.0, 400.0, 50.0)];
+
+    [pasteboard declareTypes:[_CPToolbarDefaultSetPboardType] owner:nil];
+    [pasteboard setPropertyList:[toolbar _defaultItemIdentifiers] forType:_CPToolbarDefaultSetPboardType];
+    [info setDraggingPasteboard:pasteboard];
+    [info setDraggingLocation:CGPointMake(10.0, 10.0)];
+
+    [self assertTrue:[overlay performDragOperation:info]];
+    [self assert:[CPToolbarSpaceItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier] equals:ToolbarTestIdentifiersOf(toolbar)];
+}
+
+/*
+    A drop from the palette of an item that is already in the toolbar moves that item; only the
+    space items can appear more than once.
+*/
+- (void)testDroppingAPresentItemMovesItAndOnlySpacesRepeat
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestPresentItemDrop"],
+        delegate = [_ToolbarTestRecordingDelegate new],
+        pasteboard = [CPPasteboard pasteboardWithName:@"CPToolbarTestPresentItemDrop"],
+        info = [_ToolbarTestDraggingInfo new];
+
+    [delegate setItemIdentifiers:[CPToolbarSpaceItemIdentifier, CPToolbarPrintItemIdentifier]];
+    [toolbar setDelegate:delegate];
+
+    var overlay = [[_CPToolbarCustomizationOverlay alloc] initWithToolbar:toolbar frame:CGRectMake(0.0, 0.0, 400.0, 50.0)];
+
+    [pasteboard declareTypes:[_CPToolbarItemIdentifierPboardType] owner:nil];
+    [pasteboard setString:CPToolbarPrintItemIdentifier forType:_CPToolbarItemIdentifierPboardType];
+    [info setDraggingPasteboard:pasteboard];
+    [info setDraggingLocation:CGPointMake(0.0, 10.0)];
+
+    [self assertTrue:[overlay performDragOperation:info]];
+    [self assert:[CPToolbarPrintItemIdentifier, CPToolbarSpaceItemIdentifier] equals:ToolbarTestIdentifiersOf(toolbar) message:@"a present item moves"];
+
+    [pasteboard setString:CPToolbarSpaceItemIdentifier forType:_CPToolbarItemIdentifierPboardType];
+
+    [self assertTrue:[overlay performDragOperation:info]];
+    [self assert:[CPToolbarSpaceItemIdentifier, CPToolbarPrintItemIdentifier, CPToolbarSpaceItemIdentifier] equals:ToolbarTestIdentifiersOf(toolbar) message:@"a space repeats"];
+}
+
+/*
+    In the small size mode an image item takes AppKit's small toolbar image, 24 points against
+    32; in the regular size mode it keeps its size.
+*/
+- (void)testSmallSizeScalesAnImageItemToTheSmallImageSize
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestSmallSize"],
+        delegate = [_ToolbarTestRecordingDelegate new];
+
+    [delegate setItemIdentifiers:[CPToolbarPrintItemIdentifier]];
+    [toolbar setDelegate:delegate];
+    [toolbar _toolbarView];
+
+    var itemView = [[toolbar _toolbarView] viewForItem:[toolbar items][0]];
+
+    [self assertTrue:CGSizeEqualToSize(CGSizeMake(32.0, 32.0), [itemView _sizeForSizeMode:CGSizeMake(32.0, 32.0)]) message:@"regular"];
+
+    [toolbar setSizeMode:CPToolbarSizeModeSmall];
+    itemView = [[toolbar _toolbarView] viewForItem:[toolbar items][0]];
+
+    [self assertTrue:CGSizeEqualToSize(CGSizeMake(24.0, 24.0), [itemView _sizeForSizeMode:CGSizeMake(32.0, 32.0)]) message:@"small"];
 }
 
 @end

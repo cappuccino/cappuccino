@@ -2027,7 +2027,7 @@ CPTexturedBackgroundWindowMask
     if (sheet && (_sheetContext["isClosing"] || _sheetContext["isOpening"]))
         return;
 
-    if (sheet && _sheetContext["isAttached"])
+    if (sheet && _sheetContext["isAttached"] && ![self _isToolbarCustomizationEvent:anEvent])
     {
         switch (type)
         {
@@ -3032,6 +3032,26 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
+    Runs the customization palette of the window's toolbar.
+    @param aSender the object that sent the message
+*/
+- (void)runToolbarCustomizationPalette:(id)aSender
+{
+    [[self toolbar] runCustomizationPalette:aSender];
+}
+
+/*!
+    Validates a toolbar item whose action the window handles, as -validateUserInterfaceItem:
+    does for a menu item.
+    @param anItem the toolbar item to validate
+    @return \c YES if the item should be enabled
+*/
+- (BOOL)validateToolbarItem:(CPToolbarItem)anItem
+{
+    return [self validateUserInterfaceItem:anItem];
+}
+
+/*!
     Validates the user interface items whose actions the window handles.
 
     For \c -toggleToolbarShown:, the item's title becomes "Hide Toolbar" or "Show Toolbar"
@@ -3039,7 +3059,8 @@ CPTexturedBackgroundWindowMask
     a toolbar. \c -undo: and \c -redo: are enabled only when the window's undo manager has a
     change to undo or redo. \c -performMiniaturize: and \c -miniaturize: are enabled only
     when the window's minimize button is enabled, and \c -performZoom: and \c -zoom: only
-    when its zoom button is enabled. Every other item is enabled.
+    when its zoom button is enabled. \c -runToolbarCustomizationPalette: is enabled only when
+    the window's toolbar allows customization and runs no palette. Every other item is enabled.
     @param anItem the item to validate
     @return \c YES if the item should be enabled
 */
@@ -3063,6 +3084,13 @@ CPTexturedBackgroundWindowMask
     if (action === @selector(performZoom:) || action === @selector(zoom:))
         return [self _canZoom];
 
+    if (action === @selector(runToolbarCustomizationPalette:))
+    {
+        var customizedToolbar = [self toolbar];
+
+        return [customizedToolbar allowsUserCustomization] && ![customizedToolbar customizationPaletteIsRunning];
+    }
+
     if (action !== @selector(toggleToolbarShown:))
         return YES;
 
@@ -3072,6 +3100,29 @@ CPTexturedBackgroundWindowMask
         [anItem setTitle:[toolbar isVisible] ? @"Hide Toolbar" : @"Show Toolbar"];
 
     return !!toolbar;
+}
+
+/*
+    Returns YES for a mouse event over the toolbar while its customization palette runs. The
+    palette is a sheet, and a sheet filtered every mouse event of its window but a mouse down,
+    so the user could drop items on the toolbar but could not drag one out of it or within it.
+    @ignore
+*/
+- (BOOL)_isToolbarCustomizationEvent:(CPEvent)anEvent
+{
+    if (![_toolbar customizationPaletteIsRunning])
+        return NO;
+
+    var type = [anEvent type],
+        toolbarView = [_toolbar _toolbarView];
+
+    if (type === CPLeftMouseDown)
+        return [[_windowView hitTest:[anEvent locationInWindow]] isDescendantOf:toolbarView];
+
+    if (type === CPLeftMouseDragged || type === CPLeftMouseUp)
+        return [_leftMouseDownView isDescendantOf:toolbarView];
+
+    return NO;
 }
 
 - (void)_noteToolbarChanged
@@ -3091,6 +3142,15 @@ CPTexturedBackgroundWindowMask
     }
 
     [self setFrame:newFrame];
+
+    /*
+        A change of the toolbar's height moves the top of the content view, below which an
+        attached sheet hangs. The sheet moved only with the window, so a sheet open while the
+        toolbar changed size, such as the toolbar's customization palette, kept its old place.
+    */
+    if ([self attachedSheet])
+        [self _setAttachedSheetFrameOrigin];
+
     /*
     [_windowView setAnimatingToolbar:YES];
     [self setFrame:frame];
