@@ -522,3 +522,11 @@ var NULL_THEME = {};
 
 
 @end
+
+/*
+    Returns YES when aCoder holds the theme objects that -_encodeThemeObjectsWithCoder: writes.
+*/
+function _CPCoderContainsThemeObjects(aCoder)
+{
+    return [aCoder containsValueForKey:CPViewThemeClassKey];
+}
