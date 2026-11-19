@@ -27,7 +27,8 @@
 
     This file is the table of the values for every appearance (A3ThemeColorValues).
     Aristo3DarkColors.j gives the values for the dark appearance (A3DarkThemeColorValues), and
-    the dark values of System colours that Aristo3 uses (A3DarkSystemColorValues).
+    the dark values that Aristo3 gives System colours where it wants a value other than
+    CPColor's built-in one (A3DarkSystemColorValues).
     +[Aristo3ThemeDescriptor themedColor] registers the tables.
 
     A constant's colour name is its identifier without A3Color or A3CPColor, with a lower-case

@@ -244,11 +244,14 @@ function A3MaskIcon(aMaskImage, aColor)
 + (CPColor)themedColor
 {
     var color = [CPColor redColor],
+    /*
+        Aristo3 gave alternateSelectedControlColor, secondarySelectedControlColor and
+        selectedTextBackgroundColor a value without a state. Each value equalled CPColor's
+        built-in Aqua value, and a value without a state applies in every appearance, so it
+        hid the built-in DarkAqua value. The colours now take CPColor's built-in values.
+    */
     themedColorValues =
     [
-     [@"alternate-selected-control-color",        [[CPColor alloc] _initWithRGBA:[0.22, 0.46, 0.84, 1.0]]],
-     [@"secondary-selected-control-color",        [[CPColor alloc] _initWithRGBA:[0.83, 0.83, 0.83, 1.0]]],
-     [@"selected-text-background-color",          [CPColor colorWithHexString:"99CCFF"]],
      [@"selected-text-inactive-background-color", [CPColor colorWithHexString:"CCCCCC"]],
      [@"supported-appearances",                   [CPAppearanceNameAqua, CPAppearanceNameDarkAqua]],
      [@"theme-colors",                            A3ThemeColorValues],

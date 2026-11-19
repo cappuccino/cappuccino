@@ -262,6 +262,62 @@ var Aristo3ThemeColorsTestObjectDescriptions = ["Catalog color", "Asset color", 
 }
 
 /*
+    Aristo3 keeps a dark value of its own for controlBackgroundColor, the background of a
+    table view. In Aqua the colour keeps CPColor's built-in value.
+*/
+- (void)testControlBackgroundColorTakesAristo3sOwnDarkValue
+{
+    var color = [CPColor colorWithCatalogName:@"System" colorName:@"controlBackgroundColor"],
+        expectedComponents = [[1.0, 1.0, 1.0, 1.0], [45.0 / 255.0, 45.0 / 255.0, 45.0 / 255.0, 1.0]],
+        appearanceNames = [CPAppearanceNameAqua, CPAppearanceNameDarkAqua];
+
+    [CPTheme setDefaultTheme:[self aristo3]];
+
+    for (var i = 0; i < appearanceNames.length; i++)
+    {
+        var components = nil;
+
+        [[CPAppearance appearanceNamed:appearanceNames[i]] performAsCurrentDrawingAppearance:function()
+        {
+            components = [[color colorUsingColorSpaceName:nil] components];
+        }];
+
+        for (var j = 0; j < 4; j++)
+            [self assert:ROUND(expectedComponents[i][j] * 10000) equals:ROUND(components[j] * 10000) message:@"controlBackgroundColor in " + appearanceNames[i] + ", component " + j];
+    }
+}
+
+/*
+    A theme value without a state applies in every appearance. A System colour with such a
+    value and no dark value would hide CPColor's built-in dark value under a theme that
+    supports DarkAqua, so Aristo3 gives none.
+*/
+- (void)testNoSystemColorHasAValueWithoutAStateAndNoDarkValue
+{
+    var attributes = [[self aristo3] attributesForClass:@"color"],
+        names = [attributes allKeys],
+        normalKey = String(CPThemeStateNormal),
+        darkKey = String(CPThemeStateAppearanceDarkAqua),
+        violations = [];
+
+    for (var i = 0; i < names.length; i++)
+    {
+        var name = names[i],
+            colorName = name.replace(/-([a-z])/g, function(aMatch, aLetter) { return aLetter.toUpperCase(); });
+
+        if (![CPColor colorWithCatalogName:@"System" colorName:colorName])
+            continue;
+
+        var values = [[attributes objectForKey:name] values];
+
+        if ([values containsKey:normalKey] && ![values containsKey:darkKey])
+            violations.push(name);
+    }
+
+    [self assertTrue:violations.length === 0 message:violations.join(", ")];
+}
+
+/*
     A site that joins a named colour into a string with + writes the colour's description.
     Every CSS value converts in Aqua and in DarkAqua, and no text holds the description of
     an object.

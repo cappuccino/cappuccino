@@ -168,17 +168,13 @@ A3DefineDarkThemeColor(@"windowViewWindowShadowColor", [CPColor colorWithCSSStri
 // System colours
 
 /*
-    System colours with AppKit's DarkAqua value on macOS 27, in sRGB, as CPColor holds
-    AppKit's Aqua values: the window background, the source-list background, secondary text,
-    and the gray and purple tints. A System colour without a value here keeps its Aqua value
-    in the dark appearance, so a window background stayed white, the source list stayed light
-    and secondary text stayed black.
+    CPColor holds a built-in DarkAqua value for every System colour, with AppKit's values
+    (see _CPSystemColorBuiltInSets in CPColor.j). Aristo3 gives a System colour a dark value
+    only where it wants a value of its own: controlBackgroundColor, above.
+
+    Aristo3 gave five System colours their DarkAqua values here, because CPColor held only
+    Aqua values. The values equalled CPColor's built-in DarkAqua values, so they are gone.
 */
-A3DefineDarkSystemColor(@"windowBackgroundColor", [CPColor colorWithRed:0.1176 green:0.1176 blue:0.1176 alpha:1.0]);
-A3DefineDarkSystemColor(@"_sourceListBackgroundColor", [CPColor colorWithRed:0.1765 green:0.1765 blue:0.1765 alpha:0.9]);
-A3DefineDarkSystemColor(@"secondaryLabelColor", [CPColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.549]);
-A3DefineDarkSystemColor(@"systemGrayColor", [CPColor colorWithRed:0.5961 green:0.5961 blue:0.6157 alpha:1.0]);
-A3DefineDarkSystemColor(@"systemPurpleColor", [CPColor colorWithRed:0.8588 green:0.2039 blue:0.949 alpha:1.0]);
 
 // Rule editor: the alternate row matches the table's; the borders match the table divider.
 
