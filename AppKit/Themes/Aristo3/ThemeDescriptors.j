@@ -8297,7 +8297,7 @@ function A3MaskIcon(aMaskImage, aColor)
     hudFontColor = [CPColor whiteColor],
 
     // --- Standard Images (Dark) ---
-    // Used for: Normal rows AND Inactive Selection (Gray background)
+    // Used for: every row, selected or not
     buttonAddImage = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": svgPlus,
         "mask-image": svgPlus,
@@ -8314,32 +8314,6 @@ function A3MaskIcon(aMaskImage, aColor)
         "-webkit-mask-image": svgMinus,
         "mask-image": svgMinus,
         "background-color": A3ColorActiveText,
-        "-webkit-mask-size": "contain",
-        "mask-size": "contain",
-        "-webkit-mask-repeat": "no-repeat",
-        "mask-repeat": "no-repeat",
-        "-webkit-mask-position": "center",
-        "mask-position": "center"
-    } size:CGSizeMake(12, 12)],
-
-    // --- Selected Images (White) ---
-    // Used for: Active Selection (Blue background)
-    buttonAddImageSelected = [CPImage imageWithCSSDictionary:@{
-        "-webkit-mask-image": svgPlus,
-        "mask-image": svgPlus,
-        "background-color": @"#FFFFFF", // Force White
-        "-webkit-mask-size": "contain",
-        "mask-size": "contain",
-        "-webkit-mask-repeat": "no-repeat",
-        "mask-repeat": "no-repeat",
-        "-webkit-mask-position": "center",
-        "mask-position": "center"
-    } size:CGSizeMake(12, 12)],
-
-    buttonRemoveImageSelected = [CPImage imageWithCSSDictionary:@{
-        "-webkit-mask-image": svgMinus,
-        "mask-image": svgMinus,
-        "background-color": @"#FFFFFF", // Force White
         "-webkit-mask-size": "contain",
         "mask-size": "contain",
         "-webkit-mask-repeat": "no-repeat",
@@ -8403,13 +8377,9 @@ function A3MaskIcon(aMaskImage, aColor)
      [@"add-image",                      buttonAddImage,                         CPThemeStateNormal],
      [@"remove-image",                   buttonRemoveImage,                      CPThemeStateNormal],
 
-     // 2. Selected (Inactive/Gray) -> Dark (to contrast with light gray)
+     // 2. Selected -> Dark
      [@"add-image",                      buttonAddImage,                         CPThemeStateSelected],
      [@"remove-image",                   buttonRemoveImage,                      CPThemeStateSelected],
-
-     // 3. Selected (Active/Blue) -> White (Highest Specificity)
-     // [@"add-image",                      buttonAddImageSelected,                 [CPThemeStateSelected, CPThemeStateKeyWindow]],
-     // [@"remove-image",                   buttonRemoveImageSelected,              [CPThemeStateSelected, CPThemeStateKeyWindow]],
 
      // --- HUD Mappings ---
      [@"alternating-row-colors",         hudBackgroundColors,                    CPThemeStateHUD],
