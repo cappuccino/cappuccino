@@ -3133,10 +3133,18 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
             text        = hasValue ? value : placeholder,
             labelSize   = [text sizeWithFont:[s _potentialCurrentValueForThemeAttribute:@"font"]];
 
+        /*
+            The glass and the placeholder are centred as one group. A placeholder wider than the
+            field put the glass at a negative x, outside the field, so a narrow search field showed
+            no glass. The glass now stays at its leading position when the group does not fit,
+            and the placeholder after it is truncated.
+        */
+        var leadingX = inset.left - inset.right;
+
         if (hasValue || (placeholder === @" "))
-            return CGRectMake(inset.left - inset.right, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
+            return CGRectMake(leadingX, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
         else
-            return CGRectMake((rect.size.width - labelSize.width) / 2 - size.width - margin, inset.top - inset.bottom + (rect.size.height - size.height) / 2, size.width, size.height);
+            return CGRectMake(MAX(leadingX, (rect.size.width - labelSize.width) / 2 - size.width - margin), inset.top - inset.bottom + (rect.size.height - size.height) / 2, size.width, size.height);
     },
 
     calcRectFunctionEditing = "" + function(s, rect) {
