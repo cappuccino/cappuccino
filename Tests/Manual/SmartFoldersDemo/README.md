@@ -48,4 +48,4 @@ the other icons and the badges are drawn with `CPBezierPath`.
     toolbar stays (autosave). While the sheet is open, the toolbar items do not act.
     The standard Colors item opens the colour panel. In both appearances its labels, the boxes
     around the preview and the swatches, and the opacity slider's track and knob show.
-13. File ▸ Reset Library…: alert sheet, then sample data restored.
+13. File ▸ Reset Application…: alert sheet, then sample data, default toolbar (items, Icon and Text, regular size), sidebar width, detail pane, empty recent searches and Auto appearance restored at once, without a reload. Cancel changes nothing.

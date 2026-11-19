@@ -11,7 +11,8 @@
 
 var SettingsAppearanceKey   = @"SmartFoldersDemoAppearance",
     SettingsAppearanceNames = [CPAppearanceNameAqua, CPAppearanceNameDarkAqua, nil],
-    SettingsAutoSegment     = 2;
+    SettingsAutoSegment     = 2,
+    SettingsAppearanceDidResetNotification = @"SettingsAppearanceDidResetNotification";
 
 @implementation SettingsWindowController : CPWindowController
 {
@@ -27,6 +28,17 @@ var SettingsAppearanceKey   = @"SmartFoldersDemoAppearance",
     var segment = [[CPUserDefaults standardUserDefaults] objectForKey:SettingsAppearanceKey];
 
     [self _applyAppearanceOfSegment:segment == nil ? SettingsAutoSegment : segment];
+}
+
+/*
+    Removes the kept appearance, so the application follows the system appearance again. An
+    open Settings window shows Auto.
+*/
++ (void)resetAppearance
+{
+    [[CPUserDefaults standardUserDefaults] removeObjectForKey:SettingsAppearanceKey];
+    [self _applyAppearanceOfSegment:SettingsAutoSegment];
+    [[CPNotificationCenter defaultCenter] postNotificationName:SettingsAppearanceDidResetNotification object:self];
 }
 
 + (void)_applyAppearanceOfSegment:(int)aSegment
@@ -66,10 +78,17 @@ var SettingsAppearanceKey   = @"SmartFoldersDemoAppearance",
         var segment = [[CPUserDefaults standardUserDefaults] objectForKey:SettingsAppearanceKey];
         [_appearanceControl setSelectedSegment:segment == nil ? SettingsAutoSegment : segment];
 
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(appearanceDidReset:) name:SettingsAppearanceDidResetNotification object:nil];
+
         [panel center];
     }
 
     return self;
+}
+
+- (void)appearanceDidReset:(CPNotification)aNotification
+{
+    [_appearanceControl setSelectedSegment:SettingsAutoSegment];
 }
 
 - (void)appearanceDidChange:(id)aSender

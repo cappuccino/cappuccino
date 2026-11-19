@@ -22,6 +22,7 @@
 @import "PeopleViewController.j"
 @import "SmartFolderEditorController.j"
 @import "NameSheetController.j"
+@import "SettingsWindowController.j"
 
 var ToolbarSidebarIdentifier    = @"SidebarItem",
     ToolbarNewFolderIdentifier  = @"NewSmartFolderItem",
@@ -506,7 +507,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [self _selectSourceItem:[_library allPeopleItem]];
 }
 
-- (void)resetLibrary:(id)sender
+- (void)resetApplication:(id)sender
 {
     if ([self _isSheetVisible])
         return;
@@ -514,16 +515,21 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     var alert = [[CPAlert alloc] init];
 
     [alert setAlertStyle:CPWarningAlertStyle];
-    [alert setMessageText:@"Reset the library?"];
-    [alert setInformativeText:@"All people, groups and smart folders will be replaced by the sample data. This cannot be undone."];
+    [alert setMessageText:@"Reset the application?"];
+    [alert setInformativeText:@"All people, groups and smart folders will be replaced by the sample data. The toolbar, the sidebar, the detail pane, the recent searches and the appearance return to their defaults. This cannot be undone."];
     [alert addButtonWithTitle:@"Reset"];
     [alert addButtonWithTitle:@"Cancel"];
 
-    // CPAlert reports the clicked button's tag as the return code. Assign our own
-    // tags rather than relying on a framework-specific numbering scheme.
-    var buttons = [alert buttons];
-    [buttons[0] setTag:ResetAlertResetTag];
-    [buttons[1] setTag:ResetAlertCancelTag];
+    /*
+        CPAlert reports the clicked button's tag as the return code. The application gives its
+        own tags, found by title. -[CPAlert buttons] lists the buttons in the reverse order of
+        addition, unlike AppKit, so tags given by index went to the wrong buttons: Reset did
+        nothing and Cancel reset the application.
+    */
+    [[alert buttons] enumerateObjectsUsingBlock:function(aButton)
+    {
+        [aButton setTag:[aButton title] === @"Reset" ? ResetAlertResetTag : ResetAlertCancelTag];
+    }];
 
     [alert beginSheetModalForWindow:[self window]
                       modalDelegate:self
@@ -537,10 +543,27 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
         return;
 
     [_searchField setStringValue:@""];
+    [_searchField setRecentSearches:[]];
     _searchPredicate = nil;
     _selectedItem = [_library allPeopleItem];
 
     [_library resetToSampleData];
+
+    var toolbar = [[self window] toolbar];
+
+    [toolbar setConfigurationFromDictionary:@{
+        @"TB Item Identifiers": [self toolbarDefaultItemIdentifiers:toolbar],
+        @"TB Display Mode": CPToolbarDisplayModeDefault,
+        @"TB Size Mode": CPToolbarSizeModeDefault
+    }];
+    [toolbar setVisible:YES];
+
+    [_splitView setPosition:SidebarDefaultWidth ofDividerAtIndex:0];
+
+    if (![_peopleController isDetailVisible])
+        [_peopleController toggleDetail];
+
+    [SettingsWindowController resetAppearance];
 }
 
 // ---------------------------------------------------------------- Validation
@@ -559,7 +582,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     {
         case @selector(newSmartFolder:):
         case @selector(newGroup:):
-        case @selector(resetLibrary:):
+        case @selector(resetApplication:):
             return !sheet;
 
         case @selector(editSelectedSmartFolder:):

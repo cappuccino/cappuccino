@@ -16,7 +16,8 @@
  *          └─ NameSheetController         (sheet)
  *
  * Data (people, groups, smart folders) is persisted in CPUserDefaults.
- * Use File ▸ Reset Library… to return to the deterministic sample data.
+ * Use File ▸ Reset Application… to return to the deterministic sample data and the
+ * default toolbar, layout and appearance.
  *
  * The application catches no exception. It tests the frameworks, so a
  * framework failure must show and must not fall back to a default. If the
@@ -100,7 +101,7 @@
     [self _addItem:@"Rename Group…" action:@selector(renameSelectedGroup:) key:nil modifiers:0 to:fileMenu];
     [self _addItem:@"Delete Group or Smart Folder" action:@selector(deleteSelectedSourceItem:) key:nil modifiers:0 to:fileMenu];
     [fileMenu addItem:[CPMenuItem separatorItem]];
-    [self _addItem:@"Reset Library…" action:@selector(resetLibrary:) key:nil modifiers:0 to:fileMenu];
+    [self _addItem:@"Reset Application…" action:@selector(resetApplication:) key:nil modifiers:0 to:fileMenu];
     [fileMenu addItem:[CPMenuItem separatorItem]];
     [self _addItem:@"Settings…" action:@selector(showSettings:) key:@"," modifiers:0 to:fileMenu];
 
