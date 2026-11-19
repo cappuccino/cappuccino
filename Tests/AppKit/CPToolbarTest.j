@@ -101,6 +101,59 @@ var ToolbarTestMakeViewItem = function(aTarget)
 
 @end
 
+/*
+    A toolbar delegate that gives standard items only and records the notifications of added and
+    removed items.
+*/
+@implementation _ToolbarTestRecordingDelegate : CPObject
+{
+    CPArray     itemIdentifiers     @accessors;
+    CPArray     addedItems          @accessors(readonly);
+    CPArray     removedItems        @accessors(readonly);
+}
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        itemIdentifiers = [CPToolbarSpaceItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier];
+        addedItems = [];
+        removedItems = [];
+    }
+
+    return self;
+}
+
+- (CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)aToolbar
+{
+    return itemIdentifiers;
+}
+
+- (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)aToolbar
+{
+    return itemIdentifiers;
+}
+
+- (void)toolbarWillAddItem:(CPNotification)aNotification
+{
+    [addedItems addObject:[[aNotification userInfo] objectForKey:@"item"]];
+}
+
+- (void)toolbarDidRemoveItem:(CPNotification)aNotification
+{
+    [removedItems addObject:[[aNotification userInfo] objectForKey:@"item"]];
+}
+
+@end
+
+/*
+    Returns the item identifiers of a toolbar's items.
+*/
+var ToolbarTestIdentifiersOf = function(aToolbar)
+{
+    return [[aToolbar items] valueForKey:@"itemIdentifier"];
+};
+
 @implementation CPToolbarTest : OJTestCase
 
 - (void)testTheItemTheDelegateGivesForInsertionIsInserted
@@ -365,6 +418,166 @@ var ToolbarTestMakeViewItem = function(aTarget)
 
     for (var i = 0; i < names.length; i++)
         [self assertNotNull:[[theme attributeWithName:names[i] forClass:[CPImage defaultThemeClass]] values] message:names[i]];
+}
+
+// MARK: Customization and configuration
+
+- (void)testCustomizationAndAutosaveAreOffByDefault
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestDefaults"];
+
+    [self assertFalse:[toolbar allowsUserCustomization] message:@"customization"];
+    [self assertFalse:[toolbar autosavesConfiguration] message:@"autosave"];
+}
+
+- (void)testCustomizationAndAutosaveSurviveArchiving
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestArchiving"];
+
+    [toolbar setAllowsUserCustomization:YES];
+    [toolbar setAutosavesConfiguration:YES];
+
+    var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:toolbar]];
+
+    [self assertTrue:[decoded allowsUserCustomization] message:@"customization"];
+    [self assertTrue:[decoded autosavesConfiguration] message:@"autosave"];
+
+    [[CPUserDefaults standardUserDefaults] removeObjectForKey:@"CPToolbar Configuration CPToolbarTestArchiving"];
+}
+
+- (void)testInsertingAnItemPlacesItAtTheIndex
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestInsert"];
+
+    [toolbar setDelegate:[_ToolbarTestRecordingDelegate new]];
+    [toolbar insertItemWithItemIdentifier:CPToolbarSeparatorItemIdentifier atIndex:1];
+
+    [self assert:[CPToolbarSpaceItemIdentifier, CPToolbarSeparatorItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier] equals:ToolbarTestIdentifiersOf(toolbar)];
+    [self assert:toolbar same:[[toolbar items][1] toolbar]];
+}
+
+- (void)testInsertingAnItemTellsTheDelegateAndPostsANotification
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestWillAdd"],
+        delegate = [_ToolbarTestRecordingDelegate new],
+        posted = [],
+        observer = [[CPNotificationCenter defaultCenter] addObserverForName:CPToolbarWillAddItemNotification object:toolbar queue:nil usingBlock:function(aNotification)
+        {
+            posted.push(aNotification);
+        }];
+
+    [toolbar setDelegate:delegate];
+    [toolbar insertItemWithItemIdentifier:CPToolbarSeparatorItemIdentifier atIndex:0];
+
+    [[CPNotificationCenter defaultCenter] removeObserver:observer];
+
+    [self assert:[[toolbar items][0]] equals:[delegate addedItems] message:@"the delegate"];
+    [self assert:1 equals:posted.length message:@"the notification"];
+    [self assert:[toolbar items][0] same:[[posted[0] userInfo] objectForKey:@"item"]];
+}
+
+- (void)testRemovingAnItemTellsTheDelegateAndPostsANotification
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestDidRemove"],
+        delegate = [_ToolbarTestRecordingDelegate new],
+        posted = [],
+        observer = [[CPNotificationCenter defaultCenter] addObserverForName:CPToolbarDidRemoveItemNotification object:toolbar queue:nil usingBlock:function(aNotification)
+        {
+            posted.push(aNotification);
+        }];
+
+    [toolbar setDelegate:delegate];
+
+    var removedItem = [toolbar items][0];
+
+    [toolbar removeItemAtIndex:0];
+
+    [[CPNotificationCenter defaultCenter] removeObserver:observer];
+
+    [self assert:[CPToolbarFlexibleSpaceItemIdentifier] equals:ToolbarTestIdentifiersOf(toolbar)];
+    [self assert:[removedItem] equals:[delegate removedItems] message:@"the delegate"];
+    [self assert:1 equals:posted.length message:@"the notification"];
+}
+
+- (void)testTheConfigurationDictionaryHoldsTheItemsAndTheModes
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestConfiguration"];
+
+    [toolbar setDelegate:[_ToolbarTestRecordingDelegate new]];
+    [toolbar setDisplayMode:CPToolbarDisplayModeIconOnly];
+
+    var configuration = [toolbar configurationDictionary];
+
+    [self assert:[CPToolbarSpaceItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier] equals:[configuration objectForKey:@"TB Item Identifiers"]];
+    [self assert:CPToolbarDisplayModeIconOnly equals:[configuration objectForKey:@"TB Display Mode"]];
+    [self assert:1 equals:[configuration objectForKey:@"TB Is Shown"]];
+}
+
+- (void)testAConfigurationTakesThePlaceOfTheDefaultItems
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestSetConfiguration"];
+
+    [toolbar setDelegate:[_ToolbarTestRecordingDelegate new]];
+    [toolbar setConfigurationFromDictionary:@{ @"TB Item Identifiers": [CPToolbarSeparatorItemIdentifier, CPToolbarSpaceItemIdentifier] }];
+
+    [self assert:[CPToolbarSeparatorItemIdentifier, CPToolbarSpaceItemIdentifier] equals:ToolbarTestIdentifiersOf(toolbar)];
+}
+
+/*
+    A saved configuration can hold an identifier that the application no longer gives. The
+    toolbar leaves it out instead of raising.
+*/
+- (void)testAnIdentifierWithoutAnItemIsLeftOutOfAConfiguration
+{
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestUnknownIdentifier"];
+
+    [toolbar setDelegate:[_ToolbarTestRecordingDelegate new]];
+    [toolbar setConfigurationFromDictionary:@{ @"TB Item Identifiers": [@"CPToolbarTestNoSuchItem", CPToolbarSpaceItemIdentifier] }];
+
+    [self assert:[CPToolbarSpaceItemIdentifier] equals:ToolbarTestIdentifiersOf(toolbar)];
+}
+
+- (void)testAnAutosavingToolbarSavesAChangeAndANewToolbarTakesIt
+{
+    var identifier = @"CPToolbarTestAutosave",
+        defaultsKey = @"CPToolbar Configuration " + identifier,
+        toolbar = [[CPToolbar alloc] initWithIdentifier:identifier];
+
+    [[CPUserDefaults standardUserDefaults] removeObjectForKey:defaultsKey];
+
+    [toolbar setDelegate:[_ToolbarTestRecordingDelegate new]];
+    [toolbar setAutosavesConfiguration:YES];
+    [toolbar removeItemAtIndex:0];
+
+    var saved = [[CPUserDefaults standardUserDefaults] objectForKey:defaultsKey];
+
+    [self assert:[CPToolbarFlexibleSpaceItemIdentifier] equals:[saved objectForKey:@"TB Item Identifiers"] message:@"the saved configuration"];
+
+    var laterToolbar = [[CPToolbar alloc] initWithIdentifier:identifier + @"Later"];
+
+    [[CPUserDefaults standardUserDefaults] setObject:saved forKey:defaultsKey + @"Later"];
+    [laterToolbar setDelegate:[_ToolbarTestRecordingDelegate new]];
+    [laterToolbar setAutosavesConfiguration:YES];
+
+    [self assert:[CPToolbarFlexibleSpaceItemIdentifier] equals:ToolbarTestIdentifiersOf(laterToolbar) message:@"the toolbar that takes it"];
+
+    [[CPUserDefaults standardUserDefaults] removeObjectForKey:defaultsKey];
+    [[CPUserDefaults standardUserDefaults] removeObjectForKey:defaultsKey + @"Later"];
+}
+
+- (void)testAToolbarWithTheSameIdentifierFollowsAChange
+{
+    var first = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestShared"],
+        second = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestShared"];
+
+    [first setDelegate:[_ToolbarTestRecordingDelegate new]];
+    [second setDelegate:[_ToolbarTestRecordingDelegate new]];
+
+    [first insertItemWithItemIdentifier:CPToolbarSeparatorItemIdentifier atIndex:2];
+    [first setDisplayMode:CPToolbarDisplayModeLabelOnly];
+
+    [self assert:ToolbarTestIdentifiersOf(first) equals:ToolbarTestIdentifiersOf(second) message:@"the items"];
+    [self assert:CPToolbarDisplayModeLabelOnly equals:[second displayMode] message:@"the display mode"];
 }
 
 @end

@@ -29,6 +29,8 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     ToolbarEditIdentifier       = @"EditFolderItem",
     ToolbarDetailIdentifier     = @"DetailItem",
     ToolbarSearchIdentifier     = @"SearchItem",
+    ToolbarNewPersonIdentifier  = @"NewPersonItem",
+    ToolbarAllPeopleIdentifier  = @"ShowAllPeopleItem",
     ToolbarItemImageSize        = CGSizeMake(32.0, 32.0),
     SidebarDefaultWidth         = 230.0,
     SidebarMinWidth             = 160.0,
@@ -120,6 +122,8 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [_searchField setSearchMenuTemplate:[_searchField defaultSearchMenuTemplate]];
 
     var toolbar = [[CPToolbar alloc] initWithIdentifier:@"SmartFoldersDemoToolbar"];
+    [toolbar setAllowsUserCustomization:YES];
+    [toolbar setAutosavesConfiguration:YES];
     [toolbar setDelegate:self];
     [toolbar setVisible:YES];
     [[self window] setToolbar:toolbar];
@@ -128,7 +132,9 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 - (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)aToolbar
 {
     return [ToolbarSidebarIdentifier, ToolbarNewFolderIdentifier, ToolbarNewGroupIdentifier, ToolbarEditIdentifier,
-            ToolbarDetailIdentifier, ToolbarSearchIdentifier, CPToolbarShowColorsItemIdentifier,
+            ToolbarNewPersonIdentifier, ToolbarAllPeopleIdentifier, ToolbarDetailIdentifier, ToolbarSearchIdentifier,
+            CPToolbarShowColorsItemIdentifier, CPToolbarShowFontsItemIdentifier, CPToolbarPrintItemIdentifier,
+            CPToolbarCustomizeToolbarItemIdentifier,
             CPToolbarFlexibleSpaceItemIdentifier, CPToolbarSpaceItemIdentifier, CPToolbarSeparatorItemIdentifier];
 }
 
@@ -160,6 +166,14 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
         case ToolbarEditIdentifier:
             [self _configureItem:item label:@"Edit" imageName:@"ToolbarEdit" action:@selector(editSelectedSmartFolder:) toolTip:@"Edit the selected smart folder"];
+            break;
+
+        case ToolbarNewPersonIdentifier:
+            [self _configureItem:item label:@"New Person" imageName:@"ToolbarNewPerson" action:@selector(newPerson:) toolTip:@"Add a person to the library"];
+            break;
+
+        case ToolbarAllPeopleIdentifier:
+            [self _configureItem:item label:@"All People" imageName:@"ToolbarShowAllPeople" action:@selector(showAllPeople:) toolTip:@"Show all people"];
             break;
 
         case ToolbarDetailIdentifier:

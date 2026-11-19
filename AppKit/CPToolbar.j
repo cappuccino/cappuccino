@@ -65,8 +65,31 @@ CPToolbarSizeModeDefault                = 0;
 CPToolbarSizeModeRegular                = 1;
 CPToolbarSizeModeSmall                  = 2;
 
+/*!
+    Posted before an item is added to a toolbar. The notification's object is the toolbar, and
+    its user info holds the item under the key \c "item".
+*/
+CPToolbarWillAddItemNotification        = @"CPToolbarWillAddItemNotification";
+
+/*!
+    Posted after an item is removed from a toolbar. The notification's object is the toolbar,
+    and its user info holds the item under the key \c "item".
+*/
+CPToolbarDidRemoveItemNotification      = @"CPToolbarDidRemoveItemNotification";
+
 var CPToolbarsByIdentifier              = nil,
     CPToolbarConfigurationsByIdentifier = nil;
+
+/*
+    The keys of a configuration dictionary (see -configurationDictionary), as AppKit names them,
+    and the prefix of the user defaults key under which an autosaving toolbar keeps its
+    configuration.
+*/
+var CPToolbarConfigurationDisplayModeKey        = @"TB Display Mode",
+    CPToolbarConfigurationSizeModeKey           = @"TB Size Mode",
+    CPToolbarConfigurationIsShownKey            = @"TB Is Shown",
+    CPToolbarConfigurationItemIdentifiersKey    = @"TB Item Identifiers",
+    CPToolbarConfigurationDefaultsKeyPrefix     = @"CPToolbar Configuration ";
 
 
 @protocol CPToolbarDelegate <CPObject>
@@ -116,6 +139,7 @@ var CPToolbarsByIdentifier              = nil,
     CPToolbarDisplayMode    _displayMode                @accessors(property=displayMode);
     BOOL                    _showsBaselineSeparator;
     BOOL                    _allowsUserCustomization;
+    BOOL                    _autosavesConfiguration;
     BOOL                    _isVisible;
     CPToolbarSizeMode       _sizeMode                   @accessors(property=sizeMode);
     int                     _desiredHeight;
@@ -124,6 +148,7 @@ var CPToolbarsByIdentifier              = nil,
     unsigned                _implementedDelegateMethods;
 
     CPArray                 _itemIdentifiers;
+    CPArray                 _configurationItemIdentifiers;
 
     CPDictionary            _identifiedItems;
     CPArray                 _defaultItems;
@@ -226,6 +251,7 @@ var CPToolbarsByIdentifier              = nil,
     _isVisible = aFlag;
 
     [_window _noteToolbarChanged];
+    [self _autosaveConfiguration];
 }
 
 - (void)setSizeMode:(CPToolbarSizeMode)aSize
@@ -236,6 +262,9 @@ var CPToolbarsByIdentifier              = nil,
 
     [[self _toolbarView] setFrame:[self _toolbarViewFrame]];
     [_window _noteToolbarChanged];
+
+    [[self _toolbarsSharingConfiguration] makeObjectsPerformSelector:@selector(setSizeMode:) withObject:aSize];
+    [self _autosaveConfiguration];
 }
 
 - (CPWindow)_window
@@ -294,12 +323,237 @@ var CPToolbarsByIdentifier              = nil,
     _displayMode = aDisplayMode;
 
     [self _reloadToolbarItems];
+
+    [[self _toolbarsSharingConfiguration] makeObjectsPerformSelector:@selector(setDisplayMode:) withObject:aDisplayMode];
+    [self _autosaveConfiguration];
+}
+
+// MARK: Customization and configuration
+
+/*!
+    Returns \c YES if the user may customize the toolbar.
+*/
+- (BOOL)allowsUserCustomization
+{
+    return _allowsUserCustomization;
+}
+
+/*!
+    Sets whether the user may customize the toolbar: add, remove and rearrange its items.
+    @param aFlag \c YES allows customization
+*/
+- (void)setAllowsUserCustomization:(BOOL)aFlag
+{
+    _allowsUserCustomization = !!aFlag;
+}
+
+/*!
+    Returns \c YES if the toolbar saves its configuration in the user defaults.
+*/
+- (BOOL)autosavesConfiguration
+{
+    return _autosavesConfiguration;
+}
+
+/*!
+    Sets whether the toolbar saves its configuration in the user defaults whenever the
+    configuration changes, under a key made from its identifier. When the flag becomes \c YES,
+    the toolbar takes a configuration saved earlier, if there is one. A toolbar without an
+    identifier saves nothing.
+    @param aFlag \c YES saves the configuration
+*/
+- (void)setAutosavesConfiguration:(BOOL)aFlag
+{
+    aFlag = !!aFlag;
+
+    if (_autosavesConfiguration === aFlag)
+        return;
+
+    _autosavesConfiguration = aFlag;
+
+    if (_autosavesConfiguration)
+        [self _loadConfiguration];
+}
+
+/*!
+    Returns the toolbar's configuration: its display mode, size mode, visibility and item
+    identifiers, under the keys that AppKit uses. The identifiers are those of the configuration
+    the toolbar took, also one for which no item could be made yet, such as an item that the
+    delegate gives once it is set.
+*/
+- (CPDictionary)configurationDictionary
+{
+    return @{
+        CPToolbarConfigurationDisplayModeKey:       _displayMode || CPToolbarDisplayModeDefault,
+        CPToolbarConfigurationSizeModeKey:          _sizeMode || CPToolbarSizeModeDefault,
+        CPToolbarConfigurationIsShownKey:           _isVisible ? 1 : 0,
+        CPToolbarConfigurationItemIdentifiersKey:   [_configurationItemIdentifiers || _itemIdentifiers || [] copy]
+    };
+}
+
+/*!
+    Sets the toolbar's configuration from a dictionary that -configurationDictionary returned.
+    A key that the dictionary does not hold leaves that part of the configuration as it is.
+    @param aDictionary the configuration
+*/
+- (void)setConfigurationFromDictionary:(CPDictionary)aDictionary
+{
+    var displayMode = [aDictionary objectForKey:CPToolbarConfigurationDisplayModeKey],
+        sizeMode = [aDictionary objectForKey:CPToolbarConfigurationSizeModeKey],
+        isShown = [aDictionary objectForKey:CPToolbarConfigurationIsShownKey],
+        itemIdentifiers = [aDictionary objectForKey:CPToolbarConfigurationItemIdentifiersKey];
+
+    if (displayMode != nil)
+        _displayMode = displayMode;
+
+    if (sizeMode != nil)
+    {
+        _sizeMode = sizeMode;
+        [_toolbarView setFrame:[self _toolbarViewFrame]];
+    }
+
+    if (isShown != nil)
+        _isVisible = !!isShown;
+
+    if (itemIdentifiers)
+        _configurationItemIdentifiers = [itemIdentifiers copy];
+
+    [self _reloadToolbarItems];
+    [_window _noteToolbarChanged];
+    [self _autosaveConfiguration];
+}
+
+/*!
+    Inserts the item with the identifier at the index. The toolbar makes the item as it makes
+    its default items, and posts \c CPToolbarWillAddItemNotification before it adds the item.
+    Every other toolbar with the same identifier makes the same change.
+    @param anIdentifier the identifier of the item
+    @param anIndex the index at which to insert the item
+*/
+- (void)insertItemWithItemIdentifier:(CPString)anIdentifier atIndex:(CPInteger)anIndex
+{
+    [self _insertItemWithItemIdentifier:anIdentifier atIndex:anIndex];
+
+    [[self _toolbarsSharingConfiguration] enumerateObjectsUsingBlock:function(aToolbar)
+    {
+        [aToolbar _insertItemWithItemIdentifier:anIdentifier atIndex:anIndex];
+    }];
+
+    [self _autosaveConfiguration];
+}
+
+/*!
+    Removes the item at the index, and posts \c CPToolbarDidRemoveItemNotification after it
+    removes the item. Every other toolbar with the same identifier makes the same change.
+    @param anIndex the index of the item
+*/
+- (void)removeItemAtIndex:(CPInteger)anIndex
+{
+    [self _removeItemAtIndex:anIndex];
+
+    [[self _toolbarsSharingConfiguration] makeObjectsPerformSelector:@selector(_removeItemAtIndex:) withObject:anIndex];
+
+    [self _autosaveConfiguration];
 }
 
 /* @ignore */
+- (void)_insertItemWithItemIdentifier:(CPString)anIdentifier atIndex:(CPInteger)anIndex
+{
+    var item = [self _itemForInsertionWithItemIdentifier:anIdentifier];
+
+    if (!item)
+        [CPException raise:CPInvalidArgumentException
+                    reason:@"Toolbar delegate " + _delegate + " returned nil toolbar item for identifier \"" + anIdentifier + "\""];
+
+    anIndex = MAX(0, MIN(anIndex, [_items count]));
+
+    var notification = [CPNotification notificationWithName:CPToolbarWillAddItemNotification object:self userInfo:@{ @"item": item }];
+
+    [self _sendDelegateToolbarWillAddItem:notification];
+    [[CPNotificationCenter defaultCenter] postNotification:notification];
+
+    [_items insertObject:item atIndex:anIndex];
+    _itemIdentifiers = [_items valueForKey:@"itemIdentifier"];
+    _configurationItemIdentifiers = [_itemIdentifiers copy];
+
+    [self _noteItemsChanged];
+}
+
+/* @ignore */
+- (void)_removeItemAtIndex:(CPInteger)anIndex
+{
+    if (anIndex < 0 || anIndex >= [_items count])
+        [CPException raise:CPRangeException reason:@"Index " + anIndex + " is beyond the toolbar's " + [_items count] + " items"];
+
+    var item = _items[anIndex];
+
+    [_items removeObjectAtIndex:anIndex];
+    _itemIdentifiers = [_items valueForKey:@"itemIdentifier"];
+    _configurationItemIdentifiers = [_itemIdentifiers copy];
+
+    [self _noteItemsChanged];
+
+    var notification = [CPNotification notificationWithName:CPToolbarDidRemoveItemNotification object:self userInfo:@{ @"item": item }];
+
+    [self _sendDelegateToolbarDidRemoveItem:notification];
+    [[CPNotificationCenter defaultCenter] postNotification:notification];
+}
+
+/* @ignore */
+- (void)_noteItemsChanged
+{
+    _itemsSortedByVisibilityPriority = [_items sortedArrayUsingFunction:_CPToolbarItemVisibilityPriorityCompare context:NULL];
+
+    [_toolbarView reloadToolbarItems];
+}
+
+/*
+    Returns the other toolbars that share the receiver's configuration: those with the same
+    identifier. Toolbars without an identifier share nothing.
+    @ignore
+*/
+- (CPArray)_toolbarsSharingConfiguration
+{
+    if (![_identifier length])
+        return [];
+
+    return ([CPToolbarsByIdentifier objectForKey:_identifier] || []).filter(function(aToolbar)
+    {
+        return aToolbar !== self;
+    });
+}
+
+/* @ignore */
+- (CPString)_configurationDefaultsKey
+{
+    return CPToolbarConfigurationDefaultsKeyPrefix + _identifier;
+}
+
+/*
+    Takes the configuration saved in the user defaults, if there is one.
+    @ignore
+*/
 - (void)_loadConfiguration
 {
+    if (![_identifier length])
+        return;
 
+    var configuration = [[CPUserDefaults standardUserDefaults] objectForKey:[self _configurationDefaultsKey]];
+
+    if (configuration)
+        [self setConfigurationFromDictionary:configuration];
+}
+
+/*
+    Saves the configuration in the user defaults when the toolbar autosaves.
+    @ignore
+*/
+- (void)_autosaveConfiguration
+{
+    if (!_autosavesConfiguration || ![_identifier length])
+        return;
+
+    [[CPUserDefaults standardUserDefaults] setObject:[self configurationDictionary] forKey:[self _configurationDefaultsKey]];
 }
 
 - (CGRect)_toolbarViewFrame
@@ -333,7 +587,17 @@ var CPToolbarsByIdentifier              = nil,
     // _defaultItems may have been loaded from Cib
     _itemIdentifiers = [_defaultItems valueForKey:@"itemIdentifier"] || [];
 
-    if ([self _delegateRespondsToToolbarDefaultItemIdentifiers])
+    /*
+        A configuration that the toolbar took, or that the user made by adding and removing
+        items, gives the items in place of the default ones. An identifier for which no item can
+        be made, such as one that a saved configuration still holds after the application
+        dropped it, is left out.
+    */
+    var isConfigured = !!_configurationItemIdentifiers;
+
+    if (isConfigured)
+        _itemIdentifiers = [_configurationItemIdentifiers copy];
+    else if ([self _delegateRespondsToToolbarDefaultItemIdentifiers])
     {
         var itemIdentifiersFromDelegate = [self _sendDelegateToolbarDefaultItemIdentifiers];
 
@@ -353,34 +617,21 @@ var CPToolbarsByIdentifier              = nil,
     for (; index < count; ++index)
     {
         var identifier = _itemIdentifiers[index],
-            item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
-
-        // May come from a Cib.
-        if (!item)
-            item = [_identifiedItems objectForKey:identifier];
-
-        if (!item && _delegate)
-            item = [self _sendDelegateItemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES];
+            item = [self _itemForInsertionWithItemIdentifier:identifier];
 
         if (item == nil)
+        {
+            if (isConfigured)
+                continue;
+
             [CPException raise:CPInvalidArgumentException
                          reason:@"Toolbar delegate " + _delegate + " returned nil toolbar item for identifier \"" + identifier + "\""];
-
-        /*
-            The toolbar copied every item before it inserted it, also the item that the delegate
-            returned for insertion and the item decoded from a cib. A copy archives and unarchives
-            the item's view, so the toolbar showed a decoded copy: the application's references
-            reached an item and a view that were never shown, and the copy lost its target. AppKit
-            inserts the item that it receives. An item already placed in this reload or shown by
-            another toolbar is still copied, because a view has only one superview.
-        */
-        if ([self _isItemInUse:item])
-            item = [item copy];
-
-        item._toolbar = self;
+        }
 
         [_items addObject:item];
     }
+
+    _itemIdentifiers = [_items valueForKey:@"itemIdentifier"];
 
 //    _items = [[self _defaultToolbarItems] mutableCopy];
 
@@ -390,6 +641,41 @@ var CPToolbarsByIdentifier              = nil,
     _itemsSortedByVisibilityPriority = [_items sortedArrayUsingFunction:_CPToolbarItemVisibilityPriorityCompare context:NULL];
 
     [_toolbarView reloadToolbarItems];
+}
+
+/*
+    Returns the item to insert for the identifier: a standard item, an item decoded from a cib,
+    or the item the delegate gives for insertion; nil when there is none.
+    @ignore
+*/
+- (CPToolbarItem)_itemForInsertionWithItemIdentifier:(CPString)identifier
+{
+    var item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
+
+    // May come from a Cib.
+    if (!item)
+        item = [_identifiedItems objectForKey:identifier];
+
+    if (!item && _delegate)
+        item = [self _sendDelegateItemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES];
+
+    if (!item)
+        return nil;
+
+        /*
+            The toolbar copied every item before it inserted it, also the item that the delegate
+            returned for insertion and the item decoded from a cib. A copy archives and unarchives
+            the item's view, so the toolbar showed a decoded copy: the application's references
+            reached an item and a view that were never shown, and the copy lost its target. AppKit
+            inserts the item that it receives. An item already placed in this reload or shown by
+            another toolbar is still copied, because a view has only one superview.
+        */
+    if ([self _isItemInUse:item])
+        item = [item copy];
+
+    item._toolbar = self;
+
+    return item;
 }
 
 /*!
@@ -544,6 +830,7 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
     CPToolbarDisplayModeKey             = @"CPToolbarDisplayModeKey",
     CPToolbarShowsBaselineSeparatorKey  = @"CPToolbarShowsBaselineSeparatorKey",
     CPToolbarAllowsUserCustomizationKey = @"CPToolbarAllowsUserCustomizationKey",
+    CPToolbarAutosavesConfigurationKey  = @"CPToolbarAutosavesConfigurationKey",
     CPToolbarIsVisibleKey               = @"CPToolbarIsVisibleKey",
     CPToolbarDelegateKey                = @"CPToolbarDelegateKey",
     CPToolbarIdentifiedItemsKey         = @"CPToolbarIdentifiedItemsKey",
@@ -570,6 +857,7 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
         _allowsUserCustomization = [aCoder decodeBoolForKey:CPToolbarAllowsUserCustomizationKey];
         _isVisible = [aCoder decodeBoolForKey:CPToolbarIsVisibleKey];
         _sizeMode = [aCoder decodeIntForKey:CPToolbarSizeModeKey];
+        _autosavesConfiguration = [aCoder decodeBoolForKey:CPToolbarAutosavesConfigurationKey];
 
         _identifiedItems = [aCoder decodeObjectForKey:CPToolbarIdentifiedItemsKey];
         _defaultItems = [aCoder decodeObjectForKey:CPToolbarDefaultItemsKey];
@@ -581,6 +869,9 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
         _items = [];
 
         [CPToolbar _addToolbar:self forIdentifier:_identifier];
+
+        if (_autosavesConfiguration)
+            [self _loadConfiguration];
 
         // This won't come from a Cib, but can come from manual encoding.
         [self setDelegate:[aCoder decodeObjectForKey:CPToolbarDelegateKey]];
@@ -615,6 +906,7 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
     [aCoder encodeInt:_displayMode forKey:CPToolbarDisplayModeKey];
     [aCoder encodeBool:_showsBaselineSeparator forKey:CPToolbarShowsBaselineSeparatorKey];
     [aCoder encodeBool:_allowsUserCustomization forKey:CPToolbarAllowsUserCustomizationKey];
+    [aCoder encodeBool:_autosavesConfiguration forKey:CPToolbarAutosavesConfigurationKey];
     [aCoder encodeBool:_isVisible forKey:CPToolbarIsVisibleKey];
     [aCoder encodeInt:_sizeMode forKey:CPToolbarSizeModeKey];
 
@@ -1389,7 +1681,11 @@ var LABEL_MARGIN    = 2.0;
 */
 - (void)_sendDelegateToolbarDidRemoveItem:(CPNotification)notification
 {
-    if (!(_delegate & CPToolbarDelegate_toolbarDidRemoveItem_))
+    /*
+        The test read the delegate object instead of the flags of the methods it implements, so
+        the delegate never received the notification.
+    */
+    if (!(_implementedDelegateMethods & CPToolbarDelegate_toolbarDidRemoveItem_))
         return;
 
     [_delegate toolbarDidRemoveItem:notification];
@@ -1413,7 +1709,7 @@ var LABEL_MARGIN    = 2.0;
 */
 - (void)_sendDelegateToolbarWillAddItem:(CPNotification)notification
 {
-    if (!(_delegate & CPToolbarDelegate_toolbarWillAddItem_))
+    if (!(_implementedDelegateMethods & CPToolbarDelegate_toolbarWillAddItem_))
         return;
 
     [_delegate toolbarWillAddItem:notification];
