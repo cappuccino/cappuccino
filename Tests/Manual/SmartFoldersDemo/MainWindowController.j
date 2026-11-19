@@ -7,10 +7,11 @@
  * Exercises:
  *   - CPWindowController created in code, window delegate + responder chain
  *     target for menu / toolbar / button bar actions (sent to nil)
- *   - CPToolbar with view items (buttons, CPSearchField)
+ *   - CPToolbar with standard image items, whose glyphs come from the asset
+ *     catalog with a dark variant, and a view item (CPSearchField)
  *   - CPSplitView delegate API: min/max constraints, collapsing, custom
  *     resizeSubviewsWithOldSize:, autosave, button bar resize control
- *   - menu validation (-validateMenuItem:)
+ *   - one -validateUserInterfaceItem: for the menus and the toolbar items
  *   - CPAlert as a sheet
  *   - CPPasteboard copy / paste
  */
@@ -28,6 +29,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     ToolbarEditIdentifier       = @"EditFolderItem",
     ToolbarDetailIdentifier     = @"DetailItem",
     ToolbarSearchIdentifier     = @"SearchItem",
+    ToolbarItemImageSize        = CGSizeMake(32.0, 32.0),
     SidebarDefaultWidth         = 230.0,
     SidebarMinWidth             = 160.0,
     SidebarMaxWidth             = 420.0,
@@ -119,10 +121,6 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
     var toolbar = [[CPToolbar alloc] initWithIdentifier:@"SmartFoldersDemoToolbar"];
     [toolbar setDelegate:self];
-
-    // Buttons carry their own titles, so labels below them would be redundant.
-    [toolbar setDisplayMode:CPToolbarDisplayModeIconOnly];
-
     [toolbar setVisible:YES];
     [[self window] setToolbar:toolbar];
 }
@@ -149,23 +147,23 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     switch (anIdentifier)
     {
         case ToolbarSidebarIdentifier:
-            [self _configureItem:item label:@"Sidebar" buttonTitle:@"Sidebar" action:@selector(toggleSidebar:) toolTip:@"Show or hide the sidebar"];
+            [self _configureItem:item label:@"Sidebar" imageName:@"ToolbarSidebar" action:@selector(toggleSidebar:) toolTip:@"Show or hide the sidebar"];
             break;
 
         case ToolbarNewFolderIdentifier:
-            [self _configureItem:item label:@"New Smart Folder" buttonTitle:@"New Smart Folder" action:@selector(newSmartFolder:) toolTip:@"Create a smart folder from a predicate"];
+            [self _configureItem:item label:@"New Smart Folder" imageName:@"ToolbarNewSmartFolder" action:@selector(newSmartFolder:) toolTip:@"Create a smart folder from a predicate"];
             break;
 
         case ToolbarNewGroupIdentifier:
-            [self _configureItem:item label:@"New Group" buttonTitle:@"New Group" action:@selector(newGroup:) toolTip:@"Create an empty group (or drop people on GROUPS)"];
+            [self _configureItem:item label:@"New Group" imageName:@"ToolbarNewGroup" action:@selector(newGroup:) toolTip:@"Create an empty group (or drop people on GROUPS)"];
             break;
 
         case ToolbarEditIdentifier:
-            [self _configureItem:item label:@"Edit" buttonTitle:@"Edit…" action:@selector(editSelectedSmartFolder:) toolTip:@"Edit the selected smart folder"];
+            [self _configureItem:item label:@"Edit" imageName:@"ToolbarEdit" action:@selector(editSelectedSmartFolder:) toolTip:@"Edit the selected smart folder"];
             break;
 
         case ToolbarDetailIdentifier:
-            [self _configureItem:item label:@"Details" buttonTitle:@"Details" action:@selector(toggleDetail:) toolTip:@"Show or hide the detail pane"];
+            [self _configureItem:item label:@"Details" imageName:@"ToolbarDetails" action:@selector(toggleDetail:) toolTip:@"Show or hide the detail pane"];
             break;
 
         case ToolbarSearchIdentifier:
@@ -180,25 +178,22 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     return item;
 }
 
-- (void)_configureItem:(CPToolbarItem)anItem label:(CPString)aLabel buttonTitle:(CPString)aTitle action:(SEL)anAction toolTip:(CPString)aToolTip
+/*
+    Makes anItem a standard image item. The image comes from the asset catalog, which holds a
+    light and a dark glyph, so the glyph follows the appearance. The size is given, because an
+    asset image may not have loaded when the item is made. The item validates with the menus
+    (-validateToolbarItem:).
+*/
+- (void)_configureItem:(CPToolbarItem)anItem label:(CPString)aLabel imageName:(CPString)anImageName action:(SEL)anAction toolTip:(CPString)aToolTip
 {
-    var button = [CPButton buttonWithTitle:aTitle];
-
-    [button setBezelStyle:CPRoundedBezelStyle];
-    [button setTarget:self];
-    [button setAction:anAction];
-    [button sizeToFit];
-
-    var size = CGSizeMake(MAX(CGRectGetWidth([button frame]), 40), 25);
-
     [anItem setLabel:aLabel];
     [anItem setPaletteLabel:aLabel];
     [anItem setToolTip:aToolTip];
+    [anItem setImage:[CPImage imageNamed:anImageName]];
+    [anItem setMinSize:ToolbarItemImageSize];
+    [anItem setMaxSize:ToolbarItemImageSize];
     [anItem setTarget:self];
     [anItem setAction:anAction];
-    [anItem setView:button];
-    [anItem setMinSize:size];
-    [anItem setMaxSize:size];
 }
 
 // ---------------------------------------------------------------- Split view delegate (sidebar)
@@ -536,7 +531,11 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
 // ---------------------------------------------------------------- Validation
 
-- (BOOL)validateMenuItem:(CPMenuItem)anItem
+/*
+    Decides for the menus and the toolbar items together whether an action is enabled, so a
+    toolbar item and the menu item with the same action always agree.
+*/
+- (BOOL)validateUserInterfaceItem:(id)anItem
 {
     var action = [anItem action],
         sheet = [self _isSheetVisible],
@@ -566,17 +565,33 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
         case @selector(paste:):
             return !sheet && [[[CPPasteboard generalPasteboard] types] containsObject:CPStringPboardType];
-
-        case @selector(toggleSidebar:):
-            [anItem setTitle:[self isSidebarVisible] ? @"Hide Sidebar" : @"Show Sidebar"];
-            return YES;
-
-        case @selector(toggleDetail:):
-            [anItem setTitle:[_peopleController isDetailVisible] ? @"Hide Details" : @"Show Details"];
-            return YES;
     }
 
     return YES;
+}
+
+/*
+    A menu item also shows the state of a toggle in its title.
+*/
+- (BOOL)validateMenuItem:(CPMenuItem)anItem
+{
+    switch ([anItem action])
+    {
+        case @selector(toggleSidebar:):
+            [anItem setTitle:[self isSidebarVisible] ? @"Hide Sidebar" : @"Show Sidebar"];
+            break;
+
+        case @selector(toggleDetail:):
+            [anItem setTitle:[_peopleController isDetailVisible] ? @"Hide Details" : @"Show Details"];
+            break;
+    }
+
+    return [self validateUserInterfaceItem:anItem];
+}
+
+- (BOOL)validateToolbarItem:(CPToolbarItem)anItem
+{
+    return [self validateUserInterfaceItem:anItem];
 }
 
 @end

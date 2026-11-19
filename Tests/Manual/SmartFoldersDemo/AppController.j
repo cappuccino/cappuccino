@@ -122,6 +122,9 @@
     [self _addItem:@"Hide Sidebar" action:@selector(toggleSidebar:) key:@"s" modifiers:CPCommandKeyMask | CPControlKeyMask to:viewMenu];
     [self _addItem:@"Hide Details" action:@selector(toggleDetail:) key:@"d" modifiers:CPCommandKeyMask | CPControlKeyMask to:viewMenu];
     [viewMenu addItem:[CPMenuItem separatorItem]];
+    [self _addItem:@"Hide Toolbar" action:@selector(toggleToolbarShown:) key:@"t" modifiers:commandOption to:viewMenu];
+    [self _addItem:@"Customize Toolbar…" action:@selector(runToolbarCustomizationPalette:) key:nil modifiers:0 to:viewMenu];
+    [viewMenu addItem:[CPMenuItem separatorItem]];
     [self _addItem:@"Show All People" action:@selector(showAllPeople:) key:@"1" modifiers:0 to:viewMenu];
 }
 

@@ -3,8 +3,9 @@
 Non-document-based Cappuccino integration test, built entirely in code (no cib).
 
 Copy `index.html`, `index-debug.html` and `Jakefile` from `Tests/Manual/SmartFoldersTest`
-(they are toolchain specific and need no changes apart from the title). No `Resources/`
-are required: all icons and badges are drawn with `CPBezierPath`.
+(they are toolchain specific and need no changes apart from the title). The toolbar glyphs
+are SVG files in the asset catalog `Resources/Assets.xcassets`, each with a dark variant;
+the other icons and the badges are drawn with `CPBezierPath`.
 
 ## Structure
 
@@ -12,7 +13,7 @@ are required: all icons and badges are drawn with `CPBezierPath`.
 |---|---|
 | `main.j`, `Info.plist` | entry point, `CPApplicationDelegateClass` = `AppController` |
 | `AppController.j` | creates model, main menu, main window controller |
-| `MainWindowController.j` | bridge window, toolbar, sidebar split view, routed actions, menu validation |
+| `MainWindowController.j` | bridge window, toolbar, sidebar split view, routed actions, menu and toolbar validation |
 | `SourceListViewController.j` | view-based `CPOutlineView` source list, badges, drop target, button bar |
 | `PeopleViewController.j` | `CPArrayController` + bound `CPTableView`, drag source, pasteboard, detail split |
 | `PersonDetailViewController.j` | controls bound to `selection.*` |
@@ -37,4 +38,8 @@ are required: all icons and badges are drawn with `CPBezierPath`.
 11. Copy (⌘C) then Paste (⌘V): duplicated people appear selected. Delete key removes people
     (from the group only, when a group is selected).
 12. View menu / toolbar: hide and show sidebar and detail pane; drag the sidebar resize control in the button bar.
+    Toolbar items are enabled exactly when their menu items are: Edit only for a smart folder,
+    New Smart Folder and New Group not while a sheet is open. In dark mode the glyphs are light.
+    View ▸ Hide Toolbar hides it and the item then reads Show Toolbar. View ▸ Customize Toolbar…
+    stays disabled until CPWindow implements the customisation palette.
 13. File ▸ Reset Library…: alert sheet, then sample data restored.
