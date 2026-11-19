@@ -23,7 +23,10 @@
 
 @import "_CPToolbarItem.j"
 @import "_CPToolbarFlexibleSpaceItem.j"
+@import "_CPToolbarCustomizeToolbarItem.j"
 @import "_CPToolbarShowColorsItem.j"
+@import "_CPToolbarShowFontsItem.j"
+@import "_CPToolbarPrintItem.j"
 @import "_CPToolbarSeparatorItem.j"
 @import "_CPToolbarSpaceItem.j"
 

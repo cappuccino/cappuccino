@@ -656,13 +656,13 @@ var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
             return [_CPToolbarShowColorsItem new];
 
         case CPToolbarShowFontsItemIdentifier:
-            return nil;
+            return [_CPToolbarShowFontsItem new];
 
         case CPToolbarCustomizeToolbarItemIdentifier:
-            return nil;
+            return [_CPToolbarCustomizeToolbarItem new];
 
         case CPToolbarPrintItemIdentifier:
-            return nil;
+            return [_CPToolbarPrintItem new];
     }
 
     return nil;

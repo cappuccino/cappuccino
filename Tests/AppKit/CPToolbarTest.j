@@ -22,6 +22,8 @@
 
 @import <AppKit/AppKit.j>
 
+@import "BuiltThemes.j"
+
 var ToolbarTestItemIdentifier = @"ToolbarTestItem";
 
 /*
@@ -312,6 +314,57 @@ var ToolbarTestMakeViewItem = function(aTarget)
     [views[1] updateFromItem];
 
     [self assert:font same:[views[1]._labelField font]];
+}
+
+// MARK: Standard items
+
+/*
+    Show Fonts, Print and Customize Toolbar had identifiers but no standard item, so a toolbar
+    that listed one asked its delegate and raised when the delegate gave none.
+*/
+- (void)assertStandardItem:(CPString)anIdentifier label:(CPString)aLabel paletteLabel:(CPString)aPaletteLabel action:(SEL)anAction imageName:(CPString)anImageName
+{
+    var item = [CPToolbarItem _standardItemWithItemIdentifier:anIdentifier];
+
+    [self assertNotNull:item message:anIdentifier];
+    [self assert:anIdentifier equals:[item itemIdentifier] message:anIdentifier + @", identifier"];
+    [self assert:aLabel equals:[item label] message:anIdentifier + @", label"];
+    [self assert:aPaletteLabel equals:[item paletteLabel] message:anIdentifier + @", palette label"];
+    [self assert:anAction equals:[item action] message:anIdentifier + @", action"];
+    [self assert:[CPImage imageNamed:anImageName] same:[item image] message:anIdentifier + @", image"];
+}
+
+- (void)testShowFontsPrintAndCustomizeToolbarAreStandardItems
+{
+    [self assertStandardItem:CPToolbarShowFontsItemIdentifier label:@"Fonts" paletteLabel:@"Show Fonts" action:@selector(orderFrontFontPanel:) imageName:CPImageNameFontPanel];
+    [self assertStandardItem:CPToolbarPrintItemIdentifier label:@"Print" paletteLabel:@"Print" action:@selector(printDocument:) imageName:CPImageNamePrint];
+    [self assertStandardItem:CPToolbarCustomizeToolbarItemIdentifier label:@"Customize" paletteLabel:@"Customize Toolbar" action:@selector(runToolbarCustomizationPalette:) imageName:CPImageNameCustomizeToolbar];
+}
+
+/*
+    As in AppKit, Show Fonts goes to the shared font manager; Print and Customize Toolbar go
+    along the responder chain.
+*/
+- (void)testTheStandardItemsHaveAppKitsTargets
+{
+    [self assert:[CPFontManager sharedFontManager] same:[[CPToolbarItem _standardItemWithItemIdentifier:CPToolbarShowFontsItemIdentifier] target]];
+    [self assertNull:[[CPToolbarItem _standardItemWithItemIdentifier:CPToolbarPrintItemIdentifier] target]];
+    [self assertNull:[[CPToolbarItem _standardItemWithItemIdentifier:CPToolbarCustomizeToolbarItemIdentifier] target]];
+}
+
+/*
+    These tests read the built Aristo3 theme, so they need the themes built first, as
+    `npx jake build` does.
+*/
+- (void)testAristo3GivesTheImagesOfTheStandardItems
+{
+    var theme = BuiltThemeNamed(@"Aristo3"),
+        names = [@"font-panel", @"print", @"customize-toolbar"];
+
+    [self assertNotNull:theme message:@"The built blends hold no Aristo3 theme. Build the themes first."];
+
+    for (var i = 0; i < names.length; i++)
+        [self assertNotNull:[[theme attributeWithName:names[i] forClass:[CPImage defaultThemeClass]] values] message:names[i]];
 }
 
 @end

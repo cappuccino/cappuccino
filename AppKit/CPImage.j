@@ -73,7 +73,9 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     in a XIB by replacing the prefix. CPImageNameColorPanel keeps the string that it had before
     Cappuccino took AppKit's names, because existing cibs hold that string; nib2cib maps
     NSColorPanel to it. CPImageNameColorPanelHighlighted is Cappuccino's own name, for the
-    highlighted image of the Colors toolbar item. AppKit's Touch Bar names are absent, because
+    highlighted image of the Colors toolbar item. CPImageNamePrint and
+    CPImageNameCustomizeToolbar are Cappuccino's own names too, for the images of the Print and
+    Customize Toolbar items, for which AppKit has no public name. AppKit's Touch Bar names are absent, because
     Cappuccino has no touch bar.
 */
 CPImageNameActionTemplate                       = @"CPActionTemplate";
@@ -139,6 +141,8 @@ CPImageNameUserGroup                            = @"CPUserGroup";
 CPImageNameUserGuest                            = @"CPUserGuest";
 CPImageNameColorPanel                           = @"CPImageNameColorPanel";
 CPImageNameColorPanelHighlighted                = @"CPImageNameColorPanelHighlighted";
+CPImageNamePrint                                = @"CPImageNamePrint";
+CPImageNameCustomizeToolbar                     = @"CPImageNameCustomizeToolbar";
 
 var imagesForNames = { },
     ImageDescriptionFormat = "%s {\n   filename: \"%s\",\n   size: { width:%f, height:%f }\n}",
@@ -213,7 +217,9 @@ var imagesForNames = { },
         "CPUserGroup":                             null,
         "CPUserGuest":                             null,
         "CPImageNameColorPanel":                   ["CPImage/CPImageNameColorPanel.png", 26.0, 29.0],
-        "CPImageNameColorPanelHighlighted":        ["CPImage/CPImageNameColorPanelHighlighted.png", 26.0, 29.0]
+        "CPImageNameColorPanelHighlighted":        ["CPImage/CPImageNameColorPanelHighlighted.png", 26.0, 29.0],
+        "CPImageNamePrint":                        null,
+        "CPImageNameCustomizeToolbar":             null
     },
     _CPSystemImages = {},
     _CPSystemImageDefaultValues = {};
@@ -1017,9 +1023,14 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
     }
 
     if ([aCoder containsValueForKey:CPImageCSSDictionaryKey])
-        return [self initWithCSSDictionary:[aCoder decodeObjectForKey:CPImageCSSDictionaryKey] beforeDictionary:[aCoder decodeObjectForKey:CPImageCSSBeforeDictionaryKey] afterDictionary:[aCoder decodeObjectForKey:CPImageCSSAfterDictionaryKey] size:[aCoder decodeSizeForKey:@"CPSize"]];
+        self = [self initWithCSSDictionary:[aCoder decodeObjectForKey:CPImageCSSDictionaryKey] beforeDictionary:[aCoder decodeObjectForKey:CPImageCSSBeforeDictionaryKey] afterDictionary:[aCoder decodeObjectForKey:CPImageCSSAfterDictionaryKey] size:[aCoder decodeSizeForKey:@"CPSize"]];
     else
-        return [self initWithContentsOfFile:[aCoder decodeObjectForKey:@"CPFilename"] size:[aCoder decodeSizeForKey:@"CPSize"]];
+        self = [self initWithContentsOfFile:[aCoder decodeObjectForKey:@"CPFilename"] size:[aCoder decodeSizeForKey:@"CPSize"]];
+
+    if (self && _CPCoderContainsThemeObjects(aCoder))
+        [self _decodeThemeObjectsWithCoder:aCoder];
+
+    return self;
 }
 
 /*!
@@ -1038,6 +1049,27 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
         [aCoder encodeObject:_cssBeforeDictionary forKey:CPImageCSSBeforeDictionaryKey];
         [aCoder encodeObject:_cssAfterDictionary  forKey:CPImageCSSAfterDictionaryKey];
     }
+
+    /*
+        A theme's system images never reached a built blend. The blend task archives each
+        themed object and records the decoded copy, and the coder of CPImage left out the theme
+        values, so the copy held none. The image now keeps the values it holds, as CPColor and
+        CPFont do. An image without theme values writes nothing more.
+    */
+    if ([self _hasThemeValues])
+        [self _encodeThemeObjectsWithCoder:aCoder];
+}
+
+/*
+    Returns YES when the image holds a value for one of its theme attributes.
+*/
+- (BOOL)_hasThemeValues
+{
+    for (var attributeName in _themeAttributes)
+        if (_themeAttributes.hasOwnProperty(attributeName) && [_themeAttributes[attributeName] hasValues])
+            return YES;
+
+    return NO;
 }
 
 @end
