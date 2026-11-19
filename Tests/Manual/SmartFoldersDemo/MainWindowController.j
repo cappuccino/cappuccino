@@ -128,7 +128,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 - (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)aToolbar
 {
     return [ToolbarSidebarIdentifier, ToolbarNewFolderIdentifier, ToolbarNewGroupIdentifier, ToolbarEditIdentifier,
-            ToolbarDetailIdentifier, ToolbarSearchIdentifier,
+            ToolbarDetailIdentifier, ToolbarSearchIdentifier, CPToolbarShowColorsItemIdentifier,
             CPToolbarFlexibleSpaceItemIdentifier, CPToolbarSpaceItemIdentifier, CPToolbarSeparatorItemIdentifier];
 }
 
@@ -137,7 +137,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     return [ToolbarSidebarIdentifier, CPToolbarSpaceItemIdentifier,
             ToolbarNewFolderIdentifier, ToolbarNewGroupIdentifier, ToolbarEditIdentifier,
             CPToolbarFlexibleSpaceItemIdentifier,
-            ToolbarDetailIdentifier, ToolbarSearchIdentifier];
+            CPToolbarShowColorsItemIdentifier, ToolbarDetailIdentifier, ToolbarSearchIdentifier];
 }
 
 - (CPToolbarItem)toolbar:(CPToolbar)aToolbar itemForItemIdentifier:(CPString)anIdentifier willBeInsertedIntoToolbar:(BOOL)aFlag

@@ -42,4 +42,6 @@ the other icons and the badges are drawn with `CPBezierPath`.
     New Smart Folder and New Group not while a sheet is open. In dark mode the glyphs are light.
     View ▸ Hide Toolbar hides it and the item then reads Show Toolbar. View ▸ Customize Toolbar…
     stays disabled until CPWindow implements the customisation palette.
+    The standard Colors item opens the colour panel. In both appearances its labels, the boxes
+    around the preview and the swatches, and the opacity slider's track and knob show.
 13. File ▸ Reset Library…: alert sheet, then sample data restored.

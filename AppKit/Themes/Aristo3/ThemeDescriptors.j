@@ -6483,11 +6483,11 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
                                                      @"border-width": @"1px",
                                                      @"border-radius": @"50%",
                                                      @"box-sizing": @"border-box",
-                                                     @"background-color": A3ColorBackgroundWhite
+                                                     @"background-color": A3ColorSliderKnob
                                                      }],
 
     trackCssColor = [CPColor colorWithCSSDictionary:@{
-                                                      @"background-color": A3ColorActiveBorder
+                                                      @"background-color": A3ColorSliderTrack
                                                       }],
 
     leftTrackCssColor = [CPColor colorWithCSSDictionary:@{
@@ -6535,7 +6535,7 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
     knobDownCssColor = [CPColor colorWithCSSDictionary:@{
                                                          "-webkit-mask-image": svgArrowDown,
                                                          "mask-image": svgArrowDown,
-                                                         "background-color": A3ColorBackgroundWhite,
+                                                         "background-color": A3ColorSliderKnob,
                                                          "-webkit-mask-size": "contain",
                                                          "mask-size": "contain",
                                                          "-webkit-mask-repeat": "no-repeat",
@@ -6603,11 +6603,11 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
                                                      @"border-width": @"1px",
                                                      @"border-radius": @"50%",
                                                      @"box-sizing": @"border-box",
-                                                     @"background-color": A3ColorBackgroundWhite
+                                                     @"background-color": A3ColorSliderKnob
                                                      }],
 
     trackCssColor = [CPColor colorWithCSSDictionary:@{
-                                                      @"background-color": A3ColorActiveBorder
+                                                      @"background-color": A3ColorSliderTrack
                                                       }],
 
     // --- HUD COLORS ---

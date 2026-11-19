@@ -181,4 +181,39 @@
          message:"color method should return current color"];
 }
 
+// MARK: Appearance
+
+/*
+    Returns every text field in aView and its subviews.
+*/
+- (CPArray)textFieldsIn:(CPView)aView
+{
+    var fields = [aView isKindOfClass:[CPTextField class]] ? [aView] : [],
+        subviews = [aView subviews];
+
+    for (var i = 0; i < subviews.length; i++)
+        fields = fields.concat([self textFieldsIn:subviews[i]]);
+
+    return fields;
+}
+
+/*
+    The labels of the panel and of the slider picker take the label colour, which follows the
+    appearance, so they show in a dark window.
+*/
+- (void)testTheLabelsTakeTheLabelColor
+{
+    var labels = [self textFieldsIn:[_panel contentView]].filter(function(aField) { return ![aField isEditable]; }),
+        sliderPicker = [[CPSliderColorPicker alloc] initWithPickerMask:0 colorPanel:_panel],
+        pickerLabels = [self textFieldsIn:[sliderPicker provideNewView:YES]].filter(function(aField) { return ![aField isEditable]; });
+
+    [self assertTrue:labels.length >= 3 message:@"the panel has its labels"];
+    [self assertTrue:pickerLabels.length > 0 message:@"the slider picker has its labels"];
+
+    labels.concat(pickerLabels).forEach(function(aLabel)
+    {
+        [self assert:[CPColor labelColor] same:[aLabel textColor] message:[aLabel stringValue]];
+    });
+}
+
 @end

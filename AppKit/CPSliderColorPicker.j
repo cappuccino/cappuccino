@@ -77,11 +77,11 @@
 
     _rgbLabel = [[CPTextField alloc] initWithFrame:CGRectMake(0, 10, 100, 20)];
     [_rgbLabel setStringValue:"Red, Green, Blue"];
-    [_rgbLabel setTextColor:[CPColor blackColor]];
+    [_rgbLabel setTextColor:[CPColor labelColor]];
 
     _redLabel = [[CPTextField alloc] initWithFrame:CGRectMake(0, 37, 15, 20)];
     [_redLabel setStringValue:"R"];
-    [_redLabel setTextColor:[CPColor blackColor]];
+    [_redLabel setTextColor:[CPColor labelColor]];
 
     _redSlider = [[CPSlider alloc] initWithFrame:CGRectMake(15, 35, aFrame.size.width - 70, 20)];
     [_redSlider setMaxValue:1.0];
@@ -100,7 +100,7 @@
 
     _greenLabel = [[CPTextField alloc] initWithFrame:CGRectMake(0, 63, 15, 20)];
     [_greenLabel setStringValue:"G"];
-    [_greenLabel setTextColor:[CPColor blackColor]];
+    [_greenLabel setTextColor:[CPColor labelColor]];
 
     _greenSlider = [[CPSlider alloc] initWithFrame:CGRectMake(15, 61, aFrame.size.width - 70, 20)];
     [_greenSlider setMaxValue:1.0];
@@ -119,7 +119,7 @@
 
     _blueLabel = [[CPTextField alloc] initWithFrame:CGRectMake(0, 90, 15, 20)];
     [_blueLabel setStringValue:"B"];
-    [_blueLabel setTextColor:[CPColor blackColor]];
+    [_blueLabel setTextColor:[CPColor labelColor]];
 
     _blueSlider = [[CPSlider alloc] initWithFrame:CGRectMake(15, 87, aFrame.size.width - 70, 20)];
     [_blueSlider setMaxValue:1.0];
@@ -138,11 +138,11 @@
 
     _hsbLabel = [[CPTextField alloc] initWithFrame:CGRectMake(0, 120, 190, 20)];
     [_hsbLabel setStringValue:"Hue, Saturation, Brightness"];
-    [_hsbLabel setTextColor:[CPColor blackColor]];
+    [_hsbLabel setTextColor:[CPColor labelColor]];
 
     _hueLabel = [[CPTextField alloc] initWithFrame:CGRectMake(0, 145, 15, 20)];
     [_hueLabel setStringValue:"H"];
-    [_hueLabel setTextColor:[CPColor blackColor]];
+    [_hueLabel setTextColor:[CPColor labelColor]];
 
     _hueSlider = [[CPSlider alloc] initWithFrame:CGRectMake(15, 143, aFrame.size.width - 70, 20)];
     [_hueSlider setMaxValue:0.999];
@@ -161,7 +161,7 @@
 
     _saturationLabel = [[CPTextField alloc] initWithFrame:CGRectMake(0, 170, 15, 20)];
     [_saturationLabel setStringValue:"S"];
-    [_saturationLabel setTextColor:[CPColor blackColor]];
+    [_saturationLabel setTextColor:[CPColor labelColor]];
 
     _saturationSlider = [[CPSlider alloc] initWithFrame:CGRectMake(15, 168, aFrame.size.width - 70, 20)];
     [_saturationSlider setMaxValue:1.0];
@@ -180,7 +180,7 @@
 
     _brightnessLabel = [[CPTextField alloc] initWithFrame:CGRectMake(0, 196, 15, 20)];
     [_brightnessLabel setStringValue:"B"];
-    [_brightnessLabel setTextColor:[CPColor blackColor]];
+    [_brightnessLabel setTextColor:[CPColor labelColor]];
 
     _brightnessSlider = [[CPSlider alloc] initWithFrame:CGRectMake(15, 194, aFrame.size.width - 70, 20)];
     [_brightnessSlider setMaxValue:1.0];
@@ -199,7 +199,7 @@
 
     _hexLabel = [[CPTextField alloc] initWithFrame:CGRectMake(0, 230, 30, 20)];
     [_hexLabel setStringValue:"Hex"];
-    [_hexLabel setTextColor:[CPColor blackColor]];
+    [_hexLabel setTextColor:[CPColor labelColor]];
 
     //hex input box
     _hexValue = [[CPTextField alloc] initWithFrame:CGRectMake(32, 225, 80, 28)];

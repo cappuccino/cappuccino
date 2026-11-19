@@ -208,6 +208,8 @@ A3ColorScrollerBorder               = A3DefineThemeColor(@"scrollerBorderColor",
 
 // Sliders
 
+A3ColorSliderTrack                  = A3DefineThemeColor(@"sliderTrackColor", [CPColor colorWithCSSString:@"rgba(0,0,0,0.20)"]);
+A3ColorSliderKnob                   = A3DefineThemeColor(@"sliderKnobColor", [CPColor colorWithCSSString:@"rgb(255,255,255)"]);
 A3ColorCircularSliderKnob           = A3DefineThemeColor(@"circularSliderKnobColor", [CPColor colorWithCSSString:@"rgba(0,0,0,0.5)"]);
 A3ColorSliderDisabledKnob           = A3DefineThemeColor(@"sliderDisabledKnobColor", [CPColor colorWithCSSString:@"rgb(251,251,251)"]);
 A3ColorSliderDisabledTrack          = A3DefineThemeColor(@"sliderDisabledTrackColor", [CPColor colorWithCSSString:@"rgb(140,140,140)"]);

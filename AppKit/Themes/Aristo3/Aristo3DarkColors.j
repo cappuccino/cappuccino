@@ -122,6 +122,13 @@ A3DefineDarkThemeColor(@"scrollerBorderColor", [CPColor colorWithCSSString:@"rgb
 
 // Sliders
 
+/*
+    The track and the knob of a linear slider took the border colour and the inset base, which
+    are black and near black in this set, so a slider in a dark window did not show. The slider
+    has its own colours: a light track and a light knob.
+*/
+A3DefineDarkThemeColor(@"sliderTrackColor", [CPColor colorWithCSSString:@"rgba(255,255,255,0.20)"]);
+A3DefineDarkThemeColor(@"sliderKnobColor", [CPColor colorWithCSSString:@"rgb(200,200,200)"]);
 A3DefineDarkThemeColor(@"circularSliderKnobColor", [CPColor colorWithCSSString:@"rgba(255,255,255,0.80)"]);
 A3DefineDarkThemeColor(@"sliderDisabledKnobColor", [CPColor colorWithCSSString:@"rgb(60,60,60)"]);
 A3DefineDarkThemeColor(@"sliderDisabledTrackColor", [CPColor colorWithCSSString:@"rgb(40,40,40)"]);

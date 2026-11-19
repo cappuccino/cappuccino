@@ -356,20 +356,25 @@ var SharedColorPanel = nil,
     [_previewView setColorPanel:self];
     [_previewView setAutoresizingMask:CPViewWidthSizable];
 
-    [previewBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
+    /*
+        The labels were black and the boxes a fixed light grey, so in a dark window the labels
+        did not show. They now take the System colours, which follow the appearance. The grid
+        colour is the same grey in the light appearance.
+    */
+    [previewBox setBackgroundColor:[CPColor gridColor]];
     [previewBox setAutoresizingMask:CPViewWidthSizable];
 
     [previewBox addSubview:_previewView];
 
     var _previewLabel = [[CPTextField alloc] initWithFrame:CGRectMake(10, TOOLBAR_HEIGHT + 10, 60, 15)];
     [_previewLabel setStringValue:"Preview:"];
-    [_previewLabel setTextColor:[CPColor blackColor]];
+    [_previewLabel setTextColor:[CPColor labelColor]];
     [_previewLabel setAlignment:CPRightTextAlignment];
 
     // Swatches
     var swatchBox = [[CPView alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + 10 + PREVIEW_HEIGHT + 5, CGRectGetWidth(bounds) - 86, SWATCH_HEIGHT + 2.0)];
 
-    [swatchBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
+    [swatchBox setBackgroundColor:[CPColor gridColor]];
     [swatchBox setAutoresizingMask:CPViewWidthSizable];
 
     _swatchView = [[_CPColorPanelSwatches alloc] initWithFrame:CGRectInset([swatchBox bounds], 1.0, 1.0)];
@@ -381,13 +386,13 @@ var SharedColorPanel = nil,
 
     var _swatchLabel = [[CPTextField alloc] initWithFrame:CGRectMake(10, TOOLBAR_HEIGHT + 8 + PREVIEW_HEIGHT + 6, 60, 15)];
     [_swatchLabel setStringValue:"Swatches:"];
-    [_swatchLabel setTextColor:[CPColor blackColor]];
+    [_swatchLabel setTextColor:[CPColor labelColor]];
     [_swatchLabel setAlignment:CPRightTextAlignment];
 
 
     var opacityLabel = [[CPTextField alloc] initWithFrame:CGRectMake(10, TOOLBAR_HEIGHT + PREVIEW_HEIGHT + 35, 60, 20)];
     [opacityLabel setStringValue:"Opacity:"];
-    [opacityLabel setTextColor:[CPColor blackColor]];
+    [opacityLabel setTextColor:[CPColor labelColor]];
     [opacityLabel setAlignment:CPRightTextAlignment];
 
     _opacitySlider = [[CPSlider alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + PREVIEW_HEIGHT + 34, CGRectGetWidth(bounds) - 86, 20.0)];
