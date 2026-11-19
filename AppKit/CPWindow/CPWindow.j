@@ -1328,8 +1328,11 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Sets the window's background color.
-    @param aColor the new color for the background
+    Sets the window's background color. For a window that fills its platform window, a
+    \c nil colour gives the default background: the theme's background for the window, else
+    \c +[CPColor windowBackgroundColor], as in AppKit. To let the page behind such a window
+    show, set \c +[CPColor clearColor].
+    @param aColor the new color for the background, or \c nil for the default
 */
 - (void)setBackgroundColor:(CPColor)aColor
 {
@@ -1337,7 +1340,8 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns the window's background color.
+    Returns the window's background color: the colour in effect, the default background
+    included.
 */
 - (CPColor)backgroundColor
 {

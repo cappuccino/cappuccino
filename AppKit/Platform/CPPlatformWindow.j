@@ -50,6 +50,7 @@ var PrimaryPlatformWindow   = NULL;
     DOMWindow               _DOMWindow;
 
     DOMElement              _DOMBodyElement;
+    BOOL                    _paintsCanvasBackground;
     DOMElement              _DOMFocusElement;
     DOMElement              _DOMEventGuard;
     DOMElement              _DOMScrollingElement;

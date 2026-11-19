@@ -794,6 +794,7 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 /*
     Applies the application's effective appearance to every window. A window without an
     appearance of its own passes the change to its views, its child windows and its sheet.
+    Each visible platform window paints its canvas again.
 */
 - (void)_effectiveAppearanceDidChange
 {
@@ -801,6 +802,11 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 
     for (var i = 0, count = windows.length; i < count; i++)
         [windows[i] _updateEffectiveAppearance];
+
+    var platformWindows = [[CPPlatformWindow visiblePlatformWindows] allObjects];
+
+    for (var i = 0, count = platformWindows.length; i < count; i++)
+        [platformWindows[i] _updateCanvasBackground];
 }
 
 /*!

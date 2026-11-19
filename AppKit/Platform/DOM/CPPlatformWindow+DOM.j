@@ -128,15 +128,61 @@
 @import "CPWindow_Constants.j"
 
 @class CPApplication
+@class CPColor
 @class CPDragServer
 @class _CPToolTip
 
 @global _CPRunModalLoop
+@global _CPAppearanceBeginDrawing
+@global _CPAppearanceEndDrawing
+@global _CPAppearanceForApplication
 
 @global document
 
 // List of all open native windows
 var PlatformWindows = [CPSet set];
+
+/*
+    The canvas is the page area outside every window. Nothing painted it, so a page without a
+    background of its own showed the browser's white in every appearance, and a dark
+    application stood on a white canvas. The platform window now paints the canvas with
+    +[CPColor underPageBackgroundColor], AppKit's colour for the area behind documents, in the
+    application's effective appearance. This is an interim value until the canvas colour is
+    decided. A page that sets a background of its own keeps it.
+*/
+
+/*
+    Returns YES when aComputedStyle, the computed style of a page element, gives the element
+    neither a background colour nor a background image. A nil style counts as empty.
+*/
+function _CPPlatformWindowStyleHasNoBackground(aComputedStyle)
+{
+    if (!aComputedStyle)
+        return YES;
+
+    var color = aComputedStyle.backgroundColor,
+        image = aComputedStyle.backgroundImage;
+
+    return (!color || color === "transparent" || color === "rgba(0, 0, 0, 0)") && (!image || image === "none");
+}
+
+/*
+    Returns the canvas colour for anAppearance: +[CPColor underPageBackgroundColor] resolved
+    in that appearance.
+*/
+function _CPPlatformWindowCanvasColor(anAppearance)
+{
+    var previousAppearance = _CPAppearanceBeginDrawing(anAppearance);
+
+    try
+    {
+        return [[CPColor underPageBackgroundColor] colorUsingColorSpaceName:nil];
+    }
+    finally
+    {
+        _CPAppearanceEndDrawing(previousAppearance);
+    }
+}
 
 // Define up here so compressor knows about them.
 var CPDOMEventGetClickCount,
@@ -412,6 +458,7 @@ var SCROLLWHEEL_LINE_PIXELS = 6.0;
     _DOMBodyElement.webkitTouchCallout = "none";
     _DOMBodyElement.style[CPBrowserStyleProperty(@"user-select")] = @"none";
 
+    [self _initializeCanvasBackground];
     [self createDOMElements];
     [self _addLayers];
 
@@ -587,6 +634,48 @@ var SCROLLWHEEL_LINE_PIXELS = 6.0;
             self._DOMWindow = nil;
         }, NO);
     }
+}
+
+/*
+    Decides whether the receiver paints the canvas: only when neither the body element, the
+    document body nor the root element has a background of its own. A canvas painted
+    before, by an earlier registration of the same document, does not count as the page's.
+*/
+- (void)_initializeCanvasBackground
+{
+    var theDocument = _DOMWindow.document,
+        theView = theDocument.defaultView,
+        elements = [_DOMBodyElement, theDocument.body, theDocument.documentElement];
+
+    if (_paintsCanvasBackground)
+        _DOMBodyElement.style.backgroundColor = "";
+
+    _paintsCanvasBackground = NO;
+
+    if (!theView || !theView.getComputedStyle)
+        return;
+
+    for (var i = 0; i < elements.length; i++)
+    {
+        if (elements[i] && !_CPPlatformWindowStyleHasNoBackground(theView.getComputedStyle(elements[i])))
+            return;
+    }
+
+    _paintsCanvasBackground = YES;
+
+    [self _updateCanvasBackground];
+}
+
+/*
+    Paints the canvas in the application's effective appearance, when the receiver paints it.
+    CPApplication calls this when its effective appearance changes.
+*/
+- (void)_updateCanvasBackground
+{
+    if (!_paintsCanvasBackground || !_DOMBodyElement)
+        return;
+
+    _DOMBodyElement.style.backgroundColor = [_CPPlatformWindowCanvasColor(_CPAppearanceForApplication()) cssString];
 }
 
 + (CPSet)visiblePlatformWindows

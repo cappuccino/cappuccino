@@ -102,13 +102,6 @@ var CSVImportTestFields = [@"Name", @"Email", @"Phone", @"Notes"],
 
     _window = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
 
-    /*
-        A bridge window draws no background of its own, so the page showed through the views
-        without a background. The window takes AppKit's window background, which follows the
-        appearance.
-    */
-    [_window setBackgroundColor:[CPColor windowBackgroundColor]];
-
     var contentView = [_window contentView],
         width = CGRectGetWidth([contentView bounds]),
         height = CGRectGetHeight([contentView bounds]);
