@@ -32,13 +32,15 @@
 @class CPColor
 @class CPApplication
 
+/* @ignore */
 var CPThemesByName          = { },
     CPThemeDefaultTheme     = nil,
     CPThemeDefaultHudTheme  = nil;
 
-
 /*!
     @ingroup appkit
+    @class CPTheme
+    CPTheme manages UI themes, skin attributes, colors, and styling rules across Cappuccino controls and views.
 */
 @implementation CPTheme : CPObject
 {
@@ -46,6 +48,10 @@ var CPThemesByName          = { },
     CPDictionary    _attributes;
 }
 
+/*!
+    Sets the global default theme for the application.
+    @param aTheme the theme to set as default
+*/
 + (void)setDefaultTheme:(CPTheme)aTheme
 {
     CPThemeDefaultTheme = aTheme;
@@ -53,14 +59,18 @@ var CPThemesByName          = { },
     [CPFont initializeSystemFontFromTheme:aTheme];
 }
 
+/*!
+    Returns the global default theme for the application.
+    @return the default \c CPTheme instance
+*/
 + (CPTheme)defaultTheme
 {
     return CPThemeDefaultTheme;
 }
 
 /*!
-    Set the default HUD theme. If set to nil, the default described in defaultHudTheme
-    will be used.
+    Sets the default HUD theme. If set to \c nil, the default described in \c defaultHudTheme is used.
+    @param aTheme the HUD theme to set
 */
 + (void)setDefaultHudTheme:(CPTheme)aTheme
 {
@@ -79,11 +89,21 @@ var CPThemesByName          = { },
     return CPThemeDefaultHudTheme;
 }
 
+/*!
+    Returns a registered theme matching the specified name.
+    @param aName the name of the theme
+    @return the matching \c CPTheme, or \c nil if not found
+*/
 + (CPTheme)themeNamed:(CPString)aName
 {
     return CPThemesByName[aName];
 }
 
+/*!
+    Initializes a newly allocated theme with a given name.
+    @param aName the name of the theme
+    @return the initialized theme instance
+*/
 - (id)initWithName:(CPString)aName
 {
     self = [super init];
@@ -255,6 +275,10 @@ var CPThemesByName          = { },
     return [attribute valueForState:aState];
 }
 
+/*!
+    Extracts and merges theme attributes from a view or control instance into this theme.
+    @param anObject the target object from which to copy attributes
+*/
 - (void)takeThemeFromObject:(id)anObject
 {
     var attributes = [anObject _themeAttributeDictionary],
@@ -266,6 +290,7 @@ var CPThemesByName          = { },
         [self _recordAttribute:[attributes objectForKey:attributeName] forClass:objectThemeClass];
 }
 
+/* @ignore */
 - (void)_recordAttribute:(_CPThemeAttribute)anAttribute forClass:(CPString)aClass
 {
     if (![anAttribute hasValues])
@@ -291,11 +316,20 @@ var CPThemesByName          = { },
 
 @end
 
+/* @ignore */
 var CPThemeNameKey          = @"CPThemeNameKey",
     CPThemeAttributesKey    = @"CPThemeAttributesKey";
 
+/*!
+    @category CPTheme (CPCoding)
+*/
 @implementation CPTheme (CPCoding)
 
+/*!
+    Initializes a theme from an unarchiver.
+    @param aCoder the coder object
+    @return the unarchived theme instance
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
@@ -311,6 +345,10 @@ var CPThemeNameKey          = @"CPThemeNameKey",
     return self;
 }
 
+/*!
+    Archives the theme's name and attributes.
+    @param aCoder the coder object
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_name forKey:CPThemeNameKey];
@@ -416,10 +454,16 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 //
 //      @end
 
+/* @ignore */
 var _savedThemesByName = { };
 
+/*!
+    @category CPTheme (CSSTheming)
+    Provides support for CSS-based themes, dynamic attributes sets, and resource path resolution.
+*/
 @implementation CPTheme (CSSTheming)
 
+/* @ignore */
 - (void)_initializeDynamicAttributesAndResourcesPathWithBundle:(CPBundle)aBundle
 {
     // First, save a template of the theme so dynamic attributes and images placeholders are preserved
@@ -445,6 +489,10 @@ var _savedThemesByName = { };
     [self setCSSResourcesPath:[aBundle resourcePath]];
 }
 
+/*!
+    Updates the dynamic attributes set of the default theme and reapplies styling across application windows and menus.
+    @param dynamicSet a dictionary containing the new dynamic attribute values, or \c nil to restore defaults
+*/
 + (void)updateDefaultThemeDynamicAttributesSetWithSet:(CPDictionary)dynamicSet
 {
     // First, get a copy of the theme template
@@ -479,6 +527,10 @@ var _savedThemesByName = { };
     [CPMenu updateMenuBarAttributesWithTheme:newTheme];
 }
 
+/*!
+    Updates the resource path placeholder ("%%") in all CSS directives within the theme.
+    @param pathToResources the path to the resources directory
+*/
 - (void)setCSSResourcesPath:(CPString)pathToResources
 {
     [_attributes enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
@@ -501,6 +553,7 @@ var _savedThemesByName = { };
      }];
 }
 
+/* @ignore */
 - (void)_fixPathInCSSDictionary:(CPDictionary)aDictionary withPathToResources:(CPString)pathToResources
 {
     [aDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
@@ -509,6 +562,10 @@ var _savedThemesByName = { };
      }];
 }
 
+/*!
+    Applies a dynamic attribute substitution set across all CSS-defined attributes in the theme.
+    @param dynamicSet dictionary of dynamic values to replace
+*/
 - (void)applyDynamicSet:(CPDictionary)dynamicSet
 {
     [_attributes enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
@@ -540,6 +597,7 @@ var _savedThemesByName = { };
      }];
 }
 
+/* @ignore */
 - (void)_applyDynamicSet:(CPDictionary)dynamicSet toCSSDictionary:(CPDictionary)aDictionary
 {
     [aDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
@@ -549,6 +607,10 @@ var _savedThemesByName = { };
      }];
 }
 
+/*!
+    Returns whether the theme is CSS-based.
+    @return \c YES if the theme is CSS-based, otherwise \c NO
+*/
 - (BOOL)isCSSBased
 {
     return !![self valueForAttributeWithName:@"css-based" forClass:[CPView class]];
@@ -559,9 +621,9 @@ var _savedThemesByName = { };
 // MARK: -
 
 /*!
- * ThemeStates are immutable objects representing a particular ThemeState.  Applications should never be creating
- * ThemeStates directly but should instead use the CPThemeState function.
- */
+    ThemeState represents an immutable theme state identifier (or composite of states).
+    Applications should not construct ThemeStates directly, but rather use \c CPThemeState().
+*/
 function ThemeState(stateNames)
 {
     var stateNameKeys = [];
@@ -596,11 +658,17 @@ function ThemeState(stateNames)
     this._stateNameCount = stateNameLength;
 }
 
+/*!
+    Returns the string representation of the theme state.
+*/
 ThemeState.prototype.toString = function()
 {
     return this._stateNameString;
-}
+};
 
+/*!
+    Returns whether this state contains the specified theme state components.
+*/
 ThemeState.prototype.hasThemeState = function(aState)
 {
     if (!aState || !aState._stateNames)
@@ -616,8 +684,11 @@ ThemeState.prototype.hasThemeState = function(aState)
             return false;
     }
     return true;
-}
+};
 
+/*!
+    Returns whether this state is a subset of another theme state.
+*/
 ThemeState.prototype.isSubsetOf = function(aState)
 {
     if (aState._stateNameCount < this._stateNameCount)
@@ -632,8 +703,11 @@ ThemeState.prototype.isSubsetOf = function(aState)
             return false;
     }
     return true;
-}
+};
 
+/*!
+    Returns a new theme state with the specified state components removed.
+*/
 ThemeState.prototype.without = function(aState)
 {
     if (!aState || aState === [CPNull null])
@@ -669,9 +743,12 @@ ThemeState.prototype.without = function(aState)
     firstTransform[aState._stateNameString] = result;
 
     return result;
-}
+};
 
-ThemeState.prototype.and  = function(aState)
+/*!
+    Returns a new composite theme state combined with the specified state.
+*/
+ThemeState.prototype.and = function(aState)
 {
     var firstTransform = CPThemeAndTransform[this._stateNameString],
         result;
@@ -692,15 +769,17 @@ ThemeState.prototype.and  = function(aState)
     firstTransform[aState._stateNameString] = result;
 
     return result;
-}
+};
 
+/* @ignore */
 var CPThemeStates = {},
     CPThemeWithoutTransform = {},
     CPThemeAndTransform = {};
 
+/* @ignore */
 ThemeState._cacheThemeState = function(aState)
 {
-    // We do this caching so themeState equality works.  Basically, doing CPThemeState('foo+bar') === CPThemeState('bar', 'foo') will return true.
+    // We do this caching so themeState equality works.
     var themeState = CPThemeStates[String(aState)];
 
     if (themeState === undefined)
@@ -710,7 +789,7 @@ ThemeState._cacheThemeState = function(aState)
     }
 
     return themeState;
-}
+};
 
 /*!
  * This method can be called in multiple ways:
@@ -765,6 +844,7 @@ function CPThemeState()
     return themeState;
 }
 
+/* @ignore */
 @implementation _CPThemeKeyedUnarchiver : CPKeyedUnarchiver
 {
     CPBundle    _bundle;
@@ -792,6 +872,10 @@ function CPThemeState()
 
 @end
 
+/*!
+    @global
+    Standard theme state definitions.
+*/
 CPThemeStateNormal              = CPThemeState("normal");
 CPThemeStateDisabled            = CPThemeState("disabled");
 CPThemeStateHovered             = CPThemeState("hovered");
@@ -819,7 +903,10 @@ CPThemeStateComposedControl     = CPThemeState("composed");
 
 CPThemeStateNormalString        = String(CPThemeStateNormal);
 
-
+/*!
+    @class _CPThemeAttribute
+    Represents an attribute value definition across multiple theme states.
+*/
 @implementation _CPThemeAttribute : CPObject
 {
     CPString            _name;
@@ -830,6 +917,13 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     _CPThemeAttribute   _themeDefaultAttribute;
 }
 
+/*!
+    Initializes a theme attribute with a given name, default value, and fallback default attribute.
+    @param aName the name of the attribute
+    @param aDefaultValue the fallback default value
+    @param aDefaultAttribute parent fallback attribute
+    @return the initialized attribute object
+*/
 - (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue defaultAttribute:(_CPThemeAttribute)aDefaultAttribute
 {
     self = [super init];
@@ -847,26 +941,49 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     return self;
 }
 
+/*!
+    Returns the name of the attribute.
+    @return the attribute name
+*/
 - (CPString)name
 {
     return _name;
 }
 
+/*!
+    Returns the default value of the attribute.
+    @return the default value
+*/
 - (id)defaultValue
 {
     return _defaultValue;
 }
 
+/*!
+    Returns whether this attribute contains custom values.
+    @return \c YES if values exist, otherwise \c NO
+*/
 - (BOOL)hasValues
 {
     return [_values count] > 0;
 }
 
+/*!
+    Returns a copy of the attribute with a new value set for the normal state.
+    @param aValue the value to assign
+    @return a new \c _CPThemeAttribute instance
+*/
 - (_CPThemeAttribute)attributeBySettingValue:(id)aValue
 {
     return [self attributeBySettingValue:aValue forState:CPThemeStateNormal];
 }
 
+/*!
+    Returns a copy of the attribute with a new value set for the specified theme state.
+    @param aValue the value to assign
+    @param aState the target theme state
+    @return a new \c _CPThemeAttribute instance
+*/
 - (_CPThemeAttribute)attributeBySettingValue:(id)aValue forState:(ThemeState)aState
 {
     var shouldRemoveValue = aValue == nil,
@@ -894,11 +1011,20 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     return attribute;
 }
 
+/*!
+    Returns the value in the normal state.
+    @return the normal state value
+*/
 - (id)value
 {
     return [self valueForState:CPThemeStateNormal];
 }
 
+/*!
+    Resolves and returns the attribute value for a given theme state, checking caches, exact matches, composite partial subsets, and fallbacks.
+    @param aState the theme state to resolve
+    @return the matching attribute value
+*/
 - (id)valueForState:(ThemeState)aState
 {
     // First, search in cache.
@@ -948,6 +1074,12 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     return _cache[stateName] = value;
 }
 
+/*!
+    Finds the largest subset match among existing state definitions for a given theme state.
+    @param aState the target theme state
+    @param valueRef reference that receives the matched value
+    @return the length/count of the matched state subset
+*/
 - (CPInteger)largestThemeStateMatchForState:(ThemeState)aState returnedValue:(id)valueRef
 {
     var stateName = String(aState),
@@ -981,6 +1113,11 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     return largestThemeState;
 }
 
+/*!
+    Returns a copy of this attribute with a new parent default attribute.
+    @param anAttribute the fallback parent attribute
+    @return a new \c _CPThemeAttribute instance
+*/
 - (_CPThemeAttribute)attributeBySettingParentAttribute:(_CPThemeAttribute)anAttribute
 {
     if (_themeDefaultAttribute === anAttribute)
@@ -993,6 +1130,11 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     return attribute;
 }
 
+/*!
+    Returns a new attribute merging values from another attribute over this attribute's values.
+    @param anAttribute the attribute to merge from
+    @return a new \c _CPThemeAttribute instance
+*/
 - (_CPThemeAttribute)attributeMergedWithAttribute:(_CPThemeAttribute)anAttribute
 {
     var mergedAttribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
@@ -1005,6 +1147,10 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     return mergedAttribute;
 }
 
+/*!
+    Returns a string description of the attribute.
+    @return the string representation
+*/
 - (CPString)description
 {
     return [super description] + @" Name: " + _name + @", defaultAttribute: " + _themeDefaultAttribute + @", defaultValue: " + _defaultValue + @", values: " + _values;
@@ -1012,12 +1158,19 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
 
 @end
 
-
-// This is used to pass 'parrentAttribute' to the coder
+/* @ignore */
 var ParentAttributeForCoder = nil;
 
+/*!
+    @category _CPThemeAttribute (CPCoding)
+*/
 @implementation _CPThemeAttribute (CPCoding)
 
+/*!
+    Initializes the theme attribute from an unarchiver.
+    @param aCoder the coder object
+    @return the unarchived instance
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
@@ -1060,6 +1213,10 @@ var ParentAttributeForCoder = nil;
     return self;
 }
 
+/*!
+    Archives the theme attribute.
+    @param aCoder the coder object
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_name forKey:@"name"];
@@ -1094,6 +1251,12 @@ var ParentAttributeForCoder = nil;
 
 @end
 
+/*!
+    Encodes a theme attribute into a coder.
+    @param aCoder the coder
+    @param aThemeAttribute the attribute to encode
+    @return \c YES if encoded successfully
+*/
 function CPThemeAttributeEncode(aCoder, aThemeAttribute)
 {
     var values = aThemeAttribute._values,
@@ -1122,6 +1285,12 @@ function CPThemeAttributeEncode(aCoder, aThemeAttribute)
     return NO;
 }
 
+/*!
+    Decodes a theme attribute from a coder.
+    @param aCoder the coder
+    @param attribute the base attribute template
+    @return the decoded or modified attribute
+*/
 function CPThemeAttributeDecode(aCoder, attribute)
 {
     var key = "$a" + attribute._name;

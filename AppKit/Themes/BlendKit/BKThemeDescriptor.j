@@ -27,10 +27,14 @@
 @import <AppKit/CPView.j>
 @import <AppKit/_CPCibCustomResource.j>
 
-
+/*!
+    @global
+    Pattern orientation flag aliases.
+*/
 PatternIsHorizontal = CPColorPatternIsHorizontal;
 PatternIsVertical   = CPColorPatternIsVertical;
 
+/* @ignore */
 var ItemSizes               = { },
     ThemedObjects           = { },
     ThemedShowcaseObjects   = { },
@@ -40,10 +44,20 @@ var ItemSizes               = { },
     DarkCheckersColor       = nil,
     WindowBackgroundColor   = nil;
 
+/*!
+    @ingroup blendkit
+    @class BKThemeDescriptor
+    BKThemeDescriptor provides descriptors and template definitions for themeable controls
+    and views in BlendKit and ThemeBuilder.
+*/
 @implementation BKThemeDescriptor : CPObject
 {
 }
 
+/*!
+    Finds and returns an array of all available theme descriptor classes.
+    @return an array of theme descriptor \c Class objects
+*/
 + (CPArray)allThemeDescriptorClasses
 {
     // Grab Theme Descriptor Classes.
@@ -68,6 +82,10 @@ var ItemSizes               = { },
     return themeDescriptorClasses;
 }
 
+/*!
+    Returns a light checkerboard pattern color used as a canvas background.
+    @return the light checkerboard \c CPColor
+*/
 + (CPColor)lightCheckersColor
 {
     if (!LightCheckersColor)
@@ -76,6 +94,10 @@ var ItemSizes               = { },
     return LightCheckersColor;
 }
 
+/*!
+    Returns a dark checkerboard pattern color used as a canvas background.
+    @return the dark checkerboard \c CPColor
+*/
 + (CPColor)darkCheckersColor
 {
     if (!DarkCheckersColor)
@@ -84,16 +106,28 @@ var ItemSizes               = { },
     return DarkCheckersColor;
 }
 
+/*!
+    Returns the standard window background color.
+    @return the window background \c CPColor
+*/
 + (CPColor)windowBackgroundColor
 {
     return [CPColor colorWithCalibratedWhite:0.95 alpha:1.0];
 }
 
+/*!
+    Returns the default showcase canvas background color.
+    @return the default showcase background \c CPColor
+*/
 + (CPColor)defaultShowcaseBackgroundColor
 {
     return [CPColor colorWithCalibratedWhite:0.95 alpha:1.0];
 }
 
+/*!
+    Returns the showcase canvas background color for this theme descriptor.
+    @return the showcase background \c CPColor
+*/
 + (CPColor)showcaseBackgroundColor
 {
     var className = [self className];
@@ -104,11 +138,19 @@ var ItemSizes               = { },
     return BackgroundColors[className];
 }
 
+/*!
+    Sets the showcase canvas background color for this theme descriptor.
+    @param aColor the new background color
+*/
 + (void)setShowcaseBackgroundColor:(CPColor)aColor
 {
     BackgroundColors[[self className]] = aColor;
 }
 
+/*!
+    Returns the bounding item size required to display the themed object templates.
+    @return the item \c CGSize
+*/
 + (CGSize)itemSize
 {
     var className = [self className];
@@ -119,6 +161,10 @@ var ItemSizes               = { },
     return CGSizeMakeCopy(ItemSizes[className]);
 }
 
+/*!
+    Returns an array of all themed object templates defined on the descriptor.
+    @return an array of \c BKThemedObjectTemplate objects
+*/
 + (CPArray)themedObjectTemplates
 {
     var className = [self className];
@@ -129,6 +175,10 @@ var ItemSizes               = { },
     return ThemedObjects[className];
 }
 
+/*!
+    Returns an array of themed object templates filtered for display in the showcase.
+    @return an array of showcase \c BKThemedObjectTemplate objects
+*/
 + (CPArray)themedShowcaseObjectTemplates
 {
     var className = [self className];
@@ -139,6 +189,9 @@ var ItemSizes               = { },
     return ThemedShowcaseObjects[className];
 }
 
+/*!
+    Calculates templates, dimensions, and showcase configurations from all class methods starting with \c themed.
+*/
 + (void)calculateThemedObjectTemplates
 {
     var templates = [],
@@ -212,16 +265,31 @@ var ItemSizes               = { },
     ThemedShowcaseObjects[className] = showcaseTemplates;
 }
 
+/*!
+    Compares the receiver to another theme descriptor alphabetically by theme name.
+    @param aThemeDescriptor the theme descriptor to compare with
+    @return comparison result
+*/
 + (int)compare:(BKThemeDescriptor)aThemeDescriptor
 {
     return [[self themeName] compare:[aThemeDescriptor themeName]];
 }
 
+/*!
+    Registers an array of theme values on an object.
+    @param themeValues an array of tuples \c [attribute, value, state]
+    @param anObject the target object
+*/
 + (void)registerThemeValues:(CPArray)themeValues forObject:(id)anObject
 {
     [self registerThemeValues:themeValues forView:anObject];
 }
 
+/*!
+    Registers an array of theme attribute values on a view.
+    @param themeValues an array of tuples \c [attribute, value, state]
+    @param aView the target view
+*/
 + (void)registerThemeValues:(CPArray)themeValues forView:(CPView)aView
 {
     for (var i = 0; i < themeValues.length; ++i)
@@ -243,11 +311,23 @@ var ItemSizes               = { },
     }
 }
 
+/*!
+    Registers theme values on an object while inheriting and adapting values from a parent theme definition.
+    @param themeValues an array of override theme values
+    @param anObject the target object
+    @param inheritedValues an array of inherited theme values
+*/
 + (void)registerThemeValues:(CPArray)themeValues forObject:(id)anObject inherit:(CPArray)inheritedValues
 {
     [self registerThemeValues:themeValues forView:anObject inherit:inheritedValues];
 }
 
+/*!
+    Registers theme values on a view while inheriting and adapting values from a parent theme definition.
+    @param themeValues an array of override theme values
+    @param aView the target view
+    @param inheritedValues an array of inherited theme values
+*/
 + (void)registerThemeValues:(CPArray)themeValues forView:(CPView)aView inherit:(CPArray)inheritedValues
 {
     // Register inherited values first, then override those with the subtheme values.
@@ -325,6 +405,12 @@ var ItemSizes               = { },
         [self registerThemeValues:themeValues forView:aView];
 }
 
+/*!
+    Registers theme values on a view, copying all existing attributes from another view first.
+    @param themeValues an array of override theme values
+    @param aView the target view
+    @param anotherView the source view from which to inherit attributes
+*/
 + (void)registerThemeValues:(CPArray)themeValues forView:(CPView)aView inheritFrom:(CPView)anotherView
 {
     if (anotherView)
@@ -336,6 +422,11 @@ var ItemSizes               = { },
 
 @end
 
+/*!
+    Generates a human-readable title label from a method identifier string (e.g., \c themedPushBorderedButton -> \c "Push bordered button").
+    @param anIdentifier the method name selector
+    @return the formatted label string
+*/
 function BKLabelFromIdentifier(anIdentifier)
 {
     var string = anIdentifier.substr("themed".length),
@@ -377,14 +468,21 @@ function BKLabelFromIdentifier(anIdentifier)
     return label;
 }
 
+/*!
+    Creates a custom Cib image resource with a given name and dimensions.
+    @param name the resource name
+    @param width the image width
+    @param height the image height
+    @return the image resource
+*/
 function PatternImage(name, width, height)
 {
     return [_CPCibCustomResource imageResourceWithName:name size:CGSizeMake(width, height)];
 }
 
-/*
-    PatternColor is just a wrapper around CPColorWithImages
-    that uses an image factory that uses _CPCibCustomResource.
+/*!
+    Creates a pattern color using \c _CPCibCustomResource as the image factory.
+    @return the pattern \c CPColor
 */
 function PatternColor()
 {
