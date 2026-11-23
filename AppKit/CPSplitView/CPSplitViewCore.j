@@ -51,6 +51,11 @@
 CPSplitViewDidResizeSubviewsNotification = @"CPSplitViewDidResizeSubviewsNotification";
 CPSplitViewWillResizeSubviewsNotification = @"CPSplitViewWillResizeSubviewsNotification";
 
+/*
+    The holding priority of a new arranged subview, as in AppKit (NSLayoutPriorityDefaultLow).
+*/
+var CPSplitViewDefaultHoldingPriority = 250;
+
 
 // FIXME: Previous implementation (before October 2018 and Aristo3) uses direct DOM elements manipulations to render dividers.
 //
@@ -121,6 +126,7 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
     CPMutableArray              _initialSizes;
     CPMutableArray              _ratios;
     CPMutableArray              _isFlexible;
+    CPMutableArray              _holdingPriorities; // One per arranged subview, in the same order
 }
 
 + (CPString)defaultThemeClass
@@ -165,6 +171,7 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
     _initialSizes        = @[];
     _ratios              = @[];
     _isFlexible          = @[];
+    _holdingPriorities   = @[];
     _arrangesAllSubviews = YES; // Default for previous behavior compatibility
 
     [self setDividerStyle:CPSplitViewDividerStyleThick]; // Default of Xcode IB
@@ -235,43 +242,73 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 */
 - (void)setVertical:(BOOL)shouldBeVertical
 {
+    var oldSizeComponent = _sizeComponent;
+
     if (![self _setVertical:shouldBeVertical])
         return;
 
-    // Just re-adjust evenly.
-    var frame = [self frame],
-        dividerThickness = [self dividerThickness],
-        previousArrangedSubviews = [_arrangedSubviews copy],
-        nbArrangedSubviews = previousArrangedSubviews.length,
-        previousTotalSize = frame.size[_otherSizeComponent],
-        previousRatios = [_ratios copy],
-        totalSize = frame.size[_sizeComponent] - (nbArrangedSubviews - 1) * dividerThickness;
+    /*
+        Each arranged subview keeps its share of the space along the split, and fills the split
+        view in the other direction. A collapsed subview keeps its size, scaled in the same way,
+        for its expansion.
+
+        2026-11-23: the sizes came from the ratios, which add up to one for the subviews that
+        the delegate lets the split view resize and to one again for the others. With both
+        kinds, the subviews took more than the split view. The method also removed and added
+        each subview again, so it lost the holding priorities.
+    */
+    var frameSize = [self frame].size,
+        count = _arrangedSubviews.length,
+        weights = [],
+        totalWeight = 0,
+        lastVisible = CPNotFound,
+        oldTotal = 0;
 
     [self _postNotificationWillResize];
 
-    _subviewsManagementDisabled = YES;
+    for (var i = 0; i < count; i++)
+        if (![_arrangedSubviews[i] isHidden])
+        {
+            oldTotal += [_arrangedSubviews[i] frameSize][oldSizeComponent];
+            lastVisible = i;
+        }
 
-    var i = _arrangedSubviews.length;
-
-    while (i > 0)
-        [self removeArrangedSubview:_arrangedSubviews[--i]];
-
-    for (var i = 0, theView, theViewSize; i < nbArrangedSubviews; i++)
+    for (var i = 0; i < count; i++)
     {
-        theView = previousArrangedSubviews[i];
-        theViewSize = CGSizeMakeCopy([theView frameSize]);
-        theViewSize[_sizeComponent] = totalSize * previousRatios[i];
-        theViewSize[_otherSizeComponent] = frame.size[_otherSizeComponent];
-        [theView setFrameSize:theViewSize];
+        weights[i] = oldTotal > 0 ? [_arrangedSubviews[i] frameSize][oldSizeComponent] : 1;
 
-        [self _addArrangedSubview:theView];
+        if (![_arrangedSubviews[i] isHidden])
+            totalWeight += weights[i];
     }
 
-    _subviewsManagementDisabled = NO;
+    var newTotal = MAX(0, frameSize[_sizeComponent] - [self _totalDividerThickness]);
+
+    for (var i = 0, cumulativeFloatSize = 0, cumulativeIntSize = 0; i < count; i++)
+    {
+        var subview = _arrangedSubviews[i],
+            size = CGSizeMakeCopy([subview frameSize]),
+            share = totalWeight > 0 ? weights[i] / totalWeight * newTotal : 0;
+
+        if ([subview isHidden])
+            size[_sizeComponent] = oldTotal > 0 ? ROUND(share) : size[oldSizeComponent];
+        else
+        {
+            cumulativeFloatSize += share;
+
+            var intSize = (i === lastVisible ? newTotal : ROUND(cumulativeFloatSize)) - cumulativeIntSize;
+
+            cumulativeIntSize += intSize;
+            size[_sizeComponent] = intSize;
+        }
+
+        size[_otherSizeComponent] = frameSize[_otherSizeComponent];
+        [subview setFrameSize:size];
+    }
+
+    [self _layoutSubviewsInEffectiveAppearance];
+    [self _updateRatios];
 
     [self _postNotificationDidResize];
-
-    return;
 }
 
 - (BOOL)_setVertical:(BOOL)shouldBeVertical
@@ -403,6 +440,7 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
     [_arrangedSubviews insertObject:view atIndex:index];
     [_realSubviews     addObject:view];
     [_initialSizes     insertObject:newViewFrame.size[_sizeComponent] atIndex:index];
+    [_holdingPriorities insertObject:CPSplitViewDefaultHoldingPriority atIndex:index];
 
     // We have to reinitialize this cache as flexibility can change over time (determined by the delegate)
     _isFlexible = @[];
@@ -448,6 +486,26 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
     }
 }
 
+/*
+    Gives each arranged subview a holding priority. Archived priorities are kept when there is
+    one for each arranged subview; otherwise each subview gets the default priority.
+*/
+- (void)_setHoldingPrioritiesFromArchive:(CPArray)priorities
+{
+    var count = _arrangedSubviews.length;
+
+    if (priorities && priorities.length === count)
+    {
+        _holdingPriorities = [priorities mutableCopy];
+        return;
+    }
+
+    _holdingPriorities = @[];
+
+    for (var i = 0; i < count; i++)
+        [_holdingPriorities addObject:CPSplitViewDefaultHoldingPriority];
+}
+
 - (void)removeArrangedSubview:(CPView)view
 {
     // The view remains a subview, keeping its size and position at the moment of the removal.
@@ -462,6 +520,7 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
     }
 
     [_arrangedSubviews removeObjectAtIndex:arrangedIndex];
+    [_holdingPriorities removeObjectAtIndex:arrangedIndex];
 
     if (_dividerSubviews.length > 0)
     {

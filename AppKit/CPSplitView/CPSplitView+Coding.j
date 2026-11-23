@@ -34,7 +34,8 @@ var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
     CPSplitViewDividerSubviewsKey     = @"CPSplitViewDividerSubviewsKey",
     CPSplitViewArrangedSubviewsKey    = @"CPSplitViewArrangedSubviewsKey",
     CPSplitViewArrangesAllSubviewsKey = @"CPSplitViewArrangesAllSubviewsKey",
-    CPSplitViewRealSubviewsKey        = @"CPSplitViewRealSubviewsKey";
+    CPSplitViewRealSubviewsKey        = @"CPSplitViewRealSubviewsKey",
+    CPSplitViewHoldingPrioritiesKey   = @"CPSplitViewHoldingPrioritiesKey";
 
 @implementation CPSplitView (CPCoding)
 
@@ -91,6 +92,17 @@ var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
         _arrangedSubviews = [aCoder decodeObjectForKey:CPSplitViewArrangedSubviewsKey] || @[];
         _realSubviews     = [aCoder decodeObjectForKey:CPSplitViewRealSubviewsKey]     || @[];
 
+        /*
+            A cib has no arranged subviews yet: its priorities are kept as archived until
+            -_cibInstantiate arranges the subviews.
+        */
+        var holdingPriorities = [aCoder decodeObjectForKey:CPSplitViewHoldingPrioritiesKey];
+
+        if (_arrangedSubviews.length > 0)
+            [self _setHoldingPrioritiesFromArchive:holdingPriorities];
+        else
+            _holdingPriorities = holdingPriorities ? [holdingPriorities mutableCopy] : @[];
+
         [self setArrangesAllSubviews:[aCoder decodeBoolForKey:CPSplitViewArrangesAllSubviewsKey]];
         [self setDividerStyle:[aCoder decodeIntForKey:CPSplitViewDividerStyleKey]];
 
@@ -106,12 +118,22 @@ var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
 {
     // Subviews received from Xcode IB are in fact arranged subviews
 
+    /*
+        A cib has no arranged subviews when it is decoded, so the archived holding priorities
+        are applied once the subviews are arranged.
+    */
+    var archivedPriorities = [_holdingPriorities copy];
+
+    _holdingPriorities = @[];
+
     _subviewsManagementDisabled = YES;
 
     for (var i = 0, subviews = [self subviews], count = subviews.length; i < count; i++)
         [self _addArrangedSubview:subviews[i]];
 
     _subviewsManagementDisabled = NO;
+
+    [self _setHoldingPrioritiesFromArchive:archivedPriorities];
     _shouldAutosave = YES;
 
     if (_autosaveName)
@@ -141,6 +163,7 @@ var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
     [aCoder encodeObject:_dividerSubviews     forKey:CPSplitViewDividerSubviewsKey];
     [aCoder encodeObject:_arrangedSubviews    forKey:CPSplitViewArrangedSubviewsKey];
     [aCoder encodeObject:_realSubviews        forKey:CPSplitViewRealSubviewsKey];
+    [aCoder encodeObject:_holdingPriorities   forKey:CPSplitViewHoldingPrioritiesKey];
     [aCoder encodeBool:  _arrangesAllSubviews forKey:CPSplitViewArrangesAllSubviewsKey];
     [aCoder encodeObject:_autosaveName        forKey:CPSplitViewAutosaveNameKey];
 }

@@ -28,11 +28,11 @@
 
 /*
     These tests state how a split view behaves as AppKit's NSSplitView does: divider drags and
-    their delegate constraints, collapsing, double-clicks, hidden dividers, notifications, hit
-    testing, button bars, autosave, orientation, arranged subviews and archiving. They come
-    before a refactoring and a rework of CPSplitView, so they test through public behaviour
-    only. The one exception is -_restoreFromAutosave: today only a cib load starts a restore,
-    so the autosave tests call it, as CPSplitViewTest does.
+    their delegate constraints, collapsing, double-clicks, hidden dividers, holding priorities,
+    notifications, hit testing, button bars, autosave, orientation, arranged subviews and
+    archiving. They come before a refactoring and a rework of CPSplitView, so they test through
+    public behaviour only. The one exception is -_restoreFromAutosave: today only a cib load
+    starts a restore, so the autosave tests call it, as CPSplitViewTest does.
 
     Each test uses a vertical split view 300 points wide and 100 points high, with thin dividers
     (1 point under ojtest, where no theme is loaded). The first subview is 100 points wide; the
@@ -354,6 +354,126 @@
     [self assert:1 equals:CGRectGetWidth([splitView rectOfDividerAtIndex:0]) message:@"the divider has its thickness again"];
 }
 
+// MARK: - Holding priorities
+
+- (void)testTheDefaultHoldingPriorityIs250
+{
+    [self assert:250 equals:[splitView holdingPriorityForSubviewAtIndex:0] message:@"the first subview"];
+    [self assert:250 equals:[splitView holdingPriorityForSubviewAtIndex:1] message:@"the second subview"];
+}
+
+- (void)testAHoldingPriorityIsKept
+{
+    [splitView setHoldingPriority:260 forSubviewAtIndex:0];
+
+    [self assert:260 equals:[splitView holdingPriorityForSubviewAtIndex:0] message:@"the first subview"];
+    [self assert:250 equals:[splitView holdingPriorityForSubviewAtIndex:1] message:@"the second subview"];
+}
+
+- (void)testAnIndexOutOfRangeRaises
+{
+    [self assertThrows:function() { [splitView holdingPriorityForSubviewAtIndex:2]; }];
+    [self assertThrows:function() { [splitView setHoldingPriority:260 forSubviewAtIndex:-1]; }];
+}
+
+- (void)testGrowingGivesTheSpaceToTheLowestHoldingPriority
+{
+    [splitView setHoldingPriority:260 forSubviewAtIndex:0];
+    [splitView setFrame:CGRectMake(0, 0, 400, 100)];
+
+    [self assertFrame:CGRectMake(0, 0, 100, 100) of:viewA named:@"the subview that holds"];
+    [self assertFrame:CGRectMake(101, 0, 299, 100) of:viewB named:@"the subview that grows"];
+}
+
+- (void)testAHigherPriorityOnTheSecondSubviewMakesTheFirstGrow
+{
+    [splitView setHoldingPriority:260 forSubviewAtIndex:1];
+    [splitView setFrame:CGRectMake(0, 0, 400, 100)];
+
+    [self assertFrame:CGRectMake(0, 0, 200, 100) of:viewA named:@"the subview that grows"];
+    [self assertFrame:CGRectMake(201, 0, 199, 100) of:viewB named:@"the subview that holds"];
+}
+
+- (void)testShrinkingTakesTheSpaceFromTheLowestHoldingPriority
+{
+    [splitView setHoldingPriority:260 forSubviewAtIndex:0];
+    [splitView setFrame:CGRectMake(0, 0, 200, 100)];
+
+    [self assertFrame:CGRectMake(0, 0, 100, 100) of:viewA named:@"the subview that holds"];
+    [self assertFrame:CGRectMake(101, 0, 99, 100) of:viewB named:@"the subview that shrinks"];
+}
+
+/*
+    When the subviews with the lowest priority reach zero, the rest of the change goes to the
+    subviews with the next priority.
+*/
+- (void)testShrinkingPastZeroMovesToTheNextHoldingPriority
+{
+    [splitView setHoldingPriority:260 forSubviewAtIndex:0];
+    [splitView setFrame:CGRectMake(0, 0, 60, 100)];
+
+    [self assertFrame:CGRectMake(0, 0, 59, 100) of:viewA named:@"the subview with the higher priority"];
+    [self assertFrame:CGRectMake(60, 0, 0, 100) of:viewB named:@"the subview with the lower priority"];
+}
+
+- (void)testEqualHoldingPrioritiesShareTheChangeBySize
+{
+    [splitView setFrame:CGRectMake(0, 0, 400, 100)];
+
+    [self assertFrame:CGRectMake(0, 0, 133, 100) of:viewA named:@"the first subview"];
+    [self assertFrame:CGRectMake(134, 0, 266, 100) of:viewB named:@"the second subview"];
+}
+
+/*
+    A subview that the delegate does not let the split view resize changes only when the
+    others cannot take the change, whatever its holding priority.
+*/
+- (void)testASubviewTheDelegateHoldsComesAfterEveryPriority
+{
+    [testDelegate setFixedSubviews:[viewA]];
+    [splitView setDelegate:testDelegate];
+    [splitView setHoldingPriority:100 forSubviewAtIndex:0];
+    [splitView setFrame:CGRectMake(0, 0, 400, 100)];
+
+    [self assertFrame:CGRectMake(0, 0, 100, 100) of:viewA named:@"the subview the delegate holds"];
+    [self assertFrame:CGRectMake(101, 0, 299, 100) of:viewB named:@"the other subview"];
+}
+
+- (void)testACollapsedSubviewKeepsItsSizeWhenTheSplitViewGrows
+{
+    [testDelegate setMinimum:80];
+    [testDelegate setCollapsibleSubviews:[viewA]];
+    [splitView setDelegate:testDelegate];
+    [self dragDivider:0 toX:30];
+
+    [splitView setHoldingPriority:260 forSubviewAtIndex:1];
+    [splitView setFrame:CGRectMake(0, 0, 400, 100)];
+
+    [self assert:100 equals:CGRectGetWidth([viewA frame]) message:@"the collapsed subview keeps its width"];
+    [self assertFrame:CGRectMake(1, 0, 399, 100) of:viewB named:@"the visible subview"];
+}
+
+- (void)testAHoldingPriorityFollowsItsSubviewWhenASubviewIsInserted
+{
+    var viewC = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 50, 100)];
+
+    [splitView setHoldingPriority:260 forSubviewAtIndex:0];
+    [splitView insertArrangedSubview:viewC atIndex:0];
+
+    [self assert:250 equals:[splitView holdingPriorityForSubviewAtIndex:0] message:@"the inserted subview"];
+    [self assert:260 equals:[splitView holdingPriorityForSubviewAtIndex:1] message:@"the first subview"];
+    [self assert:250 equals:[splitView holdingPriorityForSubviewAtIndex:2] message:@"the second subview"];
+}
+
+- (void)testRemovingASubviewRemovesItsHoldingPriority
+{
+    [splitView setHoldingPriority:260 forSubviewAtIndex:1];
+    [viewA removeFromSuperview];
+
+    [self assert:260 equals:[splitView holdingPriorityForSubviewAtIndex:0] message:@"the remaining subview"];
+    [self assertThrows:function() { [splitView holdingPriorityForSubviewAtIndex:1]; }];
+}
+
 // MARK: - Notifications
 
 - (void)testDraggingTheDividerPostsTheResizeNotifications
@@ -476,6 +596,27 @@
 }
 
 /*
+    A restore happens before the window gives the split view its final size. A subview with a
+    higher holding priority keeps its restored width through that resize.
+*/
+- (void)testARestoredSidebarKeepsItsWidthWhenTheSplitViewResizes
+{
+    [self useAutosaveStore];
+    [splitView setAutosaveName:@"CPSplitViewInteractionTest.Sidebar"];
+    [self dragDivider:0 toX:140];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [self setUp];
+    [splitView setHoldingPriority:260 forSubviewAtIndex:0];
+    [splitView setAutosaveName:@"CPSplitViewInteractionTest.Sidebar"];
+    [splitView _restoreFromAutosave];
+    [splitView setFrame:CGRectMake(0, 0, 500, 100)];
+
+    [self assertFrame:CGRectMake(0, 0, 140, 100) of:viewA named:@"the sidebar"];
+    [self assertFrame:CGRectMake(141, 0, 359, 100) of:viewB named:@"the content"];
+}
+
+/*
     Saved state belongs to the subviews it was saved for. A split view that has gained a subview
     since the save keeps its current layout.
 */
@@ -547,6 +688,37 @@
     [self assert:100 equals:CGRectGetHeight(frameA) + 1 + CGRectGetHeight(frameB) message:@"the subviews and the divider fill the height"];
 }
 
+- (void)testChangingTheOrientationKeepsTheProportions
+{
+    [splitView setVertical:NO];
+
+    [self assertFrame:CGRectMake(0, 0, 300, 33) of:viewA named:@"the first subview"];
+    [self assertFrame:CGRectMake(0, 34, 300, 66) of:viewB named:@"the second subview"];
+}
+
+/*
+    The subviews share the space by their sizes, whether or not the delegate lets the split
+    view resize them.
+*/
+- (void)testChangingTheOrientationWithASubviewTheDelegateHoldsFillsTheSplitView
+{
+    [testDelegate setFixedSubviews:[viewA]];
+    [splitView setDelegate:testDelegate];
+    [splitView setVertical:NO];
+
+    [self assertFrame:CGRectMake(0, 0, 300, 33) of:viewA named:@"the subview the delegate holds"];
+    [self assertFrame:CGRectMake(0, 34, 300, 66) of:viewB named:@"the other subview"];
+}
+
+- (void)testChangingTheOrientationKeepsTheHoldingPriorities
+{
+    [splitView setHoldingPriority:260 forSubviewAtIndex:0];
+    [splitView setVertical:NO];
+
+    [self assert:260 equals:[splitView holdingPriorityForSubviewAtIndex:0] message:@"the first subview"];
+    [self assert:250 equals:[splitView holdingPriorityForSubviewAtIndex:1] message:@"the second subview"];
+}
+
 - (void)testASubviewAddedWhileNotArrangingAllSubviewsIsNotArranged
 {
     var viewC = [[CPView alloc] initWithFrame:CGRectMake(10, 10, 20, 20)];
@@ -589,6 +761,16 @@
     [self assert:140 equals:CGRectGetWidth([arranged[0] frame]) message:@"the first subview of the copy keeps its width"];
 }
 
+- (void)testArchivingKeepsTheHoldingPriorities
+{
+    [splitView setHoldingPriority:260 forSubviewAtIndex:0];
+
+    var copy = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:splitView]];
+
+    [self assert:260 equals:[copy holdingPriorityForSubviewAtIndex:0] message:@"the first subview of the copy"];
+    [self assert:250 equals:[copy holdingPriorityForSubviewAtIndex:1] message:@"the second subview of the copy"];
+}
+
 @end
 
 // MARK: -
@@ -602,6 +784,7 @@
     float       _maximum                    @accessors(property=maximum);
     float       _snap                       @accessors(property=snap);
     CPArray     _collapsibleSubviews        @accessors(property=collapsibleSubviews);
+    CPArray     _fixedSubviews              @accessors(property=fixedSubviews);
     BOOL        _collapsesOnDoubleClick     @accessors(property=collapsesOnDoubleClick);
     CGRect      _additionalRect             @accessors(property=additionalRect);
     CPArray     _hiddenDividerIndexes       @accessors(property=hiddenDividerIndexes);
@@ -617,6 +800,7 @@
     if (self = [super init])
     {
         _collapsibleSubviews = [];
+        _fixedSubviews = [];
         _hiddenDividerIndexes = [];
         _didResizeCount = 0;
     }
@@ -637,6 +821,11 @@
 - (float)splitView:(CPSplitView)aSplitView constrainSplitPosition:(float)proposedPosition ofSubviewAt:(int)anIndex
 {
     return _snap ? ROUND(proposedPosition / _snap) * _snap : proposedPosition;
+}
+
+- (BOOL)splitView:(CPSplitView)aSplitView shouldAdjustSizeOfSubview:(CPView)aSubview
+{
+    return ![_fixedSubviews containsObject:aSubview];
 }
 
 - (BOOL)splitView:(CPSplitView)aSplitView canCollapseSubview:(CPView)aSubview

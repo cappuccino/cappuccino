@@ -103,10 +103,10 @@
 /*!
  Adjusts the sizes of the split view’s subviews so they (plus the dividers) fill the split view.
 
- When you call this method, the split view’s subviews are resized proportionally; the relative sizes of the subviews do not change.
-
- The default implementation of this method resizes subviews proportionally so that the ratio of heights (when using horizontal dividers)
- or widths (when using vertical dividers) does not change, even though the absolute sizes change.
+ The change in size goes first to the subviews with the lowest holding priority. When they cannot shrink further, the rest of the
+ change goes to the subviews with the next priority. Subviews with the same holding priority share the change proportionally, so the
+ ratio of their heights (when using horizontal dividers) or widths (when using vertical dividers) does not change. Subviews for which
+ the delegate returns NO from splitView:shouldAdjustSizeOfSubview: change only when the other subviews cannot take the change.
 
  Call this method on split views from which subviews have been added or removed, to reestablish the consistency of subview placement.
 
@@ -117,104 +117,42 @@
     [self _maybePostWillResizeNotification];
 
     /*
-        Two cases: there is enough space for the fixed subviews, or there is not. A collapsed
-        subview takes no space and keeps its size, so it is left out of both cases. The ratios
-        of the other subviews are scaled so that they share all the space.
+        The change in size goes to groups of subviews in turn. Subviews that the delegate lets
+        the split view resize come first, then the others; within each, the subviews with the
+        lowest holding priority come first. A group takes the whole change, and when it cannot
+        shrink past zero the rest of the change goes to the next group. In a group, the
+        subviews share the new size by their ratios. A collapsed subview takes no space and
+        keeps its size, so it belongs to no group.
 
-        2026-11-23: a collapsed subview was a visible subview of size zero, so it needed no
-        special case. Now that it keeps its size, counting it would leave a gap.
+        The first group always gets its sizes from its ratios, even when the change is zero, so
+        a call reestablishes the proportions of the subviews that resize first. A later group
+        changes only when the change reaches it.
+
+        2026-11-23: the split view had no holding priorities. Every subview that the delegate
+        let it resize took a part of each change, so a sidebar grew and shrank with the window.
     */
+    var sizeToFit = MAX(0, [self frame].size[_sizeComponent] - [self _totalDividerThickness]),
+        groups = [self _resizeGroups],
+        change = sizeToFit;
 
-    var sizeToFit   = [self frame].size[_sizeComponent] - [self _totalDividerThickness],
-        fixedSize   = 0,
-        nbSubviews  = _arrangedSubviews.length,
-        flexibleRatios = 0,
-        fixedRatios = 0,
-        flexibleCount = 0,
-        fixedCount = 0;
+    for (var i = 0, count = _arrangedSubviews.length; i < count; i++)
+        change -= [self _sizeOfArrangedSubviewAtIndex:i];
 
-    for (var i = 0; i < nbSubviews; i++)
+    for (var g = 0, groupCount = groups.length; g < groupCount; g++)
     {
-        if ([_arrangedSubviews[i] isHidden])
-            continue;
+        if (g > 0 && change === 0)
+            break;
 
-        if (_isFlexible[i])
-        {
-            flexibleRatios += _ratios[i];
-            flexibleCount++;
-        }
-        else
-        {
-            fixedSize += [_arrangedSubviews[i] frameSize][_sizeComponent];
-            fixedRatios += _ratios[i];
-            fixedCount++;
-        }
-    }
+        var group = groups[g],
+            groupSize = 0;
 
-    if (fixedSize < sizeToFit)
-    {
-        // There's enough space to maintain fixed and flexible subviews
-        // So we only deal with flexible subviews, resizing them while keeping all ratios
+        for (var i = 0, count = group.length; i < count; i++)
+            groupSize += [self _sizeOfArrangedSubviewAtIndex:group[i]];
 
-        var newFlexibleSize = sizeToFit - fixedSize,
-            remainingSpace  = newFlexibleSize;
+        var newGroupSize = MAX(0, groupSize + change);
 
-        for (var i = 0, size, floatSize, intSize, cumulativeFloatSize = 0.0, cumulativeIntSize = 0; i < nbSubviews; i++)
-            if (_isFlexible[i] && ![_arrangedSubviews[i] isHidden])
-            {
-                // Cocoa doesn't seem to round arranged subviews sizes.
-                // So the next computation ensures we get the same results but with rounded sizes.
-                size = CGSizeMakeCopy([_arrangedSubviews[i] frameSize]);
-                floatSize = MIN((newFlexibleSize * [self _shareOfRatio:_ratios[i] inTotal:flexibleRatios count:flexibleCount]), remainingSpace);
-                cumulativeFloatSize += floatSize;
-
-                intSize = ROUND(cumulativeFloatSize) - cumulativeIntSize;
-                cumulativeIntSize += intSize;
-
-                remainingSpace -= size[_sizeComponent] = intSize;
-
-                [_arrangedSubviews[i] setFrameSize:size];
-            }
-
-        if (remainingSpace > 0)
-            // Due to roundings, some pixels remain to attribute. We do this in reverse order of views.
-            // For example, if we have 9px to distribute on 4 views, we do : +2 +2 +2 +3
-            [self _distribute:remainingSpace amoung:flexibleCount onFlexible:YES fromIndex:0 toIndex:nbSubviews-1];
-    }
-    else
-    {
-        // There's not enough space to maintain fixed and flexible subviews
-        // So we collapse all flexible subviews and shrink evenly fixed subviews
-
-        var remainingSpace = sizeToFit;
-
-        for (var i = 0, size, floatSize, intSize, cumulativeFloatSize = 0.0, cumulativeIntSize = 0; i < nbSubviews; i++)
-        {
-            if ([_arrangedSubviews[i] isHidden])
-                continue;
-
-            size = CGSizeMakeCopy([_arrangedSubviews[i] frameSize]);
-
-            if (_isFlexible[i])
-                size[_sizeComponent] = 0;
-            else
-            {
-                // Cocoa doesn't seem to round arranged subviews sizes.
-                // So the next computation ensures we get the same results but with rounded sizes.
-                floatSize = MIN((sizeToFit * [self _shareOfRatio:_ratios[i] inTotal:fixedRatios count:fixedCount]), remainingSpace);
-                cumulativeFloatSize += floatSize;
-
-                intSize = ROUND(cumulativeFloatSize) - cumulativeIntSize;
-                cumulativeIntSize += intSize;
-
-                remainingSpace -= size[_sizeComponent] = intSize;
-            }
-
-            [_arrangedSubviews[i] setFrameSize:size];
-        }
-
-        if (remainingSpace > 0)
-            [self _distribute:remainingSpace amoung:fixedCount onFlexible:NO fromIndex:0 toIndex:nbSubviews-1];
+        [self _setSize:newGroupSize ofResizeGroup:group];
+        change -= newGroupSize - groupSize;
     }
 
     [self _maybePostDidResizeNotification];
@@ -246,6 +184,44 @@
     }
 
     [self updateTrackingAreas];
+}
+
+// MARK: - Holding priorities
+
+/*!
+ Returns the holding priority of the arranged subview at an index. The default is 250.
+
+ @param subviewIndex - The index of the arranged subview.
+ @return float - The holding priority.
+ */
+- (float)holdingPriorityForSubviewAtIndex:(CPInteger)subviewIndex
+{
+    [self _checkArrangedSubviewIndex:subviewIndex];
+
+    return _holdingPriorities[subviewIndex];
+}
+
+/*!
+ Sets the holding priority of the arranged subview at an index. When the split view changes size, the subviews with the lowest
+ holding priority take the change first. The priority takes effect at the next change in size.
+
+ @param priority - The holding priority.
+ @param subviewIndex - The index of the arranged subview.
+ */
+- (void)setHoldingPriority:(float)priority forSubviewAtIndex:(CPInteger)subviewIndex
+{
+    [self _checkArrangedSubviewIndex:subviewIndex];
+
+    _holdingPriorities[subviewIndex] = priority;
+}
+
+/*
+    Raises a range exception when an index is not the index of an arranged subview.
+*/
+- (void)_checkArrangedSubviewIndex:(CPInteger)anIndex
+{
+    if (anIndex < 0 || anIndex >= _arrangedSubviews.length)
+        [CPException raise:CPRangeException reason:@"CPSplitView: index " + anIndex + " is out of range of the " + _arrangedSubviews.length + " arranged subviews"];
 }
 
 // MARK: - Private layout utilities
@@ -345,18 +321,75 @@
 }
 
 
-- (void)_distribute:(CPInteger)remainingSpace amoung:(CPInteger)count onFlexible:(BOOL)onFlexible fromIndex:(CPInteger)fromIndex toIndex:(CPInteger)toIndex
-{
-    for (var i = toIndex, size, supplement; i >= fromIndex; i--)
-        if (_isFlexible[i] == onFlexible && ![_arrangedSubviews[i] isHidden])
-        {
-            size = CGSizeMakeCopy([_arrangedSubviews[i] frameSize]);
-            remainingSpace -= supplement = CEIL(remainingSpace / count);
-            size[_sizeComponent] += supplement;
-            [_arrangedSubviews[i] setFrameSize:size];
 
-            count--;
+/*
+    Returns the indexes of the visible arranged subviews in the groups that take a change in
+    size, in the order in which they take it: first the subviews that the delegate lets the
+    split view resize, then the others, and in each by ascending holding priority. Subviews of
+    a group have the same holding priority.
+*/
+- (CPArray)_resizeGroups
+{
+    var indexes = [];
+
+    for (var i = 0, count = _arrangedSubviews.length; i < count; i++)
+        if (![_arrangedSubviews[i] isHidden])
+            indexes.push(i);
+
+    var tier = function(anIndex) { return _isFlexible[anIndex] ? 0 : 1; };
+
+    indexes.sort(function(a, b)
+    {
+        return (tier(a) - tier(b)) || (_holdingPriorities[a] - _holdingPriorities[b]) || (a - b);
+    });
+
+    var groups = [];
+
+    for (var i = 0, count = indexes.length, group = nil; i < count; i++)
+    {
+        var index = indexes[i];
+
+        if (!group || tier(index) !== tier(group[0]) || _holdingPriorities[index] !== _holdingPriorities[group[0]])
+            groups.push(group = []);
+
+        group.push(index);
+    }
+
+    return groups;
+}
+
+/*
+    Gives the subviews of a resize group their shares of a size, by their ratios. The sizes are
+    rounded so that their running total stays on the running total of the shares; the last
+    subview takes what is left, so the sizes add up to the given size.
+*/
+- (void)_setSize:(float)aSize ofResizeGroup:(CPArray)aGroup
+{
+    var totalRatio = 0,
+        count = aGroup.length;
+
+    for (var i = 0; i < count; i++)
+        totalRatio += _ratios[aGroup[i]];
+
+    for (var i = 0, cumulativeFloatSize = 0, cumulativeIntSize = 0; i < count; i++)
+    {
+        var subview = _arrangedSubviews[aGroup[i]],
+            size = CGSizeMakeCopy([subview frameSize]),
+            intSize;
+
+        if (i === count - 1)
+            intSize = aSize - cumulativeIntSize;
+        else
+        {
+            cumulativeFloatSize += aSize * [self _shareOfRatio:_ratios[aGroup[i]] inTotal:totalRatio count:count];
+            intSize = ROUND(cumulativeFloatSize) - cumulativeIntSize;
         }
+
+        cumulativeIntSize += intSize;
+        size[_sizeComponent] = intSize;
+
+        [subview setFrameSize:size];
+    }
 }
 
 - (void)_updateRatios
