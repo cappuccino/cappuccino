@@ -385,6 +385,32 @@
 }
 
 /*
+    Saved state belongs to the subviews it was saved for. A split view that has gained a subview
+    since the save keeps its current layout.
+*/
+- (void)testAutosaveIgnoresStateSavedForADifferentNumberOfSubviews
+{
+    [self useAutosaveStore];
+    [splitView setAutosaveName:@"CPSplitViewInteractionTest.Count"];
+    [self dragDivider:0 toX:140];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [self setUp];
+    [splitView addArrangedSubview:[[CPView alloc] initWithFrame:CGRectMake(0, 0, 50, 100)]];
+    [splitView adjustSubviews];
+
+    var framesBefore = [[splitView arrangedSubviews] valueForKey:@"frame"];
+
+    [splitView setAutosaveName:@"CPSplitViewInteractionTest.Count"];
+    [splitView _restoreFromAutosave];
+
+    var framesAfter = [[splitView arrangedSubviews] valueForKey:@"frame"];
+
+    for (var i = 0; i < 3; i++)
+        [self assertTrue:CGRectEqualToRect(framesBefore[i], framesAfter[i]) message:@"subview " + i + " keeps its frame"];
+}
+
+/*
     AppKit saves whether each subview is collapsed, so a collapsed sidebar stays collapsed.
 */
 - (void)testAutosaveRestoresACollapsedSubview

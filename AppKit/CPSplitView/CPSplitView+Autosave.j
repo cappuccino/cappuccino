@@ -99,7 +99,15 @@
         frames = [userDefaults objectForKey:autosaveName],
         collapsed = [userDefaults objectForKey:autosaveCollapsedName];
 
-    if (frames)
+    /*
+        Saved state applies only to the subviews it was saved for. When the number of arranged
+        subviews has changed since the save, the split view keeps its current layout.
+
+        2026-11-23: the restore took one saved frame for each arranged subview and did not
+        check the count. A split view with more subviews than at the save applied
+        CGRectFromString(undefined) to the extra subviews.
+    */
+    if (frames && [frames count] === _arrangedSubviews.length && (!collapsed || [collapsed count] === [frames count]))
     {
         var dividerThickness = [self dividerThickness],
             position = 0;
