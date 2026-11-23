@@ -1,6 +1,6 @@
 /*
  * SmartFolderEditorController.j
- * SmartFoldersDemo
+ * People
  *
  * Document-modal sheet for creating / editing a smart folder. Exercises:
  *   - CPWindowController owning a CPDocModalWindowMask window, run as a sheet

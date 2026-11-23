@@ -1,6 +1,6 @@
 /*
  * NameSheetController.j
- * SmartFoldersDemo
+ * People
  *
  * Minimal reusable sheet asking for a name (new group, rename group).
  * Exercises a second, independent CPWindowController-owned sheet, first

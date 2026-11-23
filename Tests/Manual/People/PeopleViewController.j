@@ -1,6 +1,6 @@
 /*
  * PeopleViewController.j
- * SmartFoldersDemo
+ * People
  *
  * Right hand side of the main split view. Exercises:
  *   - CPArrayController with content, filterPredicate, sortDescriptors and
@@ -90,7 +90,7 @@
     [view addSubview:_splitView];
     [self setView:view];
 
-    [_splitView setAutosaveName:@"SmartFoldersDemo.PeopleSplit"];
+    [_splitView setAutosaveName:@"People.PeopleSplit"];
 
     [self _updateStatus];
 }
@@ -156,7 +156,7 @@
     [_tableView setDraggingSourceOperationMask:CPDragOperationCopy | CPDragOperationMove forLocal:YES];
     [_tableView setDraggingSourceOperationMask:CPDragOperationCopy forLocal:NO];
 
-    [_tableView setAutosaveName:@"SmartFoldersDemo.PeopleTable"];
+    [_tableView setAutosaveName:@"People.PeopleTable"];
     [_tableView setAutosaveTableColumns:YES];
 
     [scrollView setDocumentView:_tableView];

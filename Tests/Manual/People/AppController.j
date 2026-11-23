@@ -1,6 +1,6 @@
 /*
  * AppController.j
- * SmartFoldersDemo
+ * People
  *
  * Non-document-based Cappuccino integration test / demo, built entirely in
  * code (no cib/xib). The application delegate only creates the model, the

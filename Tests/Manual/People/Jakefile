@@ -1,6 +1,6 @@
 /*
  * Jakefile
- * SmartFoldersTest
+ * People
  *
  * Created by You on November 25, 2010.
  * Copyright 2010, Your Company All rights reserved.
@@ -15,17 +15,17 @@ var ENV = process.env,
     app = CAPPUCCINO.Jake.applicationtask.app,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
 
-app ("SmartFoldersTest", function(task)
+app ("People", function(task)
 {
-    task.setBuildIntermediatesPath(path.join("Build", "SmartFoldersTest.build", configuration));
+    task.setBuildIntermediatesPath(path.join("Build", "People.build", configuration));
     task.setBuildPath(path.join("Build", configuration));
 
-    task.setProductName("SmartFoldersTest");
+    task.setProductName("People");
     task.setIdentifier("com.yourcompany.");
     task.setVersion("1.0");
     task.setAuthor("Your Company");
     task.setEmail("feedback @nospam@ yourcompany.com");
-    task.setSummary("SmartFoldersTest");
+    task.setSummary("People");
     task.setSources((new FileList("**/*.j")).exclude(path.join("Build", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
@@ -38,7 +38,7 @@ app ("SmartFoldersTest", function(task)
         task.setCompilerFlags("-O");
 });
 
-task ("default", ["SmartFoldersTest"], function()
+task ("default", ["People"], function()
 {
     printResults(configuration);
 });
@@ -59,37 +59,37 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    cp.execSync(["open", path.join("Build", "Debug", "SmartFoldersTest", "index.html")].join(" "), { stdio: "inherit" });
+    cp.execSync(["open", path.join("Build", "Debug", "People", "index.html")].join(" "), { stdio: "inherit" });
 });
 
 task ("run-release", ["release"], function()
 {
-    cp.execSync(["open", path.join("Build", "Release", "SmartFoldersTest", "index.html")].join(" "), { stdio: "inherit" });
+    cp.execSync(["open", path.join("Build", "Release", "People", "index.html")].join(" "), { stdio: "inherit" });
 });
 
 task ("deploy", ["release"], function()
 {
-    fs.mkdirSync(path.join("Build", "Deployment", "SmartFoldersTest"), { recursive: true });
-    cp.execSync(["press", "-f", path.join("Build", "Release", "SmartFoldersTest"), path.join("Build", "Deployment", "SmartFoldersTest")].join(" "), { stdio: "inherit" });
+    fs.mkdirSync(path.join("Build", "Deployment", "People"), { recursive: true });
+    cp.execSync(["press", "-f", path.join("Build", "Release", "People"), path.join("Build", "Deployment", "People")].join(" "), { stdio: "inherit" });
     printResults("Deployment")
 });
 
 task ("desktop", ["release"], function()
 {
-    fs.mkdirSync(path.join("Build", "Desktop", "SmartFoldersTest"), { recursive: true });
-    require("@objj/nativehost").buildNativeHost(path.join("Build", "Release", "SmartFoldersTest"), path.join("Build", "Desktop", "SmartFoldersTest", "SmartFoldersTest.app"));
+    fs.mkdirSync(path.join("Build", "Desktop", "People"), { recursive: true });
+    require("@objj/nativehost").buildNativeHost(path.join("Build", "Release", "People"), path.join("Build", "Desktop", "People", "People.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    cp.execSync([path.join("Build", "Desktop", "SmartFoldersTest", "SmartFoldersTest.app", "Contents", "MacOS", "NativeHost"), "-i"].join(" "), { stdio: "inherit" });
+    cp.execSync([path.join("Build", "Desktop", "People", "People.app", "Contents", "MacOS", "NativeHost"), "-i"].join(" "), { stdio: "inherit" });
 });
 
 function printResults(configuration)
 {
     console.log("----------------------------");
-    console.log(configuration+" app built at path: "+path.join("Build", configuration, "SmartFoldersTest"));
+    console.log(configuration+" app built at path: "+path.join("Build", configuration, "People"));
     console.log("----------------------------");
 }
 

@@ -1,6 +1,6 @@
 /*
  * MainWindowController.j
- * SmartFoldersDemo
+ * People
  *
  * Owns the full-platform (bridge) main window. Instantiates the sidebar and
  * people view controllers and loads their views into a vertical CPSplitView.
@@ -109,7 +109,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [contentView addSubview:_splitView];
 
     [_splitView setButtonBar:[_sourceListController buttonBar] forDividerAtIndex:0];
-    [_splitView setAutosaveName:@"SmartFoldersDemo.MainSplit"];
+    [_splitView setAutosaveName:@"People.MainSplit"];
 }
 
 - (void)_buildToolbar
@@ -119,10 +119,10 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [_searchField setTarget:self];
     [_searchField setAction:@selector(searchFieldDidChange:)];
     [_searchField setSendsSearchStringImmediately:YES];
-    [_searchField setRecentsAutosaveName:@"SmartFoldersDemo.RecentSearches"];
+    [_searchField setRecentsAutosaveName:@"People.RecentSearches"];
     [_searchField setSearchMenuTemplate:[_searchField defaultSearchMenuTemplate]];
 
-    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"SmartFoldersDemoToolbar"];
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"PeopleToolbar"];
     [toolbar setAllowsUserCustomization:YES];
     [toolbar setAutosavesConfiguration:YES];
     [toolbar setDelegate:self];

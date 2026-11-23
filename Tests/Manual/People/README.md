@@ -1,4 +1,4 @@
-# SmartFoldersDemo
+# People
 
 Non-document-based Cappuccino integration test, built entirely in code (no cib).
 

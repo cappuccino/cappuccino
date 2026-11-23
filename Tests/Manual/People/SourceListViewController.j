@@ -1,6 +1,6 @@
 /*
  * SourceListViewController.j
- * SmartFoldersDemo
+ * People
  *
  * Sidebar. Exercises:
  *   - CPViewController with a programmatic -loadView

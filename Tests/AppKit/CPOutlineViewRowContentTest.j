@@ -24,9 +24,9 @@
 
 /*
     Applications draw their own content on table and outline rows. A source list
-    draws a count badge beside an item, for example, as SmartFoldersDemo does in its
-    BadgedOutlineView. That content is correct only if the table keeps redrawing it
-    as a person uses the table.
+    draws a count badge beside an item, for example, as the People manual test app
+    does in its BadgedOutlineView. That content is correct only if the table keeps
+    redrawing it as a person uses the table.
 
     These tests take such a view through ordinary use: selecting, scrolling, resizing
     a column, expanding an item, reloading. After each action, the table must ask for

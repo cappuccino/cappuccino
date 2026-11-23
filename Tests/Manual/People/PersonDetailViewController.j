@@ -1,6 +1,6 @@
 /*
  * PersonDetailViewController.j
- * SmartFoldersDemo
+ * People
  *
  * Detail pane below the people table. Every control is bound to
  * arrayController.selection.<key>, which exercises CPControllerSelectionProxy,

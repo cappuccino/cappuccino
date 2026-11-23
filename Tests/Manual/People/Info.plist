@@ -5,13 +5,13 @@
 	<key>CPBundlePackageType</key>
 	<string>APPL</string>
 	<key>CPBundleIdentifier</key>
-	<string>com.yourorganization.SmartFoldersDemo</string>
+	<string>com.yourorganization.People</string>
 	<key>CPDefaultTheme</key>
 	<string>Aristo3</string>
 	<key>CPApplicationDelegateClass</key>
 	<string>AppController</string>
 	<key>CPBundleName</key>
-	<string>SmartFolderDemo</string>
+	<string>People</string>
 	<key>CPPrincipalClass</key>
 	<string>CPApplication</string>
 </dict>

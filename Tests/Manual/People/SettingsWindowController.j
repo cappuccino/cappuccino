@@ -1,6 +1,6 @@
 /*
  * SettingsWindowController.j
- * SmartFoldersDemo
+ * People
  *
  * Settings window with the application's appearance: Light, Dark or Auto, which follows
  * the system. The choice is kept in the user defaults and applied at launch.
@@ -9,7 +9,7 @@
 
 @import <AppKit/AppKit.j>
 
-var SettingsAppearanceKey   = @"SmartFoldersDemoAppearance",
+var SettingsAppearanceKey   = @"PeopleAppearance",
     SettingsAppearanceNames = [CPAppearanceNameAqua, CPAppearanceNameDarkAqua, nil],
     SettingsAutoSegment     = 2,
     SettingsAppearanceDidResetNotification = @"SettingsAppearanceDidResetNotification";

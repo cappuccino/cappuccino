@@ -1,6 +1,6 @@
 /*
  * Person.j
- * SmartFoldersDemo
+ * People
  *
  * The record type shown in the people table. Plain KVC/KVO compliant model
  * object: every property is exercised by bindings (table columns, detail

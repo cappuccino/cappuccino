@@ -1,6 +1,6 @@
 /*
  * Library.j
- * SmartFoldersDemo
+ * People
  *
  * The application model. Holds all people plus the three source list
  * sections (Library, Groups, Smart Folders), persists itself to
@@ -23,13 +23,13 @@ LibraryChangeKindKey            = @"kind";
 LibraryChangeStructural         = @"structural";
 LibraryChangePersonEdited       = @"personEdited";
 
-PeopleDragType                  = @"SmartFoldersDemoPeopleDragType";
-SourceItemDragType              = @"SmartFoldersDemoSourceItemDragType";
+PeopleDragType                  = @"PeoplePeopleDragType";
+SourceItemDragType              = @"PeopleSourceItemDragType";
 
 LibraryDepartments              = [@"Engineering", @"Design", @"Marketing", @"Sales", @"Support", @"Finance", @"Legal"];
 LibraryCities                   = [@"Berlin", @"Hamburg", @"Munich", @"Zürich", @"Vienna", @"Paris", @"London", @"Lisbon", @"New York", @"San Francisco", @"Tokyo"];
 
-var LibraryDefaultsKey          = @"SmartFoldersDemo.Library.v1",
+var LibraryDefaultsKey          = @"People.Library.v1",
     ObservedPersonKeys          = [@"firstName", @"lastName", @"email", @"department", @"city", @"birthDate", @"salary", @"isManager"],
     SourceItemUIDCounter        = 0;
 
