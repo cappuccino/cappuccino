@@ -57,7 +57,7 @@
 */
 - (void)_autosave
 {
-    if (_shouldRestoreFromAutosaveUnlessFrameSize || !_shouldAutosave || !_autosaveName)
+    if (!_shouldAutosave || !_autosaveName)
         return;
 
     var userDefaults = [CPUserDefaults standardUserDefaults],

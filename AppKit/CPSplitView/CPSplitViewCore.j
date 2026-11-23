@@ -102,7 +102,6 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 
     CPString                    _autosaveName;
     BOOL                        _shouldAutosave;
-    CGSize                      _shouldRestoreFromAutosaveUnlessFrameSize;
 
     int                         _suppressResizeNotificationsMask;
 

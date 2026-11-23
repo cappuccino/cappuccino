@@ -349,10 +349,6 @@
 */
 - (void)setPosition:(float)position ofDividerAtIndex:(int)dividerIndex
 {
-    // Any manual changes to the divider position should override anything we are restoring from
-    // autosave.
-    _shouldRestoreFromAutosaveUnlessFrameSize = nil;
-
     [self _setResizeNotificationsSuppressed:YES];
 
     /*

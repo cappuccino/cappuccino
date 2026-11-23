@@ -51,17 +51,6 @@
     return realRect;
 }
 
-- (void)setFrameSize:(CGSize)aSize
-{
-    if (_shouldRestoreFromAutosaveUnlessFrameSize)
-        _shouldAutosave = NO;
-
-    [super setFrameSize:aSize];
-
-    if (_shouldRestoreFromAutosaveUnlessFrameSize)
-        _shouldAutosave = YES;
-}
-
 - (void)resizeSubviewsWithOldSize:(CGSize)oldSize
 {
     if ([self _delegateRespondsToSplitViewResizeSubviewsWithOldSize])
