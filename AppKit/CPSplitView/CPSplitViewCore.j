@@ -310,9 +310,20 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 
     if (_arrangesAllSubviews)
     {
-        // We take all real subviews and put them in arranged subviews in the same order
-        // Using plain add/remove methods will ensure a correct dividers management
-        var views = [_realSubviews copy];
+        /*
+            All subviews except the dividers become arranged subviews, in their current order.
+            The plain add and remove methods keep the dividers correct.
+
+            2026-11-23: the list came from _realSubviews, which only
+            -_insertArrangedSubview:atIndex: fills. A subview added while the split view did not
+            arrange all subviews was not in it, so it did not become an arranged subview.
+        */
+        var subviews = [self subviews],
+            views = @[];
+
+        for (var i = 0, count = subviews.length; i < count; i++)
+            if (![_dividerSubviews containsObjectIdenticalTo:subviews[i]])
+                [views addObject:subviews[i]];
 
         // First, remove all real subviews (arranged & non arranged)
         for (var i = views.length - 1; i >= 0; i--)
