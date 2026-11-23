@@ -51,6 +51,17 @@ var SafariUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebK
         [self fail:@"CPCompatibility.j threw while loading under a WebKit user agent: " + loadException];
 }
 
+/*
+    The test suite runs without a DOM, so it states that a style property lookup outside a
+    browser finds no property and does not throw.
+*/
+- (void)testAStylePropertyLookupWithoutADOMFindsNoProperty
+{
+    [self assert:NO equals:CPDOMAvailable message:@"the test suite runs without a DOM"];
+    [self assertNull:CPBrowserStyleProperty(@"animation") message:@"no style property is found"];
+    [self assertNull:CPBrowserCSSProperty(@"animation") message:@"no CSS property is found"];
+}
+
 @end
 
 function compatibilityExecutable()

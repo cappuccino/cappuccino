@@ -412,6 +412,16 @@ function CPBrowserStyleProperty(aProperty)
 {
     var lowerProperty = aProperty.toLowerCase();
 
+    /*
+        Without a DOM there is no style to test, so no property is supported.
+
+        2026-11-23: the function created a test element without checking for a DOM. Outside a
+        browser, the first call threw a ReferenceError; the first use of an animator proxy
+        makes that call, so -animator could not be used in the test suite.
+    */
+    if (!CPDOMAvailable)
+        return nil;
+
     if (PLATFORM_STYLE_JS_PROPERTIES[lowerProperty] === undefined)
     {
         var r = nil;
