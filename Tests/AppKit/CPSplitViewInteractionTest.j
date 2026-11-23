@@ -28,11 +28,11 @@
 
 /*
     These tests state how a split view behaves as AppKit's NSSplitView does: divider drags and
-    their delegate constraints, collapsing, double-clicks, notifications, hit testing, button
-    bars, autosave, orientation, arranged subviews and archiving. They come before a refactoring
-    and a rework of CPSplitView, so they test through public behaviour only. The one exception
-    is -_restoreFromAutosave: today only a cib load starts a restore, so the autosave tests
-    call it, as CPSplitViewTest does.
+    their delegate constraints, collapsing, double-clicks, hidden dividers, notifications, hit
+    testing, button bars, autosave, orientation, arranged subviews and archiving. They come
+    before a refactoring and a rework of CPSplitView, so they test through public behaviour
+    only. The one exception is -_restoreFromAutosave: today only a cib load starts a restore,
+    so the autosave tests call it, as CPSplitViewTest does.
 
     Each test uses a vertical split view 300 points wide and 100 points high, with thin dividers
     (1 point under ojtest, where no theme is loaded). The first subview is 100 points wide; the
@@ -286,6 +286,74 @@
     [self assertFrame:CGRectMake(0, 0, 100, 100) of:viewA named:@"the first subview has its size from before"];
 }
 
+// MARK: - Hidden dividers
+
+/*
+    AppKit asks the delegate whether to hide each divider. A hidden divider has zero thickness
+    and takes no space, so the subviews share the whole split view.
+*/
+- (void)testAHiddenDividerTakesNoSpace
+{
+    [testDelegate setHiddenDividerIndexes:[0]];
+    [splitView setDelegate:testDelegate];
+    [splitView adjustSubviews];
+
+    [self assertFrame:CGRectMake(0, 0, 100, 100) of:viewA named:@"the first subview"];
+    [self assertFrame:CGRectMake(100, 0, 200, 100) of:viewB named:@"the second subview"];
+    [self assert:0 equals:CGRectGetWidth([splitView rectOfDividerAtIndex:0]) message:@"the hidden divider has zero thickness"];
+}
+
+/*
+    A hidden divider has no drag area of its own.
+*/
+- (void)testAHiddenDividerCannotBeDragged
+{
+    [testDelegate setHiddenDividerIndexes:[0]];
+    [splitView setDelegate:testDelegate];
+    [splitView adjustSubviews];
+
+    [self dragDivider:0 toX:140];
+
+    [self assert:100 equals:CGRectGetWidth([viewA frame]) message:@"the first subview keeps its width"];
+}
+
+/*
+    A delegate that hides the divider next to a collapsed subview gives the space of the divider
+    to the other subview when the collapse happens.
+*/
+- (void)testCollapsingASubviewWhoseDividerHidesGivesTheSpaceToTheOtherSubview
+{
+    [testDelegate setMinimum:80];
+    [testDelegate setCollapsibleSubviews:[viewA]];
+    [testDelegate setHidesDividersOfCollapsedSubviews:YES];
+    [splitView setDelegate:testDelegate];
+
+    [self dragDivider:0 toX:30];
+
+    [self assertTrue:[splitView isSubviewCollapsed:viewA] message:@"the first subview is collapsed"];
+    [self assertFrame:CGRectMake(0, 0, 300, 100) of:viewB named:@"the second subview"];
+    [self assert:0 equals:CGRectGetWidth([splitView rectOfDividerAtIndex:0]) message:@"the hidden divider has zero thickness"];
+}
+
+/*
+    The divider of an expanded subview is shown again and takes its thickness.
+*/
+- (void)testExpandingASubviewShowsItsHiddenDivider
+{
+    [testDelegate setMinimum:80];
+    [testDelegate setCollapsibleSubviews:[viewA]];
+    [testDelegate setHidesDividersOfCollapsedSubviews:YES];
+    [splitView setDelegate:testDelegate];
+    [self dragDivider:0 toX:30];
+
+    [splitView setPosition:140 ofDividerAtIndex:0];
+
+    [self assertFalse:[splitView isSubviewCollapsed:viewA] message:@"the first subview is expanded"];
+    [self assertFrame:CGRectMake(0, 0, 140, 100) of:viewA named:@"the first subview"];
+    [self assertFrame:CGRectMake(141, 0, 159, 100) of:viewB named:@"the second subview"];
+    [self assert:1 equals:CGRectGetWidth([splitView rectOfDividerAtIndex:0]) message:@"the divider has its thickness again"];
+}
+
 // MARK: - Notifications
 
 - (void)testDraggingTheDividerPostsTheResizeNotifications
@@ -536,6 +604,8 @@
     CPArray     _collapsibleSubviews        @accessors(property=collapsibleSubviews);
     BOOL        _collapsesOnDoubleClick     @accessors(property=collapsesOnDoubleClick);
     CGRect      _additionalRect             @accessors(property=additionalRect);
+    CPArray     _hiddenDividerIndexes       @accessors(property=hiddenDividerIndexes);
+    BOOL        _hidesDividersOfCollapsedSubviews @accessors(property=hidesDividersOfCollapsedSubviews);
 
     int         _didResizeCount             @accessors(readonly, property=didResizeCount);
     id          _lastNotificationObject     @accessors(readonly, property=lastNotificationObject);
@@ -547,6 +617,7 @@
     if (self = [super init])
     {
         _collapsibleSubviews = [];
+        _hiddenDividerIndexes = [];
         _didResizeCount = 0;
     }
 
@@ -581,6 +652,19 @@
 - (CGRect)splitView:(CPSplitView)aSplitView additionalEffectiveRectOfDividerAtIndex:(int)anIndex
 {
     return _additionalRect || CGRectMakeZero();
+}
+
+- (BOOL)splitView:(CPSplitView)aSplitView shouldHideDividerAtIndex:(int)anIndex
+{
+    if ([_hiddenDividerIndexes containsObject:anIndex])
+        return YES;
+
+    if (!_hidesDividersOfCollapsedSubviews)
+        return NO;
+
+    var subviews = [aSplitView arrangedSubviews];
+
+    return [aSplitView isSubviewCollapsed:subviews[anIndex]] || [aSplitView isSubviewCollapsed:subviews[anIndex + 1]];
 }
 
 - (void)splitViewDidResizeSubviews:(CPNotification)aNotification

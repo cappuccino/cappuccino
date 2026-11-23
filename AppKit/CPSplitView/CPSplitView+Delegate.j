@@ -35,7 +35,8 @@ var CPSplitViewDelegate_splitView_canCollapseSubview_                           
     CPSplitViewDelegate_splitView_constrainSplitPosition_ofSubviewAt_                   = 1 << 7,
     CPSplitViewDelegate_splitView_resizeSubviewsWithOldSize_                            = 1 << 8,
     CPSplitViewDelegate_splitViewDidResizeSubviews_                                     = 1 << 9,
-    CPSplitViewDelegate_splitViewWillResizeSubviews_                                    = 1 << 10;
+    CPSplitViewDelegate_splitViewWillResizeSubviews_                                    = 1 << 10,
+    CPSplitViewDelegate_splitView_shouldHideDividerAtIndex_                             = 1 << 11;
 
 @implementation CPSplitView (CPSplitViewDelegate)
 
@@ -102,6 +103,12 @@ var CPSplitViewDelegate_splitView_canCollapseSubview_                           
  - (void)splitView:(CPSplitView)aSplitView resizeSubviewsWithOldSize:(CGSize)oldSize;
  @endcode
 
+ Lets the delegate hide a divider. A hidden divider has zero thickness and takes no space, and
+ the user cannot drag it by its own rect.
+ @code
+ - (BOOL)splitView:(CPSplitView)aSplitView shouldHideDividerAtIndex:(int)dividerIndex;
+ @endcode
+
  @param delegate - The delegate of the splitview.
  */
 - (void)setDelegate:(id <CPSplitViewDelegate>)aDelegate
@@ -144,6 +151,9 @@ var CPSplitViewDelegate_splitView_canCollapseSubview_                           
 
     if ([_delegate respondsToSelector:@selector(splitView:resizeSubviewsWithOldSize:)])
         _implementedDelegateMethods |= CPSplitViewDelegate_splitView_resizeSubviewsWithOldSize_;
+
+    if ([_delegate respondsToSelector:@selector(splitView:shouldHideDividerAtIndex:)])
+        _implementedDelegateMethods |= CPSplitViewDelegate_splitView_shouldHideDividerAtIndex_;
 
     // We have to recompute flexible/fixed caches as the new delegate could consider things differently...
     [self _updateRatios];
@@ -216,6 +226,18 @@ var CPSplitViewDelegate_splitView_canCollapseSubview_                           
         return NO;
 
     return [_delegate splitView:self shouldCollapseSubview:aView forDoubleClickOnDividerAtIndex:anIndex];
+}
+
+/*!
+    @ignore
+    Call the delegate splitView:shouldHideDividerAtIndex:
+*/
+- (BOOL)_sendDelegateSplitViewShouldHideDividerAtIndex:(CPInteger)anIndex
+{
+    if (!(_implementedDelegateMethods & CPSplitViewDelegate_splitView_shouldHideDividerAtIndex_))
+        return NO;
+
+    return !![_delegate splitView:self shouldHideDividerAtIndex:anIndex];
 }
 
 /*!

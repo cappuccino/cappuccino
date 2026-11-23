@@ -76,10 +76,15 @@
         rightButtonBarRect.origin = [self convertPoint:rightButtonBarRect.origin fromView:rightButtonBar];
     }
 
-    effectiveRect = [self _sendDelegateSplitViewEffectiveRect:effectiveRect forDrawnRect:effectiveRect ofDividerAtIndex:anIndex];
+    // A hidden divider has no drag area of its own; see -effectiveRectOfDividerAtIndex:.
+    if ([self _isDividerHiddenAtIndex:anIndex])
+        effectiveRect = nil;
+    else
+        effectiveRect = [self _sendDelegateSplitViewEffectiveRect:effectiveRect forDrawnRect:effectiveRect ofDividerAtIndex:anIndex];
+
     additionalRect = [self _sendDelegateSplitViewAdditionalEffectiveRectOfDividerAtIndex:anIndex];
 
-    return CGRectContainsPoint(effectiveRect, aPoint) ||
+    return (effectiveRect && CGRectContainsPoint(effectiveRect, aPoint)) ||
            (additionalRect && CGRectContainsPoint(additionalRect, aPoint)) ||
            (leftButtonBarRect && CGRectContainsPoint(leftButtonBarRect, aPoint)) ||
            (rightButtonBarRect && CGRectContainsPoint(rightButtonBarRect, aPoint));
@@ -283,9 +288,9 @@
 - (float)maxPossiblePositionOfDividerAtIndex:(int)dividerIndex
 {
     if (dividerIndex + 1 < [_arrangedSubviews count] - 1)
-        return [_arrangedSubviews[dividerIndex + 1] frame].origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:dividerIndex + 1] - [self dividerThickness];
+        return [_arrangedSubviews[dividerIndex + 1] frame].origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:dividerIndex + 1] - [self _thicknessOfDividerAtIndex:dividerIndex];
     else
-        return [self frame].size[_sizeComponent] - [self dividerThickness];
+        return [self frame].size[_sizeComponent] - [self _thicknessOfDividerAtIndex:dividerIndex];
 }
 
 /*!
@@ -297,7 +302,7 @@
 {
     if (dividerIndex > 0)
     {
-        return [_arrangedSubviews[dividerIndex - 1] frame].origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:dividerIndex - 1] + [self dividerThickness];
+        return [_arrangedSubviews[dividerIndex - 1] frame].origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:dividerIndex - 1] + [self _thicknessOfDividerAtIndex:dividerIndex - 1];
     }
     else
         return 0;
@@ -360,7 +365,7 @@
     var realPosition = [self _realPositionForPosition:position ofDividerAtIndex:dividerIndex],
         viewA = _arrangedSubviews[dividerIndex],
         viewB = _arrangedSubviews[dividerIndex + 1],
-        thickness = [self dividerThickness],
+        thickness = [self _thicknessOfDividerAtIndex:dividerIndex],
         startA = [self minPossiblePositionOfDividerAtIndex:dividerIndex],
         endB = [self maxPossiblePositionOfDividerAtIndex:dividerIndex] + thickness,
         collapsesA = realPosition <= startA && [self _sendDelegateSplitViewCanCollapseSubview:viewA],
@@ -369,10 +374,24 @@
     [self _placeArrangedSubview:viewA from:startA to:realPosition collapsed:collapsesA];
     [self _placeArrangedSubview:viewB from:realPosition + thickness to:endB collapsed:collapsesB];
 
-    // Update the divider position
-    var dividerOrigin = [_dividerSubviews[dividerIndex] frameOrigin];
-    dividerOrigin[_originComponent] = realPosition;
-    [_dividerSubviews[dividerIndex] setFrameOrigin:dividerOrigin];
+    /*
+        The delegate can hide the divider next to a collapsed subview, so the collapse or the
+        expansion can change the thickness of the divider. The subviews are then placed again
+        with the new thickness. A divider that collapses the subview after it stays at the end
+        of its range.
+    */
+    var newThickness = [self _thicknessOfDividerAtIndex:dividerIndex];
+
+    if (newThickness !== thickness)
+    {
+        if (collapsesB)
+            realPosition = endB - newThickness;
+
+        [self _placeArrangedSubview:viewA from:startA to:realPosition collapsed:collapsesA];
+        [self _placeArrangedSubview:viewB from:realPosition + newThickness to:endB collapsed:collapsesB];
+    }
+
+    [self _placeDividerAtIndex:dividerIndex at:realPosition];
 
     [self _updateRatios];
 

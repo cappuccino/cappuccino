@@ -44,7 +44,7 @@
 - (void)splitView:(CPSplitView)splitView resizeSubviewsWithOldSize:(CGSize)oldSize;
 - (void)splitViewDidResizeSubviews:(CPNotification)aNotification;
 - (void)splitViewWillResizeSubviews:(CPNotification)aNotification;
-// FIXME: missing splitView:shouldHideDividerAtIndex:
+- (BOOL)splitView:(CPSplitView)splitView shouldHideDividerAtIndex:(CPInteger)dividerIndex;
 
 @end
 

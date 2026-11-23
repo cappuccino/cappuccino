@@ -45,6 +45,14 @@
     var realRect = [self rectOfDividerAtIndex:aDivider],
         padding = 2;
 
+    /*
+        A hidden divider has no drag area of its own: its rect has zero thickness and gets no
+        padding. The additional effective rect from the delegate and the resize controls of
+        button bars still apply.
+    */
+    if ([self _isDividerHiddenAtIndex:aDivider])
+        return realRect;
+
     realRect.size[_sizeComponent] += padding * 2;
     realRect.origin[_originComponent] -= padding;
 
@@ -117,7 +125,7 @@
         special case. Now that it keeps its size, counting it would leave a gap.
     */
 
-    var sizeToFit   = [self frame].size[_sizeComponent] - _dividerSubviews.length * [self dividerThickness],
+    var sizeToFit   = [self frame].size[_sizeComponent] - [self _totalDividerThickness],
         fixedSize   = 0,
         nbSubviews  = _arrangedSubviews.length,
         flexibleRatios = 0,
@@ -229,14 +237,11 @@
 
         if (i < count - 1)
         {
-            origin                   = CGPointMakeZero();
-            origin[_originComponent] = position;
-            position                += [_dividerSubviews[i] frame].size[_sizeComponent];
-
             // Apply the color to the specific divider view
             [_dividerSubviews[i] setBackgroundColor:currentDividerColor];
 
-            [_dividerSubviews[i] setFrameOrigin:origin];
+            [self _placeDividerAtIndex:i at:position];
+            position += [self _thicknessOfDividerAtIndex:i];
         }
     }
 
@@ -244,6 +249,58 @@
 }
 
 // MARK: - Private layout utilities
+
+/*
+    Returns YES when the delegate hides the divider at an index. As in AppKit, a hidden divider
+    has zero thickness and takes no space.
+
+    2026-11-23: the split view did not ask the delegate, so every divider took its full
+    thickness. A collapsed sidebar left a divider line at the edge of the window.
+*/
+- (BOOL)_isDividerHiddenAtIndex:(CPInteger)anIndex
+{
+    return [self _sendDelegateSplitViewShouldHideDividerAtIndex:anIndex];
+}
+
+/*
+    Returns the space that the divider at an index takes along the split.
+*/
+- (float)_thicknessOfDividerAtIndex:(CPInteger)anIndex
+{
+    return [self _isDividerHiddenAtIndex:anIndex] ? 0 : [self dividerThickness];
+}
+
+/*
+    Returns the space that all the dividers take along the split.
+*/
+- (float)_totalDividerThickness
+{
+    var total = 0;
+
+    for (var i = 0, count = _dividerSubviews.length; i < count; i++)
+        total += [self _thicknessOfDividerAtIndex:i];
+
+    return total;
+}
+
+/*
+    Places the divider view at an index at a position along the split. The view has the
+    thickness of the divider, fills the split view in the other direction, and is hidden when
+    the divider is hidden.
+*/
+- (void)_placeDividerAtIndex:(CPInteger)anIndex at:(float)aPosition
+{
+    var divider = _dividerSubviews[anIndex],
+        isHidden = [self _isDividerHiddenAtIndex:anIndex],
+        frame = CGRectMakeZero();
+
+    frame.origin[_originComponent] = aPosition;
+    frame.size[_sizeComponent] = isHidden ? 0 : [self dividerThickness];
+    frame.size[_otherSizeComponent] = [self frame].size[_otherSizeComponent];
+
+    [divider setFrame:frame];
+    [divider setHidden:isHidden];
+}
 
 /*
     Returns the space that the arranged subview at an index takes along the split. A collapsed
@@ -274,21 +331,14 @@
 */
 - (void)_layoutDividersFromArrangedSubviews
 {
-    var myOtherSize = [self frame].size[_otherSizeComponent],
-        dividerColor = [self dividerColor];
+    var dividerColor = [self dividerColor];
 
     for (var i = 0, count = MIN(_dividerSubviews.length, _arrangedSubviews.length - 1); i < count; i++)
     {
-        var subviewFrame = [_arrangedSubviews[i] frame],
-            divider = _dividerSubviews[i],
-            frame = CGRectMakeZero();
+        var subviewFrame = [_arrangedSubviews[i] frame];
 
-        frame.origin[_originComponent] = subviewFrame.origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:i];
-        frame.size[_sizeComponent] = [divider frameSize][_sizeComponent];
-        frame.size[_otherSizeComponent] = myOtherSize;
-
-        [divider setBackgroundColor:dividerColor];
-        [divider setFrame:frame];
+        [_dividerSubviews[i] setBackgroundColor:dividerColor];
+        [self _placeDividerAtIndex:i at:subviewFrame.origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:i]];
     }
 
     [self updateTrackingAreas];
