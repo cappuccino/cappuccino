@@ -164,18 +164,23 @@
             _initialOffset = startPosition - point[_originComponent];
             // Don't autosave during a resize. We'll wait until it's done.
             _shouldAutosave = NO;
-            [self _postNotificationWillResize];
         }
 
     }
     else if (type == CPLeftMouseDragged && _currentDivider != CPNotFound)
     {
+        /*
+            Each -setPosition:ofDividerAtIndex: posts a will-resize and a did-resize notification,
+            as NSSplitView does for each step of a drag.
+
+            2026-11-23: the mouse-down and the first drag event also posted a will-resize
+            notification, with no did-resize notification to match. One drag posted three
+            will-resize notifications and one did-resize notification.
+        */
         if (!_isTracking)
         {
             // Don't autosave during a resize. We'll wait until it's done.
             _shouldAutosave = NO;
-            [self _postNotificationWillResize];
-
             _isTracking = YES;
         }
 

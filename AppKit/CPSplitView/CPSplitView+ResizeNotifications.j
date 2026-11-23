@@ -45,9 +45,22 @@ var ShouldSuppressResizeNotifications   = 1,
     [self _autosave];
 }
 
+/*
+    Posts the will-resize notification that comes before a resize. Outside a suppressed group,
+    each call posts, because each call is followed by one did-resize notification. Inside a
+    suppressed group, only the first call posts, and the end of the group posts the one
+    did-resize notification.
+
+    2026-11-23: the flag that marks the first call was also set outside a suppressed group, and
+    only the end of a group cleared it. After one resize outside a group, later resizes posted
+    no will-resize notification, so adjustSubviews posted a second one unconditionally, and
+    the notifications were not paired.
+*/
 - (void)_maybePostWillResizeNotification
 {
-    if ((_suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0)
+    if ((_suppressResizeNotificationsMask & ShouldSuppressResizeNotifications) === 0)
+        [self _postNotificationWillResize];
+    else if ((_suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0)
     {
         [self _postNotificationWillResize];
         _suppressResizeNotificationsMask |= DidPostWillResizeNotification;

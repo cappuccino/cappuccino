@@ -118,7 +118,6 @@
 - (void)adjustSubviews
 {
     [self _maybePostWillResizeNotification];
-    [self _postNotificationWillResize];
 
     // 2 possibilities : we have, or not, enough flexible space to accomodate fixed size subviews
 
