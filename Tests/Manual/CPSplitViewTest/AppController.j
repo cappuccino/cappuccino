@@ -56,10 +56,10 @@
 {
     var userDefaults = [CPUserDefaults standardUserDefaults],
         autosaveName = [self _framesKeyForAutosaveName:[self autosaveName]],
-        autosavePrecollapseName = [self _precollapseKeyForAutosaveName:[self autosaveName]];
+        autosaveCollapsedName = [self _collapsedKeyForAutosaveName:[self autosaveName]];
 
     [userDefaults setObject:nil forKey:autosaveName];
-    [userDefaults setObject:nil forKey:autosavePrecollapseName];
+    [userDefaults setObject:nil forKey:autosaveCollapsedName];
 
     // Prevent a new autosave from being made.
     [self setAutosaveName:nil];

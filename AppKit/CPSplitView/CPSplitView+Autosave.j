@@ -62,20 +62,27 @@
 
     var userDefaults = [CPUserDefaults standardUserDefaults],
         autosaveName = [self _framesKeyForAutosaveName:[self autosaveName]],
-        autosavePrecollapseName = [self _precollapseKeyForAutosaveName:[self autosaveName]],
+        autosaveCollapsedName = [self _collapsedKeyForAutosaveName:[self autosaveName]],
         count = [_arrangedSubviews count],
         positions = [CPMutableArray new],
-        preCollapseArray = [CPMutableArray new];
+        collapsed = [CPMutableArray new];
 
+    /*
+        A collapsed subview keeps its size, so the frames hold the sizes to restore and the
+        collapsed flags say which subviews are hidden.
+
+        2026-11-23: the split view saved the frames and a table of positions from before each
+        collapse, keyed by divider index. That table went stale when subviews were inserted or
+        removed, and the collapsed state itself was not saved.
+    */
     for (var i = 0; i < count; i++)
     {
-        var frame = [_arrangedSubviews[i] frame];
-        [positions addObject:CGStringFromRect(frame)];
-        [preCollapseArray addObject:[_preCollapsePositions objectForKey:"" + i]];
+        [positions addObject:CGStringFromRect([_arrangedSubviews[i] frame])];
+        [collapsed addObject:!![_arrangedSubviews[i] isHidden]];
     }
 
     [userDefaults setObject:positions forKey:autosaveName];
-    [userDefaults setObject:preCollapseArray forKey:autosavePrecollapseName];
+    [userDefaults setObject:collapsed forKey:autosaveCollapsedName];
 }
 
 /*!
@@ -87,10 +94,10 @@
         return;
 
     var autosaveName = [self _framesKeyForAutosaveName:[self autosaveName]],
-        autosavePrecollapseName = [self _precollapseKeyForAutosaveName:[self autosaveName]],
+        autosaveCollapsedName = [self _collapsedKeyForAutosaveName:[self autosaveName]],
         userDefaults = [CPUserDefaults standardUserDefaults],
         frames = [userDefaults objectForKey:autosaveName],
-        preCollapseArray = [userDefaults objectForKey:autosavePrecollapseName];
+        collapsed = [userDefaults objectForKey:autosaveCollapsedName];
 
     if (frames)
     {
@@ -110,6 +117,13 @@
 
             frame.size[_otherSizeComponent] = myOtherSize;
 
+            /*
+                Frames saved without collapsed flags come from the earlier format, where a
+                collapsed subview had a size of zero.
+            */
+            var isCollapsed = collapsed ? !!collapsed[i] : frame.size[_sizeComponent] < 1;
+
+            [_arrangedSubviews[i] setHidden:isCollapsed];
             [_arrangedSubviews[i] setFrame:frame];
         }
 
@@ -123,21 +137,6 @@
         }
 
         _shouldAutosave = YES;
-    }
-
-    if (preCollapseArray)
-    {
-        _preCollapsePositions = [CPMutableDictionary new];
-
-        for (var i = 0, count = [preCollapseArray count]; i < count; i++)
-        {
-            var item = preCollapseArray[i];
-
-            if (item == nil)
-                [_preCollapsePositions removeObjectForKey:String(i)];
-            else
-                [_preCollapsePositions setObject:item forKey:String(i)];
-        }
     }
 }
 
@@ -155,12 +154,12 @@
 /*!
     @ignore
 */
-- (CPString)_precollapseKeyForAutosaveName:(CPString)theAutosaveName
+- (CPString)_collapsedKeyForAutosaveName:(CPString)theAutosaveName
 {
     if (!theAutosaveName)
         return nil;
 
-    return @"CPSplitView Subview Precollapse Positions " + theAutosaveName;
+    return @"CPSplitView Subview Collapsed " + theAutosaveName;
 }
 
 @end

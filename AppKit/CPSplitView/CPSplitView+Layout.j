@@ -119,15 +119,40 @@
 {
     [self _maybePostWillResizeNotification];
 
-    // 2 possibilities : we have, or not, enough flexible space to accomodate fixed size subviews
+    /*
+        Two cases: there is enough space for the fixed subviews, or there is not. A collapsed
+        subview takes no space and keeps its size, so it is left out of both cases. The ratios
+        of the other subviews are scaled so that they share all the space.
+
+        2026-11-23: a collapsed subview was a visible subview of size zero, so it needed no
+        special case. Now that it keeps its size, counting it would leave a gap.
+    */
 
     var sizeToFit   = [self frame].size[_sizeComponent] - _dividerSubviews.length * [self dividerThickness],
         fixedSize   = 0,
-        nbSubviews  = _arrangedSubviews.length;
+        nbSubviews  = _arrangedSubviews.length,
+        flexibleRatios = 0,
+        fixedRatios = 0,
+        flexibleCount = 0,
+        fixedCount = 0;
 
     for (var i = 0; i < nbSubviews; i++)
-        if (!_isFlexible[i])
+    {
+        if ([_arrangedSubviews[i] isHidden])
+            continue;
+
+        if (_isFlexible[i])
+        {
+            flexibleRatios += _ratios[i];
+            flexibleCount++;
+        }
+        else
+        {
             fixedSize += [_arrangedSubviews[i] frameSize][_sizeComponent];
+            fixedRatios += _ratios[i];
+            fixedCount++;
+        }
+    }
 
     if (fixedSize < sizeToFit)
     {
@@ -135,18 +160,15 @@
         // So we only deal with flexible subviews, resizing them while keeping all ratios
 
         var newFlexibleSize = sizeToFit - fixedSize,
-            remainingSpace  = newFlexibleSize,
-            flexibleCount   = 0;
+            remainingSpace  = newFlexibleSize;
 
         for (var i = 0, size, floatSize, intSize, cumulativeFloatSize = 0.0, cumulativeIntSize = 0; i < nbSubviews; i++)
-            if (_isFlexible[i])
+            if (_isFlexible[i] && ![_arrangedSubviews[i] isHidden])
             {
-                flexibleCount++;
-
                 // Cocoa doesn't seem to round arranged subviews sizes.
                 // So the next computation ensures we get the same results but with rounded sizes.
                 size = CGSizeMakeCopy([_arrangedSubviews[i] frameSize]);
-                floatSize = MIN((newFlexibleSize * _ratios[i]), remainingSpace);
+                floatSize = MIN((newFlexibleSize * [self _shareOfRatio:_ratios[i] inTotal:flexibleRatios count:flexibleCount]), remainingSpace);
                 cumulativeFloatSize += floatSize;
 
                 intSize = ROUND(cumulativeFloatSize) - cumulativeIntSize;
@@ -167,22 +189,22 @@
         // There's not enough space to maintain fixed and flexible subviews
         // So we collapse all flexible subviews and shrink evenly fixed subviews
 
-        var remainingSpace = sizeToFit,
-            fixedCount     = 0;
+        var remainingSpace = sizeToFit;
 
         for (var i = 0, size, floatSize, intSize, cumulativeFloatSize = 0.0, cumulativeIntSize = 0; i < nbSubviews; i++)
         {
+            if ([_arrangedSubviews[i] isHidden])
+                continue;
+
             size = CGSizeMakeCopy([_arrangedSubviews[i] frameSize]);
 
             if (_isFlexible[i])
                 size[_sizeComponent] = 0;
             else
             {
-                fixedCount++;
-
                 // Cocoa doesn't seem to round arranged subviews sizes.
                 // So the next computation ensures we get the same results but with rounded sizes.
-                floatSize = MIN((sizeToFit * _ratios[i]), remainingSpace);
+                floatSize = MIN((sizeToFit * [self _shareOfRatio:_ratios[i] inTotal:fixedRatios count:fixedCount]), remainingSpace);
                 cumulativeFloatSize += floatSize;
 
                 intSize = ROUND(cumulativeFloatSize) - cumulativeIntSize;
@@ -212,7 +234,7 @@
     {
         origin                   = CGPointMakeZero();
         origin[_originComponent] = position;
-        position                += [_arrangedSubviews[i] frame].size[_sizeComponent];
+        position                += [self _sizeOfArrangedSubviewAtIndex:i];
 
         [_arrangedSubviews[i] setFrameOrigin:origin];
 
@@ -235,6 +257,29 @@
 // MARK: - Private layout utilities
 
 /*
+    Returns the space that the arranged subview at an index takes along the split. A collapsed
+    subview takes no space, but it keeps its frame size for its expansion.
+*/
+- (float)_sizeOfArrangedSubviewAtIndex:(CPInteger)anIndex
+{
+    var subview = _arrangedSubviews[anIndex];
+
+    return [subview isHidden] ? 0 : [subview frameSize][_sizeComponent];
+}
+
+/*
+    Returns the part of the space that one ratio gets when a group of ratios share it. When the
+    ratios of the group add up to zero, each member gets an equal part.
+*/
+- (float)_shareOfRatio:(float)aRatio inTotal:(float)aTotal count:(CPInteger)aCount
+{
+    if (aTotal > 0)
+        return aRatio / aTotal;
+
+    return aCount > 0 ? 1 / aCount : 0;
+}
+
+/*
     Places each divider view after the subview before it, from that subview's frame. The divider
     keeps its thickness and fills the split view in the other direction.
 */
@@ -249,7 +294,7 @@
             divider = _dividerSubviews[i],
             frame = CGRectMakeZero();
 
-        frame.origin[_originComponent] = subviewFrame.origin[_originComponent] + subviewFrame.size[_sizeComponent];
+        frame.origin[_originComponent] = subviewFrame.origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:i];
         frame.size[_sizeComponent] = [divider frameSize][_sizeComponent];
         frame.size[_otherSizeComponent] = myOtherSize;
 
@@ -264,7 +309,7 @@
 - (void)_distribute:(CPInteger)remainingSpace amoung:(CPInteger)count onFlexible:(BOOL)onFlexible fromIndex:(CPInteger)fromIndex toIndex:(CPInteger)toIndex
 {
     for (var i = toIndex, size, supplement; i >= fromIndex; i--)
-        if (_isFlexible[i] == onFlexible)
+        if (_isFlexible[i] == onFlexible && ![_arrangedSubviews[i] isHidden])
         {
             size = CGSizeMakeCopy([_arrangedSubviews[i] frameSize]);
             remainingSpace -= supplement = CEIL(remainingSpace / count);

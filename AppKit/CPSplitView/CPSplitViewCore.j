@@ -92,7 +92,6 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 
     int                         _currentDivider;
     float                       _initialOffset;
-    CPDictionary                _preCollapsePositions;
 
     CPString                    _originComponent;
     CPString                    _otherOriginComponent;
@@ -153,7 +152,6 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 - (void)_init
 {
     _suppressResizeNotificationsMask = 0;
-    _preCollapsePositions = @{};
     _currentDivider = CPNotFound;
 
     _buttonBars = [];

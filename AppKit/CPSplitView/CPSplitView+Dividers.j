@@ -32,13 +32,18 @@
 // MARK: -
 
 /*!
-    Returns YES if the supplied subview is collapsed, otherwise NO.
+    Returns YES if the supplied subview is collapsed, otherwise NO. As in AppKit, a collapsed
+    subview is an arranged subview that is hidden. It keeps its size and takes no space.
+
+    2026-11-23: a subview counted as collapsed when its size was below one point. A collapse
+    set the size to zero and kept the subview visible, so the size from before the collapse
+    was lost, and a separate table of positions keyed by divider index tried to restore it.
     @param aSubview - the subview you are interested in.
     @return BOOL - YES if the subview is collapsed, otherwise NO.
 */
 - (BOOL)isSubviewCollapsed:(CPView)subview
 {
-    return ([subview frame].size[_sizeComponent] < 1);
+    return [subview isHidden] && [_arrangedSubviews containsObjectIdenticalTo:subview];
 }
 
 /*!
@@ -133,28 +138,37 @@
         var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
         _currentDivider = [self _dividerAtPoint:point];
 
-        var frame = [_arrangedSubviews[_currentDivider] frame],
-            startPosition = frame.origin[_originComponent] + frame.size[_sizeComponent];
+        var startPosition = [_arrangedSubviews[_currentDivider] frame].origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:_currentDivider];
 
         if ([anEvent clickCount] == 2 &&
             [self _delegateRespondsToSplitViewCanCollapseSubview] &&
             [self _delegateRespondsToSplitViewshouldCollapseSubviewForDoubleClickOnDividerAtIndex])
         {
+            /*
+                A collapsed subview keeps its size, so the expansion restores that size. A
+                subview with no size to restore opens to the middle of the available range.
+            */
             var minPosition = [self minPossiblePositionOfDividerAtIndex:_currentDivider],
                 maxPosition = [self maxPossiblePositionOfDividerAtIndex:_currentDivider],
-                preCollapsePosition = [_preCollapsePositions objectForKey:"" + _currentDivider] || 0;
+                middlePosition = minPosition + (maxPosition - minPosition) / 2,
+                viewA = _arrangedSubviews[_currentDivider],
+                viewB = _arrangedSubviews[_currentDivider + 1];
 
-            if ([self _sendDelegateSplitViewCanCollapseSubview:_arrangedSubviews[_currentDivider]] && [self _sendDelegateSplitViewShouldCollapseSubview:_arrangedSubviews[_currentDivider] forDoubleClickOnDividerAtIndex:_currentDivider])
+            if ([self _sendDelegateSplitViewCanCollapseSubview:viewA] && [self _sendDelegateSplitViewShouldCollapseSubview:viewA forDoubleClickOnDividerAtIndex:_currentDivider])
             {
-                if ([self isSubviewCollapsed:_arrangedSubviews[_currentDivider]])
-                    [self setPosition:preCollapsePosition ? preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:_currentDivider];
+                var keptSizeA = [viewA frameSize][_sizeComponent];
+
+                if ([self isSubviewCollapsed:viewA])
+                    [self setPosition:keptSizeA >= 1 ? minPosition + keptSizeA : middlePosition ofDividerAtIndex:_currentDivider];
                 else
                     [self setPosition:minPosition ofDividerAtIndex:_currentDivider];
             }
-            else if ([self _sendDelegateSplitViewCanCollapseSubview:_arrangedSubviews[_currentDivider + 1]] && [self _sendDelegateSplitViewShouldCollapseSubview:_arrangedSubviews[_currentDivider + 1] forDoubleClickOnDividerAtIndex:_currentDivider])
+            else if ([self _sendDelegateSplitViewCanCollapseSubview:viewB] && [self _sendDelegateSplitViewShouldCollapseSubview:viewB forDoubleClickOnDividerAtIndex:_currentDivider])
             {
-                if ([self isSubviewCollapsed:_arrangedSubviews[_currentDivider + 1]])
-                    [self setPosition:preCollapsePosition ? preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:_currentDivider];
+                var keptSizeB = [viewB frameSize][_sizeComponent];
+
+                if ([self isSubviewCollapsed:viewB])
+                    [self setPosition:keptSizeB >= 1 ? maxPosition - keptSizeB : middlePosition ofDividerAtIndex:_currentDivider];
                 else
                     [self setPosition:maxPosition ofDividerAtIndex:_currentDivider];
             }
@@ -224,21 +238,17 @@
         // If we are currently tracking, keep the resize cursor active even outside of hit areas.
         if (_currentDivider === i || (_currentDivider == CPNotFound && [self cursorAtPoint:point hitDividerAtIndex:i]))
         {
-            var frameA = [_arrangedSubviews[i] frame],
-                sizeA = frameA.size[_sizeComponent],
-                startPosition = frameA.origin[_originComponent] + sizeA,
-                frameB = [_arrangedSubviews[i + 1] frame],
-                sizeB = frameB.size[_sizeComponent],
+            var startPosition = [_arrangedSubviews[i] frame].origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:i],
                 canShrink = [self _realPositionForPosition:startPosition - 1 ofDividerAtIndex:i] < startPosition,
                 canGrow = [self _realPositionForPosition:startPosition + 1 ofDividerAtIndex:i] > startPosition,
                 cursor = [CPCursor arrowCursor];
 
-            if (sizeA === 0)
+            if ([self isSubviewCollapsed:_arrangedSubviews[i]])
                 canGrow = YES; // Subview is collapsed.
             else if (!canShrink && [self _sendDelegateSplitViewCanCollapseSubview:_arrangedSubviews[i]])
                 canShrink = YES; // Subview is collapsible.
 
-            if (sizeB === 0)
+            if ([self isSubviewCollapsed:_arrangedSubviews[i + 1]])
                 // Right/lower subview is collapsed.
                 canGrow = NO;
             else if (!canGrow && [self _sendDelegateSplitViewCanCollapseSubview:_arrangedSubviews[i + 1]])
@@ -272,10 +282,8 @@
 */
 - (float)maxPossiblePositionOfDividerAtIndex:(int)dividerIndex
 {
-    var frame = [_arrangedSubviews[dividerIndex + 1] frame];
-
     if (dividerIndex + 1 < [_arrangedSubviews count] - 1)
-        return frame.origin[_originComponent] + frame.size[_sizeComponent] - [self dividerThickness];
+        return [_arrangedSubviews[dividerIndex + 1] frame].origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:dividerIndex + 1] - [self dividerThickness];
     else
         return [self frame].size[_sizeComponent] - [self dividerThickness];
 }
@@ -289,9 +297,7 @@
 {
     if (dividerIndex > 0)
     {
-        var frame = [_arrangedSubviews[dividerIndex - 1] frame];
-
-        return frame.origin[_originComponent] + frame.size[_sizeComponent] + [self dividerThickness];
+        return [_arrangedSubviews[dividerIndex - 1] frame].origin[_originComponent] + [self _sizeOfArrangedSubviewAtIndex:dividerIndex - 1] + [self dividerThickness];
     }
     else
         return 0;
@@ -349,45 +355,23 @@
 
     [self _setResizeNotificationsSuppressed:YES];
 
+    /*
+        A divider at the start of its range collapses the subview before it, and a divider at
+        the end of its range collapses the subview after it, when the delegate lets them
+        collapse. A collapsed subview is hidden and keeps its size; a divider that moves away
+        shows it again with the size the new position gives it.
+    */
     var realPosition = [self _realPositionForPosition:position ofDividerAtIndex:dividerIndex],
         viewA = _arrangedSubviews[dividerIndex],
-        frameA = [viewA frame],
         viewB = _arrangedSubviews[dividerIndex + 1],
-        frameB = [viewB frame],
-        preCollapsePosition = 0,
-        preSize = frameA.size[_sizeComponent];
+        thickness = [self dividerThickness],
+        startA = [self minPossiblePositionOfDividerAtIndex:dividerIndex],
+        endB = [self maxPossiblePositionOfDividerAtIndex:dividerIndex] + thickness,
+        collapsesA = realPosition <= startA && [self _sendDelegateSplitViewCanCollapseSubview:viewA],
+        collapsesB = !collapsesA && realPosition + thickness >= endB && [self _sendDelegateSplitViewCanCollapseSubview:viewB];
 
-    frameA.size[_sizeComponent] = realPosition - frameA.origin[_originComponent];
-
-    if (preSize !== 0 && frameA.size[_sizeComponent] === 0)
-        preCollapsePosition = preSize;
-
-    if (preSize !== frameA.size[_sizeComponent])
-    {
-        [self _maybePostWillResizeNotification];
-        [_arrangedSubviews[dividerIndex] setFrame:frameA];
-        [self _maybePostDidResizeNotification];
-    }
-
-    preSize = frameB.size[_sizeComponent];
-
-    var preOrigin = frameB.origin[_originComponent];
-    frameB.size[_sizeComponent] = frameB.origin[_originComponent] + frameB.size[_sizeComponent] - realPosition - [self dividerThickness];
-
-    if (preSize !== 0 && frameB.size[_sizeComponent] === 0)
-        preCollapsePosition = frameB.origin[_originComponent];
-
-    frameB.origin[_originComponent] = realPosition + [self dividerThickness];
-
-    if (preSize !== frameB.size[_sizeComponent] || preOrigin !== frameB.origin[_originComponent])
-    {
-        [self _maybePostWillResizeNotification];
-        [_arrangedSubviews[dividerIndex + 1] setFrame:frameB];
-        [self _maybePostDidResizeNotification];
-    }
-
-    if (preCollapsePosition)
-        [_preCollapsePositions setObject:preCollapsePosition forKey:"" + dividerIndex];
+    [self _placeArrangedSubview:viewA from:startA to:realPosition collapsed:collapsesA];
+    [self _placeArrangedSubview:viewB from:realPosition + thickness to:endB collapsed:collapsesB];
 
     // Update the divider position
     var dividerOrigin = [_dividerSubviews[dividerIndex] frameOrigin];
@@ -400,6 +384,30 @@
         [self _postNotificationDidResize];
 
     [self _setResizeNotificationsSuppressed:NO];
+}
+
+/*
+    Places an arranged subview between two positions along the split. A collapsed subview is
+    hidden at the start position and keeps its size; otherwise the subview is shown and fills
+    the space between the positions. The resize notifications are posted only for a change.
+*/
+- (void)_placeArrangedSubview:(CPView)aSubview from:(float)start to:(float)end collapsed:(BOOL)shouldCollapse
+{
+    var oldFrame = [aSubview frame],
+        frame = CGRectMakeCopy(oldFrame);
+
+    frame.origin[_originComponent] = start;
+
+    if (!shouldCollapse)
+        frame.size[_sizeComponent] = end - start;
+
+    if (CGRectEqualToRect(frame, oldFrame) && !![aSubview isHidden] === !!shouldCollapse)
+        return;
+
+    [self _maybePostWillResizeNotification];
+    [aSubview setHidden:shouldCollapse];
+    [aSubview setFrame:frame];
+    [self _maybePostDidResizeNotification];
 }
 
 /*!

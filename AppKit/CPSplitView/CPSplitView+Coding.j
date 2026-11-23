@@ -76,7 +76,6 @@ var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
         [self _init];
 
         _suppressResizeNotificationsMask = 0;
-        _preCollapsePositions = [CPMutableDictionary new];
 
         _currentDivider = CPNotFound;
         _shouldAutosave = NO;
