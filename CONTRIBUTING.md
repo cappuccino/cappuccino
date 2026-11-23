@@ -1,6 +1,10 @@
 Contributing
 ------------
 
+Cappuccino is a transliteration of AppKit and Foundation for the web browser, as far as the medium permits. Behavior must follow Apple's published API specifications. Gaps are acceptable where they do not compromise other functionality; idiosyncratic interpretations are not.
+
+All contributions must pass unit and manual integration tests verifying the affected behaviour. If sufficient tests do not exist, they must accompany the code.
+
 As an open source project, your contributions are important to the future of Cappuccino. Whether you're looking to write code, add new documentation, or just report a bug, you'll be helping everyone who uses Cappuccino in the future.
 
 ## Reporting Bugs
@@ -27,7 +31,7 @@ To contribute a patch or a fix, fork Cappuccino and then clone your fork and mak
 
 Now you can go to GitHub and [make a pull request](https://help.github.com/articles/using-pull-requests).
 
-Some things are difficult to unit test in a way that's worthwhile. For instance a change to the mouse interaction of a `CPButton`. In this case a manual test is fine instead. Find the closest related manual test in `Tests/Manual` and add whatever it takes to easily reproduce the patched behavior, ideally with some labels describing how someone running the manual test should exercise it.
+Some behaviour is difficult to unit test in a way that's worthwhile, for instance a change to the mouse interaction of a `CPButton`. Unit test what can be unit tested, and cover the rest with a manual integration test. Find the closest related manual test in `Tests/Manual` and add whatever it takes to easily reproduce the patched behavior, ideally with some labels describing how someone running the manual test should exercise it.
 
 ## Commit Messages
 
