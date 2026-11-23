@@ -1,5 +1,6 @@
 @import <AppKit/CPWindow.j>
 @import <AppKit/CPMenuItem.j>
+@import <AppKit/CPPanel.j>
 @import <AppKit/_CPBorderlessWindowView.j>
 @import <Foundation/CPURL.j>
 
@@ -408,6 +409,84 @@
     });
 }
 
+
+/*
+    The steps below run the end of a sheet without the timers of
+    -[CPApplication beginSheet:modalForWindow:modalDelegate:didEndSelector:contextInfo:]: the test
+    makes the sheet context that -_attachSheet:modalDelegate:didEndSelector:contextInfo: makes and
+    calls -_cleanupSheetWindow, which the animation out calls last.
+*/
+- (CPWindow)_attachTestSheetTo:(CPWindow)aParent modalDelegate:(id)aDelegate
+{
+    var sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 200.0, 100.0) styleMask:CPDocModalWindowMask];
+
+    [sheet._windowView _enableSheet:YES inWindow:aParent];
+    aParent._sheetContext = {
+        "sheet": sheet,
+        "modalDelegate": aDelegate,
+        "endSelector": @selector(sheetDidEnd:returnCode:contextInfo:),
+        "contextInfo": nil,
+        "returnCode": 7,
+        "opened": NO,
+        "isAttached": NO,
+        "isClosing": YES,
+        "deferDidEndSelector": YES,
+        "savedConstrains": sheet._constrainsToUsableScreen
+    };
+
+    return sheet;
+}
+
+/*
+    As in AppKit, the window has no attached sheet when CPWindowDidEndSheetNotification arrives
+    and when the deferred did-end selector runs.
+*/
+- (void)testTheWindowHasNoAttachedSheetWhenTheEndOfASheetIsReported
+{
+    var parent = [self window],
+        observer = [_CPWindowTestSheetObserver new],
+        sheet = [self _attachTestSheetTo:parent modalDelegate:observer];
+
+    [observer setWindow:parent];
+    [[CPNotificationCenter defaultCenter] addObserver:observer selector:@selector(windowDidEndSheet:) name:CPWindowDidEndSheetNotification object:parent];
+
+    [parent _cleanupSheetWindow];
+
+    [[CPNotificationCenter defaultCenter] removeObserver:observer];
+
+    [self assertTrue:[observer notified] message:@"the end of the sheet is reported"];
+    [self assertNull:[observer sheetAtNotification] message:@"no attached sheet at the notification"];
+    [self assert:sheet same:[observer endedSheet] message:@"the did-end selector receives the sheet"];
+    [self assert:7 equals:[observer returnCode]];
+    [self assertNull:[observer sheetAtDidEnd] message:@"no attached sheet in the did-end selector"];
+}
+
+/*
+    A sheet begun while another closes waits for it; when the first one is gone, the window
+    attaches the waiting sheet.
+*/
+- (void)testASheetBegunWhileAnotherClosesIsAttachedWhenTheFirstEnds
+{
+    var parent = [self window],
+        observer = [_CPWindowTestSheetObserver new],
+        first = [self _attachTestSheetTo:parent modalDelegate:observer],
+        second = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 200.0, 100.0) styleMask:CPDocModalWindowMask];
+
+    [parent _attachSheet:second modalDelegate:nil didEndSelector:nil contextInfo:nil];
+
+    [self assert:first same:[parent attachedSheet] message:@"the second sheet waits"];
+
+    [parent _cleanupSheetWindow];
+
+    [self assert:second same:[parent attachedSheet] message:@"the second sheet is attached"];
+
+    /*
+        -_attachSheet:... schedules the animation in on a timer. A closing context makes that
+        timer do nothing after the test.
+    */
+    parent._sheetContext["isClosing"] = YES;
+}
+
 @end
 
 /*
@@ -472,6 +551,34 @@ var CPWindowTestZoomingWindowStandardFrame = CGRectMake(40.0, 50.0, 600.0, 450.0
 - (CGRect)windowWillUseStandardFrame:(CPWindow)aWindow defaultFrame:(CGRect)aFrame
 {
     return CGRectMakeCopy(CPWindowTestZoomingWindowStandardFrame);
+}
+
+@end
+
+/*
+    Records what the window reports when a sheet ends.
+*/
+@implementation _CPWindowTestSheetObserver : CPObject
+{
+    CPWindow    window              @accessors;
+    BOOL        notified            @accessors(readonly);
+    CPWindow    sheetAtNotification @accessors(readonly);
+    CPWindow    endedSheet          @accessors(readonly);
+    int         returnCode          @accessors(readonly);
+    CPWindow    sheetAtDidEnd       @accessors(readonly);
+}
+
+- (void)windowDidEndSheet:(CPNotification)aNotification
+{
+    notified = YES;
+    sheetAtNotification = [window attachedSheet];
+}
+
+- (void)sheetDidEnd:(CPWindow)aSheet returnCode:(int)aCode contextInfo:(id)aContext
+{
+    endedSheet = aSheet;
+    returnCode = aCode;
+    sheetAtDidEnd = [window attachedSheet];
 }
 
 @end

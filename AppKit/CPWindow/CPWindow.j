@@ -3355,23 +3355,6 @@ CPTexturedBackgroundWindowMask
     [attachedSheet setFrame:sheetFrame display:YES animate:NO];
 }
 
-- (void)_previousSheetIsClosedNotification:(CPNotification)aNotification
-{
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidEndSheetNotification object:self];
-
-    var sheet = _sheetContext[@"nextSheet"],
-        modalDelegate = _sheetContext[@"nextModalDelegate"],
-        endSelector = _sheetContext[@"nextEndSelector"],
-        contextInfo = _sheetContext[@"nextContextInfo"];
-
-    // Needed, because when the notification CPWindowDidEndSheetNotification is sent, the sheetContext is not up to date...
-    setTimeout(function()
-    {
-        [sheet._windowView _enableSheet:YES inWindow:self];
-        [self _attachSheet:sheet modalDelegate:modalDelegate didEndSelector:endSelector contextInfo:contextInfo];
-    }, 0)
-}
-
 /*
     Starting point for sheet session, called from CPApplication beginSheet:
 */
@@ -3389,7 +3372,7 @@ CPTexturedBackgroundWindowMask
             _sheetContext[@"nextEndSelector"] = didEndSelector;
             _sheetContext[@"nextContextInfo"] = contextInfo;
 
-            [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_previousSheetIsClosedNotification:) name:CPWindowDidEndSheetNotification object:self];
+            /* -_cleanupSheetWindow attaches the saved sheet when the current one is gone. */
             return;
         }
         else
@@ -3471,7 +3454,15 @@ CPTexturedBackgroundWindowMask
 - (void)_cleanupSheetWindow
 {
     var sheet = _sheetContext["sheet"],
-        deferDidEnd = _sheetContext["deferDidEndSelector"];
+        deferDidEnd = _sheetContext["deferDidEndSelector"],
+        delegate = _sheetContext["modalDelegate"],
+        selector = _sheetContext["endSelector"],
+        returnCode = _sheetContext["returnCode"],
+        contextInfo = _sheetContext["contextInfo"],
+        nextSheet = _sheetContext["nextSheet"],
+        nextModalDelegate = _sheetContext["nextModalDelegate"],
+        nextEndSelector = _sheetContext["nextEndSelector"],
+        nextContextInfo = _sheetContext["nextContextInfo"];
 
     // If the parent window is modal, the sheet started its own modal session
     if (sheet._isModal)
@@ -3487,28 +3478,29 @@ CPTexturedBackgroundWindowMask
     // Close it
     [sheet orderOut:self];
 
+    /*
+        The window posted CPWindowDidEndSheetNotification while the sheet context was still
+        set, so -attachedSheet still answered the sheet that had ended. An observer that
+        revalidated its state, such as the window's toolbar, saw a sheet that was gone and
+        kept items disabled. A sheet saved by -_attachSheet:... while this one closed was
+        attached from an observer of the notification, which had to read the stale context
+        and wait for a timeout. The context is now cleared first, as AppKit has no attached
+        sheet when NSWindowDidEndSheetNotification arrives, and the saved sheet is attached
+        here after the end of this one is reported.
+    */
+    _sheetContext = nil;
+    sheet._parentView = nil;
+    [sheet _updateEffectiveAppearance];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
 
-    if (deferDidEnd)
-    {
-        var delegate = _sheetContext["modalDelegate"],
-            selector = _sheetContext["endSelector"],
-            returnCode = _sheetContext["returnCode"],
-            contextInfo = _sheetContext["contextInfo"];
+    if (deferDidEnd && delegate != null)
+        delegate.isa.objj_msgSend3(delegate, selector, sheet, returnCode, contextInfo);
 
-        // Context must be destroyed, since didEnd might want to attach another sheet
-        _sheetContext = nil;
-        sheet._parentView = nil;
-        [sheet _updateEffectiveAppearance];
-
-        if (delegate != null)
-            delegate.isa.objj_msgSend3(delegate, selector, sheet, returnCode, contextInfo);
-    }
-    else
+    if (nextSheet)
     {
-        _sheetContext = nil;
-        sheet._parentView = nil;
-        [sheet _updateEffectiveAppearance];
+        [nextSheet._windowView _enableSheet:YES inWindow:self];
+        [self _attachSheet:nextSheet modalDelegate:nextModalDelegate didEndSelector:nextEndSelector contextInfo:nextContextInfo];
     }
 }
 

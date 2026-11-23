@@ -157,6 +157,47 @@ var ToolbarTestIdentifiersOf = function(aToolbar)
 /*
     Dragging information for a drop on the customization overlay.
 */
+/*
+    A toolbar delegate and validator with one item, which is enabled only while its window has
+    no attached sheet.
+*/
+@implementation _ToolbarTestSheetValidator : CPObject
+{
+    CPWindow    window  @accessors;
+}
+
+- (CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)aToolbar
+{
+    return [@"SheetValidatedItem"];
+}
+
+- (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)aToolbar
+{
+    return [@"SheetValidatedItem"];
+}
+
+- (CPToolbarItem)toolbar:(CPToolbar)aToolbar itemForItemIdentifier:(CPString)anIdentifier willBeInsertedIntoToolbar:(BOOL)aFlag
+{
+    var item = [[CPToolbarItem alloc] initWithItemIdentifier:anIdentifier];
+
+    [item setLabel:@"Validated"];
+    [item setTarget:self];
+    [item setAction:@selector(act:)];
+
+    return item;
+}
+
+- (void)act:(id)aSender
+{
+}
+
+- (BOOL)validateToolbarItem:(CPToolbarItem)anItem
+{
+    return ![window attachedSheet];
+}
+
+@end
+
 @implementation _ToolbarTestDraggingInfo : CPObject
 {
     CPPasteboard    draggingPasteboard  @accessors;
@@ -662,6 +703,46 @@ var ToolbarTestIdentifiersOf = function(aToolbar)
 
     [self assertTrue:[overlay performDragOperation:info]];
     [self assert:[CPToolbarSpaceItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier] equals:ToolbarTestIdentifiersOf(toolbar)];
+}
+
+/*
+    An item that its validator disables while a sheet is attached is enabled again when the
+    sheet ends: the toolbar validates its items on CPWindowDidEndSheetNotification, and the
+    window has no attached sheet by then.
+*/
+- (void)testTheToolbarValidatesItsItemsWhenASheetEnds
+{
+    var window = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 800.0, 300.0) styleMask:CPTitledWindowMask],
+        sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 200.0, 100.0) styleMask:CPDocModalWindowMask],
+        toolbar = [[CPToolbar alloc] initWithIdentifier:@"CPToolbarTestSheetValidation"],
+        delegate = [_ToolbarTestSheetValidator new];
+
+    [delegate setWindow:window];
+    [toolbar setDelegate:delegate];
+    [window setToolbar:toolbar];
+
+    var item = [toolbar items][0];
+
+    [self assertTrue:[[toolbar visibleItems] containsObject:item] message:@"the item is visible"];
+
+    [sheet._windowView _enableSheet:YES inWindow:window];
+    window._sheetContext = {
+        "sheet": sheet,
+        "modalDelegate": nil,
+        "endSelector": nil,
+        "contextInfo": nil,
+        "returnCode": -1,
+        "opened": NO,
+        "isAttached": NO,
+        "isClosing": YES,
+        "savedConstrains": sheet._constrainsToUsableScreen
+    };
+
+    [toolbar validateVisibleItems];
+    [self assertFalse:[item isEnabled] message:@"disabled while the sheet is attached"];
+
+    [window _cleanupSheetWindow];
+    [self assertTrue:[item isEnabled] message:@"enabled when the sheet ends"];
 }
 
 /*

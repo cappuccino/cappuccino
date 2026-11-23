@@ -30,6 +30,7 @@
 @import "_CPToolbarCustomizationPalette.j"
 
 @global CPApp
+@global CPWindowDidEndSheetNotification
 
 var CPToolbarDelegate_toolbar_itemForItemIdentifier_willBeInsertedIntoToolbar_  = 1 << 0,
     CPToolbarDelegate_toolbarAllowedItemIdentifiers_                            = 1 << 1,
@@ -283,13 +284,27 @@ var CPToolbarConfigurationDisplayModeKey        = @"TB Display Mode",
 
 - (void)_setWindow:(CPWindow)aWindow
 {
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
     if (_window)
-        [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:_window];
+    {
+        [defaultCenter removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:_window];
+        [defaultCenter removeObserver:self name:CPWindowDidEndSheetNotification object:_window];
+    }
 
     _window = aWindow;
 
     if (_window)
-        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_autoValidateVisibleItems) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
+    {
+        [defaultCenter addObserver:self selector:@selector(_autoValidateVisibleItems) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
+
+        /*
+            Items that a validator disables while a sheet is attached kept that state after the
+            sheet ended: nothing validated them again until the first responder changed. The
+            toolbar now validates its items when a sheet of its window ends.
+        */
+        [defaultCenter addObserver:self selector:@selector(_autoValidateVisibleItems) name:CPWindowDidEndSheetNotification object:aWindow];
+    }
 }
 
 /*!
@@ -718,7 +733,6 @@ var CPToolbarConfigurationDisplayModeKey        = @"TB Display Mode",
 - (void)_customizationPaletteDidEnd
 {
     _customizationPalette = nil;
-    [self validateVisibleItems];
 }
 
 /*
