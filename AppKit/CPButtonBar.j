@@ -1508,6 +1508,9 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
         _minWidth = minWidth;
         _maxWidth = maxWidth;
 
+        /* A button bar search field keeps its search button and text at the leading edge. */
+        [self setCentersPlaceholder:NO];
+
         [self _initThemedValues];
 
         [self setPlaceholderString:placeholder];
@@ -1522,9 +1525,6 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 {
     // Set height to the default height from theme
     [self setFrameSize:CGSizeMake(_minWidth, [self currentValueForThemeAttribute:@"min-size"].height)];
-
-    // Disable the not editing / editing difference in layouts
-    [self setValue:[self valueForThemeAttribute:@"search-button-rect-function" inStates:[CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]] forThemeAttribute:@"search-button-rect-function" inStates:[CPTextFieldStateRounded, CPThemeStateBezeled]];
 
     // Get extra-spacing
     _extraSpacing = [self currentValueForThemeAttribute:@"extra-spacing"];

@@ -3123,50 +3123,6 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
         @"box-shadow": @"0 0 3px rgba(255,255,255,0.3)"
     }],
 
-    calcRectFunctionNotEditing = "" + function(s, rect) {
-        var size        = [[s _potentialCurrentValueForThemeAttribute:@"image-search"] size],
-            inset       = [s _potentialCurrentValueForThemeAttribute:@"image-search-inset"],
-            margin      = [s _potentialCurrentValueForThemeAttribute:@"search-right-margin"],
-            value       = [s objectValue],
-            placeholder = [s placeholderString],
-            hasValue    = ([value length] > 0),
-            text        = hasValue ? value : placeholder,
-            labelSize   = [text sizeWithFont:[s _potentialCurrentValueForThemeAttribute:@"font"]];
-
-        /*
-            The glass and the placeholder are centred as one group. A placeholder wider than the
-            field put the glass at a negative x, outside the field, so a narrow search field showed
-            no glass. The glass now stays at its leading position when the group does not fit,
-            and the placeholder after it is truncated.
-        */
-        var leadingX = inset.left - inset.right;
-
-        if (hasValue || (placeholder === @" "))
-            return CGRectMake(leadingX, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
-        else
-            return CGRectMake(MAX(leadingX, (rect.size.width - labelSize.width) / 2 - size.width - margin), inset.top - inset.bottom + (rect.size.height - size.height) / 2, size.width, size.height);
-    },
-
-    calcRectFunctionEditing = "" + function(s, rect) {
-        var size = [[s _potentialCurrentValueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero(),
-            inset = [s _potentialCurrentValueForThemeAttribute:@"image-search-inset"];
-        return CGRectMake(inset.left - inset.right, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
-    },
-
-    animateLayoutFunction = "" + function(s) {
-        for (var i = 0, subviews = [s subviews], nb = [subviews count], textView = nil; (!textView && (i < nb)); i++)
-            if ([subviews[i] isKindOfClass:_CPImageAndTextView]) textView = subviews[i];
-
-        [CPAnimationContext beginGrouping];
-        var context = [CPAnimationContext currentContext];
-        [context setDuration:0.2];
-        [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-        [context setCompletionHandler:function() { [s themedLayoutFunctionCompletionHandler]; }];
-        [[[s searchButton] animator] setFrame:[s searchButtonRectForBounds:[s bounds]]];
-        [[textView animator]         setFrame:[s contentRectForBounds:[s bounds]]];
-        [CPAnimationContext endGrouping];
-    },
-
     // ==========================================================
     // 6. REGISTRATION
     // ==========================================================
@@ -3254,10 +3210,7 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
      [@"bezel-color",               hudBezelCssColor,               [CPThemeStateHUD, CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
      [@"bezel-color",               hudBezelFocusedCssColor,        [CPThemeStateHUD, CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
 
-     // --- Animation & Menu ---
-     [@"search-button-rect-function",  calcRectFunctionNotEditing,  [CPTextFieldStateRounded, CPThemeStateBezeled]],
-     [@"search-button-rect-function",  calcRectFunctionEditing,     [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
-     [@"layout-function",              animateLayoutFunction],
+     // --- Menu ---
      [@"search-menu-offset",        CGPointMake(1, 0)]
      ];
 

@@ -158,4 +158,101 @@
     [self assert:menu same:[_searchField menuForEvent:nil]];
 }
 
+// MARK: Search button placement
+
+/*
+    The theme gives the search button its image, its inset and the margin before the text; the
+    field places the button. Under ojtest no theme is loaded, so each test field gets these
+    measurements as its own theme values. -sizeWithFont: uses the DOM and gives a zero size in
+    the terminal, so the tests compute the expected centred position with it too.
+*/
+- (CPSearchField)placementTestFieldOfWidth:(float)aWidth class:(Class)aClass
+{
+    var searchField = [[aClass alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, 22.0)];
+
+    [searchField setValue:[[CPImage alloc] initWithContentsOfFile:@"search.png" size:CGSizeMake(16.0, 16.0)] forThemeAttribute:@"image-search"];
+    [searchField setValue:CGInsetMake(0.0, 0.0, 0.0, 5.0) forThemeAttribute:@"image-search-inset"];
+    [searchField setValue:4 forThemeAttribute:@"search-right-margin"];
+
+    return searchField;
+}
+
+- (float)centredSearchButtonXIn:(CPSearchField)aSearchField
+{
+    var placeholderWidth = [[aSearchField placeholderString] sizeWithFont:[aSearchField font]].width;
+
+    return MAX(5.0, (CGRectGetWidth([aSearchField bounds]) - placeholderWidth) / 2 - 16.0 - 4.0);
+}
+
+- (float)searchButtonXIn:(CPSearchField)aSearchField
+{
+    return CGRectGetMinX([aSearchField searchButtonRectForBounds:[aSearchField bounds]]);
+}
+
+- (void)testASearchFieldCentersItsPlaceholderByDefault
+{
+    [self assertTrue:[_searchField centersPlaceholder]];
+}
+
+- (void)testAnEmptyFieldCentresTheSearchButtonWithThePlaceholder
+{
+    var searchField = [self placementTestFieldOfWidth:200.0 class:[CPSearchField class]];
+
+    [self assert:[self centredSearchButtonXIn:searchField] equals:[self searchButtonXIn:searchField]];
+    [self assertTrue:[self searchButtonXIn:searchField] > 5.0 message:@"the search button is not at its leading position"];
+}
+
+/*
+    A placeholder wider than the field must not push the search button outside it.
+*/
+- (void)testANarrowFieldKeepsTheSearchButtonAtItsLeadingPosition
+{
+    var searchField = [self placementTestFieldOfWidth:30.0 class:[CPSearchField class]];
+
+    [self assert:5.0 equals:[self searchButtonXIn:searchField]];
+}
+
+- (void)testAFieldWithAValueKeepsTheSearchButtonAtItsLeadingPosition
+{
+    var searchField = [self placementTestFieldOfWidth:200.0 class:[CPSearchField class]];
+
+    [searchField setStringValue:@"text"];
+
+    [self assert:5.0 equals:[self searchButtonXIn:searchField]];
+}
+
+- (void)testAnEditingFieldKeepsTheSearchButtonAtItsLeadingPosition
+{
+    var searchField = [self placementTestFieldOfWidth:200.0 class:[CPSearchField class]];
+
+    [searchField setThemeState:CPThemeStateEditing];
+
+    [self assert:5.0 equals:[self searchButtonXIn:searchField]];
+}
+
+- (void)testAFieldThatDoesNotCentreItsPlaceholderKeepsTheSearchButtonAtItsLeadingPosition
+{
+    var searchField = [self placementTestFieldOfWidth:200.0 class:[CPSearchField class]];
+
+    [searchField setCentersPlaceholder:NO];
+
+    [self assert:5.0 equals:[self searchButtonXIn:searchField]];
+}
+
+- (void)testAButtonBarSearchFieldDoesNotCentreItsPlaceholder
+{
+    var searchField = [[_CPButtonBarSearchField alloc] initWithPlaceholder:@"Search" minWidth:200.0 maxWidth:200.0];
+
+    [self assertFalse:[searchField centersPlaceholder]];
+}
+
+- (void)testCentersPlaceholderIsArchived
+{
+    [_searchField setCentersPlaceholder:NO];
+
+    var copy = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:_searchField]];
+
+    [self assertFalse:[copy centersPlaceholder]];
+}
+
 @end

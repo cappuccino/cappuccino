@@ -65,6 +65,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
     CPView      _contentView;
     BOOL        _isBecomingFirstResponder;
+    BOOL        _centersPlaceholder;
 }
 
 + (CPString)defaultThemeClass
@@ -81,8 +82,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             @"image-cancel-pressed": [CPNull null],
             @"image-search-inset" : CGInsetMake(0, 0, 0, 5),
             @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0),
-            @"search-button-rect-function": [CPNull null],
-            @"layout-function": [CPNull null],
             @"search-right-margin": 2,
             @"search-menu-offset": CGPointMake(10, -4)
         };
@@ -104,7 +103,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _sendsWholeSearchString = NO;
         _sendsSearchStringImmediately = NO;
         _recentsAutosaveName = nil;
-        
+        _centersPlaceholder = YES;
+
         [self setPlaceholderString:@"Search"];
 
         [self _init];
@@ -257,6 +257,44 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 // Custom Layout
 /*!
+    Returns a Boolean value that indicates whether the receiver centres its placeholder.
+    @return \c YES if the search button and the placeholder are centred as one group while the receiver is not editing and has no value; otherwise \c NO. The default value is \c YES.
+*/
+- (BOOL)centersPlaceholder
+{
+    return _centersPlaceholder;
+}
+
+/*!
+    Sets whether the receiver centres its placeholder.
+    @param shouldCenter \c YES to centre the search button and the placeholder as one group while the receiver is not editing and has no value; \c NO to keep them at the leading edge.
+*/
+- (void)setCentersPlaceholder:(BOOL)shouldCenter
+{
+    shouldCenter = !!shouldCenter;
+
+    if (_centersPlaceholder === shouldCenter)
+        return;
+
+    _centersPlaceholder = shouldCenter;
+    [self _layoutContent];
+}
+
+/*
+    The search button and the placeholder are centred as one group only while the receiver is not
+    editing, is not about to edit, and shows a placeholder.
+*/
+- (BOOL)_isPlaceholderCentered
+{
+    if (!_centersPlaceholder || _isBecomingFirstResponder || [self hasThemeState:CPThemeStateEditing])
+        return NO;
+
+    var placeholder = [self placeholderString];
+
+    return [[self stringValue] length] === 0 && [placeholder length] > 0 && placeholder !== @" ";
+}
+
+/*!
     Modifies the bounding rectangle for the search-text field.
     @param rect The current bounding rectangle for the search text field.
     @return The updated bounding rectangle to use for the search text field. The default value is the value passed into the rect parameter.
@@ -291,18 +329,30 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 */
 - (CGRect)searchButtonRectForBounds:(CGRect)rect
 {
-    var themedRectFunction = [self _potentialCurrentValueForThemeAttribute:@"search-button-rect-function"];
+    var size = [[self _potentialCurrentValueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero(),
+        inset = [self _potentialCurrentValueForThemeAttribute:@"image-search-inset"],
+        x = inset.left - inset.right,
+        y = inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2;
 
-    if (themedRectFunction)
-        // There's a theme defined positioning function, just use it
-        return objj_eval("("+themedRectFunction+")")(self, rect);
-    else
+    /*
+        Aristo3 stored this placement as JavaScript source in its theme data, and the receiver ran
+        it with objj_eval. The placement is control behaviour, not theme data, so it is here now;
+        the theme gives only the image, its inset and the margin.
+
+        The search button and the placeholder are centred as one group. A placeholder wider than
+        the field put the button at a negative x, outside the field, so a narrow search field
+        showed no button. The button now stays at its leading position when the group does not
+        fit, and the placeholder after it is truncated.
+    */
+    if ([self _isPlaceholderCentered])
     {
-        var size = [[self _potentialCurrentValueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero(),
-            inset = [self _potentialCurrentValueForThemeAttribute:@"image-search-inset"];
+        var margin = [self _potentialCurrentValueForThemeAttribute:@"search-right-margin"],
+            placeholderSize = [[self placeholderString] sizeWithFont:[self font]];
 
-        return CGRectMake(inset.left - inset.right, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
+        x = MAX(x, (CGRectGetWidth(rect) - placeholderSize.width) / 2 - size.width - margin);
     }
+
+    return CGRectMake(x, y, size.width, size.height);
 }
 
 /*!
@@ -900,13 +950,29 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
     try
     {
-        var themedLayoutFunction = [self currentValueForThemeAttribute:@"layout-function"];
+        /*
+            A receiver that centres its placeholder moves the search button and the text between
+            the centred and the leading positions, so it animates the move.
+        */
+        if (_centersPlaceholder)
+        {
+            [CPAnimationContext beginGrouping];
 
-        if (themedLayoutFunction)
-            // There's a theme defined layout function, just use it
-            objj_eval("("+themedLayoutFunction+")")(self);
+            var context = [CPAnimationContext currentContext];
+
+            [context setDuration:0.2];
+            [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+            [context setCompletionHandler:function()
+            {
+                [self themedLayoutFunctionCompletionHandler];
+            }];
+
+            [[_searchButton animator] setFrame:[self searchButtonRectForBounds:[self bounds]]];
+            [[_contentView animator] setFrame:[self contentRectForBounds:[self bounds]]];
+
+            [CPAnimationContext endGrouping];
+        }
         else
-            // Call directly the completion handler
             [self themedLayoutFunctionCompletionHandler];
     }
     finally
@@ -1081,7 +1147,8 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
     CPSendsWholeSearchStringKey         = @"CPSendsWholeSearchStringKey",
     CPSendsSearchStringImmediatelyKey   = @"CPSendsSearchStringImmediatelyKey",
     CPMaximumRecentsKey                 = @"CPMaximumRecentsKey",
-    CPSearchMenuTemplateKey             = @"CPSearchMenuTemplateKey";
+    CPSearchMenuTemplateKey             = @"CPSearchMenuTemplateKey",
+    CPCentersPlaceholderKey             = @"CPCentersPlaceholderKey";
 
 @implementation CPSearchField (CPCoding)
 
@@ -1100,6 +1167,7 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
     [coder encodeBool:_sendsWholeSearchString forKey:CPSendsWholeSearchStringKey];
     [coder encodeBool:_sendsSearchStringImmediately forKey:CPSendsSearchStringImmediatelyKey];
     [coder encodeInt:_maximumRecents forKey:CPMaximumRecentsKey];
+    [coder encodeBool:_centersPlaceholder forKey:CPCentersPlaceholderKey];
 
     if (_recentsAutosaveName)
         [coder encodeObject:_recentsAutosaveName forKey:CPRecentsAutosaveNameKey];
@@ -1116,6 +1184,12 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
         _sendsWholeSearchString   = [coder decodeBoolForKey:CPSendsWholeSearchStringKey];
         _sendsSearchStringImmediately = [coder decodeBoolForKey:CPSendsSearchStringImmediatelyKey];
         _maximumRecents           = [coder decodeIntForKey:CPMaximumRecentsKey];
+
+        /*
+            Archives made before the property existed have no value for it; AppKit's default
+            applies.
+        */
+        _centersPlaceholder       = [coder containsValueForKey:CPCentersPlaceholderKey] ? [coder decodeBoolForKey:CPCentersPlaceholderKey] : YES;
 
         var template              = [coder decodeObjectForKey:CPSearchMenuTemplateKey];
 
