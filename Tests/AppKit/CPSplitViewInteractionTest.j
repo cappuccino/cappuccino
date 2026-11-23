@@ -385,6 +385,29 @@
 }
 
 /*
+    A restored layout is the layout that later resizes keep: the next adjustSubviews leaves the
+    restored sizes in place, and the divider is at the restored position.
+*/
+- (void)testAutosaveRestoredSizesSurviveTheNextAdjustment
+{
+    [self useAutosaveStore];
+    [splitView setAutosaveName:@"CPSplitViewInteractionTest.Ratios"];
+    [self dragDivider:0 toX:140];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [self setUp];
+    [splitView setAutosaveName:@"CPSplitViewInteractionTest.Ratios"];
+    [splitView _restoreFromAutosave];
+
+    [self assert:140 equals:CGRectGetMinX([splitView rectOfDividerAtIndex:0]) message:@"the divider is at the restored position"];
+
+    [splitView adjustSubviews];
+
+    [self assert:140 equals:CGRectGetWidth([viewA frame]) message:@"the restored size survives adjustSubviews"];
+    [self assert:140 equals:CGRectGetMinX([splitView rectOfDividerAtIndex:0]) message:@"the divider stays at the restored position"];
+}
+
+/*
     Saved state belongs to the subviews it was saved for. A split view that has gained a subview
     since the save keeps its current layout.
 */

@@ -144,6 +144,17 @@
             [_dividerSubviews[i] setFrameSize:size];
         }
 
+        /*
+            The restored sizes become the ratios for later resizes, and the dividers move to the
+            restored positions.
+
+            2026-11-23: the restore set the subview frames only. The ratios stayed those of the
+            layout before the restore, so the next adjustSubviews resized the subviews back to
+            that layout. The dividers stayed in place until the next layout pass.
+        */
+        [self _updateRatios];
+        [self _layoutSubviewsInEffectiveAppearance];
+
         _shouldAutosave = YES;
     }
 }
