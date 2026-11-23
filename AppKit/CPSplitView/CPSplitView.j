@@ -37,3 +37,4 @@
 @import "CPSplitView+Autosave.j"
 @import "CPSplitView+Delegate.j"
 @import "CPSplitView+Coding.j"
+@import "CPSplitView+Animation.j"

@@ -29,10 +29,11 @@
 /*
     These tests state how a split view behaves as AppKit's NSSplitView does: divider drags and
     their delegate constraints, collapsing, double-clicks, hidden dividers, holding priorities,
-    notifications, hit testing, button bars, autosave, orientation, arranged subviews and
-    archiving. They come before a refactoring and a rework of CPSplitView, so they test through
-    public behaviour only. The one exception is -_restoreFromAutosave: today only a cib load
-    starts a restore, so the autosave tests call it, as CPSplitViewTest does.
+    animated divider moves, notifications, hit testing, button bars, autosave, orientation,
+    arranged subviews and archiving. They come before a refactoring and a rework of
+    CPSplitView, so they test through public behaviour only. The one exception is
+    -_restoreFromAutosave: today only a cib load starts a restore, so the autosave tests call
+    it, as CPSplitViewTest does.
 
     Each test uses a vertical split view 300 points wide and 100 points high, with thin dividers
     (1 point under ojtest, where no theme is loaded). The first subview is 100 points wide; the
@@ -472,6 +473,79 @@
 
     [self assert:260 equals:[splitView holdingPriorityForSubviewAtIndex:0] message:@"the remaining subview"];
     [self assertThrows:function() { [splitView holdingPriorityForSubviewAtIndex:1]; }];
+}
+
+// MARK: - Animated divider moves
+
+/*
+    ojtest has no CSS animation, so a move sent to the animator takes the path without an
+    animation. These tests state the end of a move, which both paths share, and that the move
+    finishes inside an animation group.
+*/
+- (void)testTheAnimatorMovesTheDivider
+{
+    [[splitView animator] setPosition:140 ofDividerAtIndex:0];
+
+    [self assertFrame:CGRectMake(0, 0, 140, 100) of:viewA named:@"the first subview"];
+    [self assertFrame:CGRectMake(141, 0, 159, 100) of:viewB named:@"the second subview"];
+    [self assert:140 equals:CGRectGetMinX([splitView rectOfDividerAtIndex:0]) message:@"the divider is at the new position"];
+}
+
+- (void)testAnAnimatedMoveEndsAtThePositionAndCallsTheCompletionHandler
+{
+    var completed = NO;
+
+    [CPAnimationContext runAnimationGroup:function(context)
+    {
+        [context setDuration:0.25];
+        [[splitView animator] setPosition:140 ofDividerAtIndex:0];
+    }
+    completionHandler:function()
+    {
+        completed = YES;
+    }];
+
+    [self assertTrue:completed message:@"the completion handler is called"];
+    [self assertFrame:CGRectMake(0, 0, 140, 100) of:viewA named:@"the first subview"];
+    [self assertFrame:CGRectMake(141, 0, 159, 100) of:viewB named:@"the second subview"];
+}
+
+- (void)testAnAnimatedCollapseHidesTheSubviewAndKeepsItsSize
+{
+    [testDelegate setMinimum:80];
+    [testDelegate setCollapsibleSubviews:[viewA]];
+    [splitView setDelegate:testDelegate];
+
+    [CPAnimationContext runAnimationGroup:function(context)
+    {
+        [context setDuration:0.25];
+        [[splitView animator] setPosition:0 ofDividerAtIndex:0];
+    }
+    completionHandler:nil];
+
+    [self assertTrue:[splitView isSubviewCollapsed:viewA] message:@"the first subview is collapsed"];
+    [self assertTrue:[viewA isHidden] message:@"the collapsed subview is hidden"];
+    [self assert:100 equals:CGRectGetWidth([viewA frame]) message:@"the collapsed subview keeps its width"];
+    [self assertFrame:CGRectMake(1, 0, 299, 100) of:viewB named:@"the second subview"];
+}
+
+- (void)testAnAnimatedExpansionShowsTheSubview
+{
+    [testDelegate setMinimum:80];
+    [testDelegate setCollapsibleSubviews:[viewA]];
+    [splitView setDelegate:testDelegate];
+    [splitView setPosition:0 ofDividerAtIndex:0];
+
+    [CPAnimationContext runAnimationGroup:function(context)
+    {
+        [context setDuration:0.25];
+        [[splitView animator] setPosition:140 ofDividerAtIndex:0];
+    }
+    completionHandler:nil];
+
+    [self assertFalse:[viewA isHidden] message:@"the first subview is shown"];
+    [self assertFrame:CGRectMake(0, 0, 140, 100) of:viewA named:@"the first subview"];
+    [self assertFrame:CGRectMake(141, 0, 159, 100) of:viewB named:@"the second subview"];
 }
 
 // MARK: - Notifications
