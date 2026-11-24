@@ -96,6 +96,8 @@
 @import "CPSlider.j"
 @import "CPSound.j"
 @import "CPSplitView.j"
+@import "CPSplitViewController.j"
+@import "CPSplitViewItem.j"
 @import "CPStackView.j"
 @import "CPStepper.j"
 @import "CPTableColumn.j"

@@ -200,3 +200,14 @@ CPPanelWindowShadowStyle    = 2;
 CPCustomWindowShadowStyle   = 3;
 
 CPWindowConstrainToScreen = YES;
+
+/*
+    The styles of the separator between a title bar and the content below it.
+    @global
+    @class CPWindow
+*/
+@typedef CPTitlebarSeparatorStyle
+CPTitlebarSeparatorStyleAutomatic   = 0;
+CPTitlebarSeparatorStyleNone        = 1;
+CPTitlebarSeparatorStyleLine        = 2;
+CPTitlebarSeparatorStyleShadow      = 3;

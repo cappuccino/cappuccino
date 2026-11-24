@@ -52,20 +52,35 @@
 */
 - (void)_animateToPosition:(float)position ofDividerAtIndex:(int)dividerIndex
 {
-    var views = [_arrangedSubviews[dividerIndex], _arrangedSubviews[dividerIndex + 1], _dividerSubviews[dividerIndex]],
+    [self _animateLayoutChange:function()
+    {
+        [self setPosition:position ofDividerAtIndex:dividerIndex];
+    }];
+}
+
+/*
+    Runs a change to the layout of the split view and animates each arranged subview and
+    divider that the change moves, resizes, hides or shows. The change itself runs at once and
+    gives the split view its final state; a split view controller uses this to animate the
+    collapse and expansion of its items.
+*/
+- (void)_animateLayoutChange:(Function)aChange
+{
+    var views = [_arrangedSubviews arrayByAddingObjectsFromArray:_dividerSubviews],
         startStates = [];
 
     for (var i = 0, count = views.length; i < count; i++)
         startStates.push({ frame: CGRectMakeCopy([views[i] frame]), hidden: !![views[i] isHidden] });
 
-    [self setPosition:position ofDividerAtIndex:dividerIndex];
+    aChange();
 
     for (var i = 0, count = views.length; i < count; i++)
-        [self _animateView:views[i] fromState:startStates[i]];
+        if ([views[i] superview] === self)
+            [self _animateView:views[i] fromState:startStates[i]];
 }
 
 /*
-    Animates a view from the state it had before a divider move to the state the move gave it.
+    Animates a view from the state it had before a layout change to the state the change gave it.
     A view that is hidden at the end animates to no size along the split, and one that was
     hidden at the start animates from no size; the end state is applied when the animation
     ends, or at once when there is no animation.

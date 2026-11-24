@@ -1,8 +1,10 @@
 /*
  * CPSplitViewController.j
+ * AppKit
  *
  * Created by Daniel Boehringer on September 2, 2025.
  * Copyright (c) 2025 Daniel Boehringer. All rights reserved.
+ * Reimplemented by David Richardson on 2026-11-23.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,368 +23,838 @@
 
 @import "CPViewController.j"
 @import "CPSplitView.j"
+@import "CPSplitViewItem.j"
+@import "CPAnimationContext.j"
 
-var CPSplitViewControllerAutomaticDimension = -1.0;
+@class CPMenuItem
 
-/**
- * A container view controller that manages two or more child view
- * controllers in a split view interface.
- *
- * This class provides a controller-level abstraction for CPSplitView,
- * managing the addition, removal, and arrangement of view controllers
- * through CPSplitViewItem instances.
- *
- * This implementation was synthesized with the assistance of an LLM,
- * directed by the author.
- */
-@implementation CPSplitViewController : CPViewController <CPSplitViewDelegate>
+/*!
+    The value of -minimumThicknessForInlineSidebars that takes the minimum from the items.
+*/
+CPSplitViewControllerAutomaticDimension = -1;
+
+var CPSplitViewControllerToggleDuration = 0.25;
+
+/*!
+    @ingroup appkit
+    @class CPSplitViewController
+
+    A split view controller shows its child view controllers side by side in a split view,
+    as AppKit's NSSplitViewController does. Each child has a CPSplitViewItem that describes it:
+    whether it is collapsed, whether the user can collapse it, its holding priority and the
+    limits of its thickness.
+
+    The split view is the controller's view, and the controller is its delegate. Set the
+    orientation, the divider style and the autosave name on the split view; manage the
+    subviews, the delegate and the holding priorities through the controller and its items.
+    The default split view is vertical with thin dividers.
+
+    The child view controller methods of CPViewController work as conveniences: a child added
+    with them gets an item with the default values, and a removed child loses its item.
+
+    A subclass that overrides -viewDidLoad or one of the split view delegate methods that the
+    controller implements must call super.
+*/
+@implementation CPSplitViewController : CPViewController
 {
-    /** @private The underlying split view that arranges the child views. */
     CPSplitView         _splitView;
-
-    /** @private An array of CPSplitViewItem objects managed by this controller. */
     CPMutableArray      _splitViewItems;
+    float               _minimumThicknessForInlineSidebars;
 
-    /** @private The minimum thickness for sidebars to be displayed inline. */
-    CPNumber            _minimumThicknessForInlineSidebars;
+    BOOL                _itemViewsAreAttached;
+    BOOL                _isChangingChildren;
+    BOOL                _isUpdatingInlineSidebars;
+    float               _lastSplitViewThickness;
+    CPMutableArray      _autoCollapsedItems;
 }
 
-// MARK: - Initialization
-
-- (id)init
+- (id)initWithCibName:(CPString)aCibNameOrNil bundle:(CPBundle)aCibBundleOrNil externalNameTable:(CPDictionary)anExternalNameTable
 {
-    if (self = [super init])
-    {
-        _splitViewItems = [CPMutableArray array];
-        _minimumThicknessForInlineSidebars = 20.0;
-    }
+    if (self = [super initWithCibName:aCibNameOrNil bundle:aCibBundleOrNil externalNameTable:anExternalNameTable])
+        [self _initSplitViewController];
+
     return self;
 }
 
-// MARK: - View Lifecycle
-
-- (void)loadView
+- (void)_initSplitViewController
 {
-    if (!_splitView)
-    {
-        _splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0,0,400,400)];
-        [_splitView setDelegate:self];
-    }
-    [self setView:_splitView];
+    _splitViewItems = @[];
+    _minimumThicknessForInlineSidebars = CPSplitViewControllerAutomaticDimension;
+    _itemViewsAreAttached = NO;
+    _isChangingChildren = NO;
+    _isUpdatingInlineSidebars = NO;
+    _lastSplitViewThickness = -1;
+    _autoCollapsedItems = @[];
 }
 
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-    for (var i = 0; i < [_splitViewItems count]; i++)
-    {
-        var viewController = [[_splitViewItems objectAtIndex:i] viewController];
-        [[self splitView] addArrangedSubview:[viewController view]];
-    }
-}
+// MARK: - The split view
 
-// MARK: - Accessors
-
-/**
- * Returns the CPSplitView instance managed by the controller.
- *
- * @returns {CPSplitView} The split view.
- */
+/*!
+    Returns the split view that the controller manages.
+*/
 - (CPSplitView)splitView
 {
     return _splitView;
 }
 
-/**
- * Sets a custom split view for the controller.
- *
- * @param {CPSplitView} splitView The custom split view to use.
- */
-- (void)setSplitView:(CPSplitView)splitView
+/*!
+    Sets the split view that the controller manages. It raises
+    CPInternalInconsistencyException once the controller's view is loaded.
+*/
+- (void)setSplitView:(CPSplitView)aSplitView
 {
-    if (_splitView !== splitView)
-    {
-        _splitView = splitView;
-        [_splitView setDelegate:self];
-        if ([self isViewLoaded])
-            [self setView:_splitView];
-    }
+    if (_splitView === aSplitView)
+        return;
+
+    if (_itemViewsAreAttached)
+        [CPException raise:CPInternalInconsistencyException reason:@"The split view of a split view controller cannot change after its view is loaded"];
+
+    _splitView = aSplitView;
+    [_splitView setDelegate:self];
 }
 
-/**
- * Returns the array of split view items.
- *
- * @returns {CPArray} The array of CPSplitViewItem objects.
- */
-- (CPArray)splitViewItems
+/*
+    Without a cib, the view is the split view, a vertical one with thin dividers unless one
+    was set. With a cib, the cib's view is the split view.
+*/
+- (void)loadView
 {
-    return _splitViewItems;
-}
-
-/**
- * Sets the array of split view items, replacing any existing items.
- *
- * @param {CPArray} splitViewItems An array of CPSplitViewItem objects.
- */
-- (void)setSplitViewItems:(CPArray)splitViewItems
-{
-    // Remove all existing items
-    while ([_splitViewItems count] > 0)
+    if (_cibName)
     {
-        [self removeSplitViewItem:[_splitViewItems lastObject]];
+        [super loadView];
+
+        if (!_splitView && [_view isKindOfClass:[CPSplitView class]])
+            [self setSplitView:_view];
+
+        return;
     }
 
-    // Add new items
-    for (var i = 0; i < [splitViewItems count]; i++)
+    if (!_splitView)
     {
-        [self addSplitViewItem:[splitViewItems objectAtIndex:i]];
+        var splitView = [[CPSplitView alloc] initWithFrame:CGRectMakeZero()];
+
+        [splitView setVertical:YES];
+        [splitView setDividerStyle:CPSplitViewDividerStyleThin];
+        [splitView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+        [self setSplitView:splitView];
     }
+
+    [self setView:_splitView];
 }
 
-// MARK: - Managing Split View Items
-
-/**
- * Adds a split view item to the end of the split view.
- *
- * @param {CPSplitViewItem} splitViewItem The split view item to add.
- */
-- (void)addSplitViewItem:(CPSplitViewItem)splitViewItem
+/*!
+    Adds the views of the items that are not collapsed to the split view. A subclass that
+    overrides this method must call super.
+*/
+- (void)viewDidLoad
 {
-    [self insertSplitViewItem:splitViewItem atIndex:[_splitViewItems count]];
+    [super viewDidLoad];
+
+    if (!_splitView && [_view isKindOfClass:[CPSplitView class]])
+        [self setSplitView:_view];
+
+    [self _attachItemViews];
 }
 
-/**
- * Inserts a split view item at a specific index.
- *
- * @param {CPSplitViewItem} splitViewItem The split view item to insert.
- * @param {CPInteger} index The zero-based index at which to insert the item.
- */
-- (void)insertSplitViewItem:(CPSplitViewItem)splitViewItem atIndex:(CPInteger)index
+/*
+    Adds the view of each item that is not collapsed, in the order of the items. A split view
+    with no size yet takes the sum of the thicknesses of the views, so that the views keep
+    their sizes until the split view is placed and resized. An item view that a cib already
+    placed in the split view stays where it is.
+*/
+- (void)_attachItemViews
 {
-    [splitViewItem _setSplitViewController:self];
-    [_splitViewItems insertObject:splitViewItem atIndex:index];
-    [self addChildViewController:[splitViewItem viewController]];
+    if (_itemViewsAreAttached || !_splitView)
+        return;
 
-    if ([self isViewLoaded])
-        [[self splitView] insertArrangedSubview:[[splitViewItem viewController] view] atIndex:index];
-}
+    _itemViewsAreAttached = YES;
 
-/**
- * Removes the specified split view item.
- *
- * @param {CPSplitViewItem} splitViewItem The split view item to remove.
- */
-- (void)removeSplitViewItem:(CPSplitViewItem)splitViewItem
-{
-    var viewController = [splitViewItem viewController];
-    if ([self isViewLoaded])
-        [[viewController view] removeFromSuperview];
+    var sizeComponent = [_splitView isVertical] ? "width" : "height",
+        otherComponent = [_splitView isVertical] ? "height" : "width",
+        needed = 0,
+        other = 0,
+        visibleCount = 0;
 
-    [viewController removeFromParentViewController];
-    [splitViewItem _setSplitViewController:nil];
-    [_splitViewItems removeObject:splitViewItem];
-}
-
-/**
- * Retrieves the split view item associated with a given view controller.
- *
- * @param {CPViewController} viewController The view controller to find.
- * @returns {CPSplitViewItem | null} The corresponding split view item, or nil if not found.
- */
-- (CPSplitViewItem)splitViewItemForViewController:(CPViewController)viewController
-{
-    for (var i = 0; i < [_splitViewItems count]; i++)
+    for (var i = 0, count = _splitViewItems.length; i < count; i++)
     {
-        var item = [_splitViewItems objectAtIndex:i];
-        if ([item viewController] === viewController)
-            return item;
+        var item = _splitViewItems[i];
+
+        if ([item isCollapsed])
+            continue;
+
+        var size = [[[item viewController] view] frameSize];
+
+        needed += [self _initialThicknessOfItem:item available:0];
+        other = MAX(other, size[otherComponent]);
+        visibleCount++;
     }
+
+    needed += MAX(0, visibleCount - 1) * [_splitView dividerThickness];
+
+    var splitSize = CGSizeMakeCopy([_splitView frameSize]);
+
+    if (splitSize[sizeComponent] <= 0 && ![_splitView superview])
+    {
+        splitSize[sizeComponent] = needed;
+        splitSize[otherComponent] = MAX(splitSize[otherComponent], other);
+        [_splitView setFrameSize:splitSize];
+    }
+
+    for (var i = 0, count = _splitViewItems.length; i < count; i++)
+        if (![_splitViewItems[i] isCollapsed])
+            [self _attachViewOfItem:_splitViewItems[i] hidden:NO];
+
+    [_splitView adjustSubviews];
+    _lastSplitViewThickness = [_splitView frameSize][sizeComponent];
+}
+
+/*
+    Returns the thickness that the view of an item takes when it is added to the split view:
+    its own thickness, or else the preferred part of the space available, or else the
+    minimum thickness, within the minimum and the maximum.
+*/
+- (float)_initialThicknessOfItem:(CPSplitViewItem)anItem available:(float)anAvailableThickness
+{
+    var thickness = [[[anItem viewController] view] frameSize][[_splitView isVertical] ? "width" : "height"],
+        minimum = [anItem minimumThickness],
+        maximum = [anItem maximumThickness],
+        fraction = [anItem preferredThicknessFraction];
+
+    if (thickness <= 0 && fraction > 0 && anAvailableThickness > 0)
+        thickness = ROUND(fraction * anAvailableThickness);
+
+    if (thickness <= 0 && minimum > 0)
+        thickness = minimum;
+
+    if (minimum >= 0)
+        thickness = MAX(thickness, minimum);
+
+    if (maximum >= 0)
+        thickness = MIN(thickness, maximum);
+
+    return MAX(0, thickness);
+}
+
+/*
+    Inserts the view of an item into the split view, after the views of the items before it,
+    with the item's holding priority. A view that is already arranged keeps its place.
+*/
+- (void)_attachViewOfItem:(CPSplitViewItem)anItem hidden:(BOOL)shouldHide
+{
+    var view = [[anItem viewController] view];
+
+    if (![[_splitView arrangedSubviews] containsObjectIdenticalTo:view])
+    {
+        var index = 0,
+            itemIndex = [_splitViewItems indexOfObjectIdenticalTo:anItem],
+            available = MAX(0, [_splitView frameSize][[_splitView isVertical] ? "width" : "height"] - [_splitView dividerThickness]),
+            size = CGSizeMakeCopy([view frameSize]);
+
+        for (var i = 0; i < itemIndex; i++)
+            if ([self _viewOfItemIsAttached:_splitViewItems[i]])
+                index++;
+
+        size[[_splitView isVertical] ? "width" : "height"] = [self _initialThicknessOfItem:anItem available:available];
+        [view setFrameSize:size];
+        [view setHidden:shouldHide];
+        [_splitView insertArrangedSubview:view atIndex:index];
+    }
+
+    [_splitView setHoldingPriority:[anItem holdingPriority] forSubviewAtIndex:[self _arrangedIndexOfItem:anItem]];
+}
+
+- (BOOL)_viewOfItemIsAttached:(CPSplitViewItem)anItem
+{
+    return [self _arrangedIndexOfItem:anItem] !== CPNotFound;
+}
+
+/*
+    Returns the index of an item's view among the arranged subviews of the split view, or
+    CPNotFound when the view is not loaded or not arranged.
+*/
+- (CPInteger)_arrangedIndexOfItem:(CPSplitViewItem)anItem
+{
+    var viewController = [anItem viewController];
+
+    if (!_splitView || ![viewController isViewLoaded])
+        return CPNotFound;
+
+    return [[_splitView arrangedSubviews] indexOfObjectIdenticalTo:[viewController view]];
+}
+
+/*
+    Returns the item whose view is an arranged subview, or nil.
+*/
+- (CPSplitViewItem)_itemOfArrangedSubview:(CPView)aView
+{
+    for (var i = 0, count = _splitViewItems.length; i < count; i++)
+    {
+        var viewController = [_splitViewItems[i] viewController];
+
+        if ([viewController isViewLoaded] && [viewController view] === aView)
+            return _splitViewItems[i];
+    }
+
     return nil;
 }
 
-// MARK: - Managing Sidebars and Inspectors
+// MARK: - Items
 
-/**
- * Toggles the collapsed state of the first split view item, typically a sidebar.
- *
- * @param {id} sender The object that initiated the action.
- */
-- (void)toggleSidebar:(id)sender
+/*!
+    Returns the items of the controller, in order.
+*/
+- (CPArray)splitViewItems
 {
-    if ([_splitViewItems count] > 0)
+    return [_splitViewItems copy];
+}
+
+/*!
+    Replaces the items of the controller. Each item that is not in the new array is removed
+    with -removeSplitViewItem:, and each new item is inserted with
+    -insertSplitViewItem:atIndex:.
+*/
+- (void)setSplitViewItems:(CPArray)theItems
+{
+    var newItems = theItems || @[];
+
+    for (var i = _splitViewItems.length - 1; i >= 0; i--)
+        if (![newItems containsObjectIdenticalTo:_splitViewItems[i]])
+            [self removeSplitViewItem:_splitViewItems[i]];
+
+    for (var i = 0, count = [newItems count]; i < count; i++)
     {
-        var sidebarItem = [_splitViewItems objectAtIndex:0];
-        [sidebarItem setCollapsed:![sidebarItem isCollapsed]];
+        var item = newItems[i];
+
+        if (_splitViewItems[i] === item)
+            continue;
+
+        if ([_splitViewItems containsObjectIdenticalTo:item])
+            [self removeSplitViewItem:item];
+
+        [self insertSplitViewItem:item atIndex:i];
     }
 }
 
-/**
- * Toggles the collapsed state of the last split view item, typically an inspector.
- *
- * @param {id} sender The object that initiated the action.
- */
-- (void)toggleInspector:(id)sender
+/*!
+    Adds an item after the others. This calls -insertSplitViewItem:atIndex:.
+*/
+- (void)addSplitViewItem:(CPSplitViewItem)anItem
 {
-    if ([_splitViewItems count] > 1)
-    {
-        var inspectorItem = [_splitViewItems lastObject];
-        [inspectorItem setCollapsed:![inspectorItem isCollapsed]];
-    }
+    [self insertSplitViewItem:anItem atIndex:_splitViewItems.length];
 }
 
-/**
- * Returns the minimum thickness for sidebars to be displayed inline.
- *
- * @returns {CPNumber} The minimum thickness.
- */
-- (CPNumber)minimumThicknessForInlineSidebars
+/*!
+    Inserts an item at an index. Its view controller becomes a child of the controller. When
+    the controller's view is loaded and the item is not collapsed, the item's view is loaded
+    and added to the split view. A subclass must call this method to add an item.
+
+    It raises CPInvalidArgumentException for nil, for an item without a view controller and
+    for an item that is in a split view controller, and CPRangeException for an index past the
+    end.
+*/
+- (void)insertSplitViewItem:(CPSplitViewItem)anItem atIndex:(CPInteger)anIndex
+{
+    if (!anItem)
+        [CPException raise:CPInvalidArgumentException reason:@"-[CPSplitViewController insertSplitViewItem:atIndex:] needs an item"];
+
+    if (![anItem viewController])
+        [CPException raise:CPInvalidArgumentException reason:@"-[CPSplitViewController insertSplitViewItem:atIndex:] needs an item with a view controller"];
+
+    if ([anItem splitViewController])
+        [CPException raise:CPInvalidArgumentException reason:@"-[CPSplitViewController insertSplitViewItem:atIndex:] needs an item that is not in a split view controller"];
+
+    if (anIndex < 0 || anIndex > _splitViewItems.length)
+        [CPException raise:CPRangeException reason:@"-[CPSplitViewController insertSplitViewItem:atIndex:] index " + anIndex + " is out of range"];
+
+    [self willChangeValueForKey:@"splitViewItems"];
+
+    [_splitViewItems insertObject:anItem atIndex:anIndex];
+    [anItem _setSplitViewController:self];
+
+    _isChangingChildren = YES;
+    [super insertChildViewController:[anItem viewController] atIndex:anIndex];
+    _isChangingChildren = NO;
+
+    if (_itemViewsAreAttached && ![anItem isCollapsed])
+    {
+        [self _attachViewOfItem:anItem hidden:NO];
+        [_splitView adjustSubviews];
+    }
+
+    [self didChangeValueForKey:@"splitViewItems"];
+}
+
+/*!
+    Removes an item. Its view leaves the split view, and the other views fill the space. A
+    subclass must call this method to remove an item. It raises CPInvalidArgumentException for
+    an item that is not in the controller.
+*/
+- (void)removeSplitViewItem:(CPSplitViewItem)anItem
+{
+    var index = [_splitViewItems indexOfObjectIdenticalTo:anItem];
+
+    if (index === CPNotFound)
+        [CPException raise:CPInvalidArgumentException reason:@"-[CPSplitViewController removeSplitViewItem:] needs an item of the controller"];
+
+    [self willChangeValueForKey:@"splitViewItems"];
+
+    if ([self _viewOfItemIsAttached:anItem])
+    {
+        var view = [[anItem viewController] view];
+
+        [_splitView removeArrangedSubview:view];
+        [view removeFromSuperview];
+        [_splitView adjustSubviews];
+    }
+
+    [_splitViewItems removeObjectAtIndex:index];
+    [_autoCollapsedItems removeObjectIdenticalTo:anItem];
+    [anItem _setSplitViewController:nil];
+
+    _isChangingChildren = YES;
+    [super removeChildViewControllerAtIndex:index];
+    _isChangingChildren = NO;
+
+    [self didChangeValueForKey:@"splitViewItems"];
+}
+
+- (BOOL)automaticallyNotifiesObserversOfSplitViewItems
+{
+    return NO;
+}
+
+/*!
+    Returns the item of a child view controller, or nil when the view controller is not a
+    child of the controller.
+*/
+- (CPSplitViewItem)splitViewItemForViewController:(CPViewController)aViewController
+{
+    for (var i = 0, count = _splitViewItems.length; i < count; i++)
+        if ([_splitViewItems[i] viewController] === aViewController)
+            return _splitViewItems[i];
+
+    return nil;
+}
+
+/*
+    The child view controller methods add and remove items with the default values, so the
+    children and the items stay in the same order.
+*/
+- (void)insertChildViewController:(CPViewController)aChild atIndex:(CPInteger)anIndex
+{
+    if (_isChangingChildren)
+    {
+        [super insertChildViewController:aChild atIndex:anIndex];
+        return;
+    }
+
+    var item = [self splitViewItemForViewController:aChild];
+
+    if (item)
+        [self removeSplitViewItem:item];
+
+    [self insertSplitViewItem:[CPSplitViewItem splitViewItemWithViewController:aChild] atIndex:anIndex];
+}
+
+- (void)removeChildViewControllerAtIndex:(CPInteger)anIndex
+{
+    if (_isChangingChildren)
+    {
+        [super removeChildViewControllerAtIndex:anIndex];
+        return;
+    }
+
+    if (anIndex < 0 || anIndex >= _splitViewItems.length)
+        [CPException raise:CPRangeException reason:@"-[CPSplitViewController removeChildViewControllerAtIndex:] index " + anIndex + " is out of range"];
+
+    [self removeSplitViewItem:_splitViewItems[anIndex]];
+}
+
+// MARK: - Changes from the items
+
+/*
+    Collapses or expands the view of an item. A collapsed view is hidden and keeps its size;
+    the split view gives its space to the other views by their holding priorities, and takes
+    the space for an expansion from them in the same way. An item whose view was never loaded
+    loads it at its first expansion. With an animation, the split view animates every view
+    that the change moves.
+
+    The collapse behaviors that resize the window are not supported: every collapse resizes
+    the siblings in a split view of a fixed size.
+*/
+- (void)_splitViewItemDidChangeCollapsed:(CPSplitViewItem)anItem animated:(BOOL)shouldAnimate
+{
+    if (!_isUpdatingInlineSidebars)
+        [_autoCollapsedItems removeObjectIdenticalTo:anItem];
+
+    if (!_itemViewsAreAttached)
+        return;
+
+    var shouldCollapse = [anItem isCollapsed];
+
+    if (!shouldCollapse && ![self _viewOfItemIsAttached:anItem])
+        [self _attachViewOfItem:anItem hidden:YES];
+
+    if (![self _viewOfItemIsAttached:anItem])
+        return;
+
+    var view = [[anItem viewController] view],
+        change = function()
+        {
+            [view setHidden:shouldCollapse];
+            [_splitView adjustSubviews];
+        };
+
+    if (shouldAnimate)
+        [_splitView _animateLayoutChange:change];
+    else
+        change();
+}
+
+- (void)_splitViewItemDidChangeHoldingPriority:(CPSplitViewItem)anItem
+{
+    var index = [self _arrangedIndexOfItem:anItem];
+
+    if (index !== CPNotFound)
+        [_splitView setHoldingPriority:[anItem holdingPriority] forSubviewAtIndex:index];
+}
+
+// MARK: - Sidebars and inspectors
+
+/*!
+    Returns the thickness of the split view below which sidebars collapse, and at or above
+    which the sidebars it collapsed expand again. The default,
+    CPSplitViewControllerAutomaticDimension, takes the sum of the minimum thicknesses of the
+    items that are not collapsed, and of their dividers.
+*/
+- (float)minimumThicknessForInlineSidebars
 {
     return _minimumThicknessForInlineSidebars;
 }
 
-// MARK: - CPSplitViewDelegate Methods
-
-// Note: A more complete implementation would forward these delegate methods
-// to a separate delegate property on the CPSplitViewController itself.
-// For now, these are stubbed to demonstrate where they would be handled.
-
-- (BOOL)splitView:(CPSplitView)splitView canCollapseSubview:(CPView)subview
+- (void)setMinimumThicknessForInlineSidebars:(float)aThickness
 {
-    // Default behavior: allow all subviews to be collapsed.
-    return YES;
+    _minimumThicknessForInlineSidebars = aThickness;
+    [self _updateInlineSidebars];
 }
 
-- (CGFloat)splitView:(CPSplitView)splitView constrainMinCoordinate:(CGFloat)proposedMinimumPosition ofSubviewAt:(CPInteger)dividerIndex
+/*!
+    Collapses or expands the first sidebar with an animation. It does nothing when there is no
+    sidebar.
+*/
+- (void)toggleSidebar:(id)aSender
 {
-    return proposedMinimumPosition;
+    [self _toggleFirstItemWithBehavior:CPSplitViewItemBehaviorSidebar];
 }
 
-- (CGFloat)splitView:(CPSplitView)splitView constrainMaxCoordinate:(CGFloat)proposedMaximumPosition ofSubviewAt:(CPInteger)dividerIndex
+/*!
+    Collapses or expands the first inspector with an animation. It does nothing when there is
+    no inspector.
+*/
+- (void)toggleInspector:(id)aSender
 {
-    return proposedMaximumPosition;
+    [self _toggleFirstItemWithBehavior:CPSplitViewItemBehaviorInspector];
 }
 
-- (CGRect)splitView:(CPSplitView)splitView effectiveRect:(CGRect)proposedEffectiveRect forDrawnRect:(CGRect)drawnRect ofDividerAtIndex:(CPInteger)dividerIndex
+- (CPSplitViewItem)_firstItemWithBehavior:(CPSplitViewItemBehavior)aBehavior
 {
-    // Default behavior: return the proposed rectangle.
-    // This can be overridden to provide a larger or custom hit area for the divider.
-    return proposedEffectiveRect;
+    for (var i = 0, count = _splitViewItems.length; i < count; i++)
+        if ([_splitViewItems[i] behavior] === aBehavior)
+            return _splitViewItems[i];
+
+    return nil;
 }
 
-- (void)splitViewDidResizeSubviews:(CPNotification)notification
+- (void)_toggleFirstItemWithBehavior:(CPSplitViewItemBehavior)aBehavior
 {
-    // Can be used to respond to user-initiated resizing.
+    var item = [self _firstItemWithBehavior:aBehavior];
+
+    if (!item)
+        return;
+
+    [CPAnimationContext runAnimationGroup:function(aContext)
+    {
+        [aContext setDuration:CPSplitViewControllerToggleDuration];
+        [[item animator] setCollapsed:![item isCollapsed]];
+    }
+    completionHandler:nil];
+}
+
+/*!
+    Enables the toggleSidebar: and toggleInspector: actions when there is an item to toggle,
+    and gives a menu item the title for the next toggle. Other actions are enabled.
+*/
+- (BOOL)validateUserInterfaceItem:(id)anItem
+{
+    var action = [anItem action],
+        behavior,
+        noun;
+
+    if (action === @selector(toggleSidebar:))
+    {
+        behavior = CPSplitViewItemBehaviorSidebar;
+        noun = @"Sidebar";
+    }
+    else if (action === @selector(toggleInspector:))
+    {
+        behavior = CPSplitViewItemBehaviorInspector;
+        noun = @"Inspector";
+    }
+    else
+        return YES;
+
+    var item = [self _firstItemWithBehavior:behavior];
+
+    if (item && [anItem isKindOfClass:[CPMenuItem class]])
+        [anItem setTitle:([item isCollapsed] ? @"Show " : @"Hide ") + noun];
+
+    return !!item;
+}
+
+/*
+    Collapses the sidebars that can collapse from a resize when the split view becomes thinner
+    than the minimum for inline sidebars, and expands them again when it becomes thick enough.
+    A sidebar that the user or the application collapses or expands is no longer expanded
+    automatically.
+*/
+- (void)_updateInlineSidebars
+{
+    if (!_itemViewsAreAttached || _isUpdatingInlineSidebars)
+        return;
+
+    _isUpdatingInlineSidebars = YES;
+
+    var thickness = [_splitView frameSize][[_splitView isVertical] ? "width" : "height"],
+        minimum = [self _effectiveMinimumThicknessForInlineSidebars];
+
+    if (thickness < minimum)
+    {
+        for (var i = 0, count = _splitViewItems.length; i < count; i++)
+        {
+            var item = _splitViewItems[i];
+
+            if ([item behavior] !== CPSplitViewItemBehaviorSidebar || [item isCollapsed] || ![item canCollapseFromWindowResize])
+                continue;
+
+            [_autoCollapsedItems addObject:item];
+            [item setCollapsed:YES];
+        }
+    }
+    else if (_autoCollapsedItems.length)
+    {
+        var items = [_autoCollapsedItems copy];
+
+        [_autoCollapsedItems removeAllObjects];
+
+        for (var i = 0, count = items.length; i < count; i++)
+            [items[i] setCollapsed:NO];
+    }
+
+    _isUpdatingInlineSidebars = NO;
+}
+
+/*
+    Returns the explicit minimum for inline sidebars, or else the sum of the minimum
+    thicknesses of the items that are not collapsed, with the sidebars that were collapsed
+    automatically, and of the dividers between them. With the automatic value and no
+    minimum thicknesses, sidebars never collapse automatically.
+*/
+- (float)_effectiveMinimumThicknessForInlineSidebars
+{
+    if (_minimumThicknessForInlineSidebars !== CPSplitViewControllerAutomaticDimension)
+        return _minimumThicknessForInlineSidebars;
+
+    var total = 0,
+        count = 0;
+
+    for (var i = 0, itemCount = _splitViewItems.length; i < itemCount; i++)
+    {
+        var item = _splitViewItems[i];
+
+        if ([item isCollapsed] && ![_autoCollapsedItems containsObjectIdenticalTo:item])
+            continue;
+
+        total += MAX(0, [item minimumThickness]);
+        count++;
+    }
+
+    if (total === 0)
+        return 0;
+
+    return total + MAX(0, count - 1) * [_splitView dividerThickness];
+}
+
+// MARK: - Split view delegate
+
+/*!
+    Lets the user collapse the views of the items that can collapse.
+*/
+- (BOOL)splitView:(CPSplitView)aSplitView canCollapseSubview:(CPView)aSubview
+{
+    return !![[self _itemOfArrangedSubview:aSubview] canCollapse];
+}
+
+/*!
+    Returns NO: a double click on a divider does not collapse a view, as in AppKit.
+*/
+- (BOOL)splitView:(CPSplitView)aSplitView shouldCollapseSubview:(CPView)aSubview forDoubleClickOnDividerAtIndex:(CPInteger)aDividerIndex
+{
+    return NO;
+}
+
+/*!
+    Hides the first divider when the first view is collapsed and the last divider when the
+    last view is collapsed.
+*/
+- (BOOL)splitView:(CPSplitView)aSplitView shouldHideDividerAtIndex:(CPInteger)aDividerIndex
+{
+    var arranged = [aSplitView arrangedSubviews],
+        count = [arranged count];
+
+    if (aDividerIndex === 0 && [arranged[0] isHidden])
+        return YES;
+
+    if (aDividerIndex === count - 2 && [arranged[count - 1] isHidden])
+        return YES;
+
+    return NO;
+}
+
+/*!
+    Keeps a dragged divider where the view before it has at least its minimum thickness and the
+    view after it at most its maximum thickness.
+*/
+- (float)splitView:(CPSplitView)aSplitView constrainMinCoordinate:(float)aProposedMinimum ofSubviewAt:(CPInteger)aDividerIndex
+{
+    var arranged = [aSplitView arrangedSubviews],
+        before = [self _itemOfArrangedSubview:arranged[aDividerIndex]],
+        after = [self _itemOfArrangedSubview:arranged[aDividerIndex + 1]],
+        minimum = aProposedMinimum;
+
+    if (before && [before minimumThickness] >= 0)
+        minimum = MAX(minimum, aProposedMinimum + [before minimumThickness]);
+
+    if (after && [after maximumThickness] >= 0)
+        minimum = MAX(minimum, [aSplitView maxPossiblePositionOfDividerAtIndex:aDividerIndex] - [after maximumThickness]);
+
+    return minimum;
+}
+
+/*!
+    Keeps a dragged divider where the view before it has at most its maximum thickness and the
+    view after it at least its minimum thickness.
+*/
+- (float)splitView:(CPSplitView)aSplitView constrainMaxCoordinate:(float)aProposedMaximum ofSubviewAt:(CPInteger)aDividerIndex
+{
+    var arranged = [aSplitView arrangedSubviews],
+        before = [self _itemOfArrangedSubview:arranged[aDividerIndex]],
+        after = [self _itemOfArrangedSubview:arranged[aDividerIndex + 1]],
+        maximum = aProposedMaximum;
+
+    if (before && [before maximumThickness] >= 0)
+        maximum = MIN(maximum, [aSplitView minPossiblePositionOfDividerAtIndex:aDividerIndex] + [before maximumThickness]);
+
+    if (after && [after minimumThickness] >= 0)
+        maximum = MIN(maximum, aProposedMaximum - [after minimumThickness]);
+
+    return maximum;
+}
+
+/*!
+    Returns the proposed rect. A subclass can widen it and must call super.
+*/
+- (CGRect)splitView:(CPSplitView)aSplitView effectiveRect:(CGRect)aProposedEffectiveRect forDrawnRect:(CGRect)aDrawnRect ofDividerAtIndex:(CPInteger)aDividerIndex
+{
+    return aProposedEffectiveRect;
+}
+
+/*!
+    Returns an empty rect. A subclass can add a rect and must call super.
+*/
+- (CGRect)splitView:(CPSplitView)aSplitView additionalEffectiveRectOfDividerAtIndex:(CPInteger)aDividerIndex
+{
+    return CGRectMakeZero();
+}
+
+/*!
+    Records the collapses and expansions that the user made, and collapses or expands
+    sidebars when the thickness of the split view changes.
+*/
+- (void)splitViewDidResizeSubviews:(CPNotification)aNotification
+{
+    if (!_isUpdatingInlineSidebars)
+    {
+        var arranged = [_splitView arrangedSubviews];
+
+        for (var i = 0, count = [arranged count]; i < count; i++)
+        {
+            var item = [self _itemOfArrangedSubview:arranged[i]],
+                isHidden = !![arranged[i] isHidden];
+
+            if (!item || [item isCollapsed] === isHidden)
+                continue;
+
+            [_autoCollapsedItems removeObjectIdenticalTo:item];
+            [item _noteCollapsed:isHidden];
+        }
+    }
+
+    var thickness = [_splitView frameSize][[_splitView isVertical] ? "width" : "height"];
+
+    if (_itemViewsAreAttached && thickness !== _lastSplitViewThickness)
+    {
+        _lastSplitViewThickness = thickness;
+        [self _updateInlineSidebars];
+    }
 }
 
 @end
 
-/**
- * An object that manages a view controller within a CPSplitViewController.
- *
- * A CPSplitViewItem acts as a wrapper around a CPViewController,
- * maintaining properties like its collapsed state within the parent
- * split view controller.
- */
-@implementation CPSplitViewItem : CPObject
+// MARK: - Archiving
+
+var CPSplitViewControllerSplitViewItemsKey                      = @"CPSplitViewControllerSplitViewItemsKey",
+    CPSplitViewControllerSplitViewKey                           = @"CPSplitViewControllerSplitViewKey",
+    CPSplitViewControllerMinimumThicknessForInlineSidebarsKey   = @"CPSplitViewControllerMinimumThicknessForInlineSidebarsKey";
+
+@implementation CPSplitViewController (CPCoding)
+
+/*
+    The items come from the archive; the children that CPViewController decodes are their view
+    controllers, in the same order. The item views that the archived split view arranges stay
+    in place, and -viewDidLoad adds the others.
+*/
+- (id)initWithCoder:(CPCoder)aCoder
 {
-    /** @private The view controller managed by this item. */
-    CPViewController        _viewController;
-
-    /** @private A boolean indicating whether the item is collapsed. */
-    BOOL                    _isCollapsed;
-
-    /** @private A weak reference to the owning split view controller. */
-    CPSplitViewController   _splitViewController;
-}
-
-// MARK: - Class Methods
-
-/**
- * Creates and returns a new split view item with the specified view controller.
- *
- * @param {CPViewController} viewController The view controller for the new item.
- * @returns {instancetype} A new CPSplitViewItem instance.
- */
-+ (instancetype)splitViewItemWithViewController:(CPViewController)viewController
-{
-    return [[self alloc] initWithViewController:viewController];
-}
-
-// MARK: - Initialization
-
-/**
- * Initializes a new split view item with the specified view controller.
- *
- * @param {CPViewController} viewController The view controller for the new item.
- * @returns {id} The initialized CPSplitViewItem instance.
- */
-- (id)initWithViewController:(CPViewController)viewController
-{
-    if (self = [super init])
+    if (self = [super initWithCoder:aCoder])
     {
-        _viewController = viewController;
-        _isCollapsed = NO;
+        [self _initSplitViewController];
+
+        var items = [aCoder decodeObjectForKey:CPSplitViewControllerSplitViewItemsKey] || @[];
+
+        _splitViewItems = [items mutableCopy];
+
+        for (var i = 0, count = _splitViewItems.length; i < count; i++)
+            [_splitViewItems[i] _setSplitViewController:self];
+
+        if ([aCoder containsValueForKey:CPSplitViewControllerMinimumThicknessForInlineSidebarsKey])
+            _minimumThicknessForInlineSidebars = [aCoder decodeFloatForKey:CPSplitViewControllerMinimumThicknessForInlineSidebarsKey];
+
+        var splitView = [aCoder decodeObjectForKey:CPSplitViewControllerSplitViewKey];
+
+        if (splitView)
+            [self setSplitView:splitView];
     }
+
     return self;
 }
 
-// MARK: - Accessors
-
-/**
- * Returns the view controller associated with the item.
- *
- * @returns {CPViewController} The associated view controller.
- */
-- (CPViewController)viewController
+- (void)encodeWithCoder:(CPCoder)aCoder
 {
-    return _viewController;
-}
+    [super encodeWithCoder:aCoder];
 
-/**
- * Returns a boolean value indicating whether the item is collapsed.
- *
- * @returns {BOOL} YES if the item is collapsed, otherwise NO.
- */
-- (BOOL)isCollapsed
-{
-    return _isCollapsed;
-}
-
-/**
- * Sets the collapsed state of the item.
- * When collapsed, the view controller's view is hidden.
- *
- * @param {BOOL} shouldCollapse YES to collapse the item, NO to expand it.
- */
-- (void)setCollapsed:(BOOL)shouldCollapse
-{
-    if (_isCollapsed === shouldCollapse)
-        return;
-
-    _isCollapsed = shouldCollapse;
-    [[_viewController view] setHidden:shouldCollapse];
-}
-
-/**
- * Returns the split view controller that owns this item.
- *
- * @returns {CPSplitViewController | null} The parent split view controller.
- */
-- (CPSplitViewController)splitViewController
-{
-    return _splitViewController;
-}
-
-/**
- * @private
- * Sets the owning split view controller. This method is for internal use by
- * CPSplitViewController.
- *
- * @param {CPSplitViewController} splitViewController The parent controller.
- */
-- (void)_setSplitViewController:(CPSplitViewController)splitViewController
-{
-    _splitViewController = splitViewController;
+    [aCoder encodeObject:_splitViewItems forKey:CPSplitViewControllerSplitViewItemsKey];
+    [aCoder encodeObject:_splitView forKey:CPSplitViewControllerSplitViewKey];
+    [aCoder encodeFloat:_minimumThicknessForInlineSidebars forKey:CPSplitViewControllerMinimumThicknessForInlineSidebarsKey];
 }
 
 @end
