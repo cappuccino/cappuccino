@@ -3,6 +3,7 @@ var ANIMATIONS_GLOBAL_ID = 0,
     CURRENT_ANIMATIONS = {},
 
     ANIMATION_END_EVENT_NAME,
+    ANIMATION_CANCEL_EVENT_NAME = "animationcancel",
     ANIMATION_PROPERTY,
     ANIMATION_NAME_PROPERTY,
     ANIMATION_DURATION_PROPERTY,
@@ -186,6 +187,19 @@ CSSAnimation.prototype.createKeyFramesStyleElement = function()
     return this.styleElement;
 };
 
+/*
+    Returns the listener that ends the animation when the browser ends or cancels each of its
+    property animations: it runs their completions, so the end state applies, and removes the
+    animation from the element. The browser cancels an animation when the element or an
+    ancestor stops being displayed, as a collapsed split view item is hidden at the end of its
+    own animation while its subviews still animate.
+
+    2026-11-24: only the end event was handled. A cancelled animation kept its animation
+    properties and its entry in CURRENT_ANIMATIONS, so every later animation of the element was
+    ignored as in use, and the stale animation played again when the element was displayed
+    again. A split view item that collapsed and expanded showed its subviews at the collapsed
+    size, so the pane was blank.
+*/
 CSSAnimation.prototype.endEventListener = function()
 {
     var animation = this,
@@ -228,6 +242,7 @@ CSSAnimation.prototype.endEventListener = function()
                 removeFromParent(animation.styleElement);
 
                 eventTarget.removeEventListener(ANIMATION_END_EVENT_NAME, AnimationEndListener);
+                eventTarget.removeEventListener(ANIMATION_CANCEL_EVENT_NAME, AnimationEndListener);
                 animation.listener = null;
                 delete (CURRENT_ANIMATIONS[animation.identifier]);
             }
@@ -264,6 +279,7 @@ CSSAnimation.prototype.addAnimationEndEventListener = function()
     var listener = this.endEventListener();
 
     this.target.addEventListener(ANIMATION_END_EVENT_NAME, listener, false);
+    this.target.addEventListener(ANIMATION_CANCEL_EVENT_NAME, listener, false);
 };
 
 CSSAnimation.prototype.setTargetStyleProperties = function()
