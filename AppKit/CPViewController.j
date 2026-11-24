@@ -78,6 +78,9 @@ var CPViewControllerCachedCibs;
     CPString        _cibName @accessors(property=cibName, readonly);
     CPBundle        _cibBundle @accessors(property=cibBundle, readonly);
     CPDictionary    _cibExternalNameTable @accessors(property=cibExternalNameTable, readonly);
+
+    CPMutableArray      _childViewControllers;
+    CPViewController    _parentViewController;
 }
 
 + (void)initialize
@@ -430,6 +433,137 @@ var CPViewControllerCachedCibs;
     of the view controller's view. This is the second half of the insertion,
     completing the chain: view -> viewController -> superview.
 */
+// MARK: - Child view controllers
+
+/*!
+    Returns the parent of the receiver: the view controller that has the receiver as a child,
+    or nil.
+*/
+- (CPViewController)parentViewController
+{
+    return _parentViewController;
+}
+
+/*!
+    Returns the child view controllers of the receiver, in order.
+*/
+- (CPArray)childViewControllers
+{
+    return _childViewControllers ? [_childViewControllers copy] : @[];
+}
+
+/*!
+    Replaces the child view controllers of the receiver. Each child that is not in the new
+    array is removed with -removeChildViewControllerAtIndex:, and each new child is inserted
+    with -insertChildViewController:atIndex:, so a subclass that overrides those methods sees
+    every change.
+
+    @param childViewControllers - the new children, in order.
+*/
+- (void)setChildViewControllers:(CPArray)childViewControllers
+{
+    var newChildren = childViewControllers || @[];
+
+    for (var i = (_childViewControllers ? _childViewControllers.length : 0) - 1; i >= 0; i--)
+        if (![newChildren containsObjectIdenticalTo:_childViewControllers[i]])
+            [self removeChildViewControllerAtIndex:i];
+
+    for (var i = 0, count = [newChildren count]; i < count; i++)
+    {
+        var child = newChildren[i];
+
+        if (_childViewControllers && _childViewControllers[i] === child)
+            continue;
+
+        if ([child parentViewController] === self)
+            [self removeChildViewControllerAtIndex:[_childViewControllers indexOfObjectIdenticalTo:child]];
+
+        [self insertChildViewController:child atIndex:i];
+    }
+}
+
+/*!
+    Adds a child view controller at the end of the children. This calls
+    -insertChildViewController:atIndex:.
+
+    @param childViewController - the view controller to add.
+*/
+- (void)addChildViewController:(CPViewController)childViewController
+{
+    [self insertChildViewController:childViewController atIndex:_childViewControllers ? _childViewControllers.length : 0];
+}
+
+/*!
+    Inserts a child view controller at an index. A child that has a parent is first removed
+    from it with -removeFromParentViewController. This is the method a container subclass
+    overrides to act on insertions; the override must call super.
+
+    @param childViewController - the view controller to insert.
+    @param index - the index for the child; it raises CPRangeException when it is past the end.
+*/
+- (void)insertChildViewController:(CPViewController)childViewController atIndex:(CPInteger)index
+{
+    if (!childViewController)
+        [CPException raise:CPInvalidArgumentException reason:@"-[CPViewController insertChildViewController:atIndex:] needs a view controller"];
+
+    /*
+        AppKit states only that a child of another parent is removed first. A child of the
+        receiver is removed too, so the insertion moves it; the index then refers to the
+        children without it. Own judgement, not checked against AppKit.
+    */
+    if ([childViewController parentViewController])
+        [childViewController removeFromParentViewController];
+
+    if (index < 0 || index > (_childViewControllers ? _childViewControllers.length : 0))
+        [CPException raise:CPRangeException reason:@"-[CPViewController insertChildViewController:atIndex:] index " + index + " is out of range"];
+
+    if (!_childViewControllers)
+        _childViewControllers = @[];
+
+    [self willChangeValueForKey:@"childViewControllers"];
+    [_childViewControllers insertObject:childViewController atIndex:index];
+    childViewController._parentViewController = self;
+    [self didChangeValueForKey:@"childViewControllers"];
+}
+
+/*!
+    Removes the child view controller at an index. This is the method a container subclass
+    overrides to act on removals; the override must call super.
+
+    @param index - the index of the child; it raises CPRangeException when it is out of range.
+*/
+- (void)removeChildViewControllerAtIndex:(CPInteger)index
+{
+    if (index < 0 || index >= (_childViewControllers ? _childViewControllers.length : 0))
+        [CPException raise:CPRangeException reason:@"-[CPViewController removeChildViewControllerAtIndex:] index " + index + " is out of range"];
+
+    var child = _childViewControllers[index];
+
+    [self willChangeValueForKey:@"childViewControllers"];
+    [_childViewControllers removeObjectAtIndex:index];
+    child._parentViewController = nil;
+    [self didChangeValueForKey:@"childViewControllers"];
+}
+
+/*!
+    Removes the receiver from its parent with the parent's -removeChildViewControllerAtIndex:.
+    It does nothing when the receiver has no parent.
+*/
+- (void)removeFromParentViewController
+{
+    var parent = _parentViewController;
+
+    if (!parent)
+        return;
+
+    [parent removeChildViewControllerAtIndex:[parent._childViewControllers indexOfObjectIdenticalTo:self]];
+}
+
+- (BOOL)automaticallyNotifiesObserversOfChildViewControllers
+{
+    return NO;
+}
+
 - (id)nextResponder
 {
     return [_view superview];
@@ -470,7 +604,8 @@ var CPViewControllerCachedCibs;
 var CPViewControllerViewKey     = @"CPViewControllerViewKey",
     CPViewControllerTitleKey    = @"CPViewControllerTitleKey",
     CPViewControllerCibNameKey  = @"CPViewControllerCibNameKey",
-    CPViewControllerBundleKey   = @"CPViewControllerBundleKey";
+    CPViewControllerBundleKey   = @"CPViewControllerBundleKey",
+    CPViewControllerChildViewControllersKey = @"CPViewControllerChildViewControllersKey";
 
 @implementation CPViewController (CPCoding)
 
@@ -498,6 +633,20 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
 
         _cibExternalNameTable = @{ CPCibOwner: self };
         _isLazy = YES;
+
+        /*
+            The children are set directly, not through -insertChildViewController:atIndex:, so
+            a container subclass decodes its own state before it acts on its children.
+        */
+        var children = [aCoder decodeObjectForKey:CPViewControllerChildViewControllersKey];
+
+        if ([children count])
+        {
+            _childViewControllers = [children mutableCopy];
+
+            for (var i = 0, count = [children count]; i < count; i++)
+                children[i]._parentViewController = self;
+        }
     }
 
     return self;
@@ -515,6 +664,9 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
     [aCoder encodeObject:_title forKey:CPViewControllerTitleKey];
     [aCoder encodeObject:_cibName forKey:CPViewControllerCibNameKey];
     [aCoder encodeObject:[_cibBundle bundlePath] forKey:CPViewControllerBundleKey];
+
+    if ([_childViewControllers count])
+        [aCoder encodeObject:_childViewControllers forKey:CPViewControllerChildViewControllersKey];
 }
 
 @end
