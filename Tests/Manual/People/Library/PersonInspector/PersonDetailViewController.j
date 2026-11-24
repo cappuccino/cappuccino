@@ -2,10 +2,12 @@
  * PersonDetailViewController.j
  * People
  *
- * Detail pane below the people table. Every control is bound to
- * arrayController.selection.<key>, which exercises CPControllerSelectionProxy,
- * placeholder binding options (no selection / multiple values / null) and a
- * read-only binding to a KVO-dependent derived key ("age").
+ * Detail pane, the third column of the main window. It shows the person in its
+ * representedObject, which the main split view controller binds to the selection of the people
+ * table. Every control is bound to representedObject.<key>, which exercises
+ * CPControllerSelectionProxy through a view controller, placeholder binding options (no
+ * selection / multiple values / null) and a read-only binding to a KVO-dependent derived key
+ * ("age").
  *
  * Controls covered: CPTextField (+formatter), CPComboBox, CPPopUpButton
  * (selectedValue binding), CPDatePicker, CPCheckBox, CPBox.
@@ -18,27 +20,31 @@
 // the row's midline regardless of each control's intrinsic height.
 var RowHeight       = 30.0,
     RowPitch        = 36.0,
+    RowCount        = 10,
+    Margin          = 12.0,
     LabelWidth      = 90.0,
     LabelGap        = 8.0,
     FieldWidth      = 230.0,
-    ColumnGap       = 40.0,
+    ShortFieldWidth = 140.0,
     TextFieldHeight = 29.0,
     PopUpHeight     = 25.0,
-    DatePickerHeight= 25.0;
+    DatePickerHeight= 25.0,
+    BoxHeight       = RowCount * RowPitch + 40.0;
 
-PersonDetailPreferredHeight = 5 * RowPitch + 52.0;
+/*
+    The width the pane takes at first and after a reset, and the narrowest it can become. The
+    fields take the width between the two.
+*/
+PersonDetailPreferredWidth  = 2 * Margin + LabelWidth + LabelGap + FieldWidth + 2 * Margin + 8.0;
+PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFieldWidth;
 
 @implementation PersonDetailViewController : CPViewController
 {
-    CPArrayController   _arrayController;
 }
 
-- (id)initWithArrayController:(CPArrayController)anArrayController
+- (id)init
 {
-    if (self = [super initWithCibName:nil bundle:nil])
-        _arrayController = anArrayController;
-
-    return self;
+    return [super initWithCibName:nil bundle:nil];
 }
 
 - (CPDictionary)_placeholderOptions
@@ -49,77 +55,78 @@ PersonDetailPreferredHeight = 5 * RowPitch + 52.0;
         @"", CPNullPlaceholderBindingOption];
 }
 
+- (void)_bind:(CPView)aControl binding:(CPString)aBinding key:(CPString)aKey options:(CPDictionary)options
+{
+    [aControl bind:aBinding toObject:self withKeyPath:@"representedObject." + aKey options:options];
+}
+
 - (void)loadView
 {
-    var frame = CGRectMake(0, 0, 800, PersonDetailPreferredHeight),
+    var frame = CGRectMake(0, 0, PersonDetailPreferredWidth, BoxHeight + 2 * 8.0),
         view = [[CPView alloc] initWithFrame:frame];
 
     [view setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    var box = [[CPBox alloc] initWithFrame:CGRectInset(frame, 12, 8)];
+    var box = [[CPBox alloc] initWithFrame:CGRectMake(Margin, 8.0, CGRectGetWidth(frame) - 2 * Margin, BoxHeight)];
     [box setTitle:@"Selected Person"];
-    [box setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [box setAutoresizingMask:CPViewWidthSizable | CPViewMaxYMargin];
     [view addSubview:box];
 
     var content = [box contentView],
         options = [self _placeholderOptions],
-        left = 12.0,
-        right = left + LabelWidth + LabelGap + FieldWidth + ColumnGap;
+        x = Margin,
+        fieldX = x + LabelWidth + LabelGap,
+        row = 0;
 
-    // ---- Left column
-    [[self _textFieldInRow:0 column:left label:@"First Name:" in:content]
-        bind:CPValueBinding toObject:_arrayController withKeyPath:@"selection.firstName" options:options];
+    [self _bind:[self _textFieldInRow:row++ label:@"First Name:" in:content] binding:CPValueBinding key:@"firstName" options:options];
+    [self _bind:[self _textFieldInRow:row++ label:@"Last Name:" in:content] binding:CPValueBinding key:@"lastName" options:options];
+    [self _bind:[self _textFieldInRow:row++ label:@"Email:" in:content] binding:CPValueBinding key:@"email" options:options];
 
-    [[self _textFieldInRow:1 column:left label:@"Last Name:" in:content]
-        bind:CPValueBinding toObject:_arrayController withKeyPath:@"selection.lastName" options:options];
-
-    [[self _textFieldInRow:2 column:left label:@"Email:" in:content]
-        bind:CPValueBinding toObject:_arrayController withKeyPath:@"selection.email" options:options];
-
-    [self _labelInRow:3 column:left title:@"Department:" in:content];
+    [self _labelInRow:row title:@"Department:" in:content];
     var department = [[CPPopUpButton alloc] initWithFrame:CGRectMakeZero() pullsDown:NO];
     [department addItemsWithTitles:LibraryDepartments];
-    [self _place:department row:3 x:left + LabelWidth + LabelGap width:FieldWidth height:PopUpHeight in:content];
-    [department bind:CPSelectedValueBinding toObject:_arrayController withKeyPath:@"selection.department" options:nil];
+    [self _place:department row:row++ x:fieldX width:FieldWidth height:PopUpHeight in:content];
+    [department setAutoresizingMask:CPViewWidthSizable];
+    [self _bind:department binding:CPSelectedValueBinding key:@"department" options:nil];
 
     var manager = [CPCheckBox checkBoxWithTitle:@"Manager"];
     [manager setAllowsMixedState:YES];
     [manager sizeToFit];
-    [self _place:manager row:4 x:left + LabelWidth + LabelGap width:CGRectGetWidth([manager frame]) height:CGRectGetHeight([manager frame]) in:content];
-    [manager bind:CPValueBinding toObject:_arrayController withKeyPath:@"selection.isManager" options:nil];
+    [self _place:manager row:row++ x:fieldX width:CGRectGetWidth([manager frame]) height:CGRectGetHeight([manager frame]) in:content];
+    [self _bind:manager binding:CPValueBinding key:@"isManager" options:nil];
 
-    // ---- Right column
-    [self _labelInRow:0 column:right title:@"City:" in:content];
+    [self _labelInRow:row title:@"City:" in:content];
     var city = [[CPComboBox alloc] initWithFrame:CGRectMakeZero()];
     [city addItemsWithObjectValues:LibraryCities];
     [city setEditable:YES];
-    [self _place:city row:0 x:right + LabelWidth + LabelGap width:FieldWidth height:TextFieldHeight in:content];
-    [city bind:CPValueBinding toObject:_arrayController withKeyPath:@"selection.city" options:options];
+    [self _place:city row:row++ x:fieldX width:FieldWidth height:TextFieldHeight in:content];
+    [city setAutoresizingMask:CPViewWidthSizable];
+    [self _bind:city binding:CPValueBinding key:@"city" options:options];
 
-    [self _labelInRow:1 column:right title:@"Birth Date:" in:content];
-    var birthDate = [[CPDatePicker alloc] initWithFrame:CGRectMake(0, 0, 140, DatePickerHeight)];
+    [self _labelInRow:row title:@"Birth Date:" in:content];
+    var birthDate = [[CPDatePicker alloc] initWithFrame:CGRectMake(0, 0, ShortFieldWidth, DatePickerHeight)];
     [birthDate setDatePickerStyle:CPTextFieldAndStepperDatePickerStyle];
     [birthDate setDatePickerElements:CPYearMonthDayDatePickerElementFlag];
-    [self _place:birthDate row:1 x:right + LabelWidth + LabelGap width:140 height:CGRectGetHeight([birthDate frame]) in:content];
-    [birthDate bind:CPValueBinding toObject:_arrayController withKeyPath:@"selection.birthDate" options:nil];
+    [self _place:birthDate row:row++ x:fieldX width:ShortFieldWidth height:CGRectGetHeight([birthDate frame]) in:content];
+    [self _bind:birthDate binding:CPValueBinding key:@"birthDate" options:nil];
 
-    [self _labelInRow:2 column:right title:@"Age:" in:content];
-    var age = [self _valueLabelInRow:2 x:right + LabelWidth + LabelGap in:content];
-    [age bind:CPValueBinding toObject:_arrayController withKeyPath:@"selection.age" options:options];
+    [self _labelInRow:row title:@"Age:" in:content];
+    [self _bind:[self _valueLabelInRow:row++ in:content] binding:CPValueBinding key:@"age" options:options];
 
-    var salary = [self _textFieldInRow:3 column:right label:@"Salary:" in:content],
+    var salary = [self _textFieldInRow:row++ label:@"Salary:" in:content],
         numberFormatter = [[CPNumberFormatter alloc] init];
     [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
     [salary setFormatter:numberFormatter];
     [salary setAlignment:CPRightTextAlignment];
-    [salary setFrameSize:CGSizeMake(140, CGRectGetHeight([salary frame]))];
-    [salary bind:CPValueBinding toObject:_arrayController withKeyPath:@"selection.salary" options:options];
+    [salary setFrameSize:CGSizeMake(ShortFieldWidth, CGRectGetHeight([salary frame]))];
+    [salary setAutoresizingMask:CPViewNotSizable];
+    [self _bind:salary binding:CPValueBinding key:@"salary" options:options];
 
-    [self _labelInRow:4 column:right title:@"Record ID:" in:content];
-    var uid = [self _valueLabelInRow:4 x:right + LabelWidth + LabelGap in:content];
+    [self _labelInRow:row title:@"Record ID:" in:content];
+    var uid = [self _valueLabelInRow:row++ in:content];
     [uid setSelectable:YES];
     [uid setTextColor:[CPColor secondaryLabelColor]];
-    [uid bind:CPValueBinding toObject:_arrayController withKeyPath:@"selection.uid" options:options];
+    [self _bind:uid binding:CPValueBinding key:@"uid" options:options];
 
     [self setView:view];
 }
@@ -140,37 +147,39 @@ PersonDetailPreferredHeight = 5 * RowPitch + 52.0;
     [aSuperview addSubview:aView];
 }
 
-- (CPTextField)_labelInRow:(int)aRow column:(float)anX title:(CPString)aTitle in:(CPView)aSuperview
+- (CPTextField)_labelInRow:(int)aRow title:(CPString)aTitle in:(CPView)aSuperview
 {
     var label = [CPTextField labelWithTitle:aTitle];
 
     [label setAlignment:CPRightTextAlignment];
     [label setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [self _place:label row:aRow x:anX width:LabelWidth height:RowHeight in:aSuperview];
+    [self _place:label row:aRow x:Margin width:LabelWidth height:RowHeight in:aSuperview];
 
     return label;
 }
 
-- (CPTextField)_valueLabelInRow:(int)aRow x:(float)anX in:(CPView)aSuperview
+- (CPTextField)_valueLabelInRow:(int)aRow in:(CPView)aSuperview
 {
     var label = [CPTextField labelWithTitle:@""];
 
     [label setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [self _place:label row:aRow x:anX + 4 width:FieldWidth - 4 height:RowHeight in:aSuperview];
+    [self _place:label row:aRow x:Margin + LabelWidth + LabelGap + 4 width:FieldWidth - 4 height:RowHeight in:aSuperview];
+    [label setAutoresizingMask:CPViewWidthSizable];
 
     return label;
 }
 
-- (CPTextField)_textFieldInRow:(int)aRow column:(float)anX label:(CPString)aTitle in:(CPView)aSuperview
+- (CPTextField)_textFieldInRow:(int)aRow label:(CPString)aTitle in:(CPView)aSuperview
 {
-    [self _labelInRow:aRow column:anX title:aTitle in:aSuperview];
+    [self _labelInRow:aRow title:aTitle in:aSuperview];
 
     var field = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
     [field setEditable:YES];
     [field setBezeled:YES];
     [field setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [self _place:field row:aRow x:anX + LabelWidth + LabelGap width:FieldWidth height:TextFieldHeight in:aSuperview];
+    [self _place:field row:aRow x:Margin + LabelWidth + LabelGap width:FieldWidth height:TextFieldHeight in:aSuperview];
+    [field setAutoresizingMask:CPViewWidthSizable];
 
     return field;
 }

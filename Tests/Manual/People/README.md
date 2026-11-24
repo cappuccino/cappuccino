@@ -19,14 +19,15 @@ spaces, because the legacy toolchain does not accept them.
 | `main.j`, `Info.plist` | entry point, `CPApplicationDelegateClass` = `AppController` |
 | `ApplicationLifecycle/AppController.j` | creates model, main menu, main window controller |
 | `ApplicationLifecycle/Settings/SettingsWindowController.j` | settings window |
-| `PrimaryInterface/MainWindow/MainWindowController.j` | bridge window, toolbar, sidebar split view, routed actions, menu and toolbar validation |
+| `PrimaryInterface/MainWindow/MainWindowController.j` | bridge window, toolbar, routed actions, menu and toolbar validation |
+| `PrimaryInterface/MainWindowSplitView/MainSplitViewController.j` | the window's content view controller: Navigation, Content and Detail side by side as split view items |
 | `Library/Library.j`, `Library/Person.j` | model, KVO observation, `CPUserDefaults` persistence, sample data |
 | `Library/Navigation/SourceListViewController.j` | view-based `CPOutlineView` source list, drop target, button bar |
 | `Library/Navigation/SourceItemCell/` | outline cell view with its icon and count badge, drawn with `CPBezierPath` |
 | `Library/Navigation/SmartFolderEditor/SmartFolderEditorController.j` | sheet with `CPPredicateEditor` built from row templates |
 | `Library/Navigation/GroupNameSheet/NameSheetController.j` | name sheet for new and renamed groups |
-| `Library/ContentViewer/PeopleViewController.j` | `CPArrayController` + bound `CPTableView`, drag source, pasteboard, detail split |
-| `Library/PersonInspector/PersonDetailViewController.j` | controls bound to `selection.*` |
+| `Library/ContentViewer/PeopleViewController.j` | `CPArrayController` + bound `CPTableView`, drag source, pasteboard |
+| `Library/PersonInspector/PersonDetailViewController.j` | detail column; controls bound to `representedObject.*`, which is the table's selection |
 
 ## Manual test checklist
 
@@ -44,7 +45,12 @@ spaces, because the legacy toolchain does not accept them.
     multi-select shows "Multiple Values"; changing Birth Date updates Age (dependent key).
 11. Copy (⌘C) then Paste (⌘V): duplicated people appear selected. Delete key removes people
     (from the group only, when a group is selected).
-12. View menu / toolbar: hide and show sidebar and detail pane; drag the sidebar resize control in the button bar.
+12. The window shows three columns: sidebar, people table, detail pane. Resize the window: the table takes the
+    change, the sidebar and the detail pane keep their widths. Drag both dividers; the sidebar stays between
+    160 and 420 points, the detail pane does not become narrower than its fields allow. Reload: both widths and
+    any hidden pane are restored (autosave).
+    View menu / toolbar: hide and show sidebar and detail pane, animated; a hidden pane comes back at its
+    width. Drag the sidebar resize control in the button bar.
     Toolbar items are enabled exactly when their menu items are: Edit only for a smart folder,
     New Smart Folder and New Group not while a sheet is open. In dark mode the glyphs are light.
     View ▸ Hide Toolbar hides it and the item then reads Show Toolbar.

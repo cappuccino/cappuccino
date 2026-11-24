@@ -2,7 +2,7 @@
  * PeopleViewController.j
  * People
  *
- * Right hand side of the main split view. Exercises:
+ * Middle pane of the main window: the people table. Exercises:
  *   - CPArrayController with content, filterPredicate, sortDescriptors and
  *     selection (incl. setSelectedObjects: across content changes)
  *   - cell-based CPTableView fully driven by bindings (value, selection,
@@ -11,24 +11,21 @@
  *     autosaved column state, alternating rows, grid lines
  *   - the table as drag source (rows -> source list groups)
  *   - CPPasteboard (copy / paste as tab separated text)
- *   - nested CPSplitView hosting a child view controller (detail pane)
+ *
+ * The array controller's selection is what the detail pane shows; the main split view
+ * controller connects the two.
  */
 
 @import <AppKit/AppKit.j>
 @import "../Library.j"
-@import "../PersonInspector/PersonDetailViewController.j"
 
 @implementation PeopleViewController : CPViewController
 {
     Library                     _library;
     CPArrayController           _arrayController;
     CPTableView                 _tableView;
-    CPSplitView                 _splitView;
-    CPView                      _tablePane;
     CPTextField                 _statusField;
-    PersonDetailViewController  _detailController;
     CPString                    _contentTitle;
-    float                       _lastDetailHeight;
 }
 
 - (id)initWithLibrary:(Library)aLibrary
@@ -37,7 +34,6 @@
     {
         _library = aLibrary;
         _contentTitle = @"";
-        _lastDetailHeight = PersonDetailPreferredHeight;
 
         _arrayController = [[CPArrayController alloc] init];
         [_arrayController setEditable:YES];
@@ -69,29 +65,7 @@
 
 - (void)loadView
 {
-    var frame = CGRectMake(0, 0, 800, 600),
-        view = [[CPView alloc] initWithFrame:frame];
-
-    [view setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-
-    _splitView = [[CPSplitView alloc] initWithFrame:frame];
-    [_splitView setVertical:NO];
-    [_splitView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    [_splitView setDelegate:self];
-
-    _tablePane = [self _buildTablePane:CGRectMake(0, 0, CGRectGetWidth(frame), CGRectGetHeight(frame) - _lastDetailHeight)];
-    [_splitView addSubview:_tablePane];
-
-    _detailController = [[PersonDetailViewController alloc] initWithArrayController:_arrayController];
-    var detailView = [_detailController view];
-    [detailView setFrame:CGRectMake(0, 0, CGRectGetWidth(frame), _lastDetailHeight)];
-    [_splitView addSubview:detailView];
-
-    [view addSubview:_splitView];
-    [self setView:view];
-
-    [_splitView setAutosaveName:@"People.PeopleSplit"];
-
+    [self setView:[self _buildTablePane:CGRectMake(0, 0, 800, 600)]];
     [self _updateStatus];
 }
 
@@ -281,64 +255,6 @@
 - (void)focus
 {
     [[_tableView window] makeFirstResponder:_tableView];
-}
-
-// ---------------------------------------------------------------- Detail pane
-
-- (BOOL)isDetailVisible
-{
-    var detailView = [[_splitView subviews] objectAtIndex:1];
-    return ![_splitView isSubviewCollapsed:detailView] && CGRectGetHeight([detailView frame]) > 0;
-}
-
-- (void)toggleDetail
-{
-    var total = CGRectGetHeight([_splitView bounds]),
-        divider = [_splitView dividerThickness];
-
-    if ([self isDetailVisible])
-    {
-        _lastDetailHeight = CGRectGetHeight([[[_splitView subviews] objectAtIndex:1] frame]);
-        [_splitView setPosition:total ofDividerAtIndex:0];
-    }
-    else
-        [_splitView setPosition:total - divider - MAX(_lastDetailHeight, 150) ofDividerAtIndex:0];
-}
-
-// Split view delegate (detail pane)
-- (BOOL)splitView:(CPSplitView)aSplitView canCollapseSubview:(CPView)aSubview
-{
-    return aSubview === [[aSplitView subviews] objectAtIndex:1];
-}
-
-- (float)splitView:(CPSplitView)aSplitView constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)anIndex
-{
-    return 120.0;
-}
-
-- (float)splitView:(CPSplitView)aSplitView constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)anIndex
-{
-    return CGRectGetHeight([aSplitView bounds]) - 150.0;
-}
-
-- (void)splitView:(CPSplitView)aSplitView resizeSubviewsWithOldSize:(CGSize)oldSize
-{
-    // Keep the detail pane at a fixed height while the window resizes.
-    var subviews = [aSplitView subviews],
-        top = subviews[0],
-        bottom = subviews[1],
-        size = [aSplitView bounds].size,
-        divider = [aSplitView dividerThickness],
-        bottomHeight = [aSplitView isSubviewCollapsed:bottom] ? 0 : CGRectGetHeight([bottom frame]);
-
-    bottomHeight = MIN(bottomHeight, MAX(0, size.height - divider - 120));
-
-    [top setFrame:CGRectMake(0, 0, size.width, MAX(0, size.height - bottomHeight - divider))];
-    [bottom setFrame:CGRectMake(0, size.height - bottomHeight, size.width, bottomHeight)];
-
-    // A custom resizeSubviewsWithOldSize: bypasses CPSplitView's own layout pass,
-    // so the divider must be told to redraw at the new width.
-    [aSplitView setNeedsDisplay:YES];
 }
 
 // ---------------------------------------------------------------- Pasteboard helpers

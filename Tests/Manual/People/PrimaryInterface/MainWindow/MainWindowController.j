@@ -3,14 +3,13 @@
  * People
  *
  * Owns the full-platform (bridge) main window. Instantiates the sidebar and
- * people view controllers and loads their views into a vertical CPSplitView.
- * Exercises:
+ * people view controllers and hands them to MainSplitViewController, the window's
+ * content view controller, which lays out the three panes. Exercises:
  *   - CPWindowController created in code, window delegate + responder chain
  *     target for menu / toolbar / button bar actions (sent to nil)
  *   - CPToolbar with standard image items, whose glyphs come from the asset
  *     catalog with a dark variant, and a view item (CPSearchField)
- *   - CPSplitView delegate API: min/max constraints, collapsing, custom
- *     resizeSubviewsWithOldSize:, autosave, button bar resize control
+ *   - CPWindow content view controller
  *   - one -validateUserInterfaceItem: for the menus and the toolbar items
  *   - CPAlert as a sheet
  *   - CPPasteboard copy / paste
@@ -20,6 +19,7 @@
 @import "../../Library/Library.j"
 @import "../../Library/Navigation/SourceListViewController.j"
 @import "../../Library/ContentViewer/PeopleViewController.j"
+@import "../MainWindowSplitView/MainSplitViewController.j"
 @import "../../Library/Navigation/SmartFolderEditor/SmartFolderEditorController.j"
 @import "../../Library/Navigation/GroupNameSheet/NameSheetController.j"
 @import "../../ApplicationLifecycle/Settings/SettingsWindowController.j"
@@ -33,9 +33,6 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     ToolbarNewPersonIdentifier  = @"NewPersonItem",
     ToolbarAllPeopleIdentifier  = @"ShowAllPeopleItem",
     ToolbarItemImageSize        = CGSizeMake(32.0, 32.0),
-    SidebarDefaultWidth         = 230.0,
-    SidebarMinWidth             = 160.0,
-    SidebarMaxWidth             = 420.0,
     ResetAlertResetTag          = 1001,
     ResetAlertCancelTag         = 1002;
 
@@ -43,7 +40,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 {
     Library                     _library;
 
-    CPSplitView                 _splitView;
+    MainSplitViewController     _splitViewController;
     SourceListViewController    _sourceListController;
     PeopleViewController        _peopleController;
     SmartFolderEditorController _folderEditor;
@@ -52,7 +49,6 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     CPSearchField               _searchField;
     CPPredicate                 _searchPredicate;
     id                          _selectedItem;
-    float                       _lastSidebarWidth;
 }
 
 - (id)initWithLibrary:(Library)aLibrary
@@ -62,7 +58,6 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     if (self = [super initWithWindow:window])
     {
         _library = aLibrary;
-        _lastSidebarWidth = SidebarDefaultWidth;
 
         [window setDelegate:self];
         [window setTitle:@"Smart Folders Demo"];
@@ -72,8 +67,10 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
         _peopleController = [[PeopleViewController alloc] initWithLibrary:_library];
 
+        _splitViewController = [[MainSplitViewController alloc] initWithSourceListController:_sourceListController peopleController:_peopleController];
+
         [self _buildToolbar];
-        [self _buildSplitView];
+        [window setContentViewController:_splitViewController];
 
         [[CPNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(libraryDidChange:)
@@ -87,30 +84,6 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 }
 
 // ---------------------------------------------------------------- Interface
-
-- (void)_buildSplitView
-{
-    var contentView = [[self window] contentView],
-        bounds = [contentView bounds];
-
-    _splitView = [[CPSplitView alloc] initWithFrame:bounds];
-    [_splitView setVertical:YES];
-    [_splitView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    [_splitView setDelegate:self];
-
-    var sidebar = [_sourceListController view],
-        people = [_peopleController view];
-
-    [sidebar setFrame:CGRectMake(0, 0, SidebarDefaultWidth, CGRectGetHeight(bounds))];
-    [people setFrame:CGRectMake(SidebarDefaultWidth + 1, 0, MAX(0, CGRectGetWidth(bounds) - SidebarDefaultWidth - 1), CGRectGetHeight(bounds))];
-
-    [_splitView addSubview:sidebar];
-    [_splitView addSubview:people];
-    [contentView addSubview:_splitView];
-
-    [_splitView setButtonBar:[_sourceListController buttonBar] forDividerAtIndex:0];
-    [_splitView setAutosaveName:@"People.MainSplit"];
-}
 
 - (void)_buildToolbar
 {
@@ -211,44 +184,11 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [anItem setAction:anAction];
 }
 
-// ---------------------------------------------------------------- Split view delegate (sidebar)
-
-- (BOOL)splitView:(CPSplitView)aSplitView canCollapseSubview:(CPView)aSubview
-{
-    return aSubview === [_sourceListController view];
-}
-
-- (float)splitView:(CPSplitView)aSplitView constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)anIndex
-{
-    return SidebarMinWidth;
-}
-
-- (float)splitView:(CPSplitView)aSplitView constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)anIndex
-{
-    return MIN(SidebarMaxWidth, CGRectGetWidth([aSplitView bounds]) - 300.0);
-}
-
-- (void)splitView:(CPSplitView)aSplitView resizeSubviewsWithOldSize:(CGSize)oldSize
-{
-    // Sidebar keeps its width, the people pane takes up the rest.
-    var subviews = [aSplitView subviews],
-        sidebar = subviews[0],
-        main = subviews[1],
-        size = [aSplitView bounds].size,
-        divider = [aSplitView dividerThickness],
-        sidebarWidth = [aSplitView isSubviewCollapsed:sidebar] ? 0 : CGRectGetWidth([sidebar frame]);
-
-    [sidebar setFrame:CGRectMake(0, 0, sidebarWidth, size.height)];
-    [main setFrame:CGRectMake(sidebarWidth + divider, 0, MAX(0, size.width - sidebarWidth - divider), size.height)];
-
-    // Custom layout bypasses CPSplitView's own pass: redraw the divider.
-    [aSplitView setNeedsDisplay:YES];
-}
+// ---------------------------------------------------------------- Panes
 
 - (BOOL)isSidebarVisible
 {
-    var sidebar = [_sourceListController view];
-    return ![_splitView isSubviewCollapsed:sidebar] && CGRectGetWidth([sidebar frame]) > 0;
+    return [_splitViewController isSidebarVisible];
 }
 
 // ---------------------------------------------------------------- Source list delegate
@@ -488,18 +428,12 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
 - (void)toggleSidebar:(id)sender
 {
-    if ([self isSidebarVisible])
-    {
-        _lastSidebarWidth = CGRectGetWidth([[_sourceListController view] frame]);
-        [_splitView setPosition:0 ofDividerAtIndex:0];
-    }
-    else
-        [_splitView setPosition:MAX(_lastSidebarWidth, SidebarMinWidth) ofDividerAtIndex:0];
+    [_splitViewController toggleSidebar:sender];
 }
 
 - (void)toggleDetail:(id)sender
 {
-    [_peopleController toggleDetail];
+    [_splitViewController toggleDetail:sender];
 }
 
 - (void)showAllPeople:(id)sender
@@ -558,10 +492,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     }];
     [toolbar setVisible:YES];
 
-    [_splitView setPosition:SidebarDefaultWidth ofDividerAtIndex:0];
-
-    if (![_peopleController isDetailVisible])
-        [_peopleController toggleDetail];
+    [_splitViewController restoreDefaultLayout];
 
     [SettingsWindowController resetAppearance];
 }
@@ -619,7 +550,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
             break;
 
         case @selector(toggleDetail:):
-            [anItem setTitle:[_peopleController isDetailVisible] ? @"Hide Details" : @"Show Details"];
+            [anItem setTitle:[_splitViewController isDetailVisible] ? @"Hide Details" : @"Show Details"];
             break;
     }
 
