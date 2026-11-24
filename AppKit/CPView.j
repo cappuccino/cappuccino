@@ -702,7 +702,17 @@ function _CPViewResolvedColorsAreSame(aColor, anotherColor)
         CPDOMDisplayServerSetStyleLeftTop(aSubview._DOMElement, _boundsTransform, origin.x, origin.y);
     }
 
-    [aSubview setNextResponder:self];
+    /*
+        A view controller whose view this is sits between the view and its superview in the
+        responder chain: the controller's -nextResponder is the superview. Setting the next
+        responder here unconditionally dropped the controller from the chain as soon as its view
+        gained a superview, so actions and events never reached the controller.
+    */
+    var nextResponder = [aSubview nextResponder];
+
+    if (!(nextResponder && [nextResponder respondsToSelector:@selector(isViewLoaded)] && [nextResponder isViewLoaded] && [nextResponder view] === aSubview))
+        [aSubview setNextResponder:self];
+
     [aSubview _scaleSizeUnitSquareToSize:[self _hierarchyScaleSize]];
 
     [aSubview viewDidMoveToSuperview];
@@ -2049,7 +2059,11 @@ function _CPViewResolvedColorsAreSame(aColor, anotherColor)
 
     if (menu)
         [CPMenu popUpContextMenu:menu withEvent:anEvent forView:self];
-    else if ([[self nextResponder] isKindOfClass:CPView])
+    /*
+        A view with a superview passes the event up the responder chain. The test was on the
+        class of the next responder, which is a view controller when the view belongs to one.
+    */
+    else if ([self superview])
         [super rightMouseDown:anEvent];
     else
         [[[anEvent window] platformWindow] _propagateContextMenuDOMEvent:NO];

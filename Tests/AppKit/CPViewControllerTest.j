@@ -79,6 +79,21 @@ var testResponderChainActionCalled;
     [self assert:nil equals:[viewController nextResponder] message:@"The next responder should be nil after the view is removed from its superview."];
 }
 
+- (void)testTheControllerStaysInTheResponderChainWhenItsViewGainsASuperview
+{
+    var viewController = [[ResponderTestViewController alloc] initWithCibName:nil bundle:nil externalNameTable:@{}],
+        view = [viewController view],
+        superview = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+        subview = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+
+    [superview addSubview:view];
+    [view addSubview:subview];
+
+    [self assert:viewController equals:[view nextResponder] message:@"the controller follows its view"];
+    [self assert:superview equals:[viewController nextResponder] message:@"the superview follows the controller"];
+    [self assert:view equals:[subview nextResponder] message:@"a plain subview is followed by its superview"];
+}
+
 @end
 
 @implementation ViewController : CPViewController
