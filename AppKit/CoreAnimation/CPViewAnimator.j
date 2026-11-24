@@ -316,6 +316,25 @@ function _CPViewAnimatorValueFunctionInAppearance(aFunction, aView)
         CPLog.warn("Could not find FrameUpdater with identifier " + anIdentifier);
 }
 
+/*
+    Stops the frame updater of the animation of a view, when it has one, and gives back to each
+    view it updated the frame that view had when the animation started. The views get their
+    frames back in the order they were added, so a view's own frame comes after the frame of
+    its superview, whose change would otherwise resize it again.
+*/
++ (void)_finishFrameUpdaterWithIdentifier:(CPString)anIdentifier
+{
+    var frameUpdater = FRAME_UPDATERS[anIdentifier];
+
+    if (!frameUpdater)
+        return;
+
+    delete FRAME_UPDATERS[anIdentifier];
+
+    frameUpdater.stop();
+    frameUpdater.restoreInitialFrames();
+}
+
 - (BOOL)needsPeriodicFrameUpdatesForKeyPath:(CPString)aKeyPath
 {
     return ((aKeyPath == @"frame" || aKeyPath == @"frameSize") &&
@@ -458,6 +477,7 @@ var FrameUpdater = function(anIdentifier)
     this._duration = 0;
     this._stop = false;
     this._targets = [];
+    this._initialFrames = [];
     this._callbacks = [];
 
     var frameUpdater = this;
@@ -517,8 +537,15 @@ FrameUpdater.prototype.addTarget = function(target, keyPath, duration)
     {
         this._duration = MAX(this._duration, duration);
         this._targets.push(target);
+        this._initialFrames.push(CGRectMakeCopy([target frame]));
         this._callbacks.push(callback);
     }
+};
+
+FrameUpdater.prototype.restoreInitialFrames = function()
+{
+    for (var i = 0; i < this._targets.length; i++)
+        [this._targets[i] setFrame:this._initialFrames[i]];
 };
 
 var createUpdateFrame = function(aView, aKeyPath)

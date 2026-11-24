@@ -140,8 +140,21 @@ var _CPAnimationContextStack   = nil,
 
     var completionFunction = function()
     {
-        if (needsPeriodicFrameUpdates)
-            [animatorClass stopUpdaterWithIdentifier:objectId];
+        /*
+            The frame updater of the animation stops before the animated view takes its final
+            frame, and gives back to each view it updated the frame that view had when the
+            animation started. The completion then sets the final frame from a state that
+            matches the start, so autoresizing and layout give the subviews their final frames.
+
+            2026-11-24: the updater stopped only when the animated view itself needed periodic
+            updates. A subview that needed them, such as a scroll view, kept the frame of the
+            last update, which lies between the start and the end; the updater could also run
+            once more after the completion. The completion then resized the subview from that
+            frame: after a split view item expanded, People's sidebar scroll view was wider
+            than the item, its row views kept a width of a few points, and the selection and
+            the badges were drawn cut off.
+        */
+        [animatorClass _finishFrameUpdaterWithIdentifier:objectId];
 
         if (animationCompletion)
             animationCompletion();
@@ -330,7 +343,8 @@ var _CPAnimationContextStack   = nil,
             /*
                 A subview takes its final frame from the completion of the animated view, which
                 sets that view's frame and so resizes or lays out its subviews. The subview's
-                own animation changes only what the browser shows.
+                own animation changes only what the browser shows, and the completion of the
+                animated view stops the frame updater.
 
                 2026-11-24: the completion of a subview with a custom drawRect also set the
                 subview's frame to the target of its animation. When the animated view ended
@@ -338,17 +352,9 @@ var _CPAnimationContextStack   = nil,
                 collapses animates to no width and keeps its size, the subview kept the frame
                 of no width: People's sidebar scroll view and detail box stayed empty after the
                 item expanded again. When the subview's completion ran after the animated
-                view's, the subview was resized twice.
+                view's, the subview was resized twice. The same completion stopped the frame
+                updater of the animated view, sometimes before that view's own completion.
             */
-            if ([aSubview hasCustomDrawRect])
-            {
-                action.completion = function()
-                {
-                    if (idx == count - 1)
-                        [animatorClass stopUpdaterWithIdentifier:[anAction.root UID]];
-                 };
-             }
-
              var animate = !needsPeriodicFrameUpdates;
              [self getAnimations:cssAnimations getTimers:timers usingAction:action cssAnimate:animate];
          }];
