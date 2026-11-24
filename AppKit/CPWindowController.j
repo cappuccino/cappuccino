@@ -65,6 +65,8 @@
 
     CPViewController    _viewController;
     CPView              _viewControllerContainerView;
+
+    CPViewController    _pendingContentViewController;
 }
 
 - (id)init
@@ -215,6 +217,43 @@
 
     [_window setWindowController:self];
     [_window setNextResponder:self];
+
+    if (_window && _pendingContentViewController)
+    {
+        var viewController = _pendingContentViewController;
+
+        _pendingContentViewController = nil;
+        [_window setContentViewController:viewController];
+    }
+}
+
+/*!
+    Returns the view controller whose view is the content view of the window, as the window's
+    property of the same name. Before the window loads, it returns the view controller that
+    will become the window's.
+*/
+- (CPViewController)contentViewController
+{
+    return _window ? [_window contentViewController] : _pendingContentViewController;
+}
+
+/*!
+    Sets the content view controller of the window. A view controller set before the window
+    loads becomes the window's when the window loads.
+
+    @param aViewController the view controller whose view becomes the content view
+*/
+- (void)setContentViewController:(CPViewController)aViewController
+{
+    if (_window)
+        [_window setContentViewController:aViewController];
+    else
+        _pendingContentViewController = aViewController;
+}
+
++ (CPSet)keyPathsForValuesAffectingContentViewController
+{
+    return [CPSet setWithObject:@"window.contentViewController"];
 }
 
 /*!

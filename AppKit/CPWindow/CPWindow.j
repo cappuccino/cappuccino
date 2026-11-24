@@ -51,6 +51,7 @@
 @class CPMenu
 @class CPProgressIndicator
 @class CPToolbar
+@class CPViewController
 @class CPWindowController
 @class _CPWindowFrameAnimation
 @class _CPWindowFrameAnimationDelegate
@@ -211,6 +212,7 @@ var CPWindowActionMessageKeys = [
 
     CPView                              _windowView;
     CPView                              _contentView;
+    CPViewController                    _contentViewController;
     CPView                              _toolbarView;
 
     BOOL                                _handlingTrackingAreaEvent;
@@ -284,6 +286,7 @@ var CPWindowActionMessageKeys = [
 }
 
 @global document
+@global CPTitleBinding
 
 + (Class)_binderClassForBinding:(CPString)aBinding
 {
@@ -1279,6 +1282,17 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setContentView:(CPView)aView
 {
+    /*
+        A content view set directly replaces the view of the content view controller, so the
+        window no longer has one, as in AppKit.
+    */
+    if (_contentViewController)
+    {
+        [self willChangeValueForKey:@"contentViewController"];
+        _contentViewController = nil;
+        [self didChangeValueForKey:@"contentViewController"];
+    }
+
     if (_contentView && _contentView !== aView)
         [_contentView removeFromSuperview];
 
@@ -1308,6 +1322,84 @@ CPTexturedBackgroundWindowMask
 - (CPView)contentView
 {
     return _contentView;
+}
+
+/*!
+    Returns the view controller whose view is the window's content view, or nil.
+*/
+- (CPViewController)contentViewController
+{
+    return _contentViewController;
+}
+
+/*!
+    Makes a view controller's view the window's content view, in place of the current content
+    view, and resizes the window to fit the size of that view. A window that fills its platform
+    window does not resize, and neither does a window whose new content view has no size.
+    The controller manages the content view only, not the window's title; bind the title to the
+    controller's title to follow it. Setting nil keeps the content view and drops the controller.
+    Setting a content view directly drops the controller too.
+
+    @param aViewController the view controller whose view becomes the content view
+*/
+- (void)setContentViewController:(CPViewController)aViewController
+{
+    if (_contentViewController === aViewController)
+        return;
+
+    if (!aViewController)
+    {
+        [self willChangeValueForKey:@"contentViewController"];
+        _contentViewController = nil;
+        [self didChangeValueForKey:@"contentViewController"];
+        return;
+    }
+
+    var view = [aViewController view],
+        size = CGSizeMakeCopy([view frameSize]);
+
+    [self setContentView:view];
+
+    [self willChangeValueForKey:@"contentViewController"];
+    _contentViewController = aViewController;
+    [self didChangeValueForKey:@"contentViewController"];
+
+    /*
+        AppKit sizes the window from the controller's view through Auto Layout. Without it, the
+        frame size of the view is the size it asks for; a view without a size asks for nothing.
+        Own judgement, not checked against AppKit.
+    */
+    if (!_isFullPlatformWindow && size.width > 0 && size.height > 0)
+        [self setFrameSize:[self frameRectForContentRect:CGRectMake(0.0, 0.0, size.width, size.height)].size];
+}
+
+- (void)_setContentViewControllerWithoutResize:(CPViewController)aViewController
+{
+    [self willChangeValueForKey:@"contentViewController"];
+    _contentViewController = aViewController;
+    [self didChangeValueForKey:@"contentViewController"];
+}
+
++ (BOOL)automaticallyNotifiesObserversOfContentViewController
+{
+    return NO;
+}
+
+/*!
+    Returns a titled, closable, miniaturizable and resizable window whose content view
+    controller is the given one. The window's title is bound to the controller's title.
+
+    @param aViewController the view controller whose view becomes the content view
+*/
++ (id)windowWithContentViewController:(CPViewController)aViewController
+{
+    var window = [[self alloc] initWithContentRect:CGRectMakeZero()
+                                         styleMask:CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask];
+
+    [window setContentViewController:aViewController];
+    [window bind:CPTitleBinding toObject:aViewController withKeyPath:@"title" options:nil];
+
+    return window;
 }
 
 /*!

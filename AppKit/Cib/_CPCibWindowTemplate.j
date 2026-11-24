@@ -29,6 +29,8 @@
 @import "CPWindow_Constants.j"
 @import "_CPToolTip.j"
 
+@class CPViewController
+
 
 @implementation _CPCibWindowTemplate : CPObject
 {
@@ -49,6 +51,8 @@
     BOOL        _windowIsFullPlatformWindow;
 
     CPAppearance _windowAppearance;
+
+    CPViewController _windowContentViewController;
 }
 
 - (id)init
@@ -121,6 +125,18 @@
     [theWindow setContentView:_windowView];
     [_windowView setAutoresizesSubviews:contentViewAutoresizesSubviews];
 
+    /*
+        The content view of the template is the view of the content view controller when both
+        come from the same archive; the window then keeps the template's frame.
+    */
+    if (_windowContentViewController)
+    {
+        if ([_windowContentViewController view] === _windowView)
+            [theWindow _setContentViewControllerWithoutResize:_windowContentViewController];
+        else
+            [theWindow setContentViewController:_windowContentViewController];
+    }
+
     if ([_viewClass isKindOfClass:[CPToolbar class]])
        [theWindow setToolbar:_viewClass];
 
@@ -150,7 +166,8 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
 
     _CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop   = @"_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop",
     _CPCibWindowTemplateWindowIsFullPlatformWindowKey       = @"_CPCibWindowTemplateWindowIsFullPlatformWindowKey",
-    _CPCibWindowTemplateWindowAppearanceKey                 = @"_CPCibWindowTemplateWindowAppearanceKey";
+    _CPCibWindowTemplateWindowAppearanceKey                 = @"_CPCibWindowTemplateWindowAppearanceKey",
+    _CPCibWindowTemplateWindowContentViewControllerKey      = @"_CPCibWindowTemplateWindowContentViewControllerKey";
 
 @implementation _CPCibWindowTemplate (Coding)
 
@@ -180,6 +197,7 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
         _windowAutorecalculatesKeyViewLoop = [aCoder decodeBoolForKey:_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop];
         _windowIsFullPlatformWindow = [aCoder decodeBoolForKey:_CPCibWindowTemplateWindowIsFullPlatformWindowKey];
         _windowAppearance = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowAppearanceKey];
+        _windowContentViewController = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowContentViewControllerKey];
     }
 
     return self;
@@ -216,6 +234,9 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
 
     if (_windowAppearance)
         [aCoder encodeObject:_windowAppearance forKey:_CPCibWindowTemplateWindowAppearanceKey];
+
+    if (_windowContentViewController)
+        [aCoder encodeObject:_windowContentViewController forKey:_CPCibWindowTemplateWindowContentViewControllerKey];
 }
 
 @end
