@@ -32,8 +32,9 @@
     animated divider moves, notifications, hit testing, button bars, autosave, orientation,
     arranged subviews and archiving. They come before a refactoring and a rework of
     CPSplitView, so they test through public behaviour only. The one exception is
-    -_restoreFromAutosave: today only a cib load starts a restore, so the autosave tests call
-    it, as CPSplitViewTest does.
+    -_restoreFromAutosave, which a cib load calls: most autosave tests call it after they set
+    the name, as CPSplitViewTest does. Setting the name restores as well, which
+    testSettingTheAutosaveNameRestoresTheSavedLayout states.
 
     Each test uses a vertical split view 300 points wide and 100 points high, with thin dividers
     (1 point under ojtest, where no theme is loaded). The first subview is 100 points wide; the
@@ -644,6 +645,24 @@
     [splitView _restoreFromAutosave];
 
     [self assert:140 equals:CGRectGetWidth([viewA frame]) message:@"the divider position is restored"];
+}
+
+/*
+    A split view made in code restores its saved layout when it gets the autosave name, as
+    NSSplitView does.
+*/
+- (void)testSettingTheAutosaveNameRestoresTheSavedLayout
+{
+    [self useAutosaveStore];
+    [splitView setAutosaveName:@"CPSplitViewInteractionTest.Name"];
+    [self dragDivider:0 toX:140];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [self setUp];
+    [splitView setAutosaveName:@"CPSplitViewInteractionTest.Name"];
+
+    [self assert:140 equals:CGRectGetWidth([viewA frame]) message:@"the divider position is restored"];
+    [self assert:140 equals:CGRectGetMinX([splitView rectOfDividerAtIndex:0]) message:@"the divider is at the restored position"];
 }
 
 /*

@@ -31,6 +31,7 @@
 
 /*!
     Set the name under which the split view divider positions is automatically saved to CPUserDefaults.
+    A split view with subviews restores the layout saved under the name.
 
     @param autosaveName the name to save under or nil to not save
 */
@@ -40,6 +41,13 @@
         return;
 
     _autosaveName = autosaveName;
+
+    /*
+        2026-11-24: only a cib load restored a saved layout, so a split view made in code saved
+        its layout and never restored it.
+    */
+    if (_autosaveName && _arrangedSubviews.length)
+        [self _restoreFromAutosave];
 }
 
 /*!

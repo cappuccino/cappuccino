@@ -129,9 +129,10 @@
     [self setUp];
     [splitView setAutosaveName:@"Charles"];
 
-    // FIXME At the moment restore from autosave only happens if the split view is loaded from a
-    // coder. It seems like it should happen when initialising in code too, but some research of
-    // Cocoa's behaviour will need to be done first. For now, trigger it by hand.
+    /*
+        Setting the name restores the layout; the restore a cib load makes gives the same
+        result.
+    */
     [splitView _restoreFromAutosave];
 
     [self assert:25 equals:[viewA frameSize].height message:@"divider position restored"];
