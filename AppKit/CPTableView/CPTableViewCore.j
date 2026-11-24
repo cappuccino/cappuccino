@@ -128,7 +128,7 @@ _CPTableViewDrawingLayerGrid        = 1 << 2;
 _CPTableViewDrawingLayerRows        = 1 << 3;
 
 CPTableViewNoColumnAutoresizing = 0;
-CPTableViewUniformColumnAutoresizingStyle = 1; // FIX ME: This is FUBAR
+CPTableViewUniformColumnAutoresizingStyle = 1;
 CPTableViewSequentialColumnAutoresizingStyle = 2;
 CPTableViewReverseSequentialColumnAutoresizingStyle = 3;
 CPTableViewLastColumnOnlyAutoresizingStyle = 4;
@@ -303,7 +303,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPInteger                   _dropTargetRow;
 
     BOOL                        _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
-    BOOL                        _lastColumnShouldSnap;
     BOOL                        _isViewBased;
     BOOL                        _contentBindingExplicitlySet;
 
@@ -378,6 +377,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _allowsColumnSelection = NO;
         _disableAutomaticResizing = NO;
 
+        /*
+            The default style is last column only, as in AppKit. The style was left unset, so
+            a table view made in code did not autoresize its columns. 2026-11-24
+        */
+        _columnAutoResizingStyle = CPTableViewLastColumnOnlyAutoresizingStyle;
+
         //Setting Display Attributes
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleRegular;
         [self setBackgroundColor:nil];
@@ -431,8 +436,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     _dropOperationFeedbackView = [[_CPDropOperationDrawingView alloc] initWithFrame:CGRectMakeZero()];
     [_dropOperationFeedbackView setTableView:self];
-
-    _lastColumnShouldSnap = NO;
 
     if (!_alternatingRowBackgroundColors)
         _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];

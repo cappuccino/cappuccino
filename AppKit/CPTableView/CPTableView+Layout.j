@@ -358,168 +358,145 @@
 
 /*!
     @ignore
+
+    Gives the change in the width of the receiver to its columns, by its column autoresizing
+    style. In a clip view the receiver is as wide as the clip view, so the change is the new
+    width of the clip view less the width of the receiver before the resize.
+
+    The method resized the columns to fill the clip view, except with the uniform style, and
+    only when a heuristic guessed that the columns had filled it before. A table view with a
+    gap after its columns lost the gap, the sequential styles did nothing, and the uniform
+    style missed the clip view by the intercell spacing. 2026-11-24
 */
 - (void)resizeWithOldSuperviewSize:(CGSize)aSize
 {
+    var oldWidth = CGRectGetWidth([self frame]);
+
     [super resizeWithOldSuperviewSize:aSize];
 
-    // Ensure all row views stretch to fill the new width
-    [self _updateAllVisibleRowViewsFrames];
-
-    if (_disableAutomaticResizing)
-        return;
-
-    var mask = _columnAutoResizingStyle;
-
-    // should we actually do some resizing?
-    if (!_lastColumnShouldSnap)
-    {
-        // did the clip view intersect the old tablesize?
-        var superview = [self superview];
-
-        if (!superview || ![superview isKindOfClass:[CPClipView class]])
-            return;
-
-        var superviewWidth = [superview bounds].size.width,
-            lastColumnMaxX = CGRectGetMaxX([self rectOfColumn:[self numberOfColumns] -1]);
-
-        // Fix me: this fires on the table setup at times
-        if (lastColumnMaxX >= superviewWidth && lastColumnMaxX <= aSize.width || lastColumnMaxX <= superviewWidth && lastColumnMaxX >= aSize.width)
-            _lastColumnShouldSnap = YES;
-        else if (mask === CPTableViewUniformColumnAutoresizingStyle)
-            return;
-    }
-
-    if (mask === CPTableViewUniformColumnAutoresizingStyle)
-       [self _resizeAllColumnUniformlyWithOldSize:aSize];
-    else if (mask === CPTableViewLastColumnOnlyAutoresizingStyle)
-        [self sizeLastColumnToFit];
-    else if (mask === CPTableViewFirstColumnOnlyAutoresizingStyle)
-        [self _autoResizeFirstColumn];
-}
-
-/*!
-    @ignore
-*/
-- (void)_autoResizeFirstColumn
-{
     var superview = [self superview];
 
-    if (!superview)
+    if (_disableAutomaticResizing || ![superview isKindOfClass:[CPClipView class]])
         return;
 
-    [self _updateColumnRangesIfNecessary];
+    var clipWidth = CGRectGetWidth([superview bounds]);
 
-    var count = [self _numberOfColumns],
-        columnToResize = nil,
-        totalWidth = 0,
-        i = 0;
+    if (clipWidth === aSize.width)
+        return;
 
-    for (; i < count; i++)
+    /*
+        Before its first tile the receiver can be narrower than the clip view was. It was then
+        as wide as the clip view for the purpose of the change.
+    */
+    [self _autoresizeColumnsByWidth:clipWidth - MAX(oldWidth, aSize.width)];
+}
+
+/*
+    Gives aDelta points of width to the autoresizable columns by the column autoresizing style.
+*/
+- (void)_autoresizeColumnsByWidth:(float)aDelta
+{
+    if (!aDelta || _columnAutoResizingStyle === CPTableViewNoColumnAutoresizing)
+        return;
+
+    var visibleColumns = [],
+        autoresizableColumns = [];
+
+    for (var i = 0, count = [self _numberOfColumns]; i < count; i++)
     {
         var column = _tableColumns[i];
 
-        if (![column isHidden])
-        {
-            if (!columnToResize)
-                columnToResize = column;
-            totalWidth += [column width] + _intercellSpacing.width;
-        }
+        if ([column isHidden])
+            continue;
+
+        visibleColumns.push(column);
+
+        if ([column resizingMask] & CPTableColumnAutoresizingMask)
+            autoresizableColumns.push(column);
     }
 
-    // If there is a visible column
-    if (columnToResize)
+    var firstColumn = visibleColumns[0],
+        lastColumn = visibleColumns[visibleColumns.length - 1];
+
+    switch (_columnAutoResizingStyle)
     {
-        var superviewSize = [superview bounds].size,
-            newWidth = superviewSize.width - totalWidth;
+        case CPTableViewUniformColumnAutoresizingStyle:
+            [self _resizeColumns:autoresizableColumns uniformlyByWidth:aDelta];
+            break;
 
-        newWidth += [columnToResize width];
-        [columnToResize _tryToResizeToWidth:newWidth];
-    }
+        case CPTableViewSequentialColumnAutoresizingStyle:
+            [self _resizeColumns:autoresizableColumns.reverse() sequentiallyByWidth:aDelta];
+            break;
 
-    [self setNeedsLayout];
-}
+        case CPTableViewReverseSequentialColumnAutoresizingStyle:
+            [self _resizeColumns:autoresizableColumns sequentiallyByWidth:aDelta];
+            break;
 
+        case CPTableViewLastColumnOnlyAutoresizingStyle:
+            if (lastColumn && [autoresizableColumns containsObjectIdenticalTo:lastColumn])
+                [self _resizeColumns:[lastColumn] sequentiallyByWidth:aDelta];
+            break;
 
-/*!
-    @ignore
-    FIX ME: this can be a lot faster
-*/
-- (void)_resizeAllColumnUniformlyWithOldSize:(CGSize)oldSize
-{
-    // what we care about is the superview clip rect
-    // FIX ME: if it's not in a scrollview this doesn't really work
-    var superview = [self superview];
-
-    if (!superview || ![superview isKindOfClass:[CPClipView class]])
-        return;
-
-    [self _updateColumnRangesIfNecessary];
-
-    var superviewWidth = [superview bounds].size.width,
-        count = [self _numberOfColumns],
-        resizableColumns = [CPIndexSet indexSet],
-        remainingSpace = 0.0,
-        i = 0;
-
-    // find resizable columns
-    // FIX ME: we could cache resizableColumns after this loop and reuse it during the resize
-    for (; i < count; i++)
-    {
-        var tableColumn = _tableColumns[i];
-        if (![tableColumn isHidden] && ([tableColumn resizingMask] & CPTableColumnAutoresizingMask))
-            [resizableColumns addIndex:i];
-    }
-
-    var maxXofColumns = CGRectGetMaxX([self rectOfColumn:[resizableColumns lastIndex]]),
-        remainingSpace = superviewWidth - maxXofColumns,
-        resizeableColumnsCount = [resizableColumns count],
-        proportionate = 0;
-
-    while (remainingSpace && resizeableColumnsCount)
-    {
-        // Divy out the space.
-        proportionate += remainingSpace / resizeableColumnsCount;
-
-        // Reset the remaining space to 0
-        remainingSpace = 0.0;
-
-        var index = CPNotFound;
-
-        while ((index = [resizableColumns indexGreaterThanIndex:index]) !== CPNotFound)
-        {
-            var item = _tableColumns[index],
-                proposedWidth = [item width] + proportionate,
-                resizeLeftovers = [item _tryToResizeToWidth:proposedWidth];
-
-            if (resizeLeftovers)
-            {
-                [resizableColumns removeIndex:index];
-
-                remainingSpace += resizeLeftovers;
-            }
-        }
-    }
-
-    // now that we've reached the end we know there are likely rounding errors
-    // so we should size the last resized to fit
-
-    // find the last visisble column
-    while (count--)
-    {
-        var hidden = [_tableColumns[count] isHidden];
-        if (!hidden)
+        case CPTableViewFirstColumnOnlyAutoresizingStyle:
+            if (firstColumn && [autoresizableColumns containsObjectIdenticalTo:firstColumn])
+                [self _resizeColumns:[firstColumn] sequentiallyByWidth:aDelta];
             break;
     }
+}
 
-    // find the max x, but subtract a single pixel since the spacing isn't applicable here.
-    if (count >= 0)
+/*
+    Gives aDelta points to someColumns in order. Each column takes what it can within its
+    minimum and maximum widths, and the next column takes the rest.
+*/
+- (void)_resizeColumns:(CPArray)someColumns sequentiallyByWidth:(float)aDelta
+{
+    var remaining = aDelta;
+
+    for (var i = 0; i < someColumns.length && remaining; i++)
     {
-        var item = _tableColumns[count],
-            delta = superviewWidth - CGRectGetMaxX([self rectOfColumn:count]) - ([self intercellSpacing].width || 1),
-            newSize = [item width] + delta;
+        var column = someColumns[i],
+            oldWidth = [column width];
 
-        [item _tryToResizeToWidth:newSize];
+        [column _tryToResizeToWidth:oldWidth + remaining];
+        remaining -= [column width] - oldWidth;
+    }
+}
+
+/*
+    Gives aDelta points to someColumns in equal shares at the same time. The shares are whole
+    points that add up to the change. A column that reaches its minimum or maximum width leaves,
+    and the columns still open share what it could not take.
+*/
+- (void)_resizeColumns:(CPArray)someColumns uniformlyByWidth:(float)aDelta
+{
+    var remaining = aDelta,
+        open = someColumns.slice();
+
+    while (Math.abs(remaining) >= 0.5 && open.length)
+    {
+        var count = open.length,
+            given = 0,
+            stillOpen = [];
+
+        for (var i = 0; i < count; i++)
+        {
+            var column = open[i],
+                share = Math.round(remaining * (i + 1) / count) - Math.round(remaining * i / count),
+                oldWidth = [column width];
+
+            [column _tryToResizeToWidth:oldWidth + share];
+            given += [column width] - oldWidth;
+
+            if (remaining > 0 ? [column width] < [column maxWidth] : [column width] > [column minWidth])
+                stillOpen.push(column);
+        }
+
+        remaining -= given;
+
+        if (!given && stillOpen.length === count)
+            break;
+
+        open = stillOpen;
     }
 }
 
@@ -565,6 +542,13 @@
     }
 
     [self setFrameSize:CGSizeMake(width, height)];
+
+    /*
+        The row views span the new width. They took the width in -resizeWithOldSuperviewSize:,
+        before this method changed it, so they kept the width of the table view before a
+        resize. 2026-11-24
+    */
+    [self _updateAllVisibleRowViewsFrames];
 
     [self setNeedsLayout];
     [self _markDrawingPassForDisplay];

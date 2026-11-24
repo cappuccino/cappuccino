@@ -281,17 +281,22 @@
 /*!
     Sets the column autoresizing style of the receiver to a given style.
 
+    When the width of the receiver changes, the change goes to its autoresizable columns: the
+    visible columns whose resizing mask includes CPTableColumnAutoresizingMask.
+
     @param aStyle the column autoresizing style for the receiver. Valid values are:
 <pre>
-        CPTableViewNoColumnAutoresizing
-        CPTableViewUniformColumnAutoresizingStyle
-        CPTableViewLastColumnOnlyAutoresizingStyle
-        CPTableViewFirstColumnOnlyAutoresizingStyle
+        CPTableViewNoColumnAutoresizing                     no column changes
+        CPTableViewUniformColumnAutoresizingStyle           each column takes an equal share
+        CPTableViewSequentialColumnAutoresizingStyle        the last column first, then the one before it
+        CPTableViewReverseSequentialColumnAutoresizingStyle the first column first, then the one after it
+        CPTableViewLastColumnOnlyAutoresizingStyle          the last column only (the default)
+        CPTableViewFirstColumnOnlyAutoresizingStyle         the first column only
 </pre>
+    A column takes the change until it reaches its minimum or maximum width.
 */
 - (void)setColumnAutoresizingStyle:(unsigned)style
 {
-    //FIX ME: CPTableViewSequentialColumnAutoresizingStyle and CPTableViewReverseSequentialColumnAutoresizingStyle are not yet implemented
     _columnAutoResizingStyle = style;
 }
 
@@ -308,8 +313,6 @@
 */
 - (void)sizeLastColumnToFit
 {
-    _lastColumnShouldSnap = YES;
-
     var superview = [self superview];
 
     if (!superview)
@@ -334,6 +337,60 @@
     }
 
     [self setNeedsLayout];
+}
+
+/*!
+    Gives the visible columns equal widths that fill the enclosing clip view, so that all of
+    them are visible. A column whose minimum or maximum width the equal width passes keeps that
+    limit, and the other columns share the rest.
+*/
+- (void)sizeToFit
+{
+    var superview = [self superview],
+        width = [superview isKindOfClass:[CPClipView class]] ? CGRectGetWidth([superview bounds]) : CGRectGetWidth([self bounds]),
+        open = [];
+
+    for (var i = 0, count = [self _numberOfColumns]; i < count; i++)
+        if (![_tableColumns[i] isHidden])
+            open.push(_tableColumns[i]);
+
+    var remainingWidth = width - open.length * _intercellSpacing.width;
+
+    /*
+        Each pass gives the open columns an equal width. The columns that the width puts
+        outside their limits take their limits and leave the pass, until no column does.
+    */
+    while (open.length)
+    {
+        var equalWidth = remainingWidth / open.length,
+            stillOpen = [];
+
+        for (var i = 0; i < open.length; i++)
+        {
+            var column = open[i],
+                limit = equalWidth > [column maxWidth] ? [column maxWidth] : (equalWidth < [column minWidth] ? [column minWidth] : nil);
+
+            if (limit === nil)
+                stillOpen.push(column);
+            else
+            {
+                [column setWidth:limit];
+                remainingWidth -= limit;
+            }
+        }
+
+        if (stillOpen.length === open.length)
+        {
+            for (var i = 0; i < open.length; i++)
+                [open[i] setWidth:equalWidth];
+
+            break;
+        }
+
+        open = stillOpen;
+    }
+
+    [self tile];
 }
 
 /*!
