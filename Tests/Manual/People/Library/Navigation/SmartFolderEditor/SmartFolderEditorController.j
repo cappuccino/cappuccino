@@ -16,7 +16,7 @@
  */
 
 @import <AppKit/AppKit.j>
-@import "Library.j"
+@import "../../Library.j"
 
 var EditorWidth         = 680.0,
     EditorChromeHeight  = 200.0,

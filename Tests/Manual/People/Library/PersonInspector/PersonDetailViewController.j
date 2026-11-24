@@ -12,7 +12,7 @@
  */
 
 @import <AppKit/AppKit.j>
-@import "Library.j"
+@import "../Library.j"
 
 // Layout grid. Every row is RowHeight tall; labels and controls are centred on
 // the row's midline regardless of each control's intrinsic height.

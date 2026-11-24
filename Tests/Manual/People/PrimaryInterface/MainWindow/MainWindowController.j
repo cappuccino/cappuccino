@@ -17,12 +17,12 @@
  */
 
 @import <AppKit/AppKit.j>
-@import "Library.j"
-@import "SourceListViewController.j"
-@import "PeopleViewController.j"
-@import "SmartFolderEditorController.j"
-@import "NameSheetController.j"
-@import "SettingsWindowController.j"
+@import "../../Library/Library.j"
+@import "../../Library/Navigation/SourceListViewController.j"
+@import "../../Library/ContentViewer/PeopleViewController.j"
+@import "../../Library/Navigation/SmartFolderEditor/SmartFolderEditorController.j"
+@import "../../Library/Navigation/GroupNameSheet/NameSheetController.j"
+@import "../../ApplicationLifecycle/Settings/SettingsWindowController.j"
 
 var ToolbarSidebarIdentifier    = @"SidebarItem",
     ToolbarNewFolderIdentifier  = @"NewSmartFolderItem",

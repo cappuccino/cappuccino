@@ -9,17 +9,24 @@ the other icons and the badges are drawn with `CPBezierPath`.
 
 ## Structure
 
+Folders follow the parts of the application, nested where one part belongs to another. Imports
+between folders are relative (`"../Library.j"`). The toolchain files (`main.j`, `Info.plist`,
+`Jakefile`, `index.html`, `index-debug.html`, `Resources/`) stay at the top. Folder names have no
+spaces, because the legacy toolchain does not accept them.
+
 | File | Role |
 |---|---|
 | `main.j`, `Info.plist` | entry point, `CPApplicationDelegateClass` = `AppController` |
-| `AppController.j` | creates model, main menu, main window controller |
-| `MainWindowController.j` | bridge window, toolbar, sidebar split view, routed actions, menu and toolbar validation |
-| `SourceListViewController.j` | view-based `CPOutlineView` source list, badges, drop target, button bar |
-| `PeopleViewController.j` | `CPArrayController` + bound `CPTableView`, drag source, pasteboard, detail split |
-| `PersonDetailViewController.j` | controls bound to `selection.*` |
-| `SmartFolderEditorController.j` | sheet with `CPPredicateEditor` built from row templates |
-| `NameSheetController.j` | small reusable name sheet |
-| `Library.j`, `Person.j` | model, KVO observation, `CPUserDefaults` persistence, sample data |
+| `ApplicationLifecycle/AppController.j` | creates model, main menu, main window controller |
+| `ApplicationLifecycle/Settings/SettingsWindowController.j` | settings window |
+| `PrimaryInterface/MainWindow/MainWindowController.j` | bridge window, toolbar, sidebar split view, routed actions, menu and toolbar validation |
+| `Library/Library.j`, `Library/Person.j` | model, KVO observation, `CPUserDefaults` persistence, sample data |
+| `Library/Navigation/SourceListViewController.j` | view-based `CPOutlineView` source list, drop target, button bar |
+| `Library/Navigation/SourceItemCell/` | outline cell view with its icon and count badge, drawn with `CPBezierPath` |
+| `Library/Navigation/SmartFolderEditor/SmartFolderEditorController.j` | sheet with `CPPredicateEditor` built from row templates |
+| `Library/Navigation/GroupNameSheet/NameSheetController.j` | name sheet for new and renamed groups |
+| `Library/ContentViewer/PeopleViewController.j` | `CPArrayController` + bound `CPTableView`, drag source, pasteboard, detail split |
+| `Library/PersonInspector/PersonDetailViewController.j` | controls bound to `selection.*` |
 
 ## Manual test checklist
 

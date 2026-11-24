@@ -15,8 +15,8 @@
  */
 
 @import <AppKit/AppKit.j>
-@import "Library.j"
-@import "PersonDetailViewController.j"
+@import "../Library.j"
+@import "../PersonInspector/PersonDetailViewController.j"
 
 @implementation PeopleViewController : CPViewController
 {

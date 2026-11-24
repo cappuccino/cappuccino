@@ -7,13 +7,17 @@
  * main menu and the main window controller; everything else lives in the
  * view controllers.
  *
- *   AppController
- *     └─ MainWindowController            (CPWindowController, bridge window, toolbar)
- *          ├─ SourceListViewController   (view-based CPOutlineView, badges, DnD target)
- *          ├─ PeopleViewController       (bound CPTableView, CPArrayController, DnD source)
- *          │    └─ PersonDetailViewController (selection bindings)
- *          ├─ SmartFolderEditorController (sheet, CPPredicateEditor)
- *          └─ NameSheetController         (sheet)
+ *   AppController                         (ApplicationLifecycle/)
+ *     ├─ SettingsWindowController          (ApplicationLifecycle/Settings/)
+ *     └─ MainWindowController              (PrimaryInterface/MainWindow/, bridge window, toolbar)
+ *          ├─ SourceListViewController     (Library/Navigation/, view-based CPOutlineView, DnD target)
+ *          │    └─ SourceListCellView      (Library/Navigation/SourceItemCell/, icon and badge views)
+ *          ├─ PeopleViewController         (Library/ContentViewer/, bound CPTableView, DnD source)
+ *          │    └─ PersonDetailViewController (Library/PersonInspector/, selection bindings)
+ *          ├─ SmartFolderEditorController  (Library/Navigation/SmartFolderEditor/, sheet, CPPredicateEditor)
+ *          └─ NameSheetController          (Library/Navigation/GroupNameSheet/, sheet)
+ *
+ * The model of the library (Person, Library) is at the top of Library/.
  *
  * Data (people, groups, smart folders) is persisted in CPUserDefaults.
  * Use File ▸ Reset Application… to return to the deterministic sample data and the
@@ -28,9 +32,9 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
-@import "Library.j"
-@import "MainWindowController.j"
-@import "SettingsWindowController.j"
+@import "../Library/Library.j"
+@import "../PrimaryInterface/MainWindow/MainWindowController.j"
+@import "Settings/SettingsWindowController.j"
 
 @implementation AppController : CPObject
 {
