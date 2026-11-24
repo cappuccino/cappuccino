@@ -327,11 +327,23 @@ var _CPAnimationContextStack   = nil,
             if (CGRectEqualToRect([aSubview frame], targetFrame))
                 return;
 
+            /*
+                A subview takes its final frame from the completion of the animated view, which
+                sets that view's frame and so resizes or lays out its subviews. The subview's
+                own animation changes only what the browser shows.
+
+                2026-11-24: the completion of a subview with a custom drawRect also set the
+                subview's frame to the target of its animation. When the animated view ended
+                with another frame than the one it animated to, as a split view item that
+                collapses animates to no width and keeps its size, the subview kept the frame
+                of no width: People's sidebar scroll view and detail box stayed empty after the
+                item expanded again. When the subview's completion ran after the animated
+                view's, the subview was resized twice.
+            */
             if ([aSubview hasCustomDrawRect])
             {
                 action.completion = function()
                 {
-                    [aSubview setFrame:targetFrame];
                     if (idx == count - 1)
                         [animatorClass stopUpdaterWithIdentifier:[anAction.root UID]];
                  };
