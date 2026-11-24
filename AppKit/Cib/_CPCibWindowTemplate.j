@@ -170,7 +170,8 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
         _windowClass = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowClassKey];
         _wtFlags = [aCoder decodeIntForKey:_CPCibWindowTemplateWTFlagsKey];
         _windowRect = [aCoder decodeRectForKey:_CPCibWindowTemplateWindowRectKey];
-        _screenRect = [aCoder decodeRectForKey:_CPCibWindowTemplateScreenRectKey];
+        if ([aCoder containsValueForKey:_CPCibWindowTemplateScreenRectKey])
+            _screenRect = [aCoder decodeRectForKey:_CPCibWindowTemplateScreenRectKey];
         _windowStyleMask = [aCoder decodeIntForKey:_CPCibWindowTemplateWindowStyleMaskKey];
 
         _windowTitle = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowTitleKey];
@@ -196,7 +197,12 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
     [aCoder encodeObject:_windowClass forKey:_CPCibWindowTemplateWindowClassKey];
     [aCoder encodeInt:_wtFlags forKey:_CPCibWindowTemplateWTFlagsKey];
     [aCoder encodeRect:_windowRect forKey:_CPCibWindowTemplateWindowRectKey];
-    [aCoder encodeRect:_screenRect forKey:_CPCibWindowTemplateScreenRectKey];
+    /*
+        A template made in code has no screen rect, and encoding a nil rect raised. The window
+        positions itself against the screen rect only when there is one.
+    */
+    if (_screenRect)
+        [aCoder encodeRect:_screenRect forKey:_CPCibWindowTemplateScreenRectKey];
     [aCoder encodeInt:_windowStyleMask forKey:_CPCibWindowTemplateWindowStyleMaskKey];
 
     [aCoder encodeObject:_windowTitle forKey:_CPCibWindowTemplateWindowTitleKey];
