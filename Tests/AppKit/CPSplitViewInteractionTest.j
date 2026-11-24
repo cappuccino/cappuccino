@@ -820,6 +820,19 @@
     [self assert:[first, second] equals:[otherSplitView arrangedSubviews] message:@"both subviews are arranged, in order"];
 }
 
+- (void)testReplacingASubviewThatIsNotArrangedKeepsSubviewManagement
+{
+    var extra = [[CPView alloc] initWithFrame:CGRectMake(10, 10, 20, 20)],
+        replacement = [[CPView alloc] initWithFrame:CGRectMake(10, 10, 20, 20)];
+
+    [splitView setArrangesAllSubviews:NO];
+    [splitView addSubview:extra];
+    [splitView replaceSubview:extra with:replacement];
+    [viewB removeFromSuperview];
+
+    [self assert:[viewA] equals:[splitView arrangedSubviews] message:@"a removed subview leaves the arranged subviews"];
+}
+
 // MARK: - Archiving
 
 - (void)testArchivingKeepsTheLayout

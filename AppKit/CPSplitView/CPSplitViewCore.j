@@ -557,11 +557,17 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 
     [super replaceSubview:aSubview with:aView];
 
-    if (arrangedIndex < 0)
-        return;
-
-    [_arrangedSubviews replaceObjectAtIndex:arrangedIndex withObject:aView];
-    [_realSubviews     replaceObjectAtIndex:realIndex     withObject:aView];
+    /*
+        2026-11-24: for a subview that was not arranged, the method returned here and left
+        subview management turned off. After that, -addSubview: no longer arranged a new
+        subview and -removeFromSuperview no longer removed an arranged subview from the
+        arranged subviews.
+    */
+    if (arrangedIndex >= 0)
+    {
+        [_arrangedSubviews replaceObjectAtIndex:arrangedIndex withObject:aView];
+        [_realSubviews     replaceObjectAtIndex:realIndex     withObject:aView];
+    }
 
     _subviewsManagementDisabled = NO;
 }
