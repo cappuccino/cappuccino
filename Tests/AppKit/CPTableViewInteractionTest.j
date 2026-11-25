@@ -659,6 +659,46 @@ var InteractionDragType = @"InteractionDragType";
 }
 
 /*
+    Gives the column a checkbox data view, and checks that a click in row 1 lands on that row's
+    checkbox. -reloadData only schedules the layout that loads the data views, and a click does
+    not force it, so the table is laid out here. Without the layout no checkbox is under the
+    point, and both checkbox tests would pass or fail without a click reaching a checkbox.
+*/
+- (void)useCheckBoxDataView
+{
+    var checkBox = [CPCheckBox checkBoxWithTitle:@""];
+
+    [checkBox setImagePosition:CPImageOnly];
+    [tableColumn setDataView:checkBox];
+    [tableView reloadData];
+    [tableView layoutIfNeeded];
+
+    var rowCheckBox = [tableView viewAtColumn:0 row:1 makeIfNecessary:NO];
+
+    [self assertTrue:[rowCheckBox isKindOfClass:[CPCheckBox class]] message:@"Row 1 must show a checkbox"];
+    [self assertTrue:CGRectContainsPoint([rowCheckBox frame], [self pointInRow:1]) message:@"A click in row 1 must land on its checkbox"];
+}
+
+- (void)testAClickOnACheckBoxInAnEditableColumnStoresTheValue
+{
+    [self useCheckBoxDataView];
+    [self clickRow:1];
+
+    [self assert:1 equals:[dataSource editedValues].length];
+    [self assert:1 equals:[dataSource editedValues][0].row];
+}
+
+- (void)testAClickOnACheckBoxInAColumnThatIsNotEditableDoesNotStoreAValue
+{
+    [tableColumn setEditable:NO];
+    [self useCheckBoxDataView];
+    [self clickRow:1];
+
+    [self assert:0 equals:[dataSource editedValues].length];
+    [self assert:[1] equals:[self selectedRows]];
+}
+
+/*
     Removes the data source and binds the column to an array controller. The table then
     stores an edited value through its content binding.
 */

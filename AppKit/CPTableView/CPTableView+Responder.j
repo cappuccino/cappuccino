@@ -102,7 +102,21 @@
         }
     }
     else if (!_isViewBased && [aView isKindOfClass:[CPControl class]] && ![aView isKindOfClass:[CPTextField class]])
+    {
+        /*
+            2026-11-25: a click on a checkbox in a column that is not editable changed the value.
+            This branch sent every mouse-down on a control cell, such as a checkbox, to the
+            control and committed its new value, and it did not check the column. As in AppKit,
+            a control cell in a column that is not editable now does not take the click; the
+            table view takes it and selects the row.
+        */
+        [self getColumn:@ref(column) row:@ref(row) forView:aView];
+
+        if (column === -1 || ![_tableColumns[column] isEditable])
+            return self;
+
         [aView addObserver:self forKeyPath:@"objectValue" options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:"editing"];
+    }
 
     return aView;
 }
