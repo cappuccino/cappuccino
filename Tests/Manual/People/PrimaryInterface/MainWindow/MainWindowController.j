@@ -13,6 +13,8 @@
  *   - one -validateUserInterfaceItem: for the menus and the toolbar items
  *   - CPAlert as a sheet
  *   - CPPasteboard copy / paste
+ *   - CPUndoManager: the window's undo manager undoes and redoes the removal of people, and
+ *     the Edit menu names the change
  */
 
 @import <AppKit/AppKit.j>
@@ -380,20 +382,63 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
 - (void)removeSelectedPeople:(id)sender
 {
-    var people = [_peopleController selectedPeople];
-
-    if (![people count])
-        return;
-
-    if ([_selectedItem isKindOfClass:[LibraryGroup class]])
-        [_library removePeople:people fromGroup:_selectedItem];
-    else
-        [_library removePeople:people];
+    [self _removeSelectedPeopleWithActionName:nil];
 }
 
 - (void)delete:(id)sender
 {
     [self removeSelectedPeople:sender];
+}
+
+/*
+    Removes the selected people: from the library, or from the group when a group is
+    selected. aName names the change in the Edit menu; nil gives "Delete", or "Remove from
+    Group" in a group.
+*/
+- (void)_removeSelectedPeopleWithActionName:(CPString)aName
+{
+    var people = [_peopleController selectedPeople];
+
+    if (![people count])
+        return;
+
+    var group = [_selectedItem isKindOfClass:[LibraryGroup class]] ? _selectedItem : nil;
+
+    [self _removePeople:people fromGroup:group actionName:aName || (group ? @"Remove from Group" : @"Delete")];
+}
+
+/*
+    Removes thePeople, and registers the restoration with the window's undo manager. The
+    library records each person's places first, so an undo puts every person back at its
+    position in the library and in its groups.
+*/
+- (void)_removePeople:(CPArray)thePeople fromGroup:(LibraryGroup)aGroup actionName:(CPString)aName
+{
+    var places = aGroup ? [_library placesOfPeople:thePeople inGroup:aGroup] : [_library placesOfPeople:thePeople],
+        undoManager = [[self window] undoManager];
+
+    if (aGroup)
+        [_library removePeople:thePeople fromGroup:aGroup];
+    else
+        [_library removePeople:thePeople];
+
+    [[undoManager prepareWithInvocationTarget:self] _restorePlaces:places ofPeople:thePeople fromGroup:aGroup actionName:aName];
+    [undoManager setActionName:aName];
+}
+
+/*
+    Undoes a removal: puts the people back, selects them, and registers the removal again for
+    Redo.
+*/
+- (void)_restorePlaces:(CPArray)thePlaces ofPeople:(CPArray)thePeople fromGroup:(LibraryGroup)aGroup actionName:(CPString)aName
+{
+    var undoManager = [[self window] undoManager];
+
+    [_library restorePlaces:thePlaces];
+    [[_peopleController arrayController] setSelectedObjects:thePeople];
+
+    [[undoManager prepareWithInvocationTarget:self] _removePeople:thePeople fromGroup:aGroup actionName:aName];
+    [undoManager setActionName:aName];
 }
 
 - (void)copy:(id)sender
@@ -404,7 +449,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 - (void)cut:(id)sender
 {
     [self copy:sender];
-    [self removeSelectedPeople:sender];
+    [self _removeSelectedPeopleWithActionName:@"Cut"];
 }
 
 - (void)paste:(id)sender
@@ -483,6 +528,8 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     _searchPredicate = nil;
     _selectedItem = [_library allPeopleItem];
 
+    // The undo actions refer to people that the sample data replaces.
+    [[[self window] undoManager] removeAllActions];
     [_library resetToSampleData];
 
     var toolbar = [[self window] toolbar];

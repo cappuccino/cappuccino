@@ -468,6 +468,107 @@ var LibraryDefaultsKey          = @"People.Library.v1",
     [self _noteStructuralChange];
 }
 
+// ---------------------------------------------------------------- Restoring removed people
+
+/*
+    Returns the places of thePeople, for -restorePlaces: after -removePeople:. A place records a
+    person's index in the library, and its index in each group that holds it.
+*/
+- (CPArray)placesOfPeople:(CPArray)thePeople
+{
+    var places = [],
+        groups = [self groups];
+
+    for (var i = 0; i < thePeople.length; i++)
+    {
+        var person = thePeople[i],
+            index = [_people indexOfObjectIdenticalTo:person];
+
+        if (index === CPNotFound)
+            continue;
+
+        places.push({ person: person, index: index, memberships: [self _membershipsOfPerson:person inGroups:groups] });
+    }
+
+    return places;
+}
+
+/*
+    Returns the places of thePeople in aGroup alone, for -restorePlaces: after
+    -removePeople:fromGroup:. The people stay in the library, so a place has no library index.
+*/
+- (CPArray)placesOfPeople:(CPArray)thePeople inGroup:(LibraryGroup)aGroup
+{
+    var places = [];
+
+    for (var i = 0; i < thePeople.length; i++)
+    {
+        var memberships = [self _membershipsOfPerson:thePeople[i] inGroups:[aGroup]];
+
+        if (memberships.length)
+            places.push({ person: thePeople[i], index: CPNotFound, memberships: memberships });
+    }
+
+    return places;
+}
+
+- (CPArray)_membershipsOfPerson:(Person)aPerson inGroups:(CPArray)theGroups
+{
+    var memberships = [],
+        uid = [aPerson uid];
+
+    for (var i = 0; i < theGroups.length; i++)
+    {
+        var index = [[theGroups[i] memberIDs] indexOfObject:uid];
+
+        if (index !== CPNotFound)
+            memberships.push({ group: theGroups[i], index: index });
+    }
+
+    return memberships;
+}
+
+/*
+    Puts people back at the places that -placesOfPeople: or -placesOfPeople:inGroup: recorded.
+    The library and each group take their people back in the order of the recorded indexes, so
+    every index refers to the array as it was when that person was put back, and each person
+    returns to its old position.
+*/
+- (void)restorePlaces:(CPArray)thePlaces
+{
+    var people = [],
+        memberships = [];
+
+    for (var i = 0; i < thePlaces.length; i++)
+    {
+        var place = thePlaces[i];
+
+        if (place.index !== CPNotFound)
+            people.push(place);
+
+        for (var j = 0; j < place.memberships.length; j++)
+            memberships.push({ group: place.memberships[j].group, index: place.memberships[j].index, uid: [place.person uid] });
+    }
+
+    var byIndex = function(a, b) { return a.index - b.index; };
+
+    people.sort(byIndex);
+    memberships.sort(byIndex);
+
+    for (var i = 0; i < people.length; i++)
+        [self _insertPerson:people[i].person atIndex:people[i].index];
+
+    for (var i = 0; i < memberships.length; i++)
+    {
+        var members = [memberships[i].group memberIDs];
+
+        if (![members containsObject:memberships[i].uid])
+            [members insertObject:memberships[i].uid atIndex:MIN(memberships[i].index, [members count])];
+    }
+
+    [self _noteStructuralChange];
+}
+
 // ---------------------------------------------------------------- Source item mutation
 
 - (LibraryGroup)addGroupWithName:(CPString)aName people:(CPArray)thePeople
@@ -563,10 +664,15 @@ var LibraryDefaultsKey          = @"People.Library.v1",
 
 - (void)_insertPerson:(Person)aPerson
 {
+    [self _insertPerson:aPerson atIndex:[_people count]];
+}
+
+- (void)_insertPerson:(Person)aPerson atIndex:(int)anIndex
+{
     if (_peopleByUID[[aPerson uid]])
         return;
 
-    _people.push(aPerson);
+    [_people insertObject:aPerson atIndex:MIN(anIndex, [_people count])];
     _peopleByUID[[aPerson uid]] = aPerson;
 
     for (var i = 0; i < ObservedPersonKeys.length; i++)

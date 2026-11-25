@@ -330,12 +330,15 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     The items have no target, so each action goes through the responder chain from the table:
     Deselect All reaches the table itself, Edit and Invert Selection this controller, and
     Delete Selected the window controller, which also deletes with the minus button and the
-    Delete key.
+    Delete key. Undo and Redo reach the window, which names the change in their titles.
 */
 - (CPMenu)_buildTableMenu
 {
     var menu = [[CPMenu alloc] initWithTitle:@"People"];
 
+    [menu addItemWithTitle:@"Undo" action:@selector(undo:) keyEquivalent:@""];
+    [menu addItemWithTitle:@"Redo" action:@selector(redo:) keyEquivalent:@""];
+    [menu addItem:[CPMenuItem separatorItem]];
     [menu addItemWithTitle:@"Edit" action:@selector(editClickedPerson:) keyEquivalent:@""];
     [menu addItem:[CPMenuItem separatorItem]];
     [menu addItemWithTitle:@"Deselect All" action:@selector(deselectAll:) keyEquivalent:@""];

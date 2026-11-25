@@ -45,6 +45,9 @@ spaces, because the legacy toolchain does not accept them.
     multi-select shows "Multiple Values"; changing Birth Date updates Age (dependent key).
 11. Copy (⌘C) then Paste (⌘V): duplicated people appear selected. Delete key removes people
     (from the group only, when a group is selected).
+    Edit ▸ Undo Delete (⌘Z) puts the removed people back at their places in the table and in
+    their groups, selected; Edit ▸ Redo Delete (⇧⌘Z) removes them again. The menu item names the
+    change: Delete, Cut, or Remove from Group when a group is selected.
 12. The window shows three columns: sidebar, people table, detail pane. Resize the window: the table takes the
     change, the sidebar and the detail pane keep their widths. Drag both dividers; the sidebar stays between
     160 and 420 points, the detail pane does not become narrower than its fields allow. Reload: both widths and
@@ -100,6 +103,7 @@ to build with a web component framework.
    - This exercises CPPopover, CPTrackingArea, a view controller used twice, and bindings and
      the first responder in a popover window.
 7. A contextual menu on the table offers:
+   - Undo and Redo, titled with the change, as in the Edit menu.
    - Edit: edits the row that was clicked.
    - Deselect All.
    - Invert Selection.
