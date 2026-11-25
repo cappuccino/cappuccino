@@ -158,9 +158,12 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     [_tableView setRowHeight:24.0];
     [_tableView setIntercellSpacing:CGSizeMake(6.0, 0.0)];
 
+    /*
+        Birth dates read as "Thursday, June 11, 1987". CPDateFormatter takes the weekday name
+        from its own symbols, so no calendar is needed.
+    */
     var dateFormatter = [[CPDateFormatter alloc] init];
-    [dateFormatter setDateStyle:CPDateFormatterMediumStyle];
-    [dateFormatter setTimeStyle:CPDateFormatterNoStyle];
+    [dateFormatter setDateFormat:@"EEEE, MMMM d, Y"];
 
     var numberFormatter = [[CPNumberFormatter alloc] init];
     [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
@@ -184,7 +187,7 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     [self _addColumn:@"city"        title:@"City"       width:110 editable:YES dataView:nil];
     var ageColumn = [self _addColumn:@"age" title:@"Age" width:46 editable:NO dataView:[self _textDataViewWithFormatter:nil alignment:CPRightTextAlignment]];
     [[ageColumn headerView] setAlignment:CPRightTextAlignment];
-    [self _addColumn:@"birthDate"   title:@"Born"       width:110 editable:NO  dataView:[self _textDataViewWithFormatter:dateFormatter alignment:CPRightTextAlignment]];
+    [self _addColumn:@"birthDate"   title:@"Birthdate"  width:200 editable:NO  dataView:[self _textDataViewWithFormatter:dateFormatter alignment:CPLeftTextAlignment]];
     var salaryColumn = [self _addColumn:@"salary" title:@"Salary" width:90 editable:YES dataView:[self _textDataViewWithFormatter:numberFormatter alignment:CPRightTextAlignment]];
     [[salaryColumn headerView] setAlignment:CPRightTextAlignment];
 
