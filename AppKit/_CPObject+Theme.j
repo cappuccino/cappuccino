@@ -411,6 +411,18 @@ var NULL_THEME = {};
     return (_themeAttributes && _themeAttributes[aName] !== undefined);
 }
 
+/*
+    Returns YES when the receiver has a value of its own for the theme attribute aName, in any
+    state: a value set with -setValue:forThemeAttribute: and its variants, or decoded with the
+    receiver. Returns NO when every value comes from the theme or the class default.
+*/
+- (BOOL)_hasOwnValueForThemeAttribute:(CPString)aName
+{
+    var themeAttr = _themeAttributes && _themeAttributes[aName];
+
+    return !!themeAttr && [themeAttr hasValues];
+}
+
 /*!
     Registers theme values encoded in an array at runtime. The format of the data in the array
     is the same as that used by ThemeDescriptors.j, with the exception that you need to use

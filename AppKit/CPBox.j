@@ -363,6 +363,15 @@ CPBelowBottom = 6;
 // MARK: fillColor
 - (CPColor)fillColor
 {
+    /*
+        A custom box has no fill unless one was set, as in AppKit, where fillColor is clear by
+        default for NSBoxCustom. A custom box without a fill took the theme's fill for primary
+        boxes. Aristo3 gives that fill as a CSS colour, which the canvas of a custom box cannot
+        paint, so the box filled black. 2026-11-25
+    */
+    if (_boxType === CPBoxCustom && ![self _hasOwnValueForThemeAttribute:@"background-color"])
+        return [CPColor clearColor];
+
     return [self valueForThemeAttribute:@"background-color"];
 }
 

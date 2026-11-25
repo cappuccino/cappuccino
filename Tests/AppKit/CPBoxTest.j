@@ -111,4 +111,57 @@
     [self assert:[] equals:warnings];
 }
 
+// MARK: - Fill of a custom box
+
+/*
+    As in AppKit, a custom box has no fill unless one was set: fillColor is clear by default for
+    NSBoxCustom. A primary box keeps the theme's fill.
+*/
+- (void)testACustomBoxWithoutAFillHasNoFill
+{
+    [box setBoxType:CPBoxCustom];
+    [box setBorderType:CPNoBorder];
+
+    [self assertTrue:[[box fillColor] isEqual:[CPColor clearColor]] message:@"a custom box without a fill has the clear colour"];
+}
+
+- (void)testACustomBoxWithALineBorderAndNoFillHasNoFill
+{
+    [box setBoxType:CPBoxCustom];
+    [box setBorderType:CPLineBorder];
+
+    [self assertTrue:[[box fillColor] isEqual:[CPColor clearColor]] message:@"a custom box with a line border and no fill has the clear colour"];
+}
+
+- (void)testACustomBoxKeepsAFillThatWasSet
+{
+    [box setBoxType:CPBoxCustom];
+    [box setBorderType:CPLineBorder];
+    [box setFillColor:[CPColor redColor]];
+
+    [self assertTrue:[[box fillColor] isEqual:[CPColor redColor]] message:@"a custom box keeps its fill"];
+}
+
+- (void)testArchivingKeepsTheFillOfACustomBox
+{
+    [box setBoxType:CPBoxCustom];
+    [box setBorderType:CPLineBorder];
+    [box setFillColor:[CPColor redColor]];
+
+    [self assertTrue:[[[self archivedBox] fillColor] isEqual:[CPColor redColor]] message:@"a decoded custom box keeps its fill"];
+}
+
+- (void)testArchivingKeepsACustomBoxWithoutAFill
+{
+    [box setBoxType:CPBoxCustom];
+    [box setBorderType:CPNoBorder];
+
+    [self assertTrue:[[[self archivedBox] fillColor] isEqual:[CPColor clearColor]] message:@"a decoded custom box without a fill has the clear colour"];
+}
+
+- (void)testAPrimaryBoxKeepsTheThemeFill
+{
+    [self assertTrue:[box fillColor] === [box valueForThemeAttribute:@"background-color"] message:@"a primary box takes the theme's fill"];
+}
+
 @end
