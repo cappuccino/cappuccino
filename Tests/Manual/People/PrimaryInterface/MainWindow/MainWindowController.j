@@ -373,6 +373,8 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     if (group)
         [_library addPeople:[person] toGroup:group];
 
+    // A new person is filled in at once, so adding one turns on edit mode.
+    [_library setEditable:YES];
     [_peopleController selectPerson:person edit:YES];
 }
 

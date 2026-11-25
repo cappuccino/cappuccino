@@ -43,7 +43,7 @@ var SidebarDefaultWidth     = 230.0,
     {
         _sourceListController = aSourceListController;
         _peopleController = aPeopleController;
-        _detailController = [[PersonDetailViewController alloc] init];
+        _detailController = [[PersonDetailViewController alloc] initWithLibrary:[_peopleController library]];
 
         [_detailController bind:@"representedObject" toObject:[_peopleController arrayController] withKeyPath:@"selection" options:nil];
 

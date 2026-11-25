@@ -12,6 +12,9 @@
  *   - the table as drag source (rows -> source list groups)
  *   - CPPasteboard (copy / paste as tab separated text)
  *
+ * The editable columns take edits only while the library is editable; the controller observes
+ * the library's "editable" key and sets each column's editable state.
+ *
  * The array controller's selection is what the detail pane shows; the main split view
  * controller connects the two.
  */
@@ -26,6 +29,7 @@
     CPTableView                 _tableView;
     CPTextField                 _statusField;
     CPString                    _contentTitle;
+    CPArray                     _editableColumns;
 }
 
 - (id)initWithLibrary:(Library)aLibrary
@@ -34,6 +38,7 @@
     {
         _library = aLibrary;
         _contentTitle = @"";
+        _editableColumns = [];
 
         _arrayController = [[CPArrayController alloc] init];
         [_arrayController setEditable:YES];
@@ -47,9 +52,15 @@
 
         [_arrayController addObserver:self forKeyPath:@"arrangedObjects" options:0 context:nil];
         [_arrayController addObserver:self forKeyPath:@"selectionIndexes" options:0 context:nil];
+        [_library addObserver:self forKeyPath:@"editable" options:0 context:@"editable"];
     }
 
     return self;
+}
+
+- (Library)library
+{
+    return _library;
 }
 
 - (CPArrayController)arrayController
@@ -192,7 +203,10 @@
     [[column headerView] setStringValue:aTitle];
     [column setWidth:aWidth];
     [column setMinWidth:36];
-    [column setEditable:isEditable];
+    [column setEditable:isEditable && [_library isEditable]];
+
+    if (isEditable)
+        [_editableColumns addObject:column];
     [column setSortDescriptorPrototype:[CPSortDescriptor sortDescriptorWithKey:aKey ascending:YES selector:selector]];
 
     if (!aDataView)
@@ -245,7 +259,7 @@
 
     [_tableView scrollRowToVisible:row];
 
-    if (shouldEdit)
+    if (shouldEdit && [_library isEditable])
     {
         [[_tableView window] makeFirstResponder:_tableView];
         [_tableView editColumn:[_tableView columnWithIdentifier:@"firstName"] row:row withEvent:nil select:YES];
@@ -339,7 +353,25 @@
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)aChange context:(id)aContext
 {
-    [self _updateStatus];
+    if (aContext === @"editable")
+        [self _libraryEditableDidChange];
+    else
+        [self _updateStatus];
+}
+
+/*
+    Gives the editable columns the library's edit mode. Leaving edit mode first ends an edit in
+    progress in a cell, so its value reaches the person.
+*/
+- (void)_libraryEditableDidChange
+{
+    var isEditable = [_library isEditable];
+
+    if (!isEditable && [_tableView editedRow] !== CPNotFound)
+        [[_tableView window] makeFirstResponder:_tableView];
+
+    for (var i = 0, count = [_editableColumns count]; i < count; i++)
+        [_editableColumns[i] setEditable:isEditable];
 }
 
 - (void)_updateStatus

@@ -11,14 +11,21 @@
  *
  * Controls covered: CPTextField (+formatter), CPComboBox, CPPopUpButton
  * (selectedValue binding), CPDatePicker, CPCheckBox, CPScrollView, and CPBox in its custom
- * type (an undrawn section container) and its separator type, and CPButton in its disclosure
- * bezel style.
+ * type (an undrawn section container) and its separator type, CPButton in its disclosure
+ * bezel style, and CPButtonBar with a toggle button.
  *
  * The pane has one flat background, the under-page background colour, which matches the source
  * list. Its fields are grouped in sections. Each section has a header with a disclosure triangle
  * and a title, and a separator line divides the sections. The sections are stacked by frame in
  * -_layoutSections, which places each visible section below the one before it; the scroll view
  * scrolls them when the pane is too short.
+ *
+ * A button bar at the bottom matches the bars of the other two panes. Its Edit button sets the
+ * library's edit mode ("editable"), which the people table follows too. In view mode the text
+ * fields are plain selectable text without a bezel, and the other controls are disabled; in
+ * edit mode the text fields are bezeled and editable, and the other controls are enabled. The
+ * text fields bind their editable state, and the other controls their enabled state, to
+ * library.editable. The bezel is not a binding, so the controller observes the key and sets it.
  */
 
 @import <AppKit/AppKit.j>
@@ -41,7 +48,17 @@ var RowHeight           = 30.0,
     HeaderHeight        = 24.0,
     DisclosureSize      = 13.0,
     SeparatorGap        = 12.0,
-    SeparatorHeight     = 5.0;
+    SeparatorHeight     = 5.0,
+    BarHeight           = 26.0;
+
+/*
+    The Edit button's images: a pencil in view mode and a check mark in edit mode, 16 by 16, as
+    masks in the style of the Aristo3 button bar icons.
+      pencil: <path d="M11.5 1.5l3 3L5 14H2v-3z"/>
+      check:  <path d="M3 8.5l3.5 3.5L13 4.5" stroke-width="2" stroke="black" fill="none"/>
+*/
+var EditMask    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTExLjUgMS41bDMgM0w1IDE0SDJ2LTN6Ii8+PC9zdmc+')",
+    DoneMask    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTMgOC41bDMuNSAzLjVMMTMgNC41IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZT0iYmxhY2siIGZpbGw9Im5vbmUiLz48L3N2Zz4=')";
 
 /*
     The width the pane takes at first and after a reset, and the narrowest it can become. The
@@ -54,11 +71,20 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
 {
     CPView      _documentView;
     CPArray     _sections;
+    CPArray     _textFields;
+    CPButton    _editButton;
+    Library     _library;
 }
 
-- (id)init
+- (id)initWithLibrary:(Library)aLibrary
 {
-    return [super initWithCibName:nil bundle:nil];
+    if (self = [super initWithCibName:nil bundle:nil])
+    {
+        _library = aLibrary;
+        [_library addObserver:self forKeyPath:@"editable" options:0 context:nil];
+    }
+
+    return self;
 }
 
 - (CPDictionary)_placeholderOptions
@@ -82,7 +108,7 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [view setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [view setBackgroundColor:[CPColor underPageBackgroundColor]];
 
-    var scrollView = [[CPScrollView alloc] initWithFrame:[view bounds]];
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(frame), CGRectGetHeight(frame) - BarHeight)];
 
     [scrollView setBorderType:CPNoBorder];
     [scrollView setHasHorizontalScroller:NO];
@@ -96,6 +122,7 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [scrollView setDocumentView:_documentView];
 
     _sections = [];
+    _textFields = [];
 
     var options = [self _placeholderOptions],
         fieldX = Margin + LabelWidth + LabelGap,
@@ -115,12 +142,14 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [self _place:department row:row++ x:fieldX width:FieldWidth height:PopUpHeight in:content];
     [department setAutoresizingMask:CPViewWidthSizable];
     [self _bind:department binding:CPSelectedValueBinding key:@"department" options:nil];
+    [self _bindEnabledToEditing:department];
 
     var manager = [CPCheckBox checkBoxWithTitle:@"Manager"];
     [manager setAllowsMixedState:YES];
     [manager sizeToFit];
     [self _place:manager row:row++ x:fieldX width:CGRectGetWidth([manager frame]) height:CGRectGetHeight([manager frame]) in:content];
     [self _bind:manager binding:CPValueBinding key:@"isManager" options:nil];
+    [self _bindEnabledToEditing:manager];
 
     [self _labelInRow:row title:@"City:" in:content];
     var city = [[CPComboBox alloc] initWithFrame:CGRectMakeZero()];
@@ -129,6 +158,7 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [self _place:city row:row++ x:fieldX width:FieldWidth height:TextFieldHeight in:content];
     [city setAutoresizingMask:CPViewWidthSizable];
     [self _bind:city binding:CPValueBinding key:@"city" options:options];
+    [self _bindEnabledToEditing:city];
 
     [self _labelInRow:row title:@"Birth Date:" in:content];
     var birthDate = [[CPDatePicker alloc] initWithFrame:CGRectMake(0, 0, ShortFieldWidth, DatePickerHeight)];
@@ -136,6 +166,7 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [birthDate setDatePickerElements:CPYearMonthDayDatePickerElementFlag];
     [self _place:birthDate row:row++ x:fieldX width:ShortFieldWidth height:CGRectGetHeight([birthDate frame]) in:content];
     [self _bind:birthDate binding:CPValueBinding key:@"birthDate" options:nil];
+    [self _bindEnabledToEditing:birthDate];
 
     [self _labelInRow:row title:@"Age:" in:content];
     [self _bind:[self _valueLabelInRow:row++ in:content] binding:CPValueBinding key:@"age" options:options];
@@ -156,7 +187,96 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [self _bind:uid binding:CPValueBinding key:@"uid" options:options];
 
     [self _layoutSections];
+    [view addSubview:[self _buttonBarWithFrame:CGRectMake(0, CGRectGetHeight(frame) - BarHeight, CGRectGetWidth(frame), BarHeight)]];
     [self setView:view];
+    [self _updateEditingAppearance];
+}
+
+// ---------------------------------------------------------------- Edit mode
+
+/*
+    The button bar at the bottom of the pane. It holds the Edit button, a toggle whose image is
+    a pencil in view mode and a check mark in edit mode.
+
+    The images are CSS masks. A material icon would need the Material Icons font, which the
+    framework does not load, so the browser would draw the icon's name as text.
+*/
+- (CPButtonBar)_buttonBarWithFrame:(CGRect)aFrame
+{
+    var buttonBar = [[CPButtonBar alloc] initWithFrame:aFrame];
+
+    [buttonBar setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
+    [buttonBar setHasResizeControl:NO];
+
+    _editButton = [buttonBar buttonWithImage:[self _maskImage:EditMask] alternateImage:[self _maskImage:DoneMask]];
+    [_editButton setButtonType:CPToggleButton];
+    [_editButton setTarget:self];
+    [_editButton setAction:@selector(toggleEditing:)];
+
+    [buttonBar setButtons:[_editButton]];
+
+    return buttonBar;
+}
+
+- (CPImage)_maskImage:(CPString)aMask
+{
+    return [CPImage imageWithCSSDictionary:@{
+                "-webkit-mask-image": aMask,
+                "mask-image": aMask,
+                "background-color": [CPColor labelColor],
+                "-webkit-mask-size": "contain",
+                "mask-size": "contain",
+                "-webkit-mask-repeat": "no-repeat",
+                "mask-repeat": "no-repeat",
+                "-webkit-mask-position": "center",
+                "mask-position": "center"
+            }
+            size:CGSizeMake(16, 16)];
+}
+
+/*
+    Sets the library's edit mode. Leaving edit mode first ends the editing of the field that has
+    focus in this pane, so its value reaches the person before the field becomes plain text.
+*/
+- (@action)toggleEditing:(id)aSender
+{
+    var shouldEdit = [aSender state] === CPOnState;
+
+    if (!shouldEdit)
+    {
+        var window = [[self view] window],
+            responder = [window firstResponder];
+
+        if ([responder isKindOfClass:[CPView class]] && [responder isDescendantOf:[self view]])
+            [window makeFirstResponder:nil];
+    }
+
+    [_library setEditable:shouldEdit];
+}
+
+- (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)aChange context:(id)aContext
+{
+    [self _updateEditingAppearance];
+}
+
+/*
+    Applies the parts of the mode that are not bindings: the text field bezels, and the state
+    and tooltip of the Edit button.
+*/
+- (void)_updateEditingAppearance
+{
+    var isEditable = [_library isEditable];
+
+    for (var i = 0, count = [_textFields count]; i < count; i++)
+        [_textFields[i] setBezeled:isEditable];
+
+    [_editButton setState:isEditable ? CPOnState : CPOffState];
+    [_editButton setToolTip:isEditable ? @"Finish editing" : @"Edit"];
+}
+
+- (void)_bindEnabledToEditing:(CPControl)aControl
+{
+    [aControl bind:CPEnabledBinding toObject:_library withKeyPath:@"editable" options:nil];
 }
 
 // ---------------------------------------------------------------- Sections
@@ -299,11 +419,12 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
 
     var field = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
-    [field setEditable:YES];
-    [field setBezeled:YES];
+    [field setSelectable:YES];
     [field setVerticalAlignment:CPCenterVerticalTextAlignment];
     [self _place:field row:aRow x:Margin + LabelWidth + LabelGap width:FieldWidth height:TextFieldHeight in:aSuperview];
     [field setAutoresizingMask:CPViewWidthSizable];
+    [field bind:CPEditableBinding toObject:_library withKeyPath:@"editable" options:nil];
+    [_textFields addObject:field];
 
     return field;
 }

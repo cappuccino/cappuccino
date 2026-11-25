@@ -8,6 +8,10 @@
  * edits made anywhere in the UI are noticed, saved and reflected in the
  * smart folder badges.
  *
+ * The library also holds the edit mode in "editable". Every view that can change a person
+ * (the table cells and the detail pane) follows it; the Edit button in the detail pane sets
+ * it. It is not saved: the application starts in view mode.
+ *
  * Change notifications:
  *   - structural changes (people added/removed, group membership, folders
  *     added/removed/renamed/reordered/edited) are posted synchronously;
@@ -187,6 +191,8 @@ var LibraryDefaultsKey          = @"People.Library.v1",
 
     BOOL            _editNotificationScheduled;
     BOOL            _saveScheduled;
+
+    BOOL            _editable;
 }
 
 - (id)init
@@ -195,6 +201,7 @@ var LibraryDefaultsKey          = @"People.Library.v1",
     {
         _people = [];
         _peopleByUID = {};
+        _editable = NO;
 
         _allPeopleItem = [[AllPeopleItem alloc] initWithName:@"All People"];
 
@@ -214,6 +221,16 @@ var LibraryDefaultsKey          = @"People.Library.v1",
 }
 
 // ---------------------------------------------------------------- Accessors
+
+- (BOOL)isEditable
+{
+    return _editable;
+}
+
+- (void)setEditable:(BOOL)shouldBeEditable
+{
+    _editable = !!shouldBeEditable;
+}
 
 - (CPArray)people
 {
