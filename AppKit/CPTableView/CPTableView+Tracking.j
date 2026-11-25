@@ -99,7 +99,12 @@
     var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
         row = [self rowAtPoint:location],
         column = [self columnAtPoint:location],
-        tableColumn = [[self tableColumns] objectAtIndex:column];
+        /*
+            2026-11-25: A right-click outside every column gives the delegate a nil column, as
+            documented. The column at index -1 was requested, which raised an exception, so a
+            right-click there showed no menu.
+        */
+        tableColumn = column === CPNotFound || column < 0 ? nil : [[self tableColumns] objectAtIndex:column];
 
     return [self _sendDelegateMenuForTableColumn:tableColumn row:row];
 }

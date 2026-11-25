@@ -234,6 +234,37 @@ var InteractionDragType = @"InteractionDragType";
 
 @end
 
+/*
+    Records the column and row of each contextual menu request, and returns a menu.
+*/
+@implementation _CPTableInteractionMenuDelegate : CPObject
+{
+    CPArray     requests @accessors;
+    CPMenu      menu @accessors;
+}
+
+- (id)init
+{
+    self = [super init];
+
+    if (self)
+    {
+        requests = [];
+        menu = [[CPMenu alloc] initWithTitle:@"Context"];
+    }
+
+    return self;
+}
+
+- (CPMenu)tableView:(CPTableView)aTableView menuForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
+{
+    requests.push({ @"column": aColumn, @"row": aRow });
+
+    return menu;
+}
+
+@end
+
 @implementation CPTableViewInteractionTest : OJTestCase
 {
     CPWindow                            theWindow;
@@ -958,6 +989,49 @@ var InteractionDragType = @"InteractionDragType";
     var info = [self draggingInfoAtPoint:[self pointInRow:2]];
 
     [self assertFalse:[tableView prepareForDragOperation:info]];
+}
+
+// MARK: Contextual menu
+
+- (void)testARightClickOnARowAsksTheDelegateForTheMenuOfThatColumnAndRow
+{
+    var menuDelegate = [[_CPTableInteractionMenuDelegate alloc] init];
+    [tableView setDelegate:menuDelegate];
+
+    var menu = [tableView menuForEvent:[self mouseEvent:CPRightMouseDown atPoint:[self pointInRow:2] flags:0 clicks:1]];
+
+    [self assert:[menuDelegate menu] same:menu message:@"the table shows the delegate's menu"];
+    [self assert:1 equals:[[menuDelegate requests] count]];
+    [self assert:tableColumn same:[menuDelegate requests][0].column];
+    [self assert:2 equals:[menuDelegate requests][0].row];
+}
+
+/*
+    The column is 200 points wide. A table outside a clip view takes the width of its columns,
+    so the table goes in a scroll view 300 points wide: the table then fills the clip view, and
+    x = 250 is inside the table but outside every column.
+*/
+- (void)testARightClickOutsideEveryColumnAsksTheDelegateWithNoColumn
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 300.0, 300.0)];
+
+    [tableView removeFromSuperview];
+    [scrollView setDocumentView:tableView];
+    [[theWindow contentView] addSubview:scrollView];
+    [tableView tile];
+
+    var menuDelegate = [[_CPTableInteractionMenuDelegate alloc] init];
+    [tableView setDelegate:menuDelegate];
+
+    [self assertTrue:CGRectGetWidth([tableView bounds]) > 250.0 message:@"the table is wider than its column"];
+
+    var point = CGPointMake(250.0, CGRectGetMidY([tableView rectOfRow:1])),
+        menu = [tableView menuForEvent:[self mouseEvent:CPRightMouseDown atPoint:point flags:0 clicks:1]];
+
+    [self assert:[menuDelegate menu] same:menu message:@"the table shows the delegate's menu"];
+    [self assert:1 equals:[[menuDelegate requests] count]];
+    [self assertNull:[menuDelegate requests][0].column message:@"no column is under the point"];
+    [self assert:1 equals:[menuDelegate requests][0].row];
 }
 
 @end
