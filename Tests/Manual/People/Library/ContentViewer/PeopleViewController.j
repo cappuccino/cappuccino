@@ -182,9 +182,11 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     [self _addColumn:@"firstName"   title:@"First Name" width:110 editable:YES dataView:nil];
     [self _addColumn:@"department"  title:@"Department" width:110 editable:YES dataView:nil];
     [self _addColumn:@"city"        title:@"City"       width:110 editable:YES dataView:nil];
-    [self _addColumn:@"age"         title:@"Age"        width:46  editable:NO  dataView:[self _textDataViewWithFormatter:nil alignment:CPRightTextAlignment]];
+    var ageColumn = [self _addColumn:@"age" title:@"Age" width:46 editable:NO dataView:[self _textDataViewWithFormatter:nil alignment:CPRightTextAlignment]];
+    [[ageColumn headerView] setAlignment:CPRightTextAlignment];
     [self _addColumn:@"birthDate"   title:@"Born"       width:110 editable:NO  dataView:[self _textDataViewWithFormatter:dateFormatter alignment:CPRightTextAlignment]];
-    [self _addColumn:@"salary"      title:@"Salary"     width:90  editable:YES dataView:[self _textDataViewWithFormatter:numberFormatter alignment:CPRightTextAlignment]];
+    var salaryColumn = [self _addColumn:@"salary" title:@"Salary" width:90 editable:YES dataView:[self _textDataViewWithFormatter:numberFormatter alignment:CPRightTextAlignment]];
+    [[salaryColumn headerView] setAlignment:CPRightTextAlignment];
 
     // Title-less checkbox, image centred in the cell.
     var checkBox = [CPCheckBox checkBoxWithTitle:@""];
