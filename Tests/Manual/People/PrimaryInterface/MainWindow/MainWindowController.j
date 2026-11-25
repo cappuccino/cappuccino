@@ -536,6 +536,13 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
         case @selector(paste:):
             return !sheet && [[[CPPasteboard generalPasteboard] types] containsObject:CPStringPboardType];
+
+        /*
+            In edit mode the detail pane stays open: Hide Details is disabled, and Show
+            Details stays enabled when the pane is hidden.
+        */
+        case @selector(toggleDetail:):
+            return ![_library isEditable] || ![_splitViewController isDetailVisible];
     }
 
     return YES;

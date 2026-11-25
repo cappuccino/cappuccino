@@ -37,6 +37,10 @@
  * with the attributedString binding. The binding updates the person as the text changes, so
  * the table's notes icon follows the typing. CPTextView has no editable binding, so the
  * controller sets its editable state, and the scroll view's border, when the mode changes.
+ *
+ * The pane shows a person only while exactly one row is selected. With no selection or with
+ * several rows selected, a cover takes the place of the fields and asks for a single row. The
+ * main split view controller binds "selectionCount" to the number of selected people.
  */
 
 @import <AppKit/AppKit.j>
@@ -89,6 +93,9 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     Library     _library;
     CPTextView  _notesView;
     CPScrollView _notesScrollView;
+    CPScrollView _fieldsScrollView;
+    CPView      _selectionCover;
+    int         _selectionCount;
 }
 
 - (id)initWithLibrary:(Library)aLibrary
@@ -96,6 +103,7 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     if (self = [super initWithCibName:nil bundle:nil])
     {
         _library = aLibrary;
+        _selectionCount = 0;
         [_library addObserver:self forKeyPath:@"editable" options:0 context:nil];
     }
 
@@ -131,6 +139,7 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [scrollView setAutohidesScrollers:YES];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [view addSubview:scrollView];
+    _fieldsScrollView = scrollView;
 
     _documentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(frame), 0)];
     [_documentView setAutoresizingMask:CPViewWidthSizable];
@@ -206,8 +215,78 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
 
     [self _layoutSections];
     [view addSubview:[self _buttonBarWithFrame:CGRectMake(0, CGRectGetHeight(frame) - BarHeight, CGRectGetWidth(frame), BarHeight)]];
+
+    _selectionCover = [self _selectionCoverWithFrame:[scrollView frame]];
+    [view addSubview:_selectionCover];
+
     [self setView:view];
     [self _updateEditingAppearance];
+    [self _updateSelectionCover];
+}
+
+// ---------------------------------------------------------------- Selection cover
+
+- (int)selectionCount
+{
+    return _selectionCount;
+}
+
+/*
+    The binding sets the count before the view loads, so the cover takes it in -loadView too.
+*/
+- (void)setSelectionCount:(int)aCount
+{
+    _selectionCount = aCount;
+    [self _updateSelectionCover];
+}
+
+/*
+    A view with the pane's background and a centred message. It fills the place of the fields
+    and leaves the button bar uncovered.
+*/
+- (CPView)_selectionCoverWithFrame:(CGRect)aFrame
+{
+    var cover = [[CPView alloc] initWithFrame:aFrame],
+        width = CGRectGetWidth(aFrame) - 4 * Margin,
+        message = [CPTextField labelWithTitle:@"Please select a single row to edit or display"];
+
+    [cover setBackgroundColor:[CPColor underPageBackgroundColor]];
+    [cover setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
+    [message setTextColor:[CPColor secondaryLabelColor]];
+    [message setAlignment:CPCenterTextAlignment];
+    [message setLineBreakMode:CPLineBreakByWordWrapping];
+    [message setFrame:CGRectMake(2 * Margin, (CGRectGetHeight(aFrame) - 3 * RowHeight) / 2, width, 3 * RowHeight)];
+    [message setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin | CPViewMaxYMargin];
+    [cover addSubview:message];
+
+    return cover;
+}
+
+/*
+    Shows the cover unless exactly one row is selected. The fields are hidden under the cover,
+    not only covered, so the key view loop cannot reach them. If a field under the cover has
+    focus, the window takes the focus first, which ends the edit and sends its value to the
+    person.
+*/
+- (void)_updateSelectionCover
+{
+    if (!_selectionCover)
+        return;
+
+    var isCovered = _selectionCount !== 1;
+
+    if (isCovered)
+    {
+        var window = [[self view] window],
+            responder = [window firstResponder];
+
+        if ([responder isKindOfClass:[CPView class]] && [responder isDescendantOf:_fieldsScrollView])
+            [window makeFirstResponder:nil];
+    }
+
+    [_selectionCover setHidden:!isCovered];
+    [_fieldsScrollView setHidden:isCovered];
 }
 
 // ---------------------------------------------------------------- Notes

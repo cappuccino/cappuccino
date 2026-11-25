@@ -9,8 +9,9 @@
  *     and maximum thicknesses and holding priorities
  *   - animated collapse and expansion of the sidebar and the detail pane
  *   - autosave of the split view, and a button bar resize control on the first divider
- *   - the detail pane shows the content's selection through its representedObject, so the
- *     panes do not know about each other; only this controller knows the layout
+ *   - the detail pane shows the content's selection through its representedObject, and its
+ *     selectionCount covers the pane unless one row is selected, so the panes do not know
+ *     about each other; only this controller knows the layout
  */
 
 @import <AppKit/AppKit.j>
@@ -46,6 +47,7 @@ var SidebarDefaultWidth     = 230.0,
         _detailController = [[PersonDetailViewController alloc] initWithLibrary:[_peopleController library]];
 
         [_detailController bind:@"representedObject" toObject:[_peopleController arrayController] withKeyPath:@"selection" options:nil];
+        [_detailController bind:@"selectionCount" toObject:[_peopleController arrayController] withKeyPath:@"selectedObjects.@count" options:nil];
 
         _sidebarItem = [CPSplitViewItem sidebarWithViewController:_sourceListController];
         [_sidebarItem setMinimumThickness:SidebarMinimumWidth];
