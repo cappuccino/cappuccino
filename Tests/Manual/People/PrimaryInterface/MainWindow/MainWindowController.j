@@ -15,6 +15,8 @@
  *   - CPPasteboard copy / paste
  *   - CPUndoManager: the window's undo manager undoes and redoes the removal of people, and
  *     the Edit menu names the change
+ *   - CPMenu menu bar visibility: View ▸ Hide Menu Bar hides the main menu, and the window
+ *     takes the space; the main menu's key equivalents still work
  */
 
 @import <AppKit/AppKit.j>
@@ -36,7 +38,8 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     ToolbarAllPeopleIdentifier  = @"ShowAllPeopleItem",
     ToolbarItemImageSize        = CGSizeMake(32.0, 32.0),
     ResetAlertResetTag          = 1001,
-    ResetAlertCancelTag         = 1002;
+    ResetAlertCancelTag         = 1002,
+    MenuBarHiddenKey            = @"People.MenuBarHidden";
 
 @implementation MainWindowController : CPWindowController
 {
@@ -483,6 +486,27 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [_splitViewController toggleDetail:sender];
 }
 
+/*
+    Shows the menu bar unless the user hid it in an earlier session. The application delegate
+    calls this at launch, before the main window opens.
+*/
++ (void)applySavedMenuBarVisibility
+{
+    [CPMenu setMenuBarVisible:![[CPUserDefaults standardUserDefaults] boolForKey:MenuBarHiddenKey]];
+}
+
+/*
+    Hides or shows the main menu, and keeps the choice. While the menu bar is hidden, the key
+    equivalents of its items still work, so ⌃⌘M shows it again.
+*/
+- (void)toggleMenuBar:(id)sender
+{
+    var shouldHide = [CPMenu menuBarVisible];
+
+    [CPMenu setMenuBarVisible:!shouldHide];
+    [[CPUserDefaults standardUserDefaults] setBool:shouldHide forKey:MenuBarHiddenKey];
+}
+
 - (void)showAllPeople:(id)sender
 {
     [self _selectSourceItem:[_library allPeopleItem]];
@@ -497,7 +521,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
     [alert setAlertStyle:CPWarningAlertStyle];
     [alert setMessageText:@"Reset the application?"];
-    [alert setInformativeText:@"All people, groups and smart folders will be replaced by the sample data. The toolbar, the table columns, the sidebar, the detail pane, the recent searches and the appearance return to their defaults. This cannot be undone."];
+    [alert setInformativeText:@"All people, groups and smart folders will be replaced by the sample data. The menu bar, the toolbar, the table columns, the sidebar, the detail pane, the recent searches and the appearance return to their defaults. This cannot be undone."];
     [alert addButtonWithTitle:@"Reset"];
     [alert addButtonWithTitle:@"Cancel"];
 
@@ -543,6 +567,9 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
     [_splitViewController restoreDefaultLayout];
     [_peopleController restoreDefaultColumns];
+
+    [[CPUserDefaults standardUserDefaults] removeObjectForKey:MenuBarHiddenKey];
+    [CPMenu setMenuBarVisible:YES];
 
     [SettingsWindowController resetAppearance];
 }
@@ -608,6 +635,10 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
         case @selector(toggleDetail:):
             [anItem setTitle:[_splitViewController isDetailVisible] ? @"Hide Details" : @"Show Details"];
+            break;
+
+        case @selector(toggleMenuBar:):
+            [anItem setTitle:[CPMenu menuBarVisible] ? @"Hide Menu Bar" : @"Show Menu Bar"];
             break;
     }
 

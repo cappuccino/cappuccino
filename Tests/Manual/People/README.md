@@ -64,7 +64,7 @@ spaces, because the legacy toolchain does not accept them.
     toolbar stays (autosave). While the sheet is open, the toolbar items do not act.
     The standard Colors item opens the colour panel. In both appearances its labels, the boxes
     around the preview and the swatches, and the opacity slider's track and knob show.
-13. File ▸ Reset Application…: alert sheet, then sample data, default toolbar (items, Icon and Text, regular size), default table columns (order and widths, Notes first), sidebar width, detail pane, empty recent searches and Auto appearance restored at once, without a reload. Cancel changes nothing.
+13. File ▸ Reset Application…: alert sheet, then sample data, the menu bar shown, default toolbar (items, Icon and Text, regular size), default table columns (order and widths, Notes first), sidebar width, detail pane, empty recent searches and Auto appearance restored at once, without a reload. Cancel changes nothing.
 
 ## Items to exercise
 
@@ -115,7 +115,10 @@ to build with a web component framework.
 8. In edit mode, Hide Details is disabled everywhere: menu, toolbar and button bar.
 9. The navigation button bar has a pop-up menu on its right side. When the menu bar is hidden,
    it holds every main menu item that no other control offers.
-10. An About dialog.
-11. An action hides and shows the main menu. This shows both styles of application menu use.
+10. An About dialog: People ▸ About People opens the standard About panel. Its name, version
+    and copyright come from Info.plist.
+11. An action hides and shows the main menu: View ▸ Hide Menu Bar (⌃⌘M). The main window takes
+    the freed space at once, and ⌃⌘M shows the menu bar again. The choice survives a reload.
+    This shows both styles of application menu use.
 12. A search field shows at the top of the navigation sidebar only while the toolbar is hidden.
     An animated move between the two places is optional.

@@ -12,6 +12,12 @@
 	<string>AppController</string>
 	<key>CPBundleName</key>
 	<string>People</string>
+	<key>CPBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CPBundleVersion</key>
+	<string>1</string>
+	<key>CPHumanReadableCopyright</key>
+	<string>Copyright 2026, The Cappuccino Project.</string>
 	<key>CPPrincipalClass</key>
 	<string>CPApplication</string>
 </dict>

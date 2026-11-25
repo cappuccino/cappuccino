@@ -51,7 +51,7 @@
     [SettingsWindowController applySavedAppearance];
 
     [self _buildMainMenu];
-    [CPMenu setMenuBarVisible:YES];
+    [MainWindowController applySavedMenuBarVisibility];
 
     _mainWindowController = [[MainWindowController alloc] initWithLibrary:_library];
     [_mainWindowController showWindow:self];
@@ -96,6 +96,15 @@
 
     var commandOption = CPCommandKeyMask | CPAlternateKeyMask;
 
+    /*
+        The application menu, named after the application. About People opens the standard
+        About panel, which takes the name, version and copyright from Info.plist.
+    */
+    var applicationMenu = [self _addSubmenu:@"People" to:mainMenu];
+    [self _addItem:@"About People" action:@selector(orderFrontStandardAboutPanel:) key:nil modifiers:0 to:applicationMenu];
+    [applicationMenu addItem:[CPMenuItem separatorItem]];
+    [self _addItem:@"Settings…" action:@selector(showSettings:) key:@"," modifiers:0 to:applicationMenu];
+
     // File
     var fileMenu = [self _addSubmenu:@"File" to:mainMenu];
     [self _addItem:@"New Smart Folder…" action:@selector(newSmartFolder:) key:@"n" modifiers:commandOption to:fileMenu];
@@ -107,8 +116,6 @@
     [self _addItem:@"Delete Group or Smart Folder" action:@selector(deleteSelectedSourceItem:) key:nil modifiers:0 to:fileMenu];
     [fileMenu addItem:[CPMenuItem separatorItem]];
     [self _addItem:@"Reset Application…" action:@selector(resetApplication:) key:nil modifiers:0 to:fileMenu];
-    [fileMenu addItem:[CPMenuItem separatorItem]];
-    [self _addItem:@"Settings…" action:@selector(showSettings:) key:@"," modifiers:0 to:fileMenu];
 
     // Edit
     var editMenu = [self _addSubmenu:@"Edit" to:mainMenu];
@@ -130,6 +137,7 @@
     [viewMenu addItem:[CPMenuItem separatorItem]];
     [self _addItem:@"Hide Toolbar" action:@selector(toggleToolbarShown:) key:@"t" modifiers:commandOption to:viewMenu];
     [self _addItem:@"Customize Toolbar…" action:@selector(runToolbarCustomizationPalette:) key:nil modifiers:0 to:viewMenu];
+    [self _addItem:@"Hide Menu Bar" action:@selector(toggleMenuBar:) key:@"m" modifiers:CPCommandKeyMask | CPControlKeyMask to:viewMenu];
     [viewMenu addItem:[CPMenuItem separatorItem]];
     [self _addItem:@"Show All People" action:@selector(showAllPeople:) key:@"1" modifiers:0 to:viewMenu];
 }
