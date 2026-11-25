@@ -366,6 +366,27 @@
     [self assertTrue:[theWindow validateUserInterfaceItem:undoItem]];
 }
 
+/*
+    The text view validates the Undo item as the window does, so the item names the change.
+*/
+- (void)testUndoItemNamesTheChangeWhenTheTextViewValidatesIt
+{
+    var undoManager = [theWindow undoManager],
+        undoItem = [[CPMenuItem alloc] initWithTitle:@"Undo" action:@selector(undo:) keyEquivalent:@""];
+
+    [self assertTrue:[theWindow makeFirstResponder:textView]];
+    [undoManager setGroupsByEvent:NO];
+    [undoManager removeAllActions];
+
+    [undoManager beginUndoGrouping];
+    [undoManager registerUndoWithTarget:[] selector:@selector(addObject:) object:@"Text"];
+    [undoManager setActionName:@"Delete"];
+    [undoManager endUndoGrouping];
+
+    [self assertTrue:[textView validateUserInterfaceItem:undoItem]];
+    [self assert:@"Undo Delete" equals:[undoItem title]];
+}
+
 // MARK: - Object value of rich text
 
 - (void)testTheObjectValueOfARichTextViewIsACopyOfItsText

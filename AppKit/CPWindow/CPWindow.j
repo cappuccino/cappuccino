@@ -3149,7 +3149,7 @@ CPTexturedBackgroundWindowMask
     For \c -toggleToolbarShown:, the item's title becomes "Hide Toolbar" or "Show Toolbar"
     to reflect the toolbar's visibility, and the item is enabled only when the window has
     a toolbar. \c -undo: and \c -redo: are enabled only when the window's undo manager has a
-    change to undo or redo. \c -performMiniaturize: and \c -miniaturize: are enabled only
+    change to undo or redo, and a menu item's title names the change, as in "Undo Delete". \c -performMiniaturize: and \c -miniaturize: are enabled only
     when the window's minimize button is enabled, and \c -performZoom: and \c -zoom: only
     when its zoom button is enabled. \c -runToolbarCustomizationPalette: is enabled only when
     the window's toolbar allows customization and runs no palette. Every other item is enabled.
@@ -3160,11 +3160,21 @@ CPTexturedBackgroundWindowMask
 {
     var action = [anItem action];
 
-    if (action === @selector(undo:))
-        return [[self undoManager] canUndo];
+    /*
+        2026-11-25: The Undo and Redo menu items name the change, from the undo manager's
+        action name. The items were only enabled, so their titles stayed "Undo" and "Redo"
+        and the action names given with -setActionName: never showed.
+    */
+    if (action === @selector(undo:) || action === @selector(redo:))
+    {
+        var undoManager = [self undoManager],
+            isUndo = action === @selector(undo:);
 
-    if (action === @selector(redo:))
-        return [[self undoManager] canRedo];
+        if ([anItem isKindOfClass:[CPMenuItem class]])
+            [anItem setTitle:isUndo ? [undoManager undoMenuItemTitle] : [undoManager redoMenuItemTitle]];
+
+        return isUndo ? [undoManager canUndo] : [undoManager canRedo];
+    }
 
     /*
         The Minimize and Zoom items agree with the window's buttons. Minimize was enabled

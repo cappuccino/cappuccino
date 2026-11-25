@@ -487,6 +487,44 @@
     parent._sheetContext["isClosing"] = YES;
 }
 
+// MARK: - Undo and Redo items
+
+/*
+    The Undo and Redo menu items take their titles from the undo manager: the bare command when
+    there is nothing to undo or redo, and the command with the action name otherwise.
+*/
+- (void)testUndoAndRedoItemsNameTheChange
+{
+    var undoManager = [_window undoManager],
+        undoItem = [[CPMenuItem alloc] initWithTitle:@"Undo" action:@selector(undo:) keyEquivalent:@""],
+        redoItem = [[CPMenuItem alloc] initWithTitle:@"Redo" action:@selector(redo:) keyEquivalent:@""],
+        target = [[_CPWindowTestUndoTarget alloc] initWithUndoManager:undoManager];
+
+    [undoManager setGroupsByEvent:NO];
+    [undoManager removeAllActions];
+
+    [self assertFalse:[_window validateUserInterfaceItem:undoItem]];
+    [self assert:@"Undo" equals:[undoItem title]];
+
+    [undoManager beginUndoGrouping];
+    [target removePerson:@"Person"];
+    [undoManager setActionName:@"Delete"];
+    [undoManager endUndoGrouping];
+
+    [self assertTrue:[_window validateUserInterfaceItem:undoItem]];
+    [self assert:@"Undo Delete" equals:[undoItem title]];
+    [self assertFalse:[_window validateUserInterfaceItem:redoItem]];
+    [self assert:@"Redo" equals:[redoItem title]];
+
+    [_window undo:nil];
+
+    [self assert:@[@"Person"] equals:[target people] message:@"the undo ran"];
+    [self assertFalse:[_window validateUserInterfaceItem:undoItem]];
+    [self assert:@"Undo" equals:[undoItem title]];
+    [self assertTrue:[_window validateUserInterfaceItem:redoItem]];
+    [self assert:@"Redo Delete" equals:[redoItem title]];
+}
+
 @end
 
 /*
@@ -579,6 +617,40 @@ var CPWindowTestZoomingWindowStandardFrame = CGRectMake(40.0, 50.0, 600.0, 450.0
     endedSheet = aSheet;
     returnCode = aCode;
     sheetAtDidEnd = [window attachedSheet];
+}
+
+@end
+
+/*
+    Holds a list of people and registers the inverse of each change, so an undo leaves a redo.
+*/
+@implementation _CPWindowTestUndoTarget : CPObject
+{
+    CPUndoManager   _undoManager;
+    CPArray         _people @accessors(getter=people);
+}
+
+- (id)initWithUndoManager:(CPUndoManager)anUndoManager
+{
+    if (self = [super init])
+    {
+        _undoManager = anUndoManager;
+        _people = [];
+    }
+
+    return self;
+}
+
+- (void)removePerson:(CPString)aPerson
+{
+    [_people removeObject:aPerson];
+    [[_undoManager prepareWithInvocationTarget:self] addPerson:aPerson];
+}
+
+- (void)addPerson:(CPString)aPerson
+{
+    [_people addObject:aPerson];
+    [[_undoManager prepareWithInvocationTarget:self] removePerson:aPerson];
 }
 
 @end

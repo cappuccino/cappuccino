@@ -823,7 +823,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 /*!
-    Enables the Undo and Redo items only when the undo manager has a change to undo or redo.
+    Validates the Undo and Redo items as the window does: they are enabled only when the undo
+    manager has a change to undo or redo, and a menu item's title names the change.
     For \c -toggleRuler:, the item's title becomes "Hide Ruler" or "Show Ruler" to reflect the
     ruler's visibility, and the item is enabled only when the text view uses a ruler and lies
     in a scroll view. \c -copyRuler: is enabled in rich text, and \c -pasteRuler: in editable
@@ -840,11 +841,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     var action = [anItem action];
 
-    if (action === @selector(undo:))
-        return [[[self window] undoManager] canUndo];
-
-    if (action === @selector(redo:))
-        return [[[self window] undoManager] canRedo];
+    /*
+        2026-11-25: The window validates the Undo and Redo items, so their titles name the
+        change here too. This method enabled them but left the titles "Undo" and "Redo".
+    */
+    if (action === @selector(undo:) || action === @selector(redo:))
+        return [[self window] validateUserInterfaceItem:anItem];
 
     // Baseline changes apply only to editable rich text.
     if (action === @selector(superscript:) || action === @selector(subscript:) || action === @selector(unscript:) ||
