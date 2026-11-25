@@ -751,7 +751,15 @@ CPButtonImageOffset   = 3.0;
     if (_isHighlighted && ((_highlightsBy & CPContentsCellMask) || (_highlightsBy & CPChangeGrayCellMask)))
         visualState = visualState.and(CPThemeStateHighlighted);
 
-    if (buttonIsOn && (_showsStateBy & CPContentsCellMask))
+    /*
+        A disclosure triangle shows its state in its image whatever showsStateBy holds, as the
+        bezel of an AppKit disclosure button does. The image took the selected state only when
+        showsStateBy included the contents mask, so a disclosure triangle of the on/off type,
+        AppKit's type for it, stayed closed in the on state. 2026-11-25
+    */
+    var isDisclosure = (_bezelStyle === CPDisclosureBezelStyle) || (_bezelStyle === CPRoundedDisclosureBezelStyle);
+
+    if (buttonIsOn && ((_showsStateBy & CPContentsCellMask) || isDisclosure))
         visualState = visualState.and((currentState === CPOnState) ? CPThemeStateSelected : CPButtonStateMixed);
 
     return visualState;

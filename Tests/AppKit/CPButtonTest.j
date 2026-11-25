@@ -349,6 +349,59 @@
     [self assert:[[CPColor whiteColor] cssString] equals:view._textColorCSSString];
 }
 
+// MARK: - Disclosure triangles
+
+/*
+    A disclosure triangle is an on/off button whose image shows its state, as the bezel of an
+    AppKit disclosure button does: the theme gives the open triangle in the selected state.
+*/
+- (CPButton)disclosureButtonWithBezelStyle:(CPBezelStyle)aBezelStyle
+{
+    var disclosure = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 13.0, 13.0)];
+
+    [disclosure setBezelStyle:aBezelStyle];
+    [disclosure setButtonType:CPOnOffButton];
+    [disclosure setTitle:@""];
+
+    return disclosure;
+}
+
+- (void)testAnOpenDisclosureTriangleShowsTheOpenImage
+{
+    var disclosure = [self disclosureButtonWithBezelStyle:CPDisclosureBezelStyle];
+
+    [disclosure setState:CPOnState];
+
+    [self assertTrue:[disclosure _imageVisualState].hasThemeState(CPThemeStateSelected) message:@"an open disclosure triangle takes the selected state for its image"];
+}
+
+- (void)testAClosedDisclosureTriangleShowsTheClosedImage
+{
+    var disclosure = [self disclosureButtonWithBezelStyle:CPDisclosureBezelStyle];
+
+    [disclosure setState:CPOffState];
+
+    [self assertFalse:[disclosure _imageVisualState].hasThemeState(CPThemeStateSelected) message:@"a closed disclosure triangle has no selected state for its image"];
+}
+
+- (void)testAnOpenRoundedDisclosureButtonShowsTheOpenImage
+{
+    var disclosure = [self disclosureButtonWithBezelStyle:CPRoundedDisclosureBezelStyle];
+
+    [disclosure setState:CPOnState];
+
+    [self assertTrue:[disclosure _imageVisualState].hasThemeState(CPThemeStateSelected) message:@"an open rounded disclosure button takes the selected state for its image"];
+}
+
+- (void)testAnOnOffPushButtonKeepsItsImageState
+{
+    [button setBezelStyle:CPRoundedBezelStyle];
+    [button setButtonType:CPOnOffButton];
+    [button setState:CPOnState];
+
+    [self assertFalse:[button _imageVisualState].hasThemeState(CPThemeStateSelected) message:@"an on/off push button does not show its state in its image"];
+}
+
 @end
 
 /*
