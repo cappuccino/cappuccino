@@ -670,18 +670,24 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
                                                                    }
                                                             size:CGSizeMake(10, 10)],
 
+    /*
+        The open triangle is the closed one turned a quarter turn, so the two have the same size.
+        The open images used svgArrowDown, whose triangle fills less than half of its 24-point
+        view box, while the closed triangle fills most of its 10-point view box; the open
+        triangle was drawn much smaller than the closed one. 2026-11-25
+    */
     disclosureDownImage = [CPImage imageWithCSSDictionary:@{
                                                             @"box-sizing": @"border-box",
                                                             @"background-color": A3ColorDisclosure,
-                                                            "-webkit-mask-image": svgArrowDown,
-                                                            "mask-image": svgArrowDown,
+                                                            "-webkit-mask-image": svgArrowRight,
+                                                            "mask-image": svgArrowRight,
                                                             "-webkit-mask-size": "contain",
                                                             "mask-size": "contain",
                                                             "-webkit-mask-repeat": "no-repeat",
                                                             "mask-repeat": "no-repeat",
                                                             "-webkit-mask-position": "center",
                                                             "mask-position": "center",
-                                                            @"transform": @"rotate(0deg)", // SVG is already down
+                                                            @"transform": @"rotate(90deg)",
                                                             @"transition-duration": @"0.35s",
                                                             @"transition-property": @"transform"
                                                             }
@@ -690,28 +696,30 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
     disclosureDisabledDownImage = [CPImage imageWithCSSDictionary:@{
                                                                     @"box-sizing": @"border-box",
                                                                     @"background-color": A3ColorDisclosureDisabled,
-                                                                    "-webkit-mask-image": svgArrowDown,
-                                                                    "mask-image": svgArrowDown,
+                                                                    "-webkit-mask-image": svgArrowRight,
+                                                                    "mask-image": svgArrowRight,
                                                                     "-webkit-mask-size": "contain",
                                                                     "mask-size": "contain",
                                                                     "-webkit-mask-repeat": "no-repeat",
                                                                     "mask-repeat": "no-repeat",
                                                                     "-webkit-mask-position": "center",
-                                                                    "mask-position": "center"
+                                                                    "mask-position": "center",
+                                                                    @"transform": @"rotate(90deg)"
                                                                     }
                                                              size:CGSizeMake(10, 10)],
 
     disclosureHighlightedDownImage = [CPImage imageWithCSSDictionary:@{
                                                                        @"box-sizing": @"border-box",
                                                                        @"background-color": A3ColorDisclosurePushed,
-                                                                       "-webkit-mask-image": svgArrowDown,
-                                                                       "mask-image": svgArrowDown,
+                                                                       "-webkit-mask-image": svgArrowRight,
+                                                                       "mask-image": svgArrowRight,
                                                                        "-webkit-mask-size": "contain",
                                                                        "mask-size": "contain",
                                                                        "-webkit-mask-repeat": "no-repeat",
                                                                        "mask-repeat": "no-repeat",
                                                                        "-webkit-mask-position": "center",
-                                                                       "mask-position": "center"
+                                                                       "mask-position": "center",
+                                                                       @"transform": @"rotate(90deg)"
                                                                        }
                                                                 size:CGSizeMake(10, 10)],
 
