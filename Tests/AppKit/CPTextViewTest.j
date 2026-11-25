@@ -366,6 +366,30 @@
     [self assertTrue:[theWindow validateUserInterfaceItem:undoItem]];
 }
 
+// MARK: - Object value of rich text
+
+- (void)testTheObjectValueOfARichTextViewIsACopyOfItsText
+{
+    [textView setRichText:YES];
+
+    var value = [textView objectValue];
+
+    [self assertTrue:[value isKindOfClass:[CPAttributedString class]]];
+    [self assertFalse:value === [textView textStorage]];
+    [self assert:stringValue equals:[value string]];
+}
+
+- (void)testTheObjectValueOfARichTextViewKeepsItsTextWhenTheViewShowsAnother
+{
+    [textView setRichText:YES];
+
+    var value = [textView objectValue];
+
+    [textView setString:@"Another string"];
+
+    [self assert:stringValue equals:[value string]];
+}
+
 @end
 
 @implementation CPTextViewTest (CPTextViewTestDelegate)

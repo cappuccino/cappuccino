@@ -903,7 +903,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (_placeholderString)
         return nil;
 
-    return [self isRichText]? _textStorage : _textStorage._string;
+    /*
+        2026-11-25: a value that a rich text view stored through its binding changed when the
+        view later showed another value. For rich text this method returned the text storage
+        itself, so the bound model kept the view's text storage, and the next -setString:
+        replaced the characters of the stored value too. As AppKit's attributedString binding
+        does, the method now returns a copy.
+    */
+    return [self isRichText] ? [[CPAttributedString alloc] initWithAttributedString:_textStorage] : _textStorage._string;
 }
 - (void)setObjectValue:(id)aValue
 {
