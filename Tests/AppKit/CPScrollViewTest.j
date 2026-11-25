@@ -1,11 +1,13 @@
 @import <AppKit/AppKit.j>
 
 @import "CPNotificationCenterHelper.j"
+@import "BuiltThemes.j"
 
 
 @implementation CPScrollViewTest : OJTestCase
 {
     CPScrollerStyle     globalScrollerStyle;
+    CPTheme             previousTheme;
 }
 
 - (void)setUp
@@ -14,6 +16,7 @@
     [[CPApplication alloc] init];
 
     globalScrollerStyle = [CPScrollView globalScrollerStyle];
+    previousTheme = [CPTheme defaultTheme];
 }
 
 /*
@@ -23,6 +26,7 @@
 - (void)tearDown
 {
     [CPScrollView setGlobalScrollerStyle:globalScrollerStyle];
+    [CPTheme setDefaultTheme:previousTheme];
 }
 
 /*!
@@ -486,6 +490,87 @@
                                               scrollerStyle:CPScrollerStyleOverlay];
 
     [self assertSize:CGSizeMake(95.0, 95.0) equals:contentSize message:@"both scroller widths come from scrollerWidthInStyle:"];
+}
+
+// MARK: - Borders in a CSS theme
+
+/*
+    Makes the built Aristo3 theme, a CSS theme, the default theme, so that scroll views made
+    after it take it. The tests need the themes built first, as `npx jake build` does.
+*/
+- (void)useAristo3
+{
+    var theme = BuiltThemeNamed(@"Aristo3");
+
+    [self assertNotNull:theme message:@"The built blends hold no Aristo3 theme. Build the themes first."];
+    [self assertTrue:[theme isCSSBased] message:@"Aristo3 is a CSS theme"];
+
+    [CPTheme setDefaultTheme:theme];
+}
+
+- (CPScrollView)scrollViewWithBorderType:(CPBorderType)aBorderType
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+
+    [scrollView setScrollerStyle:CPScrollerStyleOverlay];
+    [scrollView setHasHorizontalScroller:NO];
+    [scrollView setHasVerticalScroller:NO];
+    [scrollView setBorderType:aBorderType];
+    [scrollView setDocumentView:[[CPView alloc] initWithFrame:CGRectMake(0, 0, 50, 50)]];
+    [scrollView layoutIfNeeded];
+
+    return scrollView;
+}
+
+/*
+    Aristo3 draws the border as a 1px CSS border, so the content must leave 1px free on every
+    side, or it covers the border lines there.
+*/
+- (void)testTheContentOfABezeledScrollViewLeavesItsBorderFreeOnEverySide
+{
+    [self useAristo3];
+
+    var scrollView = [self scrollViewWithBorderType:CPBezelBorder];
+
+    [self assertTrue:CGRectEqualToRect([[scrollView contentView] frame], CGRectMake(1, 1, 98, 98))
+             message:@"content frame " + CPStringFromRect([[scrollView contentView] frame]) + " should be {{1, 1}, {98, 98}}"];
+}
+
+- (void)testTheContentOfALineBorderedScrollViewLeavesItsBorderFreeOnEverySide
+{
+    [self useAristo3];
+
+    var scrollView = [self scrollViewWithBorderType:CPLineBorder];
+
+    [self assertTrue:CGRectEqualToRect([[scrollView contentView] frame], CGRectMake(1, 1, 98, 98))
+             message:@"content frame " + CPStringFromRect([[scrollView contentView] frame]) + " should be {{1, 1}, {98, 98}}"];
+}
+
+- (void)testAScrollViewWithoutABorderHasNoBackground
+{
+    [self useAristo3];
+
+    var scrollView = [self scrollViewWithBorderType:CPNoBorder];
+
+    [self assertNull:[scrollView backgroundColor] message:@"a scroll view without a border has no background"];
+}
+
+/*
+    In a CSS theme the border is the background, so a scroll view whose border is removed must
+    lose the background too.
+*/
+- (void)testAScrollViewLosesItsBorderWhenTheBorderTypeChangesToNoBorder
+{
+    [self useAristo3];
+
+    var scrollView = [self scrollViewWithBorderType:CPBezelBorder];
+
+    [self assertNotNull:[scrollView backgroundColor] message:@"precondition: a bezeled scroll view has a background"];
+
+    [scrollView setBorderType:CPNoBorder];
+    [scrollView layoutIfNeeded];
+
+    [self assertNull:[scrollView backgroundColor] message:@"the background of the bezel stays after the border is removed"];
 }
 
 @end

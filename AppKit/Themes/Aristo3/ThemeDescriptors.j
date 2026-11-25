@@ -2282,8 +2282,11 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
     themedScrollViewValues =
     [
      // --- Standard States ---
-     [@"background-color-no-border",        bezelCssColor],
-     [@"background-color-no-border",        bezelFocusedCssColor,       [CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
+     /*
+        2026-11-25: No background for a scroll view without a border. The values were the
+        bordered bezel, so a scroll view whose border type changed to CPNoBorder kept a
+        border. The cause: the bezel was copied to every border type.
+     */
      [@"background-color-line-border",      bezelCssColor],
      [@"background-color-line-border",      bezelFocusedCssColor,       [CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
      [@"background-color-bezel-border",     bezelCssColor],
@@ -2292,8 +2295,13 @@ function A3MaskIconOfSize(aMaskImage, aColor, aSize)
      [@"background-color-groove-border",    bezelFocusedCssColor,       [CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
 
      [@"content-inset-no-border",       CGInsetMakeZero()],
-     [@"content-inset-line-border",     CGInsetMake(0,2,2,0)],
-     [@"content-inset-bezel-border",    CGInsetMake(0,2,2,0)],
+     /*
+        2026-11-25: The content of a bordered scroll view is inset by the 1px CSS border on
+        every side. The insets were 0 at the top and left, so the content covered the top and
+        left border lines, and a white text view on a light pane had no visible edge there.
+     */
+     [@"content-inset-line-border",     CGInsetMake(1,1,1,1)],
+     [@"content-inset-bezel-border",    CGInsetMake(1,1,1,1)],
      [@"content-inset-groove-border",   CGInsetMake(0,2,2,0)],
      
      [@"bottom-corner-color", bottomCornerColor],

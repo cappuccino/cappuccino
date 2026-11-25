@@ -573,7 +573,13 @@ Notifies the delegate when the scroll view has finished scrolling.
     _borderType = borderType;
 
     [self reflectScrolledClipView:_contentView];
-    [self setNeedsDisplay:YES];
+
+    /*
+        2026-11-25: A CSS theme applies the border background in -layoutSubviews, so a change
+        of border type must lay the scroll view out again. Only a redraw was requested, which
+        a CSS theme does not use, so the old background stayed until some other layout.
+    */
+    [self refreshDisplay];
 }
 
 
@@ -1906,8 +1912,12 @@ Notifies the delegate when the scroll view has finished scrolling.
     if (![self isCSSBased])
         return;
 
-    if (_borderType !== CPNoBorder)
-        [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color-"+CPScrollViewBorderSuffixes[_borderType]]];
+    /*
+        2026-11-25: The background is set for every border type. It was not set for
+        CPNoBorder, so a scroll view whose border type changed to CPNoBorder kept the
+        background, and with it the border, of its previous border type.
+    */
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color-"+CPScrollViewBorderSuffixes[_borderType]]];
 
     if (_scrollerStyle === CPScrollerStyleLegacy)
         [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
