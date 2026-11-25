@@ -30,7 +30,9 @@ var EditorWidth         = 680.0,
         "city"       : "City",
         "department" : "Department",
         "age"        : "Age",
-        "salary"     : "Salary"
+        "salary"     : "Salary",
+        "notesText"  : "Notes",
+        "hasNotes"   : "Has Notes"
     };
 
 
@@ -62,6 +64,38 @@ var EditorWidth         = 680.0,
                 if (title && [items[i] title] !== title)
                     [items[i] setTitle:title];
             }
+        }
+    }
+
+    return views;
+}
+
+@end
+
+
+/*
+    A row for a BOOL key. The value pop-up offers the constants YES and NO; this template
+    titles them Yes and No, which the default template would show as "true" and "false".
+*/
+@implementation BooleanRowTemplate : LabeledRowTemplate
+{
+}
+
+- (CPArray)templateViews
+{
+    var views = [super templateViews],
+        values = [views lastObject];
+
+    if ([values isKindOfClass:[CPPopUpButton class]])
+    {
+        var items = [values itemArray];
+
+        for (var i = 0; i < items.length; i++)
+        {
+            var expression = [items[i] representedObject];
+
+            if ([expression expressionType] === CPConstantValueExpressionType)
+                [items[i] setTitle:[expression constantValue] ? @"Yes" : @"No"];
         }
     }
 
@@ -208,7 +242,7 @@ var EditorWidth         = 680.0,
 
     var compound = [[CPPredicateEditorRowTemplate alloc] initWithCompoundTypes:[CPAndPredicateType, CPOrPredicateType, CPNotPredicateType]];
 
-    var strings = [[LabeledRowTemplate alloc] initWithLeftExpressions:keyPaths([@"lastName", @"firstName", @"email", @"city"])
+    var strings = [[LabeledRowTemplate alloc] initWithLeftExpressions:keyPaths([@"lastName", @"firstName", @"email", @"city", @"notesText"])
                                          rightExpressionAttributeType:CPStringAttributeType
                                                              modifier:CPDirectPredicateModifier
                                                             operators:[CPContainsPredicateOperatorType,
@@ -241,7 +275,13 @@ var EditorWidth         = 680.0,
                                                                 operators:[CPEqualToPredicateOperatorType, CPNotEqualToPredicateOperatorType]
                                                                   options:0];
 
-    return [compound, strings, numbers, departments];
+    var flags = [[BooleanRowTemplate alloc] initWithLeftExpressions:keyPaths([@"hasNotes"])
+                                                   rightExpressions:[[CPExpression expressionForConstantValue:YES], [CPExpression expressionForConstantValue:NO]]
+                                                           modifier:CPDirectPredicateModifier
+                                                          operators:[CPEqualToPredicateOperatorType]
+                                                            options:0];
+
+    return [compound, strings, numbers, departments, flags];
 }
 
 // ---------------------------------------------------------------- Running the sheet

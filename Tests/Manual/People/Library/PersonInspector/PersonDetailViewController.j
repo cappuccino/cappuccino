@@ -2,6 +2,11 @@
  * PersonDetailViewController.j
  * People
  *
+ *
+ * Created by David Richardson.
+ * Copyright 2026, The Cappuccino Project.
+ *
+ *
  * Detail pane, the third column of the main window. It shows the person in its
  * representedObject, which the main split view controller binds to the selection of the people
  * table. Every control is bound to representedObject.<key>, which exercises
@@ -10,7 +15,8 @@
  * ("age").
  *
  * Controls covered: CPTextField (+formatter), CPComboBox, CPPopUpButton
- * (selectedValue binding), CPDatePicker, CPCheckBox, CPScrollView, and CPBox in its custom
+ * (selectedValue binding), CPDatePicker, CPCheckBox, CPScrollView, CPTextView (rich text,
+ * attributedString binding), and CPBox in its custom
  * type (an undrawn section container) and its separator type, CPButton in its disclosure
  * bezel style, and CPButtonBar with a toggle button.
  *
@@ -26,10 +32,16 @@
  * edit mode the text fields are bezeled and editable, and the other controls are enabled. The
  * text fields bind their editable state, and the other controls their enabled state, to
  * library.editable. The bezel is not a binding, so the controller observes the key and sets it.
+ *
+ * The Notes section holds a rich text CPTextView in a scroll view, bound to the person's notes
+ * with the attributedString binding. The binding updates the person as the text changes, so
+ * the table's notes icon follows the typing. CPTextView has no editable binding, so the
+ * controller sets its editable state, and the scroll view's border, when the mode changes.
  */
 
 @import <AppKit/AppKit.j>
 @import "../Library.j"
+@import "../MaskImage.j"
 
 /*
     Layout grid. Every row is RowHeight tall and RowPitch apart; labels and controls are centred
@@ -49,7 +61,8 @@ var RowHeight           = 30.0,
     DisclosureSize      = 13.0,
     SeparatorGap        = 12.0,
     SeparatorHeight     = 5.0,
-    BarHeight           = 26.0;
+    BarHeight           = 26.0,
+    NotesRowCount       = 4;
 
 /*
     The Edit button's images: a pencil in view mode and a check mark in edit mode, 16 by 16, as
@@ -74,6 +87,8 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     CPArray     _textFields;
     CPButton    _editButton;
     Library     _library;
+    CPTextView  _notesView;
+    CPScrollView _notesScrollView;
 }
 
 - (id)initWithLibrary:(Library)aLibrary
@@ -186,10 +201,47 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [uid setTextColor:[CPColor secondaryLabelColor]];
     [self _bind:uid binding:CPValueBinding key:@"uid" options:options];
 
+    content = [self _addSectionWithTitle:@"Notes" rowCount:NotesRowCount];
+    [self _addNotesViewIn:content];
+
     [self _layoutSections];
     [view addSubview:[self _buttonBarWithFrame:CGRectMake(0, CGRectGetHeight(frame) - BarHeight, CGRectGetWidth(frame), BarHeight)]];
     [self setView:view];
     [self _updateEditingAppearance];
+}
+
+// ---------------------------------------------------------------- Notes
+
+/*
+    Fills aSuperview, the Notes section's content view, with a scroll view that holds the rich
+    text view, inset by Margin at the sides and by half a margin at the top and bottom.
+*/
+- (void)_addNotesViewIn:(CPView)aSuperview
+{
+    var bounds = [aSuperview bounds],
+        frame = CGRectMake(Margin, Margin / 2, CGRectGetWidth(bounds) - 2 * Margin, CGRectGetHeight(bounds) - Margin);
+
+    _notesScrollView = [[CPScrollView alloc] initWithFrame:frame];
+    [_notesScrollView setHasHorizontalScroller:NO];
+    [_notesScrollView setHasVerticalScroller:YES];
+    [_notesScrollView setAutohidesScrollers:YES];
+    [_notesScrollView setAutoresizingMask:CPViewWidthSizable];
+
+    var contentSize = [_notesScrollView contentSize];
+
+    _notesView = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, contentSize.width, contentSize.height)];
+    [_notesView setRichText:YES];
+    [_notesView setSelectable:YES];
+    [_notesView setHorizontallyResizable:NO];
+    [_notesView setVerticallyResizable:YES];
+    [_notesView setAutoresizingMask:CPViewWidthSizable];
+    [_notesScrollView setDocumentView:_notesView];
+
+    var options = [self _placeholderOptions];
+    [options setObject:YES forKey:CPContinuouslyUpdatesValueBindingOption];
+    [self _bind:_notesView binding:CPAttributedStringBinding key:@"notes" options:options];
+
+    [aSuperview addSubview:_notesScrollView];
 }
 
 // ---------------------------------------------------------------- Edit mode
@@ -198,8 +250,7 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     The button bar at the bottom of the pane. It holds the Edit button, a toggle whose image is
     a pencil in view mode and a check mark in edit mode.
 
-    The images are CSS masks. A material icon would need the Material Icons font, which the
-    framework does not load, so the browser would draw the icon's name as text.
+    The images are CSS masks (MaskImage.j).
 */
 - (CPButtonBar)_buttonBarWithFrame:(CGRect)aFrame
 {
@@ -208,7 +259,10 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [buttonBar setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
     [buttonBar setHasResizeControl:NO];
 
-    _editButton = [buttonBar buttonWithImage:[self _maskImage:EditMask] alternateImage:[self _maskImage:DoneMask]];
+    var iconSize = CGSizeMake(16, 16);
+
+    _editButton = [buttonBar buttonWithImage:MaskImage(EditMask, iconSize, [CPColor labelColor])
+                              alternateImage:MaskImage(DoneMask, iconSize, [CPColor labelColor])];
     [_editButton setButtonType:CPToggleButton];
     [_editButton setTarget:self];
     [_editButton setAction:@selector(toggleEditing:)];
@@ -216,22 +270,6 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [buttonBar setButtons:[_editButton]];
 
     return buttonBar;
-}
-
-- (CPImage)_maskImage:(CPString)aMask
-{
-    return [CPImage imageWithCSSDictionary:@{
-                "-webkit-mask-image": aMask,
-                "mask-image": aMask,
-                "background-color": [CPColor labelColor],
-                "-webkit-mask-size": "contain",
-                "mask-size": "contain",
-                "-webkit-mask-repeat": "no-repeat",
-                "mask-repeat": "no-repeat",
-                "-webkit-mask-position": "center",
-                "mask-position": "center"
-            }
-            size:CGSizeMake(16, 16)];
 }
 
 /*
@@ -269,6 +307,10 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
 
     for (var i = 0, count = [_textFields count]; i < count; i++)
         [_textFields[i] setBezeled:isEditable];
+
+    [_notesView setEditable:isEditable];
+    [_notesScrollView setBorderType:isEditable ? CPBezelBorder : CPNoBorder];
+    [_notesView setBackgroundColor:isEditable ? [CPColor textBackgroundColor] : [CPColor clearColor]];
 
     [_editButton setState:isEditable ? CPOnState : CPOffState];
     [_editButton setToolTip:isEditable ? @"Finish editing" : @"Edit"];

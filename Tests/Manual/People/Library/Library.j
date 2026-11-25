@@ -2,6 +2,9 @@
  * Library.j
  * People
  *
+ * Created by David Richardson.
+ * Copyright 2026, The Cappuccino Project.
+ *
  * The application model. Holds all people plus the three source list
  * sections (Library, Groups, Smart Folders), persists itself to
  * CPUserDefaults (local storage) and observes every Person via KVO so that
@@ -34,7 +37,7 @@ LibraryDepartments              = [@"Engineering", @"Design", @"Marketing", @"Sa
 LibraryCities                   = [@"Berlin", @"Hamburg", @"Munich", @"Zürich", @"Vienna", @"Paris", @"London", @"Lisbon", @"New York", @"San Francisco", @"Tokyo"];
 
 var LibraryDefaultsKey          = @"People.Library.v1",
-    ObservedPersonKeys          = [@"firstName", @"lastName", @"email", @"department", @"city", @"birthDate", @"salary", @"isManager"],
+    ObservedPersonKeys          = [@"firstName", @"lastName", @"email", @"department", @"city", @"birthDate", @"salary", @"isManager", @"notes"],
     SourceItemUIDCounter        = 0;
 
 
@@ -708,6 +711,31 @@ var LibraryDefaultsKey          = @"People.Library.v1",
         return raw.replace(/ø/g, "o").replace(/[^a-z.]/g, "") + "@example.com";
     }
 
+    /*
+        Sample notes for every 13th person, chosen by index so that the random sequence, and
+        with it the rest of the sample data, stays the same. The first note is styled, so the
+        rich text in the detail pane shows on first launch.
+    */
+    var sampleNotes = [
+            @"Prefers email to phone calls. Out of office on Fridays.",
+            @"Mentor for the new graduates this year.",
+            @"Allergic to nuts; remember for the team lunch.",
+            @"Working on the migration project until spring.",
+            @"Speaks Portuguese and Japanese."
+        ],
+        noteIndex = 0;
+
+    function sampleNote(anIndex)
+    {
+        var text = sampleNotes[anIndex % sampleNotes.length],
+            note = [[CPMutableAttributedString alloc] initWithString:text];
+
+        if (anIndex === 0)
+            [note addAttribute:CPFontAttributeName value:[CPFont boldSystemFontOfSize:[CPFont systemFontSize]] range:CPMakeRange(0, text.indexOf(" "))];
+
+        return note;
+    }
+
     var count = 240;
 
     for (var i = 0; i < count; i++)
@@ -725,6 +753,9 @@ var LibraryDefaultsKey          = @"People.Library.v1",
         [person setBirthDate:new Date(1955 + Math.floor(random() * 48), Math.floor(random() * 12), 1 + Math.floor(random() * 28))];
         [person setSalary:38000 + Math.round(random() * 240) * 500];
         [person setIsManager:random() < 0.12];
+
+        if (i % 13 === 3)
+            [person setNotes:sampleNote(noteIndex++)];
 
         [self _insertPerson:person];
     }
@@ -760,7 +791,8 @@ var LibraryDefaultsKey          = @"People.Library.v1",
         [@"High earners in Berlin",  [CPPredicate predicateWithFormat:@"salary >= %@ AND city ==[cd] %@", 120000, @"berlin"]],
         [@"Sales or Marketing",      [CPPredicate predicateWithFormat:@"department == %@ OR department == %@", @"Sales", @"Marketing"]],
         [@"Not in Support",          [CPPredicate predicateWithFormat:@"NOT (department == %@)", @"Support"]],
-        [@"Nested compound",         [CPPredicate predicateWithFormat:@"age < %@ AND (city ==[cd] %@ OR city ==[cd] %@)", 35, @"tokyo", @"lisbon"]]
+        [@"Nested compound",         [CPPredicate predicateWithFormat:@"age < %@ AND (city ==[cd] %@ OR city ==[cd] %@)", 35, @"tokyo", @"lisbon"]],
+        [@"Has Notes",               [CPPredicate predicateWithFormat:@"hasNotes == %@", YES]]
     ];
 
     for (var i = 0; i < folders.length; i++)

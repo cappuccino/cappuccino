@@ -11,6 +11,8 @@
  *     autosaved column state, alternating rows, grid lines
  *   - the table as drag source (rows -> source list groups)
  *   - CPPasteboard (copy / paste as tab separated text)
+ *   - a notes column: a CPImageView data view bound to hasNotes through a named
+ *     CPValueTransformer, with an image in its header instead of a title
  *
  * The editable columns take edits only while the library is editable; the controller observes
  * the library's "editable" key and sets each column's editable state.
@@ -21,6 +23,48 @@
 
 @import <AppKit/AppKit.j>
 @import "../Library.j"
+@import "../MaskImage.j"
+
+/*
+    The notes column's icon, a page with lines, 16 by 16:
+      <path d="M3.5 1.5h6l3 3v10h-9zM9.5 1.5v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3"
+            stroke="black" stroke-width="1.2" fill="none"/>
+*/
+var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTMuNSAxLjVoNmwzIDN2MTBoLTl6TTkuNSAxLjV2M2gzTTUuNSA4aDVNNS41IDEwLjVoNU01LjUgMTNoMyIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIxLjIiIGZpbGw9Im5vbmUiLz48L3N2Zz4=')",
+    NotesIconSize       = CGSizeMake(14, 14),
+    NotesIconTransformerName = @"NotesIconTransformer";
+
+/*
+    Turns a person's hasNotes value into the notes icon, or into no image. The table's notes
+    column binds through it, by name, with CPValueTransformerNameBindingOption.
+*/
+@implementation NotesIconTransformer : CPValueTransformer
+{
+    CPImage     _icon;
+}
+
++ (Class)transformedValueClass
+{
+    return [CPImage class];
+}
+
++ (BOOL)allowsReverseTransformation
+{
+    return NO;
+}
+
+- (id)transformedValue:(id)aValue
+{
+    if (!aValue)
+        return nil;
+
+    if (!_icon)
+        _icon = MaskImage(NotesMask, NotesIconSize, [CPColor secondaryLabelColor]);
+
+    return _icon;
+}
+
+@end
 
 @implementation PeopleViewController : CPViewController
 {
@@ -53,6 +97,9 @@
         [_arrayController addObserver:self forKeyPath:@"arrangedObjects" options:0 context:nil];
         [_arrayController addObserver:self forKeyPath:@"selectionIndexes" options:0 context:nil];
         [_library addObserver:self forKeyPath:@"editable" options:0 context:@"editable"];
+
+        if (![CPValueTransformer valueTransformerForName:NotesIconTransformerName])
+            [CPValueTransformer setValueTransformer:[[NotesIconTransformer alloc] init] forName:NotesIconTransformerName];
     }
 
     return self;
@@ -128,6 +175,19 @@
     [[managerColumn headerView] setAlignment:CPCenterTextAlignment];
     [managerColumn setResizingMask:CPTableColumnNoResizing];
 
+    // Notes: an icon when the person has notes, nothing when not.
+    var notesView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
+    [notesView setImageScaling:CPImageScaleNone];
+    [notesView setImageAlignment:CPImageAlignCenter];
+
+    var notesColumn = [self _addColumn:@"hasNotes" title:@"" width:28 editable:NO dataView:notesView
+                                options:@{ CPValueTransformerNameBindingOption: NotesIconTransformerName }];
+    [notesColumn setResizingMask:CPTableColumnNoResizing];
+    [notesColumn setHeaderToolTip:@"Notes"];
+    [[[notesColumn headerView] textField] setImage:MaskImage(NotesMask, NotesIconSize, [CPColor secondaryLabelColor])];
+    [[[notesColumn headerView] textField] setImagePosition:CPImageOnly];
+    [[notesColumn headerView] setAlignment:CPCenterTextAlignment];
+
     [self _addColumn:@"email"       title:@"Email"      width:220 editable:YES dataView:nil];
 
     // Selection and sorting through bindings.
@@ -197,6 +257,15 @@
 
 - (CPTableColumn)_addColumn:(CPString)aKey title:(CPString)aTitle width:(float)aWidth editable:(BOOL)isEditable dataView:(CPView)aDataView
 {
+    return [self _addColumn:aKey title:aTitle width:aWidth editable:isEditable dataView:aDataView options:nil];
+}
+
+/*
+    Adds a column for aKey and binds its value to arrangedObjects.<aKey> with the binding
+    options in someOptions.
+*/
+- (CPTableColumn)_addColumn:(CPString)aKey title:(CPString)aTitle width:(float)aWidth editable:(BOOL)isEditable dataView:(CPView)aDataView options:(CPDictionary)someOptions
+{
     var column = [[CPTableColumn alloc] initWithIdentifier:aKey],
         selector = [@"firstName", @"lastName", @"department", @"city", @"email"].indexOf(aKey) !== -1 ? @selector(caseInsensitiveCompare:) : @selector(compare:);
 
@@ -217,7 +286,7 @@
 
     [column setDataView:aDataView];
     [_tableView addTableColumn:column];
-    [column bind:CPValueBinding toObject:_arrayController withKeyPath:@"arrangedObjects." + aKey options:nil];
+    [column bind:CPValueBinding toObject:_arrayController withKeyPath:@"arrangedObjects." + aKey options:someOptions];
 
     return column;
 }

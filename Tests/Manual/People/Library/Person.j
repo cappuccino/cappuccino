@@ -2,6 +2,9 @@
  * Person.j
  * People
  *
+ * Created by David Richardson.
+ * Copyright 2026, The Cappuccino Project.
+ *
  * The record type shown in the people table. Plain KVC/KVO compliant model
  * object: every property is exercised by bindings (table columns, detail
  * pane), by CPPredicate evaluation (smart folders, search) and by
@@ -10,6 +13,13 @@
  * "age" and "fullName" are derived properties registered with
  * +keyPathsForValuesAffecting<Key> so that KVO dependent-key support is
  * exercised as well.
+ *
+ * "notes" is rich text (a CPAttributedString), edited in a CPTextView in the
+ * detail pane. Two derived keys depend on it: "notesText", its plain string,
+ * which search and smart folder predicates use, and "hasNotes", which the
+ * table's notes column and the Has Notes smart folder use. The notes are saved
+ * as a keyed archive, because an attributed string is not a property list
+ * value.
  */
 
 @import <Foundation/Foundation.j>
@@ -27,6 +37,7 @@ var PersonUIDCounter = 0;
     CPDate      birthDate   @accessors;
     CPNumber    salary      @accessors;
     BOOL        isManager   @accessors;
+    CPAttributedString notes @accessors;
 }
 
 + (CPString)nextUID
@@ -42,6 +53,16 @@ var PersonUIDCounter = 0;
 + (CPSet)keyPathsForValuesAffectingFullName
 {
     return [CPSet setWithObjects:@"firstName", @"lastName"];
+}
+
++ (CPSet)keyPathsForValuesAffectingNotesText
+{
+    return [CPSet setWithObject:@"notes"];
+}
+
++ (CPSet)keyPathsForValuesAffectingHasNotes
+{
+    return [CPSet setWithObject:@"notes"];
 }
 
 - (id)init
@@ -82,6 +103,9 @@ var PersonUIDCounter = 0;
 
         salary = Number([aDictionary objectForKey:@"salary"] || 0);
         isManager = !![aDictionary objectForKey:@"isManager"];
+
+        var archivedNotes = [aDictionary objectForKey:@"notes"];
+        notes = archivedNotes ? [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:archivedNotes]] : nil;
     }
 
     return self;
@@ -99,7 +123,8 @@ var PersonUIDCounter = 0;
         city || @"", @"city",
         birthDate ? [birthDate timeIntervalSince1970] : 0, @"birthDate",
         Number(salary || 0), @"salary",
-        isManager ? 1 : 0, @"isManager"];
+        isManager ? 1 : 0, @"isManager",
+        [self hasNotes] ? [[CPKeyedArchiver archivedDataWithRootObject:notes] rawString] : @"", @"notes"];
 }
 
 - (int)age
@@ -115,6 +140,18 @@ var PersonUIDCounter = 0;
         years--;
 
     return years;
+}
+
+// The plain text of the notes, or the empty string when there are none.
+- (CPString)notesText
+{
+    return notes ? [notes string] : @"";
+}
+
+// YES when the notes hold more than white space.
+- (BOOL)hasNotes
+{
+    return [[self notesText] stringByTrimmingWhitespace].length > 0;
 }
 
 - (CPString)fullName
