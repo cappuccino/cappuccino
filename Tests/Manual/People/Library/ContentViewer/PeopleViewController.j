@@ -191,7 +191,7 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     [checkBox setImagePosition:CPImageOnly];
     [checkBox setAlignment:CPCenterTextAlignment];
 
-    var managerColumn = [self _addColumn:@"isManager" title:@"Manager" width:64 editable:YES dataView:checkBox];
+    var managerColumn = [self _addColumn:@"isManager" title:@"Is Manager" width:80 editable:YES dataView:checkBox];
     [[managerColumn headerView] setAlignment:CPCenterTextAlignment];
     [managerColumn setResizingMask:CPTableColumnNoResizing];
 

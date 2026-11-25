@@ -168,7 +168,13 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [self _bind:department binding:CPSelectedValueBinding key:@"department" options:nil];
     [self _bindEnabledToEditing:department];
 
-    var manager = [CPCheckBox checkBoxWithTitle:@"Manager"];
+    /*
+        Like every other row, the checkbox row has its label in the label column, so the
+        checkbox itself has no title.
+    */
+    [self _labelInRow:row title:@"Is Manager:" in:content];
+    var manager = [CPCheckBox checkBoxWithTitle:@""];
+    [manager setImagePosition:CPImageOnly];
     [manager setAllowsMixedState:YES];
     [manager sizeToFit];
     [self _place:manager row:row++ x:fieldX width:CGRectGetWidth([manager frame]) height:CGRectGetHeight([manager frame]) in:content];
