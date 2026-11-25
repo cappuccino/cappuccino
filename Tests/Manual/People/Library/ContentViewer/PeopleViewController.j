@@ -13,6 +13,8 @@
  *   - CPPasteboard (copy / paste as tab separated text)
  *   - a notes column: a CPImageView data view bound to hasNotes through a named
  *     CPValueTransformer, with an image in its header instead of a title
+ *   - a contextual menu from the delegate, whose items go through the responder chain:
+ *     Edit, Deselect All (the table's own action), Invert Selection and Delete Selected
  *
  * The editable columns take edits only while the library is editable; the controller observes
  * the library's "editable" key and sets each column's editable state.
@@ -74,6 +76,9 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     CPTextField                 _statusField;
     CPString                    _contentTitle;
     CPArray                     _editableColumns;
+    CPArray                     _defaultColumnLayout;
+    CPMenu                      _tableMenu;
+    CPInteger                   _menuRow;
 }
 
 - (id)initWithLibrary:(Library)aLibrary
@@ -83,6 +88,8 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
         _library = aLibrary;
         _contentTitle = @"";
         _editableColumns = [];
+        _defaultColumnLayout = [];
+        _menuRow = CPNotFound;
 
         _arrayController = [[CPArrayController alloc] init];
         [_arrayController setEditable:YES];
@@ -158,6 +165,19 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     var numberFormatter = [[CPNumberFormatter alloc] init];
     [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
 
+    // Notes, the first column: an icon when the person has notes, nothing when not.
+    var notesView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
+    [notesView setImageScaling:CPImageScaleNone];
+    [notesView setImageAlignment:CPImageAlignCenter];
+
+    var notesColumn = [self _addColumn:@"hasNotes" title:@"" width:28 editable:NO dataView:notesView
+                                options:@{ CPValueTransformerNameBindingOption: NotesIconTransformerName }];
+    [notesColumn setResizingMask:CPTableColumnNoResizing];
+    [notesColumn setHeaderToolTip:@"Notes"];
+    [[[notesColumn headerView] textField] setImage:MaskImage(NotesMask, NotesIconSize, [CPColor secondaryLabelColor])];
+    [[[notesColumn headerView] textField] setImagePosition:CPImageOnly];
+    [[notesColumn headerView] setAlignment:CPCenterTextAlignment];
+
     [self _addColumn:@"lastName"    title:@"Last Name"  width:120 editable:YES dataView:nil];
     [self _addColumn:@"firstName"   title:@"First Name" width:110 editable:YES dataView:nil];
     [self _addColumn:@"department"  title:@"Department" width:110 editable:YES dataView:nil];
@@ -175,19 +195,6 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     [[managerColumn headerView] setAlignment:CPCenterTextAlignment];
     [managerColumn setResizingMask:CPTableColumnNoResizing];
 
-    // Notes: an icon when the person has notes, nothing when not.
-    var notesView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-    [notesView setImageScaling:CPImageScaleNone];
-    [notesView setImageAlignment:CPImageAlignCenter];
-
-    var notesColumn = [self _addColumn:@"hasNotes" title:@"" width:28 editable:NO dataView:notesView
-                                options:@{ CPValueTransformerNameBindingOption: NotesIconTransformerName }];
-    [notesColumn setResizingMask:CPTableColumnNoResizing];
-    [notesColumn setHeaderToolTip:@"Notes"];
-    [[[notesColumn headerView] textField] setImage:MaskImage(NotesMask, NotesIconSize, [CPColor secondaryLabelColor])];
-    [[[notesColumn headerView] textField] setImagePosition:CPImageOnly];
-    [[notesColumn headerView] setAlignment:CPCenterTextAlignment];
-
     [self _addColumn:@"email"       title:@"Email"      width:220 editable:YES dataView:nil];
 
     // Selection and sorting through bindings.
@@ -200,6 +207,8 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     [_tableView setDelegate:self];
     [_tableView setDraggingSourceOperationMask:CPDragOperationCopy | CPDragOperationMove forLocal:YES];
     [_tableView setDraggingSourceOperationMask:CPDragOperationCopy forLocal:NO];
+
+    _tableMenu = [self _buildTableMenu];
 
     [_tableView setAutosaveName:@"People.PeopleTable"];
     [_tableView setAutosaveTableColumns:YES];
@@ -286,9 +295,107 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
 
     [column setDataView:aDataView];
     [_tableView addTableColumn:column];
+    [_defaultColumnLayout addObject:{ identifier: aKey, width: aWidth }];
     [column bind:CPValueBinding toObject:_arrayController withKeyPath:@"arrangedObjects." + aKey options:someOptions];
 
     return column;
+}
+
+/*
+    Returns the columns to the order and widths they are built with. The table's autosave then
+    stores that layout. Reset Application uses it.
+*/
+- (void)restoreDefaultColumns
+{
+    [self view];
+
+    for (var i = 0, count = [_defaultColumnLayout count]; i < count; i++)
+    {
+        var layout = _defaultColumnLayout[i],
+            index = [_tableView columnWithIdentifier:layout.identifier];
+
+        if (index === CPNotFound)
+            continue;
+
+        if (index !== i)
+            [_tableView moveColumn:index toColumn:i];
+
+        [[_tableView tableColumnWithIdentifier:layout.identifier] setWidth:layout.width];
+    }
+}
+
+// ---------------------------------------------------------------- Contextual menu
+
+/*
+    The items have no target, so each action goes through the responder chain from the table:
+    Deselect All reaches the table itself, Edit and Invert Selection this controller, and
+    Delete Selected the window controller, which also deletes with the minus button and the
+    Delete key.
+*/
+- (CPMenu)_buildTableMenu
+{
+    var menu = [[CPMenu alloc] initWithTitle:@"People"];
+
+    [menu addItemWithTitle:@"Edit" action:@selector(editClickedPerson:) keyEquivalent:@""];
+    [menu addItem:[CPMenuItem separatorItem]];
+    [menu addItemWithTitle:@"Deselect All" action:@selector(deselectAll:) keyEquivalent:@""];
+    [menu addItemWithTitle:@"Invert Selection" action:@selector(invertSelection:) keyEquivalent:@""];
+    [menu addItem:[CPMenuItem separatorItem]];
+    [menu addItemWithTitle:@"Delete Selected" action:@selector(removeSelectedPeople:) keyEquivalent:@""];
+
+    return menu;
+}
+
+/*
+    Shows the contextual menu for a right-click. The table becomes the first responder, so the
+    menu's actions start their way through the responder chain at the table.
+*/
+- (CPMenu)tableView:(CPTableView)aTableView menuForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
+{
+    _menuRow = aRow;
+    [[_tableView window] makeFirstResponder:_tableView];
+
+    return _tableMenu;
+}
+
+/*
+    Selects the person whose row was right-clicked, turns on edit mode and edits the row.
+*/
+- (@action)editClickedPerson:(id)aSender
+{
+    var people = [_arrayController arrangedObjects];
+
+    if (_menuRow < 0 || _menuRow >= [people count])
+        return;
+
+    [_library setEditable:YES];
+    [self selectPerson:[people objectAtIndex:_menuRow] edit:YES];
+}
+
+/*
+    Selects the rows that are not selected, and deselects the rows that are.
+*/
+- (@action)invertSelection:(id)aSender
+{
+    var count = [[_arrayController arrangedObjects] count],
+        inverted = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, count)];
+
+    [inverted removeIndexes:[_arrayController selectionIndexes]];
+    [_arrayController setSelectionIndexes:inverted];
+}
+
+- (BOOL)validateMenuItem:(CPMenuItem)anItem
+{
+    switch ([anItem action])
+    {
+        case @selector(editClickedPerson:):
+            return _menuRow >= 0 && _menuRow < [[_arrayController arrangedObjects] count];
+
+        case @selector(invertSelection:):
+            return [[_arrayController arrangedObjects] count] > 0;
+    }
+
+    return YES;
 }
 
 // ---------------------------------------------------------------- Content

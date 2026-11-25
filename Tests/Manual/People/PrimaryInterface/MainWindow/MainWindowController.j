@@ -452,7 +452,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
     [alert setAlertStyle:CPWarningAlertStyle];
     [alert setMessageText:@"Reset the application?"];
-    [alert setInformativeText:@"All people, groups and smart folders will be replaced by the sample data. The toolbar, the sidebar, the detail pane, the recent searches and the appearance return to their defaults. This cannot be undone."];
+    [alert setInformativeText:@"All people, groups and smart folders will be replaced by the sample data. The toolbar, the table columns, the sidebar, the detail pane, the recent searches and the appearance return to their defaults. This cannot be undone."];
     [alert addButtonWithTitle:@"Reset"];
     [alert addButtonWithTitle:@"Cancel"];
 
@@ -495,6 +495,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [toolbar setVisible:YES];
 
     [_splitViewController restoreDefaultLayout];
+    [_peopleController restoreDefaultColumns];
 
     [SettingsWindowController resetAppearance];
 }

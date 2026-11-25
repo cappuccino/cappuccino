@@ -61,4 +61,57 @@ spaces, because the legacy toolchain does not accept them.
     toolbar stays (autosave). While the sheet is open, the toolbar items do not act.
     The standard Colors item opens the colour panel. In both appearances its labels, the boxes
     around the preview and the swatches, and the opacity slider's track and knob show.
-13. File ▸ Reset Application…: alert sheet, then sample data, default toolbar (items, Icon and Text, regular size), sidebar width, detail pane, empty recent searches and Auto appearance restored at once, without a reload. Cancel changes nothing.
+13. File ▸ Reset Application…: alert sheet, then sample data, default toolbar (items, Icon and Text, regular size), default table columns (order and widths, Notes first), sidebar width, detail pane, empty recent searches and Auto appearance restored at once, without a reload. Cancel changes nothing.
+
+## Items to exercise
+
+These items extend People for testers and developers. Most of them add a new way to reach an
+existing action. If the application routes its actions through the responder chain, each one
+should be nearly trivial to add. Together they exercise the kind of interface that is difficult
+to build with a web component framework.
+
+### Detail pane
+
+1. Edit history. This needs a change to the data model.
+   - The detail pane has an Edit History section. A table shows one row for each saved edit,
+     with its time and an optional description.
+   - When an edit is saved, a modal alert asks for an optional description. Accept is the
+     default button. All controls in the alert take part in tab selection.
+   - The detail button bar has a Reject button that discards the edit. A modal alert asks the
+     user to confirm first. Confirm is the default button.
+   - The time is stored in UTC and shown in local time, in conversational form.
+2. When no single row is selected, a covering view over the detail pane says
+   "Please select a single row to edit or display."
+3. The contextual menu of the Notes field adds the selection commands and basic style commands.
+
+### People table
+
+4. The Notes column is the first column by default.
+5. A Revisions column next to it shows the number of saved edits, from the edit history.
+6. Quick look: a popover shows the whole record of a row.
+   - Hovering over a row for about 0.8 seconds opens a popover anchored to that row. While it is
+     open, moving to another row moves it at once. A click outside it, a scroll or the pointer
+     leaving the table closes it.
+   - The space bar opens and closes the popover for the selected row.
+   - The popover holds a second detail view controller, the same class as the detail pane, so it
+     shows every section, notes included. It also works when the detail pane is hidden. In edit
+     mode the person can be edited in the popover.
+   - No popover opens while a cell is edited or a drag is in progress.
+   - This exercises CPPopover, CPTrackingArea, a view controller used twice, and bindings and
+     the first responder in a popover window.
+7. A contextual menu on the table offers:
+   - Edit: edits the row that was clicked.
+   - Deselect All.
+   - Invert Selection.
+   - Delete Selected: deletes the selection, whether it has one row or many, contiguous or not.
+     It is disabled when nothing is selected.
+
+### Window and menus
+
+8. In edit mode, Hide Details is disabled everywhere: menu, toolbar and button bar.
+9. The navigation button bar has a pop-up menu on its right side. When the menu bar is hidden,
+   it holds every main menu item that no other control offers.
+10. An About dialog.
+11. An action hides and shows the main menu. This shows both styles of application menu use.
+12. A search field shows at the top of the navigation sidebar only while the toolbar is hidden.
+    An animated move between the two places is optional.
