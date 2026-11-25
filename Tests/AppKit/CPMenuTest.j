@@ -271,4 +271,66 @@
     }
 }
 
+// MARK: - Menu bar visibility
+
+/*
+    ojtest has no browser window for a window to fill and sets no primary platform window or
+    main menu. This test sets both, and marks the window as one that fills its platform window
+    without going through -setFullPlatformWindow:. The window starts below a visible menu bar;
+    hiding the bar must move its top to the top of the platform window, and showing the bar
+    must move it below the bar again.
+*/
+- (void)testAWindowThatFillsThePlatformWindowFollowsTheMenuBar
+{
+    var aristo3 = BuiltThemeNamed(@"Aristo3"),
+        previousTheme = [CPTheme defaultTheme],
+        previousPlatformWindow = [CPPlatformWindow primaryPlatformWindow],
+        previousMainMenu = [CPApp mainMenu],
+        platformWindow = [[CPPlatformWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 800.0, 600.0)];
+
+    [self assertNotNull:aristo3 message:@"The built blends hold no Aristo3 theme. Build the themes first."];
+
+    [CPTheme setDefaultTheme:aristo3];
+    [CPPlatformWindow setPrimaryPlatformWindow:platformWindow];
+    [CPApp setMainMenu:[[CPMenu alloc] initWithTitle:@"Main"]];
+
+    try
+    {
+        var window = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 400.0, 300.0) styleMask:CPBorderlessWindowMask],
+            menuBarHeight = [CPMenu menuBarHeight];
+
+        [window setPlatformWindow:platformWindow];
+        window._isFullPlatformWindow = YES;
+        [window orderFront:nil];
+
+        [CPMenu setMenuBarVisible:YES];
+        [window setFrame:[[window platformWindow] visibleFrame]];
+
+        [self assertTrue:menuBarHeight > 0 message:@"the theme gives the menu bar a height"];
+        [self assert:menuBarHeight equals:CGRectGetMinY([window frame]) message:@"the window starts below the menu bar"];
+
+        [CPMenu setMenuBarVisible:NO];
+        [self assert:0 equals:CGRectGetMinY([window frame]) message:@"hiding the menu bar moves the window to the top"];
+
+        [CPMenu setMenuBarVisible:YES];
+        [self assert:menuBarHeight equals:CGRectGetMinY([window frame]) message:@"showing the menu bar moves the window below it"];
+    }
+    finally
+    {
+        [CPMenu setMenuBarVisible:NO];
+
+        /*
+            -setMainMenu: cannot clear the main menu, so the test puts back an absent main menu
+            directly.
+        */
+        if (previousMainMenu)
+            [CPApp setMainMenu:previousMainMenu];
+        else
+            CPApp._menu = nil;
+
+        [CPPlatformWindow setPrimaryPlatformWindow:previousPlatformWindow];
+        [CPTheme setDefaultTheme:previousTheme];
+    }
+}
+
 @end

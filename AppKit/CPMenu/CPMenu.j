@@ -137,6 +137,23 @@ var _CPMenuBarVisible               = NO,
     else
         [_CPMenuBarSharedWindow orderOut:self];
 
+    /*
+        2026-11-25: Windows that fill the primary platform window take its new visible frame,
+        which leaves out the menu bar only while the bar shows. They kept the frame they had,
+        so hiding the menu bar left a gap above the main window, and showing it covered the
+        top of that window. Without a primary platform window there is no frame to take.
+    */
+    var windows = [CPApp windows],
+        primaryPlatformWindow = [CPPlatformWindow primaryPlatformWindow];
+
+    for (var i = 0, count = primaryPlatformWindow ? [windows count] : 0; i < count; i++)
+    {
+        var aWindow = windows[i];
+
+        if ([aWindow isFullPlatformWindow] && [aWindow platformWindow] === primaryPlatformWindow)
+            [aWindow setFrame:[primaryPlatformWindow visibleFrame]];
+    }
+
 // FIXME: There must be a better way to do this.
     if (CPDOMAvailable)
     {
