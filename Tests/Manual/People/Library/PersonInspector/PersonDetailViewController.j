@@ -10,26 +10,38 @@
  * ("age").
  *
  * Controls covered: CPTextField (+formatter), CPComboBox, CPPopUpButton
- * (selectedValue binding), CPDatePicker, CPCheckBox, CPBox.
+ * (selectedValue binding), CPDatePicker, CPCheckBox, CPScrollView, and CPBox in its custom
+ * type (an undrawn section container) and its separator type, and CPButton in its disclosure
+ * bezel style.
+ *
+ * The pane has one flat background, the under-page background colour, which matches the source
+ * list. Its fields are grouped in sections. Each section has a header with a disclosure triangle
+ * and a title, and a separator line divides the sections. The sections are stacked by frame in
+ * -_layoutSections, which places each visible section below the one before it; the scroll view
+ * scrolls them when the pane is too short.
  */
 
 @import <AppKit/AppKit.j>
 @import "../Library.j"
 
-// Layout grid. Every row is RowHeight tall; labels and controls are centred on
-// the row's midline regardless of each control's intrinsic height.
-var RowHeight       = 30.0,
-    RowPitch        = 36.0,
-    RowCount        = 10,
-    Margin          = 12.0,
-    LabelWidth      = 90.0,
-    LabelGap        = 8.0,
-    FieldWidth      = 230.0,
-    ShortFieldWidth = 140.0,
-    TextFieldHeight = 29.0,
-    PopUpHeight     = 25.0,
-    DatePickerHeight= 25.0,
-    BoxHeight       = RowCount * RowPitch + 40.0;
+/*
+    Layout grid. Every row is RowHeight tall and RowPitch apart; labels and controls are centred
+    on the row's midline regardless of each control's intrinsic height.
+*/
+var RowHeight           = 30.0,
+    RowPitch            = 36.0,
+    Margin              = 12.0,
+    LabelWidth          = 90.0,
+    LabelGap            = 8.0,
+    FieldWidth          = 230.0,
+    ShortFieldWidth     = 140.0,
+    TextFieldHeight     = 29.0,
+    PopUpHeight         = 25.0,
+    DatePickerHeight    = 25.0,
+    HeaderHeight        = 24.0,
+    DisclosureSize      = 13.0,
+    SeparatorGap        = 12.0,
+    SeparatorHeight     = 5.0;
 
 /*
     The width the pane takes at first and after a reset, and the narrowest it can become. The
@@ -40,6 +52,8 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
 
 @implementation PersonDetailViewController : CPViewController
 {
+    CPView      _documentView;
+    CPArray     _sections;
 }
 
 - (id)init
@@ -62,25 +76,38 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
 
 - (void)loadView
 {
-    var frame = CGRectMake(0, 0, PersonDetailPreferredWidth, BoxHeight + 2 * 8.0),
+    var frame = CGRectMake(0, 0, PersonDetailPreferredWidth, 10 * RowPitch + 3 * HeaderHeight),
         view = [[CPView alloc] initWithFrame:frame];
 
     [view setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [view setBackgroundColor:[CPColor underPageBackgroundColor]];
 
-    var box = [[CPBox alloc] initWithFrame:CGRectMake(Margin, 8.0, CGRectGetWidth(frame) - 2 * Margin, BoxHeight)];
-    [box setTitle:@"Selected Person"];
-    [box setAutoresizingMask:CPViewWidthSizable | CPViewMaxYMargin];
-    [view addSubview:box];
+    var scrollView = [[CPScrollView alloc] initWithFrame:[view bounds]];
 
-    var content = [box contentView],
-        options = [self _placeholderOptions],
-        x = Margin,
-        fieldX = x + LabelWidth + LabelGap,
+    [scrollView setBorderType:CPNoBorder];
+    [scrollView setHasHorizontalScroller:NO];
+    [scrollView setHasVerticalScroller:YES];
+    [scrollView setAutohidesScrollers:YES];
+    [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [view addSubview:scrollView];
+
+    _documentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(frame), 0)];
+    [_documentView setAutoresizingMask:CPViewWidthSizable];
+    [scrollView setDocumentView:_documentView];
+
+    _sections = [];
+
+    var options = [self _placeholderOptions],
+        fieldX = Margin + LabelWidth + LabelGap,
+        content = [self _addSectionWithTitle:@"Name" rowCount:3],
         row = 0;
 
     [self _bind:[self _textFieldInRow:row++ label:@"First Name:" in:content] binding:CPValueBinding key:@"firstName" options:options];
     [self _bind:[self _textFieldInRow:row++ label:@"Last Name:" in:content] binding:CPValueBinding key:@"lastName" options:options];
     [self _bind:[self _textFieldInRow:row++ label:@"Email:" in:content] binding:CPValueBinding key:@"email" options:options];
+
+    content = [self _addSectionWithTitle:@"Details" rowCount:7];
+    row = 0;
 
     [self _labelInRow:row title:@"Department:" in:content];
     var department = [[CPPopUpButton alloc] initWithFrame:CGRectMakeZero() pullsDown:NO];
@@ -128,20 +155,117 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [uid setTextColor:[CPColor secondaryLabelColor]];
     [self _bind:uid binding:CPValueBinding key:@"uid" options:options];
 
+    [self _layoutSections];
     [self setView:view];
+}
+
+// ---------------------------------------------------------------- Sections
+
+/*
+    Adds a section with a header (a disclosure triangle and a title), an undrawn box for aRowCount
+    rows of fields, and, after the first section, a separator line above the header. Returns the
+    box's content view, which takes the fields. The section starts open.
+*/
+- (CPView)_addSectionWithTitle:(CPString)aTitle rowCount:(int)aRowCount
+{
+    var width = CGRectGetWidth([_documentView bounds]),
+        separator = nil;
+
+    if ([_sections count])
+    {
+        /*
+            A horizontal separator is 5 points tall, as in Interface Builder; CPBox draws its line
+            in the middle of that height.
+        */
+        separator = [[CPBox alloc] initWithFrame:CGRectMake(Margin, 0, width - 2 * Margin, SeparatorHeight)];
+        [separator setBoxType:CPBoxSeparator];
+        [separator setAutoresizingMask:CPViewWidthSizable];
+        [_documentView addSubview:separator];
+    }
+
+    var disclosure = [[CPButton alloc] initWithFrame:CGRectMake(Margin, 0, DisclosureSize, DisclosureSize)];
+    [disclosure setBezelStyle:CPDisclosureBezelStyle];
+    [disclosure setButtonType:CPOnOffButton];
+    [disclosure setBordered:YES];
+    [disclosure setTitle:@""];
+    [disclosure setState:CPOnState];
+    [disclosure setTarget:self];
+    [disclosure setAction:@selector(toggleSection:)];
+    [_documentView addSubview:disclosure];
+
+    var titleX = Margin + DisclosureSize + 6.0,
+        title = [CPTextField labelWithTitle:aTitle];
+    [title setFont:[CPFont boldSystemFontOfSize:[CPFont systemFontSize]]];
+    [title setVerticalAlignment:CPCenterVerticalTextAlignment];
+    [title setFrame:CGRectMake(titleX, 0, width - titleX - Margin, HeaderHeight)];
+    [title setAutoresizingMask:CPViewWidthSizable];
+    [_documentView addSubview:title];
+
+    var box = [[CPBox alloc] initWithFrame:CGRectMake(Margin, 0, width - 2 * Margin, aRowCount * RowPitch)];
+    [box setBoxType:CPBoxCustom];
+    [box setBorderType:CPNoBorder];
+    [box setTitlePosition:CPNoTitle];
+    [box setContentViewMargins:CGSizeMakeZero()];
+    [box setAutoresizingMask:CPViewWidthSizable];
+    [_documentView addSubview:box];
+
+    [_sections addObject:{ separator: separator, disclosure: disclosure, title: title, box: box, height: aRowCount * RowPitch }];
+
+    return [box contentView];
+}
+
+/*
+    Shows or hides the fields of the section whose disclosure triangle sent the action, and stacks
+    the sections again.
+*/
+- (@action)toggleSection:(id)aSender
+{
+    [self _layoutSections];
+}
+
+/*
+    Stacks the sections from the top: each separator, header and, when its triangle is open,
+    box goes below the one before it. Sets the height of the document view to the stack, so the
+    scroll view scrolls only when the stack is taller than the pane.
+*/
+- (void)_layoutSections
+{
+    var y = Margin / 2;
+
+    for (var i = 0, count = [_sections count]; i < count; i++)
+    {
+        var section = _sections[i];
+
+        if (section.separator)
+        {
+            [section.separator setFrameOrigin:CGPointMake(Margin, y + Math.round((SeparatorGap - SeparatorHeight) / 2))];
+            y += SeparatorGap;
+        }
+
+        [section.disclosure setFrameOrigin:CGPointMake(Margin, y + Math.round((HeaderHeight - DisclosureSize) / 2))];
+        [section.title setFrameOrigin:CGPointMake(CGRectGetMinX([section.title frame]), y)];
+        y += HeaderHeight;
+
+        var isOpen = [section.disclosure state] === CPOnState;
+
+        [section.box setHidden:!isOpen];
+
+        if (isOpen)
+        {
+            [section.box setFrameOrigin:CGPointMake(Margin, y)];
+            y += section.height;
+        }
+    }
+
+    [_documentView setFrameSize:CGSizeMake(CGRectGetWidth([_documentView frame]), y + Margin)];
 }
 
 // ---------------------------------------------------------------- Layout helpers
 
-- (float)_rowTop:(int)aRow
-{
-    return 10.0 + aRow * RowPitch;
-}
-
-// Centres aView vertically on the row's midline.
+// Centres aView vertically on the midline of row aRow of a section.
 - (void)_place:(CPView)aView row:(int)aRow x:(float)anX width:(float)aWidth height:(float)aHeight in:(CPView)aSuperview
 {
-    var y = [self _rowTop:aRow] + Math.round((RowHeight - aHeight) / 2);
+    var y = aRow * RowPitch + Math.round((RowPitch - aHeight) / 2);
 
     [aView setFrame:CGRectMake(anX, y, aWidth, aHeight)];
     [aSuperview addSubview:aView];
