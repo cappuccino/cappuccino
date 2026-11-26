@@ -26,6 +26,7 @@
 @import <AppKit/AppKit.j>
 @import "../Library.j"
 @import "../MaskImage.j"
+@import "../MainMenuButton.j"
 
 /*
     The notes column's icon, a page with lines, 16 by 16:
@@ -79,6 +80,7 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     CPArray                     _defaultColumnLayout;
     CPMenu                      _tableMenu;
     CPInteger                   _menuRow;
+    MainMenuButton              _mainMenuButton;
 }
 
 - (id)initWithLibrary:(Library)aLibrary
@@ -241,14 +243,21 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     [minusButton setToolTip:@"Remove the selected people (from the group, if a group is selected)"];
     [minusButton bind:CPEnabledBinding toObject:_arrayController withKeyPath:@"canRemove" options:nil];
 
-    [buttonBar setButtons:[plusButton, minusButton]];
+    /*
+        The main menu button stands in for the sidebar's while the sidebar is collapsed, so
+        the main menu stays reachable when the menu bar and the toolbar are hidden too.
+    */
+    _mainMenuButton = [[MainMenuButton alloc] initWithButtonBar:buttonBar];
+    [[_mainMenuButton button] setHidden:YES];
+
+    [buttonBar setButtons:[plusButton, minusButton, [_mainMenuButton button]]];
 
     _statusField = [CPTextField labelWithTitle:@""];
     [_statusField setFont:[CPFont systemFontOfSize:11.0]];
     [_statusField setTextColor:[CPColor secondaryLabelColor]];
     [_statusField setAlignment:CPRightTextAlignment];
     [_statusField setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [_statusField setFrame:CGRectMake(80, 0, CGRectGetWidth(aFrame) - 92, barHeight)];
+    [_statusField setFrame:CGRectMake(116, 0, CGRectGetWidth(aFrame) - 128, barHeight)];
     [_statusField setLineBreakMode:CPLineBreakByTruncatingHead];
     [_statusField setAutoresizingMask:CPViewWidthSizable];
     [buttonBar addSubview:_statusField];
@@ -307,6 +316,15 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     [column bind:CPValueBinding toObject:_arrayController withKeyPath:@"arrangedObjects." + aKey options:someOptions];
 
     return column;
+}
+
+/*
+    Shows the main menu button in the button bar, for the time the sidebar is collapsed.
+*/
+- (void)setShowsMainMenuButton:(BOOL)shouldShow
+{
+    [self view];
+    [[_mainMenuButton button] setHidden:!shouldShow];
 }
 
 /*

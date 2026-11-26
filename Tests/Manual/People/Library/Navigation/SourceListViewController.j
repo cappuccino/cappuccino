@@ -11,23 +11,18 @@
  *   - drag & drop: reordering groups / smart folders inside their section,
  *     dropping people (from the table) onto a group, or onto the GROUPS
  *     header to create a new group
- *   - CPButtonBar with plus / minus / action pop-up and a split view
- *     resize control
+ *   - CPButtonBar with plus / minus buttons and a split view resize control
+ *   - a button on the right of the button bar that pops up copies of the
+ *     main menu's menus
  */
 
 @import <AppKit/AppKit.j>
 
 @import "../Library.j"
+@import "../MainMenuButton.j"
 @import "SourceItemCell/SourceListCellView.j"
 
 var SourceRowHeight = 26.0;
-
-// Tags of the action pop-up items.
-SourceActionNewGroup        = 1;
-SourceActionNewSmartFolder  = 2;
-SourceActionEdit            = 3;
-SourceActionRename          = 4;
-SourceActionDelete          = 5;
 
 
 @implementation SourceListViewController : CPViewController
@@ -35,6 +30,7 @@ SourceActionDelete          = 5;
     Library         _library;
     CPOutlineView   _outlineView;
     CPButtonBar     _buttonBar;
+    MainMenuButton  _mainMenuButton;
     BOOL            _suppressSelectionCallbacks;
 
     id              _sourceListDelegate   @accessors(property=delegate);
@@ -115,33 +111,17 @@ SourceActionDelete          = 5;
     [minusButton setAction:@selector(_minusClicked:)];
     [minusButton setToolTip:@"Delete the selected group or smart folder"];
 
-    var actionButton = [CPButtonBar actionPopupButton];
+    [_buttonBar setButtons:[plusButton, minusButton]];
 
-    if (![[actionButton itemArray] count])
-        [actionButton addItemWithTitle:@""];
+    _mainMenuButton = [[MainMenuButton alloc] initWithButtonBar:_buttonBar];
+    [_buttonBar setRightButtons:[[_mainMenuButton button]]];
 
-    [self _addActionItem:@"New Group…" tag:SourceActionNewGroup to:actionButton];
-    [self _addActionItem:@"New Smart Folder…" tag:SourceActionNewSmartFolder to:actionButton];
-    [[actionButton menu] addItem:[CPMenuItem separatorItem]];
-    [self _addActionItem:@"Edit Smart Folder…" tag:SourceActionEdit to:actionButton];
-    [self _addActionItem:@"Rename Group…" tag:SourceActionRename to:actionButton];
-    [self _addActionItem:@"Delete" tag:SourceActionDelete to:actionButton];
-    [actionButton setTarget:self];
-    [actionButton setAction:@selector(_actionPopupChosen:)];
-
-    [_buttonBar setButtons:[plusButton, minusButton, actionButton]];
     [view addSubview:_buttonBar];
 
     [self setView:view];
 
     [_outlineView reloadData];
     [self _expandSections];
-}
-
-- (void)_addActionItem:(CPString)aTitle tag:(int)aTag to:(CPPopUpButton)aPopUp
-{
-    [aPopUp addItemWithTitle:aTitle];
-    [[aPopUp lastItem] setTag:aTag];
 }
 
 - (void)_expandSections
@@ -204,23 +184,6 @@ SourceActionDelete          = 5;
 - (void)_minusClicked:(id)sender
 {
     [CPApp sendAction:@selector(deleteSelectedSourceItem:) to:nil from:sender];
-}
-
-- (void)_actionPopupChosen:(id)sender
-{
-    var selector = nil;
-
-    switch ([[sender selectedItem] tag])
-    {
-        case SourceActionNewGroup:          selector = @selector(newGroup:); break;
-        case SourceActionNewSmartFolder:    selector = @selector(newSmartFolder:); break;
-        case SourceActionEdit:              selector = @selector(editSelectedSmartFolder:); break;
-        case SourceActionRename:            selector = @selector(renameSelectedGroup:); break;
-        case SourceActionDelete:            selector = @selector(deleteSelectedSourceItem:); break;
-    }
-
-    if (selector)
-        [CPApp sendAction:selector to:nil from:sender];
 }
 
 - (void)outlineViewDoubleClicked:(id)sender

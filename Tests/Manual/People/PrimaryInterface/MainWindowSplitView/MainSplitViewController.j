@@ -12,6 +12,8 @@
  *   - the detail pane shows the content's selection through its representedObject, and its
  *     selectionCount covers the pane unless one row is selected, so the panes do not know
  *     about each other; only this controller knows the layout
+ *   - key-value observing of the sidebar item's collapsed state: while the sidebar is
+ *     collapsed, the people table's button bar shows the main menu button
  */
 
 @import <AppKit/AppKit.j>
@@ -69,6 +71,12 @@ var SidebarDefaultWidth     = 230.0,
         [_contentItem setHoldingPriority:250];
 
         [self setSplitViewItems:[_sidebarItem, _contentItem, _detailItem]];
+
+        /*
+            The item posts the change for every way the sidebar collapses or expands: the
+            menu, the toolbar, the key equivalent and a drag of the divider.
+        */
+        [_sidebarItem addObserver:self forKeyPath:@"collapsed" options:CPKeyValueObservingOptionInitial context:nil];
     }
 
     return self;
@@ -82,6 +90,11 @@ var SidebarDefaultWidth     = 230.0,
 
     [splitView setButtonBar:[_sourceListController buttonBar] forDividerAtIndex:0];
     [splitView setAutosaveName:SplitViewAutosaveName];
+}
+
+- (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)aChange context:(id)aContext
+{
+    [_peopleController setShowsMainMenuButton:[_sidebarItem isCollapsed]];
 }
 
 // ---------------------------------------------------------------- Panes

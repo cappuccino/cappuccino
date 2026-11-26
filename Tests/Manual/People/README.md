@@ -120,8 +120,13 @@ and `tableView:didDragTableColumn:`.
 ### Window and menus
 
 8. In edit mode, Hide Details is disabled everywhere: menu, toolbar and button bar.
-9. The navigation button bar has a pop-up menu on its right side. When the menu bar is hidden,
-   it holds every main menu item that no other control offers.
+9. The navigation button bar has an ellipsis button on its right side. It pops up a copy of
+   each menu of the main menu: People, File, Edit and View. The items are validated as in the
+   menu bar, so while the menu bar is hidden, View ▸ Show Menu Bar shows it again. The button
+   replaces the former action (gear) pop-up, whose items were all in the File menu.
+   While the sidebar is collapsed, by any means including a drag of the divider, the same
+   button appears in the people table's button bar, right of plus and minus. So with the menu
+   bar, the toolbar and the sidebar all hidden, the main menu is still one click away.
 10. An About dialog: People ▸ About People opens the standard About panel. Its name, version
     and copyright come from Info.plist.
 11. An action hides and shows the main menu: View ▸ Hide Menu Bar (⌃⌘M). The main window takes
