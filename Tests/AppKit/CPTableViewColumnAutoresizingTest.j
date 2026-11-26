@@ -39,6 +39,11 @@
     A column is autoresizable when it is visible and its resizing mask includes
     CPTableColumnAutoresizingMask. The default style is last column only.
 
+    When the user resizes a column, the columns after it take the opposite change by the same
+    style, so the columns keep their total width where they can. What they cannot take changes
+    the total width. The tests resize the column as the header view does, then give the change
+    to the columns after it.
+
     -sizeLastColumnToFit makes the last column end at the edge of the clip view, and
     -sizeToFit gives the columns equal widths, within their maximum widths, so that all of
     them are visible.
@@ -134,6 +139,19 @@
     [tableView load];
 
     return width;
+}
+
+/*
+    Resizes the column at anIndex to aWidth as the user does with the header view: the columns
+    after it take the opposite change.
+*/
+- (void)userResizeColumn:(CPInteger)anIndex toWidth:(float)aWidth
+{
+    var oldWidth = [columns[anIndex] width];
+
+    [columns[anIndex] setWidth:aWidth];
+    [tableView _autoresizeColumnsAfterColumn:anIndex byWidth:oldWidth - [columns[anIndex] width]];
+    [tableView load];
 }
 
 - (void)assertWidths:(CPArray)someWidths message:(CPString)aMessage
@@ -416,6 +434,101 @@
 
     [self assertWidths:[width - 20.0, width, width] message:@"after the clip view shrinks by 60 points"];
     [self assert:280.0 equals:CGRectGetWidth([tableView frame]) message:@"the table view is as wide as its columns"];
+}
+
+// MARK: - Resizing a column by the user
+
+- (void)testAUserResizeWithNoColumnAutoresizingChangesTheTotalWidth
+{
+    var width = [self fillWithEqualColumnsForStyle:CPTableViewNoColumnAutoresizing];
+
+    [self userResizeColumn:0 toWidth:width - 20.0];
+
+    [self assertWidths:[width - 20.0, width, width] message:@"after the first column shrinks by 20 points"];
+    [self assert:280.0 equals:[self maxXOfColumn:2] message:@"the columns end 20 points before the edge"];
+}
+
+- (void)testAUserResizeWithUniformResizingSharesTheChangeAfterTheColumn
+{
+    var width = [self fillWithEqualColumnsForStyle:CPTableViewUniformColumnAutoresizingStyle];
+
+    [self userResizeColumn:0 toWidth:width - 20.0];
+
+    [self assertWidths:[width - 20.0, width + 10.0, width + 10.0] message:@"after the first column shrinks by 20 points"];
+    [self assert:300.0 equals:[self maxXOfColumn:2] message:@"the columns fill the clip view"];
+}
+
+- (void)testAUserResizeWithSequentialResizingStartsAtTheLastColumn
+{
+    var width = [self fillWithEqualColumnsForStyle:CPTableViewSequentialColumnAutoresizingStyle];
+
+    [columns[2] setMaxWidth:width + 5.0];
+    [self userResizeColumn:0 toWidth:width - 20.0];
+
+    [self assertWidths:[width - 20.0, width + 15.0, width + 5.0] message:@"after the first column shrinks by 20 points"];
+    [self assert:300.0 equals:[self maxXOfColumn:2] message:@"the columns fill the clip view"];
+}
+
+- (void)testAUserResizeWithReverseSequentialResizingStartsAtTheNextColumn
+{
+    var width = [self fillWithEqualColumnsForStyle:CPTableViewReverseSequentialColumnAutoresizingStyle];
+
+    [columns[1] setMaxWidth:width + 5.0];
+    [self userResizeColumn:0 toWidth:width - 20.0];
+
+    [self assertWidths:[width - 20.0, width + 5.0, width + 15.0] message:@"after the first column shrinks by 20 points"];
+    [self assert:300.0 equals:[self maxXOfColumn:2] message:@"the columns fill the clip view"];
+}
+
+- (void)testAUserResizeWithLastColumnOnlyResizingGivesTheChangeToTheLastColumn
+{
+    var width = [self fillWithEqualColumnsForStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
+
+    [self userResizeColumn:1 toWidth:width - 20.0];
+
+    [self assertWidths:[width, width - 20.0, width + 20.0] message:@"after the middle column shrinks by 20 points"];
+    [self assert:300.0 equals:[self maxXOfColumn:2] message:@"the columns fill the clip view"];
+}
+
+- (void)testAUserResizeOfTheLastColumnChangesTheTotalWidth
+{
+    var width = [self fillWithEqualColumnsForStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
+
+    [self userResizeColumn:2 toWidth:width - 20.0];
+
+    [self assertWidths:[width, width, width - 20.0] message:@"after the last column shrinks by 20 points"];
+    [self assert:280.0 equals:[self maxXOfColumn:2] message:@"the columns end 20 points before the edge"];
+}
+
+- (void)testAUserResizeLeavesWhatTheLastColumnCannotTake
+{
+    var width = [self fillWithEqualColumnsForStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
+
+    [columns[2] setMaxWidth:width + 5.0];
+    [self userResizeColumn:0 toWidth:width - 20.0];
+
+    [self assertWidths:[width - 20.0, width, width + 5.0] message:@"after the first column shrinks by 20 points"];
+    [self assert:285.0 equals:[self maxXOfColumn:2] message:@"the columns end 15 points before the edge"];
+}
+
+- (void)testAUserResizeWithFirstColumnOnlyResizingGivesTheChangeToTheNextColumn
+{
+    var width = [self fillWithEqualColumnsForStyle:CPTableViewFirstColumnOnlyAutoresizingStyle];
+
+    [self userResizeColumn:0 toWidth:width - 20.0];
+
+    [self assertWidths:[width - 20.0, width + 20.0, width] message:@"after the first column shrinks by 20 points"];
+    [self assert:300.0 equals:[self maxXOfColumn:2] message:@"the columns fill the clip view"];
+}
+
+- (void)testAUserResizeSkipsAColumnWithoutTheAutoresizingMask
+{
+    var width = [self fillWithEqualColumnsForStyle:CPTableViewFirstColumnOnlyAutoresizingStyle];
+
+    [columns[1] setResizingMask:CPTableColumnUserResizingMask];
+    [self userResizeColumn:0 toWidth:width - 20.0];
+
+    [self assertWidths:[width - 20.0, width, width + 20.0] message:@"after the first column shrinks by 20 points"];
 }
 
 // MARK: - Size to fit

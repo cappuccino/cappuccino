@@ -445,6 +445,84 @@
 }
 
 /*
+    Gives aDelta points of width to the autoresizable columns after the column at anIndex, by
+    the column autoresizing style, and returns the part of aDelta they could not take. The
+    header view calls it while the user resizes the column at anIndex, with the opposite of
+    that column's change, so the columns keep their total width where they can:
+
+    - no column autoresizing: no column changes;
+    - uniform: the columns after it take equal shares;
+    - sequential: the last column first, then the one before it, back to the resized column;
+    - reverse sequential: the column after it first, then the next;
+    - last column only: the last column, unless it is the resized column;
+    - first column only: the first column after it.
+
+    2026-11-26: a column resized by the user took the whole change, whatever the style. The
+    other columns kept their widths, so the change became a gap after the last column, or an
+    overflow, which every later change of the table's width kept, since autoresizing applies
+    only the change. In People, making Salary narrower left a gap after Email with the last
+    column only style. As in AppKit, the columns after the resized column now take the change.
+*/
+- (float)_autoresizeColumnsAfterColumn:(CPInteger)anIndex byWidth:(float)aDelta
+{
+    if (!aDelta || _columnAutoResizingStyle === CPTableViewNoColumnAutoresizing)
+        return aDelta;
+
+    var autoresizableColumns = [],
+        lastVisibleColumn = nil;
+
+    for (var i = anIndex + 1, count = [self _numberOfColumns]; i < count; i++)
+    {
+        var column = _tableColumns[i];
+
+        if ([column isHidden])
+            continue;
+
+        lastVisibleColumn = column;
+
+        if ([column resizingMask] & CPTableColumnAutoresizingMask)
+            autoresizableColumns.push(column);
+    }
+
+    var oldWidths = 0;
+
+    for (var i = 0; i < autoresizableColumns.length; i++)
+        oldWidths += [autoresizableColumns[i] width];
+
+    switch (_columnAutoResizingStyle)
+    {
+        case CPTableViewUniformColumnAutoresizingStyle:
+            [self _resizeColumns:autoresizableColumns uniformlyByWidth:aDelta];
+            break;
+
+        case CPTableViewSequentialColumnAutoresizingStyle:
+            [self _resizeColumns:autoresizableColumns.slice().reverse() sequentiallyByWidth:aDelta];
+            break;
+
+        case CPTableViewReverseSequentialColumnAutoresizingStyle:
+            [self _resizeColumns:autoresizableColumns sequentiallyByWidth:aDelta];
+            break;
+
+        case CPTableViewLastColumnOnlyAutoresizingStyle:
+            if (lastVisibleColumn && [autoresizableColumns containsObjectIdenticalTo:lastVisibleColumn])
+                [self _resizeColumns:[lastVisibleColumn] sequentiallyByWidth:aDelta];
+            break;
+
+        case CPTableViewFirstColumnOnlyAutoresizingStyle:
+            if (autoresizableColumns.length)
+                [self _resizeColumns:[autoresizableColumns[0]] sequentiallyByWidth:aDelta];
+            break;
+    }
+
+    var newWidths = 0;
+
+    for (var i = 0; i < autoresizableColumns.length; i++)
+        newWidths += [autoresizableColumns[i] width];
+
+    return aDelta - (newWidths - oldWidths);
+}
+
+/*
     Gives aDelta points to someColumns in order. Each column takes what it can within its
     minimum and maximum widths, and the next column takes the rest.
 */

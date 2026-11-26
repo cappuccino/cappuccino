@@ -994,7 +994,12 @@ var CPTableHeaderViewResizeZone = 3.0,
 
     if ((delta > 0 && aPoint.x > columnMaxX) || (delta < 0 && aPoint.x < columnMaxX))
     {
+        var oldWidth = [tableColumn width];
+
         [tableColumn setWidth:newWidth - spacing];
+
+        // The columns after it take the opposite change, by the column autoresizing style.
+        [_tableView _autoresizeColumnsAfterColumn:aColumnIndex byWidth:oldWidth - [tableColumn width]];
 
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
