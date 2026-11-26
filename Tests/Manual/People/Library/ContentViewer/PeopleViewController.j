@@ -185,9 +185,9 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
     [self _addColumn:@"firstName"   title:@"First Name" width:110 editable:YES dataView:nil];
     [self _addColumn:@"department"  title:@"Department" width:110 editable:YES dataView:nil];
     [self _addColumn:@"city"        title:@"City"       width:110 editable:YES dataView:nil];
+    [self _addColumn:@"birthDate"   title:@"Birthdate"  width:200 editable:NO  dataView:[self _textDataViewWithFormatter:dateFormatter alignment:CPLeftTextAlignment]];
     var ageColumn = [self _addColumn:@"age" title:@"Age" width:46 editable:NO dataView:[self _textDataViewWithFormatter:nil alignment:CPRightTextAlignment]];
     [[ageColumn headerView] setAlignment:CPRightTextAlignment];
-    [self _addColumn:@"birthDate"   title:@"Birthdate"  width:200 editable:NO  dataView:[self _textDataViewWithFormatter:dateFormatter alignment:CPLeftTextAlignment]];
     var salaryColumn = [self _addColumn:@"salary" title:@"Salary" width:90 editable:YES dataView:[self _textDataViewWithFormatter:numberFormatter alignment:CPRightTextAlignment]];
     [[salaryColumn headerView] setAlignment:CPRightTextAlignment];
 
@@ -217,6 +217,9 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
 
     [_tableView setAutosaveName:@"People.PeopleTable"];
     [_tableView setAutosaveTableColumns:YES];
+
+    // A column order saved by an earlier version can separate Age from Birthdate.
+    [self _keepAgeAfterBirthdate];
 
     [scrollView setDocumentView:_tableView];
     [pane addSubview:scrollView];
@@ -327,6 +330,39 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
 
         [[_tableView tableColumnWithIdentifier:layout.identifier] setWidth:layout.width];
     }
+}
+
+// ---------------------------------------------------------------- Age follows Birthdate
+
+/*
+    The Age column always comes right after the Birthdate column. Age cannot be dragged by
+    itself. When any column drag ends, Age moves back after Birthdate. That covers a drag of
+    Birthdate, and a drop of another column between the two.
+*/
+- (BOOL)tableView:(CPTableView)aTableView shouldReorderColumn:(CPInteger)aColumnIndex toColumn:(CPInteger)aNewColumnIndex
+{
+    return [[[aTableView tableColumns] objectAtIndex:aColumnIndex] identifier] !== @"age";
+}
+
+- (void)tableView:(CPTableView)aTableView didDragTableColumn:(CPTableColumn)aTableColumn
+{
+    [self _keepAgeAfterBirthdate];
+}
+
+/*
+    Moves the Age column to the index after the Birthdate column. When Age is to the left of
+    Birthdate, removing Age shifts Birthdate one place to the left, so the target is
+    Birthdate's own index.
+*/
+- (void)_keepAgeAfterBirthdate
+{
+    var birthDateIndex = [_tableView columnWithIdentifier:@"birthDate"],
+        ageIndex = [_tableView columnWithIdentifier:@"age"];
+
+    if (birthDateIndex === CPNotFound || ageIndex === CPNotFound || ageIndex === birthDateIndex + 1)
+        return;
+
+    [_tableView moveColumn:ageIndex toColumn:ageIndex < birthDateIndex ? birthDateIndex : birthDateIndex + 1];
 }
 
 // ---------------------------------------------------------------- Contextual menu

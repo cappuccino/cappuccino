@@ -39,6 +39,8 @@ spaces, because the legacy toolchain does not accept them.
 5. "Müller (diacritics test)" must match Müller with predicate `muller` (`[cd]`).
 6. Type in the search field: filter combines with the selected folder (AND).
 7. Sort by every column header; reorder and resize columns; reload: column layout restored.
+   Age always follows Birthdate: drag Birthdate, or drop another column between the two, and
+   Age moves back after Birthdate on drop. Age cannot be dragged by itself.
 8. Select people, drag onto a group: badge increases. Drag onto the GROUPS header: new group created and selected.
 9. Drag groups / smart folders to reorder them within their section; reload: order persisted.
 10. Edit a cell (name, salary, Mgr checkbox) and the detail pane fields: other views and badges follow;
@@ -109,6 +111,11 @@ to build with a web component framework.
    - Invert Selection.
    - Delete Selected: deletes the selection, whether it has one row or many, contiguous or not.
      It is disabled when nothing is selected.
+
+The Age column, calculated from the birth date and the browser's date, always follows the
+Birthdate column. The table delegate refuses a drag of Age by itself, and moves Age back after
+Birthdate when any column drag ends. This exercises `tableView:shouldReorderColumn:toColumn:`
+and `tableView:didDragTableColumn:`.
 
 ### Window and menus
 
