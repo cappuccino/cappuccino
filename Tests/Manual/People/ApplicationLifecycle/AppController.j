@@ -140,6 +140,28 @@
     [self _addItem:@"Hide Menu Bar" action:@selector(toggleMenuBar:) key:@"m" modifiers:CPCommandKeyMask | CPControlKeyMask to:viewMenu];
     [viewMenu addItem:[CPMenuItem separatorItem]];
     [self _addItem:@"Show All People" action:@selector(showAllPeople:) key:@"1" modifiers:0 to:viewMenu];
+
+    /*
+        The Test menu holds switches for testing only, kept out of the user-facing menus.
+        Column Sizing has one item for each column autoresizing style of the people table. The
+        item's tag is the style, and menu validation checks the current one.
+    */
+    var testMenu = [self _addSubmenu:@"Test" to:mainMenu],
+        columnSizingItem = [testMenu addItemWithTitle:@"Column Sizing" action:nil keyEquivalent:@""],
+        columnSizingMenu = [[CPMenu alloc] initWithTitle:@"Column Sizing"],
+        styles = [
+            [@"No Autoresizing", CPTableViewNoColumnAutoresizing],
+            [@"Uniform", CPTableViewUniformColumnAutoresizingStyle],
+            [@"Sequential", CPTableViewSequentialColumnAutoresizingStyle],
+            [@"Reverse Sequential", CPTableViewReverseSequentialColumnAutoresizingStyle],
+            [@"Last Column Only", CPTableViewLastColumnOnlyAutoresizingStyle],
+            [@"First Column Only", CPTableViewFirstColumnOnlyAutoresizingStyle]
+        ];
+
+    [testMenu setSubmenu:columnSizingMenu forItem:columnSizingItem];
+
+    for (var i = 0; i < styles.length; i++)
+        [[self _addItem:styles[i][0] action:@selector(setColumnSizingStyle:) key:nil modifiers:0 to:columnSizingMenu] setTag:styles[i][1]];
 }
 
 @end

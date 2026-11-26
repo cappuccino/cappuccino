@@ -133,7 +133,7 @@ and `tableView:didDragTableColumn:`.
 
 8. In edit mode, Hide Details is disabled everywhere: menu, toolbar and button bar.
 9. The navigation button bar has an ellipsis button on its right side. It pops up a copy of
-   each menu of the main menu: People, File, Edit and View. The items are validated as in the
+   each menu of the main menu: People, File, Edit, View and Test. The items are validated as in the
    menu bar, so while the menu bar is hidden, View ▸ Show Menu Bar shows it again. The button
    replaces the former action (gear) pop-up, whose items were all in the File menu.
    While the sidebar is collapsed, by any means including a drag of the divider, the same
@@ -152,12 +152,12 @@ and `tableView:didDragTableColumn:`.
     item is Test ▸ Column Sizing, a submenu with one radio-style item for each column
     autoresizing style of the people table: No Autoresizing, Uniform, Sequential, Reverse
     Sequential, Last Column Only and First Column Only.
-    - Choosing an item sets the table's column autoresizing style and lays out the columns
-      again, so the effect shows at once and whenever the window or a divider is resized.
+    - Choosing an item sets the table's column autoresizing style. As in AppKit, the style
+      applies to the next change of the table's width, so the columns move when the window or
+      a divider is resized, not when the item is chosen.
     - The current style is checked, through menu validation. The copies in the main menu
       button show the same check.
     - The fixed-width columns, Notes and Is Manager, show how each style treats columns that
       cannot resize. The saved column widths and Reset Application must work with every style.
-    - The choice is not saved: the application starts with its normal style.
-    - Priority: before quick look (item 6) and the edit history (items 1 and 5), which are
-      pending.
+    - The choice is not saved: the application starts with Last Column Only, and Reset
+      Application returns to it.

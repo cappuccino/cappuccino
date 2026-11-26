@@ -328,12 +328,14 @@ var NotesMask           = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4
 }
 
 /*
-    Returns the columns to the order and widths they are built with. The table's autosave then
+    Returns the columns to the order and widths they are built with, and the table to its
+    column autoresizing style, which Test ▸ Column Sizing can change. The table's autosave then
     stores that layout. Reset Application uses it.
 */
 - (void)restoreDefaultColumns
 {
     [self view];
+    [_tableView setColumnAutoresizingStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
 
     for (var i = 0, count = [_defaultColumnLayout count]; i < count; i++)
     {

@@ -536,6 +536,16 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     [[CPUserDefaults standardUserDefaults] setBool:shouldHide forKey:MenuBarHiddenKey];
 }
 
+/*
+    Test ▸ Column Sizing: sets the column autoresizing style of the people table to the tag of
+    the chosen item. As in AppKit, the style applies to the next change of the table's width,
+    so the columns move when the window or a divider is resized.
+*/
+- (void)setColumnSizingStyle:(id)sender
+{
+    [[_peopleController tableView] setColumnAutoresizingStyle:[sender tag]];
+}
+
 - (void)showAllPeople:(id)sender
 {
     [self _selectSourceItem:[_library allPeopleItem]];
@@ -668,6 +678,10 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
         case @selector(toggleMenuBar:):
             [anItem setTitle:[CPMenu menuBarVisible] ? @"Hide Menu Bar" : @"Show Menu Bar"];
+            break;
+
+        case @selector(setColumnSizingStyle:):
+            [anItem setState:[anItem tag] === [[_peopleController tableView] columnAutoresizingStyle] ? CPOnState : CPOffState];
             break;
     }
 
