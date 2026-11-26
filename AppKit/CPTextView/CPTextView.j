@@ -873,6 +873,23 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         return [self isEditable] && [self isRichText];
     }
 
+    /*
+        Bold and italic apply only to editable rich text. As in AppKit's Font menu, the item is
+        checked when the text at the start of the selection has the trait.
+    */
+    if (action === @selector(bold:) || action === @selector(italic:))
+    {
+        if ([anItem respondsToSelector:@selector(setState:)])
+        {
+            var font = [self _fontAtSelectionStart],
+                hasTrait = action === @selector(bold:) ? [font isBold] : [font isItalic];
+
+            [anItem setState:hasTrait ? CPOnState : CPOffState];
+        }
+
+        return [self isEditable] && [self isRichText];
+    }
+
     // As in Cocoa, styles can be copied and pasted only in rich text.
     if (action === @selector(copyFont:))
         return [self isRichText];
@@ -1457,6 +1474,22 @@ Sets the selection to a range of characters in response to user action.
     // Save old selection so we can only send textViewDidChangeTypingAttribute notification when selection is changed on mouse up.
     _mouseDownOldSelection = _selectionRange;
     [self setSelectedRange:setRange affinity:0 stillSelecting:YES];
+}
+
+/*
+    A right click in a selectable text view makes it the first responder before the contextual
+    menu opens, as in AppKit, so the menu's commands act on this text view.
+
+    2026-11-26: the first responder stayed where it was. The contextual menu's items, which
+    have no target, went to that responder: Cut, Copy and Paste acted on another view, or did
+    nothing.
+*/
+- (void)rightMouseDown:(CPEvent)anEvent
+{
+    if ([self isSelectable] && [[self window] firstResponder] !== self)
+        [[self window] makeFirstResponder:self];
+
+    [super rightMouseDown:anEvent];
 }
 
 - (CPMenu)menuForEvent:(CPEvent)anEvent
@@ -2275,16 +2308,38 @@ Sets the selection to a range of characters in response to user action.
 // MARK: -
 // MARK: Style & Alignment methods
 
+/*
+    Makes the selected text bold, or the text typed next when nothing is selected. When the
+    text at the start of the selection is already bold, the bold is removed instead, as the
+    Bold item of AppKit's Font menu does. The font manager sends -changeFont: to the first
+    responder.
+
+    2026-11-26: the method only added the trait, so bold text could not be made plain again.
+*/
 - (void)bold:(id)sender
 {
-    // This will trigger changeFont: via the FontManager
-    [[CPFontManager sharedFontManager] addFontTrait:CPBoldFontMask];
+    [[CPFontManager sharedFontManager] addFontTrait:[[self _fontAtSelectionStart] isBold] ? CPUnboldFontMask : CPBoldFontMask];
 }
 
+/*
+    Makes the selected text italic, or removes the italic, as -bold: does for bold.
+
+    2026-11-26: the method only added the trait, so italic text could not be made plain again.
+*/
 - (void)italic:(id)sender
 {
-    // This will trigger changeFont: via the FontManager
-    [[CPFontManager sharedFontManager] addFontTrait:CPItalicFontMask];
+    [[CPFontManager sharedFontManager] addFontTrait:[[self _fontAtSelectionStart] isItalic] ? CPUnitalicFontMask : CPItalicFontMask];
+}
+
+/*
+    Returns the font of the text at the start of the selection, or of the text typed next when
+    nothing is selected.
+*/
+- (CPFont)_fontAtSelectionStart
+{
+    var attributes = _selectionRange.length ? [_textStorage attributesAtIndex:_selectionRange.location effectiveRange:nil] : _typingAttributes;
+
+    return [attributes objectForKey:CPFontAttributeName] || [self font];
 }
 
 // MARK: -
