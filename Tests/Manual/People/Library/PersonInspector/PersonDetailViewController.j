@@ -83,6 +83,10 @@ var EditMask    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0i
     DoneMask    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTMgOC41bDMuNSAzLjVMMTMgNC41IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZT0iYmxhY2siIGZpbGw9Im5vbmUiLz48L3N2Zz4=')",
     RejectMask  = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTMuNSAzLjVsOSA5TTEyLjUgMy41bC05IDkiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIi8+PC9zdmc+')";
 
+// Tags of the Reject alert's buttons, the return codes of the alert.
+var RejectAlertRejectTag    = 1001,
+    RejectAlertCancelTag    = 1002;
+
 /*
     The width the pane takes at first and after a reset, and the narrowest it can become. The
     fields take the width between the two.
@@ -444,14 +448,59 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
 }
 
 /*
-    Ends the editing of any field in the window first, so that a value being typed is not sent
-    to the person after the values are put back. Then the library puts back every person that
-    changed since edit mode began, and ends edit mode.
+    Asks first, in an alert sheet on the window. Discard is the default button, so Return
+    confirms, and Continue editing answers Escape.
+
+    Ending the editing of any field in the window comes before the alert, so that a value being
+    typed is not sent to the person after the values are put back.
 */
 - (@action)rejectEdits:(id)aSender
 {
-    [[[self view] window] makeFirstResponder:nil];
-    [_library rejectEdits];
+    var window = [[self view] window];
+
+    [window makeFirstResponder:nil];
+
+    var alert = [[CPAlert alloc] init];
+
+    [alert setAlertStyle:CPWarningAlertStyle];
+    [alert setMessageText:@"Discard Changes"];
+    [alert setInformativeText:@"Revert editing session changes"];
+    [alert addButtonWithTitle:@"Discard"];
+    [alert addButtonWithTitle:@"Continue editing"];
+
+    /*
+        CPAlert reports the clicked button's tag as the return code, and -[CPAlert buttons]
+        lists the buttons in the reverse order of addition, so the tags are given by title, as
+        for the Reset Application alert.
+    */
+    [[alert buttons] enumerateObjectsUsingBlock:function(aButton)
+    {
+        if ([aButton title] === @"Discard")
+            [aButton setTag:RejectAlertRejectTag];
+        else
+        {
+            /*
+                CPAlert gives Escape only to a button titled "Cancel", so this button takes it
+                here.
+            */
+            [aButton setTag:RejectAlertCancelTag];
+            [aButton setKeyEquivalent:CPEscapeFunctionKey];
+        }
+    }];
+
+    [alert beginSheetModalForWindow:window
+                      modalDelegate:self
+                     didEndSelector:@selector(rejectAlertDidEnd:returnCode:contextInfo:)
+                        contextInfo:nil];
+}
+
+/*
+    The library puts back every person that changed since edit mode began, and ends edit mode.
+*/
+- (void)rejectAlertDidEnd:(CPAlert)anAlert returnCode:(int)aReturnCode contextInfo:(id)aContextInfo
+{
+    if (aReturnCode === RejectAlertRejectTag)
+        [_library rejectEdits];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)aChange context:(id)aContext

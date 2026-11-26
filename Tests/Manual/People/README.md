@@ -84,8 +84,9 @@ to build with a web component framework.
      default button. All controls in the alert take part in tab selection.
    - The detail button bar has a Reject button that discards the edit. A modal alert asks the
      user to confirm first. Confirm is the default button. (In place: Reject, enabled in edit
-     mode, puts back every person changed since edit mode began and ends edit mode, with no
-     alert yet.)
+     mode, asks in a Discard Changes alert sheet with Discard as the default button and Continue
+     editing on Escape, then puts back every
+     person changed since edit mode began and ends edit mode.)
    - The time is stored in UTC and shown in local time, in conversational form.
 2. When no single row is selected, a covering view over the detail pane says
    "Please select a single row to edit or display."
