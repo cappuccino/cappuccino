@@ -77,7 +77,8 @@ to build with a web component framework.
 
 ### Detail pane
 
-1. Edit history. This needs a change to the data model.
+1. Edit history. Pending; only the Reject button below is in place. This needs a change to
+   the data model.
    - The detail pane has an Edit History section. A table shows one row for each saved edit,
      with its time and an optional description.
    - When an edit is saved, a modal alert asks for an optional description. Accept is the
@@ -91,6 +92,7 @@ to build with a web component framework.
 2. When no single row is selected, a covering view over the detail pane says
    "Please select a single row to edit or display."
 3. The contextual menu of the Notes field adds the selection commands and basic style commands.
+   Planned after the column sizing switch (item 13).
 
 Details has a Tags row: a CPTokenField bound to the person's tags, an array of free-form
 strings. A comma or Return ends a token, and the field offers completions from the tags in use,
@@ -101,8 +103,9 @@ ANY predicate on the tags array, for example `ANY tags ==[cd] "Remote"`.
 ### People table
 
 4. The Notes column is the first column by default.
-5. A Revisions column next to it shows the number of saved edits, from the edit history.
-6. Quick look: a popover shows the whole record of a row.
+5. Pending, with the edit history. A Revisions column next to it shows the number of saved
+   edits, from the edit history.
+6. Pending. Quick look: a popover shows the whole record of a row.
    - Hovering over a row for about 0.8 seconds opens a popover anchored to that row. While it is
      open, moving to another row moves it at once. A click outside it, a scroll or the pointer
      leaving the table closes it.
@@ -156,4 +159,5 @@ and `tableView:didDragTableColumn:`.
     - The fixed-width columns, Notes and Is Manager, show how each style treats columns that
       cannot resize. The saved column widths and Reset Application must work with every style.
     - The choice is not saved: the application starts with its normal style.
-    - Priority: before quick look (item 6) and the edit history (items 1 and 5).
+    - Priority: before quick look (item 6) and the edit history (items 1 and 5), which are
+      pending.
