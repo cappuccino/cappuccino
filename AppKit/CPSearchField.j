@@ -595,6 +595,15 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 - (CPView)hitTest:(CGPoint)aPoint
 {
+    /*
+        2026-11-26: The search field took a hit anywhere in its frame, even while hidden or
+        while it did not hit test, unlike -[CPView hitTest:]. A hidden search field over other
+        views took their clicks: in People, the sidebar's hidden search field lay over the All
+        People row, so that row could no longer be selected with the mouse.
+    */
+    if ([self isHidden] || ![self hitTests])
+        return nil;
+
     // Make sure a hit anywhere within the search field returns the search field itself
     if (CGRectContainsPoint([self frame], aPoint))
         return self;

@@ -255,4 +255,23 @@
     [self assertFalse:[copy centersPlaceholder]];
 }
 
+/*
+    A hidden search field, or one that does not hit test, must not take clicks meant for the
+    views beneath it, as -[CPView hitTest:] does for any view.
+*/
+- (void)testAHiddenSearchFieldTakesNoHits
+{
+    var field = [[CPSearchField alloc] initWithFrame:CGRectMake(10, 10, 100, 22)],
+        inside = CGPointMake(20, 20);
+
+    [self assert:field same:[field hitTest:inside] message:@"a shown search field takes a hit in its frame"];
+
+    [field setHidden:YES];
+    [self assertNull:[field hitTest:inside] message:@"a hidden search field takes no hit"];
+
+    [field setHidden:NO];
+    [field setHitTests:NO];
+    [self assertNull:[field hitTest:inside] message:@"a search field that does not hit test takes no hit"];
+}
+
 @end
