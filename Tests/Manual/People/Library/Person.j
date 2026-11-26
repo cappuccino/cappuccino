@@ -124,6 +124,27 @@ var PersonUIDCounter = 0;
     return self;
 }
 
+/*
+    Sets every saved property from aDictionary, a -dictionaryRepresentation, through the setters,
+    so that observers see each change. Reject Edits uses it to put back the values a person had
+    when edit mode began. The uid is not changed.
+*/
+- (void)restoreFromDictionary:(CPDictionary)aDictionary
+{
+    var saved = [[Person alloc] initWithDictionary:aDictionary];
+
+    [self setFirstName:[saved firstName]];
+    [self setLastName:[saved lastName]];
+    [self setEmail:[saved email]];
+    [self setDepartment:[saved department]];
+    [self setCity:[saved city]];
+    [self setBirthDate:[saved birthDate]];
+    [self setSalary:[saved salary]];
+    [self setIsManager:[saved isManager]];
+    [self setNotes:[saved notes]];
+    [self setTags:[saved tags]];
+}
+
 // Property-list safe representation used for CPUserDefaults persistence.
 - (CPDictionary)dictionaryRepresentation
 {

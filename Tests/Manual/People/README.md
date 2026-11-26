@@ -83,7 +83,9 @@ to build with a web component framework.
    - When an edit is saved, a modal alert asks for an optional description. Accept is the
      default button. All controls in the alert take part in tab selection.
    - The detail button bar has a Reject button that discards the edit. A modal alert asks the
-     user to confirm first. Confirm is the default button.
+     user to confirm first. Confirm is the default button. (In place: Reject, enabled in edit
+     mode, puts back every person changed since edit mode began and ends edit mode, with no
+     alert yet.)
    - The time is stored in UTC and shown in local time, in conversational form.
 2. When no single row is selected, a covering view over the detail pane says
    "Please select a single row to edit or display."

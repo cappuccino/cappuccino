@@ -15,6 +15,10 @@
  * (the table cells and the detail pane) follows it; the Edit button in the detail pane sets
  * it. It is not saved: the application starts in view mode.
  *
+ * When edit mode begins, the library keeps a snapshot of every person. -rejectEdits puts back
+ * the people that changed since then, and ends edit mode. People added or removed during the
+ * edit stay added or removed; removal has its own undo.
+ *
  * Change notifications:
  *   - structural changes (people added/removed, group membership, folders
  *     added/removed/renamed/reordered/edited) are posted synchronously;
@@ -197,6 +201,7 @@ var LibraryDefaultsKey          = @"People.Library.v1",
     BOOL            _saveScheduled;
 
     BOOL            _editable;
+    JSObject        _editSnapshot;
 }
 
 - (id)init
@@ -233,7 +238,47 @@ var LibraryDefaultsKey          = @"People.Library.v1",
 
 - (void)setEditable:(BOOL)shouldBeEditable
 {
-    _editable = !!shouldBeEditable;
+    shouldBeEditable = !!shouldBeEditable;
+
+    if (shouldBeEditable && !_editable)
+        _editSnapshot = [self _snapshotOfPeople];
+    else if (!shouldBeEditable)
+        _editSnapshot = nil;
+
+    _editable = shouldBeEditable;
+}
+
+// Maps each person's uid to the JSON of its -dictionaryRepresentation.
+- (JSObject)_snapshotOfPeople
+{
+    var snapshot = {};
+
+    for (var i = 0, count = [_people count]; i < count; i++)
+        snapshot[[_people[i] uid]] = [_people[i] dictionaryRepresentation];
+
+    return snapshot;
+}
+
+/*
+    Puts back every person that changed since edit mode began, and ends edit mode. The values
+    are set through the setters, so the table, the detail pane and the smart folder counts
+    follow, and the library saves.
+*/
+- (void)rejectEdits
+{
+    if (!_editable || !_editSnapshot)
+        return;
+
+    for (var i = 0, count = [_people count]; i < count; i++)
+    {
+        var person = _people[i],
+            saved = _editSnapshot[[person uid]];
+
+        if (saved && ![[person dictionaryRepresentation] isEqual:saved])
+            [person restoreFromDictionary:saved];
+    }
+
+    [self setEditable:NO];
 }
 
 - (CPArray)people

@@ -77,9 +77,11 @@ var RowHeight           = 30.0,
     masks in the style of the Aristo3 button bar icons.
       pencil: <path d="M11.5 1.5l3 3L5 14H2v-3z"/>
       check:  <path d="M3 8.5l3.5 3.5L13 4.5" stroke-width="2" stroke="black" fill="none"/>
+      cross:  <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="black" stroke-width="2" stroke-linecap="round" fill="none"/>
 */
 var EditMask    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTExLjUgMS41bDMgM0w1IDE0SDJ2LTN6Ii8+PC9zdmc+')",
-    DoneMask    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTMgOC41bDMuNSAzLjVMMTMgNC41IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZT0iYmxhY2siIGZpbGw9Im5vbmUiLz48L3N2Zz4=')";
+    DoneMask    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTMgOC41bDMuNSAzLjVMMTMgNC41IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZT0iYmxhY2siIGZpbGw9Im5vbmUiLz48L3N2Zz4=')",
+    RejectMask  = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTMuNSAzLjVsOSA5TTEyLjUgMy41bC05IDkiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIi8+PC9zdmc+')";
 
 /*
     The width the pane takes at first and after a reset, and the narrowest it can become. The
@@ -405,7 +407,18 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [_editButton setTarget:self];
     [_editButton setAction:@selector(toggleEditing:)];
 
-    [buttonBar setButtons:[_editButton]];
+    /*
+        Reject puts back what changed since edit mode began, and ends edit mode. It is enabled
+        only in edit mode.
+    */
+    var rejectButton = [buttonBar buttonWithImage:MaskImage(RejectMask, iconSize, [CPColor labelColor])
+                                   alternateImage:MaskImage(RejectMask, iconSize, [CPColor labelColor])];
+    [rejectButton setTarget:self];
+    [rejectButton setAction:@selector(rejectEdits:)];
+    [rejectButton setToolTip:@"Reject edits"];
+    [self _bindEnabledToEditing:rejectButton];
+
+    [buttonBar setButtons:[_editButton, rejectButton]];
 
     return buttonBar;
 }
@@ -428,6 +441,17 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     }
 
     [_library setEditable:shouldEdit];
+}
+
+/*
+    Ends the editing of any field in the window first, so that a value being typed is not sent
+    to the person after the values are put back. Then the library puts back every person that
+    changed since edit mode began, and ends edit mode.
+*/
+- (@action)rejectEdits:(id)aSender
+{
+    [[[self view] window] makeFirstResponder:nil];
+    [_library rejectEdits];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)aChange context:(id)aContext
