@@ -218,14 +218,15 @@ CSSAnimation.prototype.endEventListener = function()
             if (inFlightAnimationsNames.length > 0)
                 return;
 
-            for (var i = 0; i < animationsNames.length; i++)
-            {
-                var completion = animation.completionFunctionForAnimationName(animationsNames[i]);
-
-                if (completion)
-                    completion();
-            }
-
+            /*
+                2026-11-26: The completions ran before the animation was removed from the
+                element. A completion that started a new animation of the same element, through
+                the layout that the completion handler of its grouping requests, found the
+                element still in use: the new animation was ignored, never ended, and its own
+                grouping never completed. The cleanup could also remove the new animation's
+                properties. The animation is now removed first, then the completions run. Both
+                happen in one task, so the element is not drawn between them.
+            */
             var eventTarget = event.target,
                 style = eventTarget.style;
 
@@ -249,6 +250,14 @@ CSSAnimation.prototype.endEventListener = function()
             catch (err)
             {
                 console.warn("CSSAnimation.j - " + err);
+            }
+
+            for (var i = 0; i < animationsNames.length; i++)
+            {
+                var completion = animation.completionFunctionForAnimationName(animationsNames[i]);
+
+                if (completion)
+                    completion();
             }
         };
 
