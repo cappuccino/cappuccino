@@ -8,7 +8,9 @@
  *   - CPPredicateEditor (CPRuleEditor subclass) built entirely from
  *     CPPredicateEditorRowTemplate instances: compound (AND/OR/NOT),
  *     key path + string attribute type with [cd] options, key path + integer
- *     attribute type, key path + constant right expressions (pop-up)
+ *     attribute type, key path + constant right expressions (pop-up), and
+ *     key path + string attribute type with the ANY modifier, for the tags
+ *     array ("ANY tags ==[cd] 'Remote'")
  *   - round trip predicate -> editor (setObjectValue:) -> predicate
  *   - CPRuleEditorRowsDidChangeNotification + target/action for live preview
  *   - resizing a sheet while it is attached
@@ -32,7 +34,8 @@ var EditorWidth         = 680.0,
         "age"        : "Age",
         "salary"     : "Salary",
         "notesText"  : "Notes",
-        "hasNotes"   : "Has Notes"
+        "hasNotes"   : "Has Notes",
+        "tags"       : "Any Tag"
     };
 
 
@@ -281,7 +284,19 @@ var EditorWidth         = 680.0,
                                                           operators:[CPEqualToPredicateOperatorType]
                                                             options:0];
 
-    return [compound, strings, numbers, departments, flags];
+    /*
+        Tags is an array, so the comparison uses the ANY modifier: the row matches a person
+        when at least one tag passes it.
+    */
+    var tags = [[LabeledRowTemplate alloc] initWithLeftExpressions:keyPaths([@"tags"])
+                                      rightExpressionAttributeType:CPStringAttributeType
+                                                          modifier:CPAnyPredicateModifier
+                                                         operators:[CPEqualToPredicateOperatorType,
+                                                                    CPContainsPredicateOperatorType,
+                                                                    CPBeginsWithPredicateOperatorType]
+                                                           options:CPCaseInsensitivePredicateOption | CPDiacriticInsensitivePredicateOption];
+
+    return [compound, strings, numbers, departments, flags, tags];
 }
 
 // ---------------------------------------------------------------- Running the sheet

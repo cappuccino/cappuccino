@@ -20,6 +20,10 @@
  * table's notes column and the Has Notes smart folder use. The notes are saved
  * as a keyed archive, because an attributed string is not a property list
  * value.
+ *
+ * "tags" is an array of free-form strings, edited in a CPTokenField in the
+ * detail pane. "tagsText", the tags joined by commas, is a derived key that
+ * search uses.
  */
 
 @import <Foundation/Foundation.j>
@@ -38,6 +42,7 @@ var PersonUIDCounter = 0;
     CPNumber    salary      @accessors;
     BOOL        isManager   @accessors;
     CPAttributedString notes @accessors;
+    CPArray     tags        @accessors;
 }
 
 + (CPString)nextUID
@@ -65,6 +70,11 @@ var PersonUIDCounter = 0;
     return [CPSet setWithObject:@"notes"];
 }
 
++ (CPSet)keyPathsForValuesAffectingTagsText
+{
+    return [CPSet setWithObject:@"tags"];
+}
+
 - (id)init
 {
     return [self initWithUID:[Person nextUID]];
@@ -83,6 +93,7 @@ var PersonUIDCounter = 0;
         birthDate = new Date(1990, 0, 1);
         salary = 50000;
         isManager = NO;
+        tags = [];
     }
 
     return self;
@@ -106,6 +117,8 @@ var PersonUIDCounter = 0;
 
         var archivedNotes = [aDictionary objectForKey:@"notes"];
         notes = archivedNotes ? [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:archivedNotes]] : nil;
+
+        tags = [([aDictionary objectForKey:@"tags"] || []) copy];
     }
 
     return self;
@@ -124,7 +137,8 @@ var PersonUIDCounter = 0;
         birthDate ? [birthDate timeIntervalSince1970] : 0, @"birthDate",
         Number(salary || 0), @"salary",
         isManager ? 1 : 0, @"isManager",
-        [self hasNotes] ? [[CPKeyedArchiver archivedDataWithRootObject:notes] rawString] : @"", @"notes"];
+        [self hasNotes] ? [[CPKeyedArchiver archivedDataWithRootObject:notes] rawString] : @"", @"notes",
+        [(tags || []) copy], @"tags"];
 }
 
 - (int)age
@@ -140,6 +154,12 @@ var PersonUIDCounter = 0;
         years--;
 
     return years;
+}
+
+// The tags joined by commas, or the empty string when there are none.
+- (CPString)tagsText
+{
+    return (tags || []).join(@", ");
 }
 
 // The plain text of the notes, or the empty string when there are none.

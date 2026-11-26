@@ -284,8 +284,8 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     if (![searchString length])
         _searchPredicate = nil;
     else
-        _searchPredicate = [CPPredicate predicateWithFormat:@"(firstName CONTAINS[cd] %@) OR (lastName CONTAINS[cd] %@) OR (email CONTAINS[cd] %@) OR (city CONTAINS[cd] %@) OR (department CONTAINS[cd] %@) OR (notesText CONTAINS[cd] %@)",
-                            searchString, searchString, searchString, searchString, searchString, searchString];
+        _searchPredicate = [CPPredicate predicateWithFormat:@"(firstName CONTAINS[cd] %@) OR (lastName CONTAINS[cd] %@) OR (email CONTAINS[cd] %@) OR (city CONTAINS[cd] %@) OR (department CONTAINS[cd] %@) OR (notesText CONTAINS[cd] %@) OR (tagsText CONTAINS[cd] %@)",
+                            searchString, searchString, searchString, searchString, searchString, searchString, searchString];
 
     [self _refreshPeople];
 }

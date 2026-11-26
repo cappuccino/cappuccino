@@ -15,7 +15,7 @@
  * ("age").
  *
  * Controls covered: CPTextField (+formatter), CPComboBox, CPPopUpButton
- * (selectedValue binding), CPDatePicker, CPCheckBox, CPScrollView, CPTextView (rich text,
+ * (selectedValue binding), CPDatePicker, CPCheckBox, CPTokenField, CPScrollView, CPTextView (rich text,
  * attributedString binding), and CPBox in its custom
  * type (an undrawn section container) and its separator type, CPButton in its disclosure
  * bezel style, and CPButtonBar with a toggle button.
@@ -37,6 +37,10 @@
  * with the attributedString binding. The binding updates the person as the text changes, so
  * the table's notes icon follows the typing. CPTextView has no editable binding, so the
  * controller sets its editable state, and the scroll view's border, when the mode changes.
+ *
+ * The Tags row holds a CPTokenField bound to the person's tags, an array of free-form strings.
+ * Typing a comma or Return ends a token. As the controller is the token field's delegate, it
+ * offers completions from the tags already in use.
  *
  * The pane shows a person only while exactly one row is selected. With no selection or with
  * several rows selected, a cover takes the place of the fields and asks for a single row. The
@@ -157,7 +161,7 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [self _bind:[self _textFieldInRow:row++ label:@"Last Name:" in:content] binding:CPValueBinding key:@"lastName" options:options];
     [self _bind:[self _textFieldInRow:row++ label:@"Email:" in:content] binding:CPValueBinding key:@"email" options:options];
 
-    content = [self _addSectionWithTitle:@"Details" rowCount:7];
+    content = [self _addSectionWithTitle:@"Details" rowCount:8];
     row = 0;
 
     [self _labelInRow:row title:@"Department:" in:content];
@@ -209,6 +213,20 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [salary setFrameSize:CGSizeMake(ShortFieldWidth, CGRectGetHeight([salary frame]))];
     [salary setAutoresizingMask:CPViewNotSizable];
     [self _bind:salary binding:CPValueBinding key:@"salary" options:options];
+
+    [self _labelInRow:row title:@"Tags:" in:content];
+    var tags = [[CPTokenField alloc] initWithFrame:CGRectMakeZero()];
+    [tags setDelegate:self];
+    [self _place:tags row:row++ x:fieldX width:FieldWidth height:TextFieldHeight in:content];
+    [tags setAutoresizingMask:CPViewWidthSizable];
+    [self _bind:tags binding:CPValueBinding key:@"tags" options:nil];
+    [tags bind:CPEditableBinding toObject:_library withKeyPath:@"editable" options:nil];
+
+    /*
+        The token field takes its bezel from the mode with the text fields, so in view mode the
+        tags show as plain tokens.
+    */
+    [_textFields addObject:tags];
 
     [self _labelInRow:row title:@"Record ID:" in:content];
     var uid = [self _valueLabelInRow:row++ in:content];
@@ -505,6 +523,22 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     }
 
     [_documentView setFrameSize:CGSizeMake(CGRectGetWidth([_documentView frame]), y + Margin)];
+}
+
+// ---------------------------------------------------------------- Token field delegate
+
+/*
+    Offers the tags in use that start with aSubstring, leaving out those the person already has.
+*/
+- (CPArray)tokenField:(CPTokenField)aTokenField completionsForSubstring:(CPString)aSubstring indexOfToken:(CPInteger)anIndex indexOfSelectedItem:(CPInteger)anIndexOfSelectedItem
+{
+    var prefix = [aSubstring lowercaseString],
+        current = [aTokenField objectValue] || [];
+
+    return [_library allTags].filter(function(aTag)
+    {
+        return [[aTag lowercaseString] hasPrefix:prefix] && [current indexOfObject:aTag] === CPNotFound;
+    });
 }
 
 // ---------------------------------------------------------------- Layout helpers

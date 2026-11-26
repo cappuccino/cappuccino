@@ -89,6 +89,12 @@ to build with a web component framework.
    "Please select a single row to edit or display."
 3. The contextual menu of the Notes field adds the selection commands and basic style commands.
 
+Details has a Tags row: a CPTokenField bound to the person's tags, an array of free-form
+strings. A comma or Return ends a token, and the field offers completions from the tags in use,
+through its delegate. In view mode the tags show as plain tokens. Search also matches tags.
+The smart folder editor has an Any Tag row ("is", "contains", "begins with"), which builds an
+ANY predicate on the tags array, for example `ANY tags ==[cd] "Remote"`.
+
 ### People table
 
 4. The Notes column is the first column by default.

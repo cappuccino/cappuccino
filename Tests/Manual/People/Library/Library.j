@@ -34,10 +34,11 @@ PeopleDragType                  = @"PeoplePeopleDragType";
 SourceItemDragType              = @"PeopleSourceItemDragType";
 
 LibraryDepartments              = [@"Engineering", @"Design", @"Marketing", @"Sales", @"Support", @"Finance", @"Legal"];
+LibraryTags                     = [@"Remote", @"Mentor", @"Onboarding", @"Speaker", @"Part-time", @"Contractor", @"First Aid", @"Volunteer"];
 LibraryCities                   = [@"Berlin", @"Hamburg", @"Munich", @"Zürich", @"Vienna", @"Paris", @"London", @"Lisbon", @"New York", @"San Francisco", @"Tokyo"];
 
 var LibraryDefaultsKey          = @"People.Library.v1",
-    ObservedPersonKeys          = [@"firstName", @"lastName", @"email", @"department", @"city", @"birthDate", @"salary", @"isManager", @"notes"],
+    ObservedPersonKeys          = [@"firstName", @"lastName", @"email", @"department", @"city", @"birthDate", @"salary", @"isManager", @"notes", @"tags"],
     SourceItemUIDCounter        = 0;
 
 
@@ -238,6 +239,34 @@ var LibraryDefaultsKey          = @"People.Library.v1",
 - (CPArray)people
 {
     return _people;
+}
+
+/*
+    Returns every tag in use, once each, sorted, with the sample tags. The detail pane offers
+    them as completions in its token field.
+*/
+- (CPArray)allTags
+{
+    var seen = {},
+        result = [];
+
+    function add(aTag)
+    {
+        var key = aTag.toLowerCase();
+
+        if (!seen[key])
+        {
+            seen[key] = YES;
+            result.push(aTag);
+        }
+    }
+
+    LibraryTags.forEach(add);
+
+    for (var i = 0, count = [_people count]; i < count; i++)
+        ([_people[i] tags] || []).forEach(add);
+
+    return result.sort(function(a, b) { return a.localeCompare(b); });
 }
 
 - (CPArray)sections
@@ -859,6 +888,19 @@ var LibraryDefaultsKey          = @"People.Library.v1",
         [person setBirthDate:new Date(1955 + Math.floor(random() * 48), Math.floor(random() * 12), 1 + Math.floor(random() * 28))];
         [person setSalary:38000 + Math.round(random() * 240) * 500];
         [person setIsManager:random() < 0.12];
+
+        var tagCount = Math.floor(random() * 3),
+            personTags = [];
+
+        while (personTags.length < tagCount)
+        {
+            var tag = pick(LibraryTags);
+
+            if (personTags.indexOf(tag) === -1)
+                personTags.push(tag);
+        }
+
+        [person setTags:personTags];
 
         if (i % 13 === 3)
             [person setNotes:sampleNote(noteIndex++)];
