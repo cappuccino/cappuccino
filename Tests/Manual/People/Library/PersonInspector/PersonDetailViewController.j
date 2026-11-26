@@ -88,6 +88,41 @@ var EditMask    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0i
 PersonDetailPreferredWidth  = 2 * Margin + LabelWidth + LabelGap + FieldWidth + 2 * Margin + 8.0;
 PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFieldWidth;
 
+/*
+    A read-only value, such as Age or Record ID. It can be selectable, so that its text can be
+    copied, but it is never a stop in the key view loop: Tab passes from the field before it to
+    the field after it.
+
+    Why this class exists:
+
+    - CPTextField accepts first responder when it is editable OR selectable
+      (-[CPTextField acceptsFirstResponder]), and -[CPView canBecomeKeyView] follows
+      acceptsFirstResponder. So a selectable label, such as Record ID, is a stop in the key view
+      loop like an editable field.
+    - The empty selection in a label is not drawn. When Tab stopped at Record ID, focus seemed
+      to vanish, and a second Tab was needed to reach Notes.
+    - Returning NO from canBecomeKeyView removes only this stop. Clicks still select the text,
+      because selection uses acceptsFirstResponder, not canBecomeKeyView.
+
+    Why not set the tab order explicitly with -setNextKeyView: instead:
+
+    - The window calculates its key view loop once, when it first becomes key, and only if no
+      view in it has a next key view yet (-[CPWindow becomeKeyWindow]). One link set by hand
+      counts as an existing loop, so the window would then calculate none, and every other
+      field would lose its tab order.
+    - An explicit loop would have to list every key view in the window, the sidebar, the table
+      and the toolbar's search field included, and be kept up to date as the window changes.
+    - This class leaves the calculated loop in place and only skips the read-only values.
+*/
+@implementation PersonDetailValueLabel : CPTextField
+
+- (BOOL)canBecomeKeyView
+{
+    return NO;
+}
+
+@end
+
 @implementation PersonDetailViewController : CPViewController
 {
     CPView      _documentView;
@@ -565,7 +600,7 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
 
 - (CPTextField)_valueLabelInRow:(int)aRow in:(CPView)aSuperview
 {
-    var label = [CPTextField labelWithTitle:@""];
+    var label = [PersonDetailValueLabel labelWithTitle:@""];
 
     [label setVerticalAlignment:CPCenterVerticalTextAlignment];
     [self _place:label row:aRow x:Margin + LabelWidth + LabelGap + 4 width:FieldWidth - 4 height:RowHeight in:aSuperview];
