@@ -816,7 +816,14 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (void)insertNewline:(id)sender
 {
-    if ([self hasThemeState:CPThemeStateAutocompleting])
+    /*
+        2026-11-26: Return made a token of the typed text only while the completion menu was
+        open. With no completions shown, as for a new tag, it ended editing at once, so the
+        caret disappeared after the token. Return now makes a token of any typed text and
+        keeps editing, with the caret after the new token. A Return with nothing typed ends
+        editing, as before.
+    */
+    if ([self hasThemeState:CPThemeStateAutocompleting] || [[self _editorValue] length])
     {
         [self _autocompleteWithEvent:[CPApp currentEvent]];
     }
