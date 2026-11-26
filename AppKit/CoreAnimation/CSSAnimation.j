@@ -45,30 +45,39 @@ CSSAnimation = function(aTarget/* DOM Element */, anIdentifier, aTargetName)
     var animationName = "anim_" + anIdentifier,
         animation = CURRENT_ANIMATIONS[anIdentifier];
 
+    /*
+        2026-11-26: A new animation of an element that was still animating was refused: the
+        constructor returned the running animation, which refused the new properties because it
+        was live, so the new animation's completion was lost and its grouping, which counted the
+        running animation as its own, never completed. People's All People item could no longer
+        be selected after a new smart folder was added. An animation that never started, because
+        it had no properties, also kept its entry, so every later animation of the element was
+        refused. As in AppKit, a new animation now replaces the earlier one: a running animation
+        ends at once, with its completions, and an animation that never started is dropped.
+    */
     if (animation)
     {
-        console.warn("Animation " + anIdentifier + " is already in use. Ignoring.");
-    }
-    else
-    {
-        this.target = aTarget;
-        this.identifier = anIdentifier;
-        this.targetName = aTargetName;
-        this.animationName = animationName;
-        this.listener = null;
-        this.styleElement = null;
-        this.propertyanimations = [];
-        this.animationsnames = [];
-        this.animationstimingfunctions = [];
-        this.animationsdurations = [];
-        this.islive = false;
-        this.didBuildDOMElements = false;
-
-        animation = this;
-        CURRENT_ANIMATIONS[anIdentifier] = animation;
+        if (animation.islive)
+            animation.finish();
+        else
+            delete (CURRENT_ANIMATIONS[anIdentifier]);
     }
 
-    return animation;
+    this.target = aTarget;
+    this.identifier = anIdentifier;
+    this.targetName = aTargetName;
+    this.animationName = animationName;
+    this.listener = null;
+    this.styleElement = null;
+    this.propertyanimations = [];
+    this.animationsnames = [];
+    this.animationstimingfunctions = [];
+    this.animationsdurations = [];
+    this.islive = false;
+    this.isfinished = false;
+    this.didBuildDOMElements = false;
+
+    CURRENT_ANIMATIONS[anIdentifier] = this;
 };
 
 CSSAnimation.prototype.description = function()
@@ -218,53 +227,75 @@ CSSAnimation.prototype.endEventListener = function()
             if (inFlightAnimationsNames.length > 0)
                 return;
 
-            /*
-                2026-11-26: The completions ran before the animation was removed from the
-                element. A completion that started a new animation of the same element, through
-                the layout that the completion handler of its grouping requests, found the
-                element still in use: the new animation was ignored, never ended, and its own
-                grouping never completed. The cleanup could also remove the new animation's
-                properties. The animation is now removed first, then the completions run. Both
-                happen in one task, so the element is not drawn between them.
-            */
-            var eventTarget = event.target,
-                style = eventTarget.style;
-
-            try
-            {
-                style.removeProperty(ANIMATION_NAME_PROPERTY);
-                style.removeProperty(ANIMATION_DURATION_PROPERTY);
-                style.removeProperty(ANIMATION_FILL_MODE_PROPERTY);
-                style.removeProperty("-webkit-backface-visibility");
-
-                if (animation.animationstimingfunctions.length)
-                    style.removeProperty(ANIMATION_TIMING_FUNCTION_PROPERTY);
-
-                removeFromParent(animation.styleElement);
-
-                eventTarget.removeEventListener(ANIMATION_END_EVENT_NAME, AnimationEndListener);
-                eventTarget.removeEventListener(ANIMATION_CANCEL_EVENT_NAME, AnimationEndListener);
-                animation.listener = null;
-                delete (CURRENT_ANIMATIONS[animation.identifier]);
-            }
-            catch (err)
-            {
-                console.warn("CSSAnimation.j - " + err);
-            }
-
-            for (var i = 0; i < animationsNames.length; i++)
-            {
-                var completion = animation.completionFunctionForAnimationName(animationsNames[i]);
-
-                if (completion)
-                    completion();
-            }
+            animation.finish();
         };
 
         this.listener = AnimationEndListener;
     }
 
     return this.listener;
+};
+
+/*
+    Ends the animation: removes it from its element, then runs the completions of its property
+    animations, so the end state applies. The end listener calls it when the browser ends or
+    cancels the last property animation, and a new animation of the same element calls it to
+    replace a running one. It runs once.
+
+    2026-11-26: The completions ran before the animation was removed from the element. A
+    completion that started a new animation of the same element, through the layout that the
+    completion handler of its grouping requests, found the element still in use: the new
+    animation was ignored, never ended, and its own grouping never completed. The cleanup could
+    also remove the new animation's properties. The animation is now removed first, then the
+    completions run. Both happen in one task, so the element is not drawn between them.
+*/
+CSSAnimation.prototype.finish = function()
+{
+    if (this.isfinished)
+        return;
+
+    this.isfinished = true;
+
+    var target = this.target,
+        style = target.style,
+        listener = this.listener,
+        animationsNames = this.animationsnames;
+
+    try
+    {
+        style.removeProperty(ANIMATION_NAME_PROPERTY);
+        style.removeProperty(ANIMATION_DURATION_PROPERTY);
+        style.removeProperty(ANIMATION_FILL_MODE_PROPERTY);
+        style.removeProperty("-webkit-backface-visibility");
+
+        if (this.animationstimingfunctions.length)
+            style.removeProperty(ANIMATION_TIMING_FUNCTION_PROPERTY);
+
+        removeFromParent(this.styleElement);
+
+        if (listener)
+        {
+            target.removeEventListener(ANIMATION_END_EVENT_NAME, listener);
+            target.removeEventListener(ANIMATION_CANCEL_EVENT_NAME, listener);
+        }
+
+        this.listener = null;
+
+        if (CURRENT_ANIMATIONS[this.identifier] === this)
+            delete (CURRENT_ANIMATIONS[this.identifier]);
+    }
+    catch (err)
+    {
+        console.warn("CSSAnimation.j - " + err);
+    }
+
+    for (var i = 0; i < animationsNames.length; i++)
+    {
+        var completion = this.completionFunctionForAnimationName(animationsNames[i]);
+
+        if (completion)
+            completion();
+    }
 };
 
 CSSAnimation.prototype.completionFunctionForAnimationName = function(aName)
@@ -319,8 +350,17 @@ CSSAnimation.prototype.buildDOMElements = function()
 
 CSSAnimation.prototype.start = function()
 {
-    if (this.propertyanimations.length === 0 || this.islive)
+    if (this.islive)
         return false;
+
+    // An animation without properties never starts, so it gives back its element now.
+    if (this.propertyanimations.length === 0)
+    {
+        if (CURRENT_ANIMATIONS[this.identifier] === this)
+            delete (CURRENT_ANIMATIONS[this.identifier]);
+
+        return false;
+    }
 
     if (!this.didBuildDOMElements)
         this.buildDOMElements();
