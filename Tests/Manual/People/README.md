@@ -75,6 +75,8 @@ existing action. If the application routes its actions through the responder cha
 should be nearly trivial to add. Together they exercise the kind of interface that is difficult
 to build with a web component framework.
 
+People is kept to these items. The items marked Pending are deferred, with no date.
+
 ### Detail pane
 
 1. Edit history. Pending; only the Reject button below is in place. This needs a change to
@@ -91,8 +93,10 @@ to build with a web component framework.
    - The time is stored in UTC and shown in local time, in conversational form.
 2. When no single row is selected, a covering view over the detail pane says
    "Please select a single row to edit or display."
-3. The contextual menu of the Notes field adds the selection commands and basic style commands.
-   Planned after the column sizing switch (item 13).
+3. The contextual menu of the Notes field adds Bold and Italic after Cut, Copy and Paste. They
+   are enabled in edit mode, and each is checked when the text at the start of the selection
+   has the style. Choosing a checked item removes the style. A right click in Notes makes it
+   the first responder, so the commands act on the notes.
 
 Details has a Tags row: a CPTokenField bound to the person's tags, an array of free-form
 strings. A comma or Return ends a token, and the field offers completions from the tags in use,

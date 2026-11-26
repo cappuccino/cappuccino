@@ -37,6 +37,7 @@
  * with the attributedString binding. The binding updates the person as the text changes, so
  * the table's notes icon follows the typing. CPTextView has no editable binding, so the
  * controller sets its editable state, and the scroll view's border, when the mode changes.
+ * As the text view's delegate, the controller adds Bold and Italic to its contextual menu.
  *
  * The Tags row holds a CPTokenField bound to the person's tags, an array of free-form strings.
  * Typing a comma or Return ends a token. As the controller is the token field's delegate, it
@@ -379,6 +380,7 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     [_notesView setHorizontallyResizable:NO];
     [_notesView setVerticallyResizable:YES];
     [_notesView setAutoresizingMask:CPViewWidthSizable];
+    [_notesView setDelegate:self];
     [_notesScrollView setDocumentView:_notesView];
 
     var options = [self _placeholderOptions];
@@ -647,6 +649,31 @@ PersonDetailMinimumWidth    = PersonDetailPreferredWidth - FieldWidth + ShortFie
     {
         return [[aTag lowercaseString] hasPrefix:prefix] && [current indexOfObject:aTag] === CPNotFound;
     });
+}
+
+// ---------------------------------------------------------------- Notes delegate
+
+/*
+    Adds Bold and Italic to the contextual menu of the Notes text view, after its Cut, Copy and
+    Paste. The text view's menu does not validate its items itself, so each item takes its
+    enabled state and its check from the text view: enabled in edit mode, and checked when the
+    text at the start of the selection is bold or italic.
+*/
+- (CPMenu)textView:(CPTextView)aTextView menu:(CPMenu)aMenu forEvent:(CPEvent)anEvent atIndex:(CPUInteger)anIndex
+{
+    [aMenu addItem:[CPMenuItem separatorItem]];
+
+    var styles = [[@"Bold", @selector(bold:), @"b"], [@"Italic", @selector(italic:), @"i"]];
+
+    for (var i = 0; i < styles.length; i++)
+    {
+        var item = [aMenu addItemWithTitle:styles[i][0] action:styles[i][1] keyEquivalent:styles[i][2]];
+
+        [item setTarget:aTextView];
+        [item setEnabled:[aTextView validateUserInterfaceItem:item]];
+    }
+
+    return aMenu;
 }
 
 // ---------------------------------------------------------------- Layout helpers
