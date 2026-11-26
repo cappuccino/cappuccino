@@ -145,3 +145,15 @@ and `tableView:didDragTableColumn:`.
     The two search fields mirror each other, so the search string stays when the toolbar is
     shown or hidden. Edit ▸ Find focuses whichever field is shown.
     An animated move between the two places is optional.
+13. A Test menu holds switches for testing only, kept out of the user-facing menus. Its first
+    item is Test ▸ Column Sizing, a submenu with one radio-style item for each column
+    autoresizing style of the people table: No Autoresizing, Uniform, Sequential, Reverse
+    Sequential, Last Column Only and First Column Only.
+    - Choosing an item sets the table's column autoresizing style and lays out the columns
+      again, so the effect shows at once and whenever the window or a divider is resized.
+    - The current style is checked, through menu validation. The copies in the main menu
+      button show the same check.
+    - The fixed-width columns, Notes and Is Manager, show how each style treats columns that
+      cannot resize. The saved column widths and Reset Application must work with every style.
+    - The choice is not saved: the application starts with its normal style.
+    - Priority: before quick look (item 6) and the edit history (items 1 and 5).
