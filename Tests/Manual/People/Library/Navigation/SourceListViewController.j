@@ -14,6 +14,8 @@
  *   - CPButtonBar with plus / minus buttons and a split view resize control
  *   - a button on the right of the button bar that pops up copies of the
  *     main menu's menus
+ *   - a search field at the top, shown only while the toolbar is hidden; the
+ *     window controller gives it its target and action
  */
 
 @import <AppKit/AppKit.j>
@@ -22,7 +24,9 @@
 @import "../MainMenuButton.j"
 @import "SourceItemCell/SourceListCellView.j"
 
-var SourceRowHeight = 26.0;
+var SourceRowHeight         = 26.0,
+    SearchFieldTopMargin    = 28.0,
+    SearchFieldMargin       = 6.0;
 
 
 @implementation SourceListViewController : CPViewController
@@ -31,6 +35,8 @@ var SourceRowHeight = 26.0;
     CPOutlineView   _outlineView;
     CPButtonBar     _buttonBar;
     MainMenuButton  _mainMenuButton;
+    CPSearchField   _searchField;
+    CPScrollView    _scrollView;
     BOOL            _suppressSelectionCallbacks;
 
     id              _sourceListDelegate   @accessors(property=delegate);
@@ -93,6 +99,19 @@ var SourceRowHeight = 26.0;
 
     [scrollView setDocumentView:_outlineView];
     [view addSubview:scrollView];
+    _scrollView = scrollView;
+
+    // --- Search field, hidden until the toolbar is hidden
+    _searchField = [[CPSearchField alloc] initWithFrame:CGRectMakeZero()];
+    [_searchField sizeToFit];
+    [_searchField setFrame:CGRectMake(SearchFieldMargin, SearchFieldTopMargin, CGRectGetWidth(frame) - 2 * SearchFieldMargin, CGRectGetHeight([_searchField frame]))];
+    [_searchField setAutoresizingMask:CPViewWidthSizable];
+    [_searchField setPlaceholderString:@"Search people"];
+    [_searchField setSendsSearchStringImmediately:YES];
+    [_searchField setRecentsAutosaveName:@"People.RecentSearches"];
+    [_searchField setSearchMenuTemplate:[_searchField defaultSearchMenuTemplate]];
+    [_searchField setHidden:YES];
+    [view addSubview:_searchField];
 
     // --- Button bar
     _buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(frame) - barHeight, CGRectGetWidth(frame), barHeight)];
@@ -133,6 +152,32 @@ var SourceRowHeight = 26.0;
 }
 
 // ---------------------------------------------------------------- Public
+
+- (CPSearchField)searchField
+{
+    [self view];
+    return _searchField;
+}
+
+/*
+    Shows or hides the search field. While it shows, the source list starts below it.
+*/
+- (void)setShowsSearchField:(BOOL)shouldShow
+{
+    [self view];
+
+    if ([_searchField isHidden] === !shouldShow)
+        return;
+
+    var scrollFrame = [_scrollView frame],
+        top = shouldShow ? CGRectGetMaxY([_searchField frame]) + SearchFieldMargin : 0.0;
+
+    scrollFrame.size.height += CGRectGetMinY(scrollFrame) - top;
+    scrollFrame.origin.y = top;
+
+    [_scrollView setFrame:scrollFrame];
+    [_searchField setHidden:!shouldShow];
+}
 
 - (id)selectedItem
 {

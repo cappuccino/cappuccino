@@ -133,4 +133,6 @@ and `tableView:didDragTableColumn:`.
     the freed space at once, and ⌃⌘M shows the menu bar again. The choice survives a reload.
     This shows both styles of application menu use.
 12. A search field shows at the top of the navigation sidebar only while the toolbar is hidden.
+    The two search fields mirror each other, so the search string stays when the toolbar is
+    shown or hidden. Edit ▸ Find focuses whichever field is shown.
     An animated move between the two places is optional.

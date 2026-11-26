@@ -17,6 +17,8 @@
  *     the Edit menu names the change
  *   - CPMenu menu bar visibility: View ▸ Hide Menu Bar hides the main menu, and the window
  *     takes the space; the main menu's key equivalents still work
+ *   - key-value observing of the toolbar's visible state: while the toolbar is hidden, the
+ *     sidebar shows its own search field, which mirrors the toolbar's
  */
 
 @import <AppKit/AppKit.j>
@@ -76,6 +78,12 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
         [self _buildToolbar];
         [window setContentViewController:_splitViewController];
+
+        var sidebarSearchField = [_sourceListController searchField];
+        [sidebarSearchField setTarget:self];
+        [sidebarSearchField setAction:@selector(searchFieldDidChange:)];
+
+        [[window toolbar] addObserver:self forKeyPath:@"visible" options:CPKeyValueObservingOptionInitial context:nil];
 
         [[CPNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(libraryDidChange:)
@@ -260,9 +268,18 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
 // ---------------------------------------------------------------- Search
 
+/*
+    Both search fields send this action. Each one mirrors the other, so the search string
+    stays when the toolbar is shown or hidden.
+*/
 - (void)searchFieldDidChange:(id)sender
 {
-    var searchString = [[_searchField stringValue] stringByTrimmingWhitespace];
+    var sidebarSearchField = [_sourceListController searchField],
+        otherField = sender === _searchField ? sidebarSearchField : _searchField;
+
+    [otherField setStringValue:[sender stringValue]];
+
+    var searchString = [[sender stringValue] stringByTrimmingWhitespace];
 
     if (![searchString length])
         _searchPredicate = nil;
@@ -275,7 +292,18 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
 
 - (void)focusSearchField:(id)sender
 {
-    [[self window] makeFirstResponder:_searchField];
+    var toolbar = [[self window] toolbar];
+
+    [[self window] makeFirstResponder:[toolbar isVisible] ? _searchField : [_sourceListController searchField]];
+}
+
+/*
+    The sidebar's search field shows only while the toolbar, with its own search field, is
+    hidden.
+*/
+- (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)aChange context:(id)aContext
+{
+    [_sourceListController setShowsSearchField:![anObject isVisible]];
 }
 
 // ---------------------------------------------------------------- Source item actions
@@ -369,6 +397,7 @@ var ToolbarSidebarIdentifier    = @"SidebarItem",
     if (_searchPredicate)
     {
         [_searchField setStringValue:@""];
+        [[_sourceListController searchField] setStringValue:@""];
         _searchPredicate = nil;
     }
 
