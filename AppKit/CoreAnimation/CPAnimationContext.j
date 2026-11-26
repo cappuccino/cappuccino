@@ -159,11 +159,20 @@ var _CPAnimationContextStack   = nil,
         if (animationCompletion)
             animationCompletion();
 
-        if (needsPeriodicFrameUpdates || animationCompletion)
-            [[CPRunLoop currentRunLoop] performSelectors];
+        /*
+            2026-11-26: The completion handler of the grouping ran after the run loop pass.
+            This function runs from a browser animation end event, outside the run loop, so
+            the layout and display that the handler requested waited for the next event. After
+            a table column drag, the delegate's column move appeared up to seconds later, when
+            the pointer moved. The handler now runs first, and the run loop pass follows.
+        */
+        var agent = _completionHandlerAgent;
 
-        if (_completionHandlerAgent)
-            _completionHandlerAgent.decrement();
+        if (agent)
+            agent.decrement();
+
+        if (needsPeriodicFrameUpdates || animationCompletion || agent)
+            [[CPRunLoop currentRunLoop] performSelectors];
     };
 
     if (![animation isKindOfClass:[CAPropertyAnimation class]] || !(animatedKeyPath = [animation keyPath]))
